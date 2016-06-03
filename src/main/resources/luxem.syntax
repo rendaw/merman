@@ -1,5 +1,5 @@
 {
-	background: (color) [0.21568, 0.21568, 0.21568],
+	background: [0.21568, 0.21568, 0.21568],
 	nodes: [
 		{
 			name: "Luxem Object",

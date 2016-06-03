@@ -6,9 +6,7 @@ import java.util.Deque;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.concurrent.ExecutionException;
 
-import com.google.common.base.Throwables;
 import com.google.common.collect.Iterators;
 import com.zarbosoft.bonestruct.model.Document;
 import com.zarbosoft.bonestruct.model.Node;
@@ -20,11 +18,9 @@ import com.zarbosoft.bonestruct.model.front.Reference;
 import com.zarbosoft.luxemj.Parse;
 
 import javafx.application.Application;
-import javafx.concurrent.Task;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -172,47 +168,20 @@ public class Main extends Application {
 	
 	@Override
 	public void start(Stage primaryStage) {
-		Task<Context> task = new Task<Context>() {
-			@Override
-			protected Context call() throws Exception {
-				return new Context();
-			}
-		};
-		{
-			primaryStage.setTitle("Bonestruct");
-			GridPane grid = new GridPane();
-			Text text = new Text("loading");
-			grid.add(text, 0, 1);
-			ProgressBar progress = new ProgressBar();
-			task.progressProperty().addListener((p, o, n) -> progress.set(n.doubleValue()));
-			grid.add(progress, 0, 2);
-			Scene scene = new Scene(grid, 300, 275);
-			primaryStage.setScene(scene);
-			primaryStage.show();
-		}
-		new Thread(task).start();
-		try {
-			// 1. create blank document + wrap via size changes
-			// 2. navigation
-			// 3. editing
-			// 4. rewrap on edit, replace
-			Context context = task.get();
-			Document doc = context.luxemSyntax.create();
-			VBox layout = new VBox();
-			UINode root = createNode(doc.root);
-			layout.getChildren().add(root);
-			Scene scene = new Scene(layout, 300, 275);
-			scene.widthProperty().addListener((observableValue, oldSceneWidth, newSceneWidth) -> {
-				adjustLayout(root, newSceneWidth.doubleValue());
-			});
-			adjustLayout(root, scene.widthProperty().doubleValue());
-			primaryStage.setScene(scene);
-		} catch (InterruptedException | ExecutionException e) {
-			Text text = new Text(Throwables.getStackTraceAsString(e));
-			VBox layout = new VBox();
-			layout.getChildren().add(text);
-			Scene scene = new Scene(layout, 300, 275);
-			primaryStage.setScene(scene);
-		}
+		// 1. create blank document + wrap via size changes
+		// 2. navigation
+		// 3. editing
+		// 4. rewrap on edit, replace
+		Context context = new Context();
+		Document doc = context.luxemSyntax.load("{x: 47,{ar:[2,9,13]},},[atler]");
+		VBox layout = new VBox();
+		UINode root = createNode(doc.root);
+		layout.getChildren().add(root);
+		Scene scene = new Scene(layout, 300, 275);
+		scene.widthProperty().addListener((observableValue, oldSceneWidth, newSceneWidth) -> {
+			adjustLayout(root, newSceneWidth.doubleValue());
+		});
+		adjustLayout(root, scene.widthProperty().doubleValue());
+		primaryStage.setScene(scene);
 	}
 }

@@ -10,6 +10,12 @@ import com.zarbosoft.pidgoon.events.BakedOperator;
 
 public class NodeType {
 	@Config
+	public String id;
+	
+	@Config
+	public String name;
+	
+	@Config
 	public List<FrontPart> front;
 	
 	@Config
