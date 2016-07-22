@@ -1,68 +1,62 @@
 {
+    name: luxem,
 	background: [0.21568, 0.21568, 0.21568],
-	nodes: [
+	groups: {
+	    value: [
+	        luxem-object,
+	        luxem-array,
+	        luxem-primitive,
+	    ],
+	},
+	root: value,
+	types: [
 		{
+		    id: luxem-object,
 			name: "Luxem Object",
-			parts: [
-				(optional) [
-					(mark) "(",
-					(string) "type",
-					(mark) ")",
-				],
+			back: [(data-record) data],
+			middle: [
+			    (record) {
+			        key: data,
+			        tag: value,
+			    }
+            ],
+			front: [
 				(mark) "{",
-				(list) {
-					name: base,
-					parts: [
-						(string) "key",
-						(mark) ":",
-						(node) "value",
-						(mark) ",",
-					],
+				(record) {
+					key: data,
+					infix: [ (mark) ":" ],
+					separator: [ (mark) "," ],
 				},
-				(mark) "},",
+				(mark) "}",
 			],
-			format: (%decompose_object) {
-				"base": "base",
-				"type": "type",
-				"key": "key",
-				"value": "value",
-			},
 		},
 		{
+		    id: luxem-array,
 			name: "Luxem Array",
-			parts: [
-				(optional) [
-					(mark) "(",
-					(string) "type",
-					(mark) ")",
-				],
+			back: [(data-array) data],
+			middle: [
+			    (array) {
+			        key: data,
+			        tag: value,
+			    }
+            ],
+			front: [
 				(mark) "[",
-				(list) {
-					name: base,
-					parts: [
-						(node) "value",
-						(mark) ",",
-					],
+				(array) {
+					key: data,
+					separator: [ (mark) "," ],
 				},
-				(mark) "],",
+				(mark) "]",
 			],
-			format: (%decompose_array) {
-				"base": "base",
-				"type": "type",
-				"value": "value",
-			},
 		},
 		{
-			name: "Luxem Value",
-			parts: [
-				(optional) [
-					(mark) "(",
-					(string) "type",
-					(mark) ")",
-				],
-				(string) "value",
+		    id: luxem-primitive,
+			name: "Luxem Primitive",
+			back: [(data-primitive) data],
+			middle: [(primitive) data],
+			front: [
+				(primitive) data,
 			],
-			format: value,
 		}
 	]
 }
