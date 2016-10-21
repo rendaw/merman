@@ -1,14 +1,15 @@
 package com.zarbosoft.bonestruct.model.middle;
 
 import com.zarbosoft.bonestruct.Luxem;
+import javafx.beans.property.StringProperty;
 
 import java.util.Map;
 import java.util.Set;
 
 @Luxem.Configuration(name = "primitive")
 public class DataPrimitive extends DataElement {
-	public String get(final Map<String, Object> data) {
-		return (String) data.get(key);
+	public StringProperty get(final Map<String, Object> data) {
+		return (StringProperty) data.get(id);
 	}
 
 	@Override

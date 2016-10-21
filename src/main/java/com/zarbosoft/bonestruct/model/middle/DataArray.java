@@ -3,8 +3,8 @@ package com.zarbosoft.bonestruct.model.middle;
 import com.zarbosoft.bonestruct.InvalidSyntax;
 import com.zarbosoft.bonestruct.model.Node;
 import com.zarbosoft.luxemj.Luxem;
+import javafx.collections.ObservableList;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -13,8 +13,8 @@ public class DataArray extends DataElement {
 	@Luxem.Configuration
 	public String tag;
 
-	public List<Node> get(final Map<String, Object> data) {
-		return (List<Node>) data.get(key);
+	public ObservableList<Node> get(final Map<String, Object> data) {
+		return (ObservableList<Node>) data.get(id);
 	}
 
 	@Override

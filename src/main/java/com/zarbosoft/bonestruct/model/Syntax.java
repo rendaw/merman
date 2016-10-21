@@ -1,6 +1,8 @@
 package com.zarbosoft.bonestruct.model;
 
+import com.google.common.collect.ImmutableSet;
 import com.zarbosoft.bonestruct.InvalidSyntax;
+import com.zarbosoft.bonestruct.visual.nodes.Obbox;
 import com.zarbosoft.luxemj.Luxem;
 import com.zarbosoft.luxemj.LuxemEvent;
 import com.zarbosoft.luxemj.path.LuxemArrayPath;
@@ -12,6 +14,8 @@ import com.zarbosoft.pidgoon.internal.Mutable;
 import com.zarbosoft.pidgoon.internal.Pair;
 import com.zarbosoft.pidgoon.nodes.Reference;
 import com.zarbosoft.pidgoon.nodes.Union;
+import javafx.geometry.Bounds;
+import javafx.geometry.Point2D;
 import javafx.scene.paint.Color;
 
 import java.io.*;
@@ -24,8 +28,11 @@ public class Syntax {
 	@Luxem.Configuration
 	public String name;
 
-	@Luxem.Configuration
-	public Color background;
+	@Luxem.Configuration(optional = true)
+	public Color background = Color.WHITE;
+
+	@Luxem.Configuration(optional = true)
+	public Obbox.Settings hover = new Obbox.Settings();
 
 	@Luxem.Configuration
 	public List<LuxemEvent> template;
@@ -38,6 +45,68 @@ public class Syntax {
 
 	@Luxem.Configuration
 	public String root;
+	// Root applies to whole document parsing
+	// For parsing text pastes, use the current location to find the correct rule
+
+	@Luxem.Configuration
+	public enum Direction {
+		@Luxem.Configuration(name = "up")
+		UP, @Luxem.Configuration(name = "down")
+		DOWN, @Luxem.Configuration(name = "left")
+		LEFT, @Luxem.Configuration(name = "right")
+		RIGHT;
+		// TODO boustrophedon
+
+		public double extract(final Bounds bounds) {
+			switch (this) {
+				case UP:
+				case DOWN:
+					return bounds.getHeight();
+				case LEFT:
+				case RIGHT:
+					return bounds.getWidth();
+			}
+			return 0; // unreachable
+		}
+
+		public Point2D consVector(final double value) {
+			switch (this) {
+				case UP:
+					return new Point2D(0, -value);
+				case DOWN:
+					return new Point2D(0, value);
+				case LEFT:
+					return new Point2D(-value, 0);
+				case RIGHT:
+					return new Point2D(value, 0);
+			}
+			return null; // unreachable
+		}
+	}
+
+	@Luxem.Configuration(name = "converse-direction", optional = true)
+	public Direction converseDirection = Direction.RIGHT;
+
+	@Luxem.Configuration(name = "transverse-direction", optional = true)
+	public Direction transverseDirection = Direction.DOWN;
+
+	@Luxem.Configuration(name = "line-span", optional = true)
+	public int lineSpan = 16;
+
+	@Luxem.Configuration
+	public enum CompactionMode {
+		@Luxem.Configuration(name = "bottom-up")
+		BOTTOM_UP,
+		/*
+		@Luxem.Configuration(name = "greatest-gain")
+		GREATEST_GAIN,
+		@Luxem.Configuration(name = "priority")
+		PRIORITY,
+		*/
+	}
+
+	@Luxem.Configuration(name = "compaction-mode", optional = true)
+	public CompactionMode compactionMode = CompactionMode.BOTTOM_UP;
 
 	Grammar grammar;
 
@@ -48,6 +117,30 @@ public class Syntax {
 				.uncertainty(100)
 				.node("root")
 				.parse(stream);
+		// jfx, qt, and swing don't support vertical languages
+		if (!ImmutableSet.of(Direction.LEFT, Direction.RIGHT).contains(out.converseDirection) ||
+				(out.transverseDirection != Direction.DOWN))
+			throw new InvalidSyntax("Currently only converse directions left/right and transverse down are supported.");
+		/*
+		switch (out.converseDirection) {
+			case LEFT:
+			case RIGHT:
+				switch (out.transverseDirection) {
+					case LEFT:
+					case RIGHT:
+						throw new InvalidSyntax("Secondary direction must cross converse direction axis.");
+				}
+				break;
+			case UP:
+			case DOWN:
+				switch (out.transverseDirection) {
+					case UP:
+					case DOWN:
+						throw new InvalidSyntax("Secondary direction must cross converse direction axis.");
+				}
+				break;
+		}
+		*/
 		boolean foundRoot = false;
 		final Set<String> singleNodes = new HashSet<>();
 		final Set<String> arrayNodes = new HashSet<>();

@@ -4,8 +4,9 @@ import com.zarbosoft.bonestruct.InvalidSyntax;
 import com.zarbosoft.bonestruct.Luxem;
 import com.zarbosoft.bonestruct.model.Node;
 import com.zarbosoft.pidgoon.internal.Pair;
+import javafx.beans.property.StringProperty;
+import javafx.collections.ObservableList;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -14,8 +15,8 @@ public class DataRecord extends DataElement {
 	@Luxem.Configuration
 	public String tag;
 
-	public List<Pair<String, Node>> get(final Map<String, Object> data) {
-		return (List<Pair<String, Node>>) data.get(key);
+	public ObservableList<Pair<StringProperty, Node>> get(final Map<String, Object> data) {
+		return (ObservableList<Pair<StringProperty, Node>>) data.get(id);
 	}
 
 	@Override

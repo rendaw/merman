@@ -1,17 +1,18 @@
 package com.zarbosoft.bonestruct.model.front;
 
 import com.zarbosoft.bonestruct.Luxem;
-import com.zarbosoft.bonestruct.visual.VisualNode;
+import com.zarbosoft.bonestruct.visual.Context;
+import com.zarbosoft.bonestruct.visual.nodes.parts.VisualNodePart;
 
 import java.util.Map;
 
 @Luxem.Configuration
 public interface FrontConstantPart extends FrontPart {
 
-	VisualNode createVisual();
+	VisualNodePart createVisual(Context context);
 
 	@Override
-	default VisualNode createVisual(final Map<String, Object> data) {
-		return createVisual();
+	default VisualNodePart createVisual(final Context context, final Map<String, Object> data) {
+		return createVisual(context);
 	}
 }

@@ -4,15 +4,19 @@ import com.google.common.collect.Iterators;
 import com.zarbosoft.bonestruct.Luxem;
 import com.zarbosoft.bonestruct.model.Document;
 import com.zarbosoft.bonestruct.model.Syntax;
-import com.zarbosoft.pidgoon.internal.Helper;
+import com.zarbosoft.bonestruct.visual.nodes.VisualNode;
 import com.zarbosoft.pidgoon.internal.Pair;
-import javafx.animation.Interpolator;
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.geometry.Point2D;
+import javafx.beans.value.ChangeListener;
+import javafx.event.EventHandler;
 import javafx.scene.Scene;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,94 +30,184 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.stream.Stream;
 
 public class Main extends Application {
+	private IdleTask idleCompact = null;
+
 	public static void main(final String[] args) {
 		launch(args);
 	}
 
-	class Context {
-		private final Syntax luxemSyntax;
-
-		public Context() {
-			Luxem.grammar(); // Make sure the luxem grammar is loaded so the new resource stream doesn't get closed
-			try (
-					InputStream stream = Thread
-							.currentThread()
-							.getContextClassLoader()
-							.getResourceAsStream("luxem.syntax")
-			) {
-				this.luxemSyntax = Syntax.loadSyntax(stream);
-			} catch (final IOException e) {
-				throw new UncheckedIOException(e);
-			}
-		}
-	}
-
 	ScheduledThreadPoolExecutor worker = new ScheduledThreadPoolExecutor(1);
-	ScheduledFuture<?> idleTimer = null;
 	boolean idlePending = false;
+	ScheduledFuture<?> idleTimer = null;
+	public PriorityQueue<IdleTask> idleQueue = new PriorityQueue<>();
 
-	public void idleStart() {
-		if (idleTimer != null)
-			return;
-		idleTimer = worker.scheduleWithFixedDelay(() -> {
-			if (idlePending)
-				return;
-			Platform.runLater(() -> {
-				if (!idle())
-					idleTimer.cancel(false);
-				idlePending = false;
-			});
-		}, 500, 500, TimeUnit.MILLISECONDS);
-	}
-
-	abstract class IdleTask implements Comparable<IdleTask> {
-		int priority() {
-			return 0;
-		}
-
-		abstract void run();
-
-		@Override
-		public int compareTo(final IdleTask t) {
-			return priority() - t.priority();
-		}
-	}
-
-	PriorityQueue<IdleTask> idleQueue = new PriorityQueue<>();
-	Compact idleCompact = null;
-
-	public class TheInterpolator extends Interpolator {
-		@Override
-		protected double curve(double t) {
-			t = t * 2;
-			if (t * 2 < 1)
-				return Math.pow(t, 3) / 2;
-			else
-				return Math.pow(t - 1, 3) / 2 + 1;
-		}
-	}
-
+	/*
+	One window, one file only.  Cannot load, just save.
+	TODO hooks
+	metadata file changes - monitor and load
+	save -> whole file
+	source change -> diff
+	primitive -> autocomplete command (context, metadata, produce japanese, plugin?)
+	 */
 	@Override
 	public void start(final Stage primaryStage) {
+		primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+			@Override
+			public void handle(final WindowEvent t) {
+				worker.shutdown();
+			}
+		});
 		// 1. create blank document + wrap via size changes
 		// 2. navigation
 		// 3. editing
 		// 4. rewrap on edit, replace
-		final Context context = new Context();
-		final Document doc = context.luxemSyntax.load("[{x: 47,y:{ar:[2,9,13]},},[atler]]");
+		Luxem.grammar(); // Make sure the luxem grammar is loaded beforehand so the new resource stream doesn't get closed by that resource stream
+		final Syntax luxemSyntax;
+		try (
+				InputStream stream = Thread.currentThread().getContextClassLoader().getResourceAsStream("luxem.syntax")
+		) {
+			luxemSyntax = Syntax.loadSyntax(stream);
+		} catch (final IOException e) {
+			throw new UncheckedIOException(e);
+		}
+		//final Document doc = luxemSyntax.load("[dog, dog, dog, dog, dog],");
+		final Document doc = luxemSyntax.load("[{converse: 47,transverse:{ar:[2,9,13]},},[atler]]");
+		//final Document doc = luxemSyntax.load("{analogue:bolivar}");
+		final Context context = new Context(luxemSyntax, doc, this::addIdle);
 		final VBox layout = new VBox();
-		final VisualNode root = doc.root.createVisual();
-		depthFirst(root, n -> n.children(), n -> n.layoutInitial());
-		root.offset(new Point2D(0, 50));
-		idleCompact = new Compact(root, 300);
-		idleStart();
-		layout.getChildren().add(root.visual());
+		final VisualNode root = doc.root.createVisual(context);
+		/*
+		final VisualNode root;
+		{
+			// Test
+			final GroupVisualNode x = new GroupVisualNode() {
+				@Override
+				public Break breakMode() {
+					return Break.NEVER;
+				}
+
+				@Override
+				public String alignmentName() {
+					return null;
+				}
+
+				@Override
+				public String alignmentNameCompact() {
+					return null;
+				}
+			};
+			final FrontMark a = new FrontMark();
+			a.value = "{";
+			x.add(context, a.createVisual(context));
+			final FrontMark b = new FrontMark();
+			b.value = "}";
+			x.add(context, b.createVisual(context));
+			root = x;
+		}
+		*/
+		// TODO walk tree and resolve relative alignments
+		final ScrollPane scroll = new ScrollPane();
+		final StackPane stack = new StackPane();
+		stack.getChildren().add(root.visual().background);
+		stack.getChildren().add(root.visual().foreground);
+		scroll.setContent(stack);
+		layout.getChildren().add(scroll);
 		final Scene scene = new Scene(layout, 300, 275);
+		scene.setOnMouseExited(new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(final MouseEvent event) {
+				if (context.hoverIdle != null) {
+					context.hoverIdle.point = null;
+				} else if (context.hover != null) {
+					context.hover.clear(context);
+					context.hover = null;
+				}
+			}
+		});
+		scene.setOnMouseMoved(new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(final MouseEvent event) {
+				if (context.hoverIdle == null) {
+					context.hoverIdle = context.new HoverIdle(context, root);
+					addIdle(context.hoverIdle);
+				}
+				context.hoverIdle.point = context.sceneToVector(scene, event.getX(), event.getY());
+				/*
+				System.out.format(
+						"mouse x %f y %f c %d t %d\n",
+						event.getX(),
+						event.getY(),
+						context.hoverIdle.point.converse,
+						context.hoverIdle.point.transverse
+				);
+				*/
+			}
+		});
+		final ChangeListener<Number> converseSizeListener = (observable, oldValue, newValue) -> {
+			final int newValue2 = (int) newValue.doubleValue();
+			final int oldValue2 = (int) oldValue.doubleValue();
+			//System.out.format("conv window size change: %d to %d\n", oldValue2, newValue2);
+			context.edge = newValue2;
+			if (newValue2 < oldValue2) {
+				compact(context, doc.syntax.compactionMode, root);
+			} else if (newValue2 > oldValue2) {
+				// TODO expand
+			}
+		};
+		final ChangeListener<Number> transverseSizeListener = (observable, oldValue, newValue) -> {
+			final int newValue2 = (int) newValue.doubleValue();
+			context.transverseEdge = newValue2;
+		};
+		switch (doc.syntax.converseDirection) {
+			case UP:
+			case DOWN:
+				scroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+				scroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+				scene.heightProperty().addListener(converseSizeListener);
+				//converseSizeListener.changed(null, Double.MAX_VALUE, scene.heightProperty().getValue());
+				scene.widthProperty().addListener(transverseSizeListener);
+				break;
+			case LEFT:
+			case RIGHT:
+				scroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+				scroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+				scene.widthProperty().addListener(converseSizeListener);
+				scene.heightProperty().addListener(transverseSizeListener);
+				break;
+		}
 		primaryStage.setScene(scene);
 		primaryStage.show();
+	}
+
+	private void addIdle(final IdleTask task) {
+		idleQueue.add(task);
+		if (idleTimer == null) {
+			idleTimer = worker.scheduleWithFixedDelay(() -> {
+				//System.out.println("idle timer");
+				if (idlePending)
+					return;
+				idlePending = true;
+				Platform.runLater(() -> {
+					//System.out.println(String.format("idle timer inner: %d", idleQueue.size()));
+					// TODO measure pending event backlog, adjust batch size to accomodate
+					// by proxy? time since last invocation?
+					for (int i = 0; i < 1000; ++i) { // Batch
+						final IdleTask top = idleQueue.poll();
+						if (top == null) {
+							idleTimer.cancel(false);
+							idleTimer = null;
+							//System.out.format("Idle stopping at %d\n", i);
+							break;
+						} else
+							top.run();
+					}
+					//System.out.format("Idle break at g i %d\n", GroupVisualNode.idleCount);
+					idlePending = false;
+				});
+			}, 0, 50, TimeUnit.MILLISECONDS);
+		}
 	}
 
 	public <T> void depthFirst(final T root, final Function<T, Iterator<T>> descend, final Consumer<T> consume) {
@@ -131,93 +225,77 @@ public class Main extends Application {
 		}
 	}
 
-	private boolean idle() {
-		if (idleCompact != null)
-			idleCompact.run();
-		else {
-			final IdleTask top = idleQueue.poll();
-			if (top == null)
-				return false;
-			top.run();
-		}
-		return true;
-	}
+	public class IterativeDepthFirst<T> extends IdleTask {
+		private final Deque<Pair<T, Iterator<T>>> stack = new ArrayDeque<>();
+		private final Function<T, Iterator<T>> descend;
+		private final Consumer<T> consume;
 
-	class CompactionTreeNode implements Comparable<CompactionTreeNode> {
-		boolean expanded;
-		int priority;
-		VisualNode node;
-		PriorityQueue<CompactionTreeNode> children;
-
-		public CompactionTreeNode(final VisualNode node) {
-			this.node = node;
-			priority = node.treeCompactPriority();
-			expanded = false;
-			children = new PriorityQueue<>();
+		IterativeDepthFirst(final T root, final Function<T, Iterator<T>> descend, final Consumer<T> consume) {
+			stack.add(new Pair<>(root, Iterators.forArray(root)));
+			this.descend = descend;
+			this.consume = consume;
 		}
 
-		@Override
-		public int compareTo(final CompactionTreeNode t) {
-			return priority - t.priority;
-		}
-	}
-
-	private class Compact {
-		private final CompactionTreeNode tree;
-		private final int converseEdge;
-
-		public Compact(final VisualNode root, final int converseEdge) {
-			tree = new CompactionTreeNode(root);
-			this.converseEdge = converseEdge;
-		}
-
-		void run() {
-			if (tree.node.converseEdge() <= converseEdge) {
-				idleCompact = null;
+		public void run() {
+			if (stack.isEmpty())
 				return;
-			}
-			final Deque<CompactionTreeNode> walkStack = new ArrayDeque<>();
-			CompactionTreeNode at = tree;
-
-			// Walk tree taking high priority branches to find highest priority node
-			while (true) {
-				// Expand the tree if not yet walked
-				if (!at.expanded) {
-					final CompactionTreeNode tempAt = at;
-					Helper
-							.stream(at.node.children())
-							.forEach(child -> tempAt.children.add(new CompactionTreeNode(child)));
-					at.expanded = true;
-				}
-				if (at.children.isEmpty() || (at.children.peek().priority <= at.node.compactPriority()))
-					break;
-				walkStack.addLast(at);
-				at = at.children.peek();
-			}
-
-			// Compact node
-			at.compact(converseEdge);
-
-			// Remove from tree
-			if (walkStack.isEmpty()) {
-				idleCompact = null;
+			final Pair<T, Iterator<T>> top = stack.getLast();
+			if (top.second.hasNext()) {
+				final T next = top.second.next();
+				stack.addLast(new Pair<>(next, descend.apply(next)));
 			} else {
-				walkStack.getLast().children.remove(at);
-				walkStack.getLast().children.addAll(at.children);
+				consume.accept(stack.getLast().first);
+				stack.removeLast();
 			}
+			addIdle(this);
+		}
+	}
 
-			// Recalculate priorities up tree
-			while (!walkStack.isEmpty()) {
-				at = walkStack.poll();
-				at.priority = Stream
-						.concat(Stream.of(at.node.compactPriority()), at.children.stream().map(n -> n.priority))
-						.mapToInt(p -> p)
-						.max();
-				if (!walkStack.isEmpty()) {
-					walkStack.getLast().children.remove(at);
-					walkStack.getLast().children.add(at);
-				}
-			}
+	void compact(final Context context, final Syntax.CompactionMode mode, final VisualNode root) {
+		if (root.edge().converse < context.edge)
+			return;
+		if (idleCompact != null) {
+			idleQueue.remove(idleCompact);
+		}
+		switch (mode) {
+			case BOTTOM_UP:
+				idleCompact = new IterativeDepthFirst<>(root, n -> {
+					if (n.edge().converse > context.edge) {
+						n.compact(context);
+					}
+					return n.children();
+				}, n -> {
+				});
+				break;
+			/*
+			case GREATEST_GAIN:
+				idleCompact = new IdleTask() {
+					@Override
+					boolean run() {
+						if (root.converseEdge() < edge) {
+							idleCompact = null;
+							return false;
+						}
+						VisualNode at = root;
+						Pair<Double, VisualNode> best = new Pair<>(at.compactionGain(edge), at);
+						while (true) {
+							final Optional<Pair<Double, VisualNode>> next = Helper
+									.stream(at.children())
+									.map(n -> new Pair<>(n.compactionGain(), n))
+									.sorted((a, b) -> b.first - a.first)
+									.findFirst();
+							if (!next.isPresent())
+								break;
+							if (next.get().first > best.first)
+								best = next.get();
+							at = next.get().second;
+						}
+						best.second.compact(edge);
+						return true;
+					}
+				};
+				break;
+				*/
 		}
 	}
 }

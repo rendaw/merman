@@ -5,14 +5,19 @@ import com.zarbosoft.bonestruct.InvalidSyntax;
 import com.zarbosoft.bonestruct.model.back.BackPart;
 import com.zarbosoft.bonestruct.model.front.FrontPart;
 import com.zarbosoft.bonestruct.model.middle.*;
-import com.zarbosoft.bonestruct.visual.VisualNode;
+import com.zarbosoft.bonestruct.visual.Context;
+import com.zarbosoft.bonestruct.visual.Vector;
+import com.zarbosoft.bonestruct.visual.alignment.AlignmentDefinition;
+import com.zarbosoft.bonestruct.visual.nodes.Layer;
+import com.zarbosoft.bonestruct.visual.nodes.VisualNode;
+import com.zarbosoft.bonestruct.visual.nodes.parts.GroupVisualNode;
+import com.zarbosoft.bonestruct.visual.nodes.parts.VisualNodeParent;
 import com.zarbosoft.luxemj.Luxem;
 import com.zarbosoft.pidgoon.events.BakedOperator;
 import com.zarbosoft.pidgoon.events.Store;
+import com.zarbosoft.pidgoon.internal.Helper;
 import com.zarbosoft.pidgoon.internal.Pair;
 import com.zarbosoft.pidgoon.nodes.Sequence;
-import javafx.geometry.Point2D;
-import javafx.scene.layout.Pane;
 
 import java.util.*;
 
@@ -31,16 +36,20 @@ public class NodeType {
 	public List<BackPart> back;
 
 	@Luxem.Configuration
-	public List<DataElement> middle;
+	public Map<String, DataElement> middle;
+
+	@Luxem.Configuration
+	public Map<String, AlignmentDefinition> alignments;
 
 	public com.zarbosoft.pidgoon.internal.Node buildLoadRule() {
 		final Sequence seq = new Sequence();
+		seq.add(new BakedOperator((store) -> store.pushStack(0)));
 		back.forEach(p -> seq.add(p.buildLoadRule()));
 		return new BakedOperator(seq, store -> {
 			final Map<String, Object> data = new HashMap<>();
-			final Pair<String, Object> pair = store.stackTop();
-			store = (Store) store.popStack();
-			data.put(pair.first, pair.second);
+			store = (Store) Helper.<Pair<String, Object>>stackPopSingleList(store,
+					pair -> data.put(pair.first, pair.second)
+			);
 			final Node node = new Node();
 			node.data = data;
 			node.type = this;
@@ -49,19 +58,11 @@ public class NodeType {
 	}
 
 	public void finish(final Set<String> singleNodes, final Set<String> arrayNodes) {
-		final Set<String> middleKeys = new HashSet<>();
-		{
-			middle.forEach(p -> {
-				if (middleKeys.contains(p.key))
-					throw new InvalidSyntax(String.format("Multiple data parts with key [%s] in %s.", p.key, this));
-				middleKeys.add(p.key);
-				p.finish(singleNodes, arrayNodes);
-			});
-		}
+		middle.forEach((k, v) -> v.id = k);
 		{
 			final Set<String> middleUsedBack = new HashSet<>();
 			back.forEach(p -> p.finish(this, middleUsedBack));
-			final Set<String> missing = Sets.difference(middleKeys, middleUsedBack);
+			final Set<String> missing = Sets.difference(middle.keySet(), middleUsedBack);
 			if (!missing.isEmpty())
 				throw new InvalidSyntax(String.format("Data elements %s in %s are unused by back parts.",
 						this,
@@ -71,7 +72,7 @@ public class NodeType {
 		{
 			final Set<String> middleUsedFront = new HashSet<>();
 			front.forEach(p -> p.finish(this, middleUsedFront));
-			final Set<String> missing = Sets.difference(middleKeys, middleUsedFront);
+			final Set<String> missing = Sets.difference(middle.keySet(), middleUsedFront);
 			if (!missing.isEmpty())
 				throw new InvalidSyntax(String.format("Data elements %s in %s are unused by front parts.",
 						this,
@@ -80,21 +81,19 @@ public class NodeType {
 		}
 	}
 
-	private <D extends DataElement> D getData(final Class<? extends DataElement> type, final String key) {
-		final Optional<DataElement> prefound = middle.stream().filter(e -> e.key.equals(key)).findAny();
-		final DataElement found;
-		if (!prefound.isPresent()) {
-			throw new InvalidSyntax(String.format("No data field named [%s] in %s", key, this));
+	private <D extends DataElement> D getData(final Class<? extends DataElement> type, final String id) {
+		final DataElement found = middle.get(id);
+		if (found == null) {
+			throw new InvalidSyntax(String.format("No data field named [%s] in %s", id, this));
 			/*
 			found = Helper.uncheck(type::newInstance);
-			found.key = key;
+			found.id = id;
 			middle.add(found);
 			*/
 		} else {
-			found = prefound.get();
 			if (!type.isAssignableFrom(found.getClass()))
 				throw new InvalidSyntax(String.format("Conflicting types for data field %s in %s: %s, %s",
-						key,
+						id,
 						this,
 						found.getClass(),
 						type
@@ -119,53 +118,107 @@ public class NodeType {
 		return getData(DataRecord.class, key);
 	}
 
-	public VisualNode createVisual(final Map<String, Object> data) {
-		class Visual implements VisualNode {
-			List<VisualNode> children = new ArrayList<>();
-			Point2D end = new Point2D(0, 0);
-			Pane pane = new Pane();
-
-			public void add(final VisualNode node) {
-				this.children.add(node);
-				pane.getChildren().add(node.visual());
+	public VisualNode createVisual(final Context context, final Map<String, Object> data) {
+		class Visual extends GroupVisualNode {
+			@Override
+			public Break breakMode() {
+				//return Break.NEVER;
+				return null;
 			}
 
 			@Override
-			public Point2D end() {
-				return end;
+			public String alignmentName() {
+				throw new AssertionError("Not implemented.");
 			}
 
 			@Override
-			public javafx.scene.Node visual() {
-				return pane;
-			}
-
-			@Override
-			public void offset(final Point2D offset) {
-				pane.setTranslateX(offset.getX());
-				pane.setTranslateY(offset.getY());
-			}
-
-			@Override
-			public Iterator<VisualNode> children() {
-				return children.iterator();
-			}
-
-			@Override
-			public void layoutInitial() {
-				end = Point2D.ZERO;
-				for (final VisualNode child : children) {
-					child.layoutInitial();
-					child.offset(end);
-					end = end.add(child.end());
-				}
+			public String alignmentNameCompact() {
+				throw new AssertionError("Not implemented.");
 			}
 		}
 		final Visual out = new Visual();
-		for (final FrontPart part : front) {
-			out.add(part.createVisual(data));
+		for (final Map.Entry<String, AlignmentDefinition> entry : alignments.entrySet()) {
+			out.alignments.put(entry.getKey(), entry.getValue().create());
 		}
-		return out;
+		for (final FrontPart part : front) {
+			out.add(context, part.createVisual(context, data));
+		}
+		return new VisualNode() {
+			@Override
+			public void setParent(final VisualNodeParent parent) {
+				out.setParent(parent);
+			}
+
+			@Override
+			public VisualNodeParent parent() {
+				return out.parent();
+			}
+
+			@Override
+			public Context.Hoverable hover(final Context context, final Vector point) {
+				return out.hover(context, point);
+			}
+
+			@Override
+			public int startConverse() {
+				return out.startConverse();
+			}
+
+			@Override
+			public int startTransverse() {
+				return out.startTransverse();
+			}
+
+			@Override
+			public int startTransverseEdge() {
+				return out.startTransverseEdge();
+			}
+
+			@Override
+			public int endConverse() {
+				return out.endConverse();
+			}
+
+			@Override
+			public int endTransverse() {
+				return out.endTransverse();
+			}
+
+			@Override
+			public int endTransverseEdge() {
+				return out.endTransverseEdge();
+			}
+
+			@Override
+			public void place(final Context context, final Placement placement) {
+				out.place(context, placement);
+			}
+
+			@Override
+			public Layer visual() {
+				return out.visual();
+			}
+
+			@Override
+			public void compact(final Context context) {
+				out.compact(context);
+			}
+
+			@Override
+			public Vector end() {
+				return out.end();
+			}
+
+			@Override
+			public Vector edge() {
+				return out.edge();
+			}
+
+			@Override
+			public Vector start() {
+				return out.start();
+			}
+		};
 	}
 
 	@Override

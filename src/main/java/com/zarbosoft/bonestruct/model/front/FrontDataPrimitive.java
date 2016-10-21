@@ -2,10 +2,10 @@ package com.zarbosoft.bonestruct.model.front;
 
 import com.zarbosoft.bonestruct.model.NodeType;
 import com.zarbosoft.bonestruct.model.middle.DataPrimitive;
-import com.zarbosoft.bonestruct.visual.VisualNode;
+import com.zarbosoft.bonestruct.visual.Context;
+import com.zarbosoft.bonestruct.visual.nodes.parts.PrimitiveVisualNode;
+import com.zarbosoft.bonestruct.visual.nodes.parts.VisualNodePart;
 import com.zarbosoft.luxemj.Luxem;
-import javafx.geometry.Point2D;
-import javafx.scene.text.Text;
 
 import java.util.Map;
 import java.util.Set;
@@ -14,35 +14,53 @@ import java.util.Set;
 public class FrontDataPrimitive implements FrontPart {
 
 	@Luxem.Configuration
-	public String key;
+	public String middle;
 	private DataPrimitive dataType;
 
+	@Luxem.Configuration
+	public static class PrimitiveStyle extends FrontMark.Style {
+		@Luxem.Configuration(optional = true)
+		public boolean block = false;
+
+		@Luxem.Configuration(name = "soft-indent", optional = true)
+		public int softIndent = 0;
+
+		@Luxem.Configuration(optional = true)
+		public boolean level = true;
+	}
+
+	@Luxem.Configuration(optional = true)
+	public PrimitiveStyle style = new PrimitiveStyle();
+
 	@Override
-	public VisualNode createVisual(final Map<String, Object> data) {
-		return new VisualNode() {
-			Text text = new Text(dataType.get(data));
+	public VisualNodePart createVisual(final Context context, final Map<String, Object> data) {
+		return new PrimitiveVisualNode(context, dataType.get(data)) {
 
 			@Override
-			public Point2D end() {
-				return new Point2D(text.getLayoutBounds().getWidth(), 0);
+			protected int softIndent() {
+				return style.softIndent;
 			}
 
 			@Override
-			public javafx.scene.Node visual() {
-				return text;
+			protected boolean breakFirst() {
+				return style.block;
 			}
 
 			@Override
-			public void offset(final Point2D offset) {
-				text.setTranslateX(offset.getX());
-				text.setTranslateY(offset.getY());
+			protected boolean level() {
+				return style.level;
+			}
+
+			@Override
+			protected String alignment() {
+				return null;
 			}
 		};
 	}
 
 	@Override
 	public void finish(final NodeType nodeType, final Set<String> middleUsed) {
-		middleUsed.add(key);
-		this.dataType = nodeType.getDataPrimitive(key);
+		middleUsed.add(middle);
+		this.dataType = nodeType.getDataPrimitive(middle);
 	}
 }

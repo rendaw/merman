@@ -1,13 +1,12 @@
 package com.zarbosoft.bonestruct.model;
 
 public class Document {
-	
-	private Syntax syntax;
+
+	public Syntax syntax;
 	public Node root;
 
-	public Document(Syntax syntax, Node root) {
+	public Document(final Syntax syntax, final Node root) {
 		this.syntax = syntax;
 		this.root = root;
 	}
-
 }

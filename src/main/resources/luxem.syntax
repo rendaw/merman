@@ -1,5 +1,6 @@
 {
     name: luxem,
+    *TODO complete color selection*
 	background: [0.21568, 0.21568, 0.21568],
 	groups: {
 	    value: [
@@ -14,37 +15,58 @@
 		    id: luxem-object,
 			name: "Luxem Object",
 			back: [(data-record) data],
-			middle: [
-			    (record) {
-			        key: data,
+			middle: {
+			    data: (record) {
 			        tag: value,
 			    }
-            ],
+            },
+            alignments: {
+                indent: (relative) { base: indent, offset: 16 },
+                value: (concensus) {},
+            },
 			front: [
 				(mark) "{",
 				(record) {
-					key: data,
+					middle: data,
+					key-style: {
+                        break: compact,
+                        align-compact: indent,
+					},
 					infix: [ (mark) ":" ],
+					value-style: {
+					    align-compact: value,
+					},
 					separator: [ (mark) "," ],
 				},
-				(mark) "}",
+				(mark) {
+				    value: "}",
+				    style: {
+				        break: compact,
+				    },
+				},
 			],
 		},
 		{
 		    id: luxem-array,
 			name: "Luxem Array",
 			back: [(data-array) data],
-			middle: [
-			    (array) {
-			        key: data,
+			middle: {
+			    data: (array) {
 			        tag: value,
 			    }
-            ],
+            },
+            alignments: {
+                indent: (relative) { base: indent, offset: 16 },
+            },
 			front: [
 				(mark) "[",
 				(array) {
-					key: data,
+					middle: data,
 					separator: [ (mark) "," ],
+					value-style: {
+                        break: compact,
+                        align-compact: indent,
+					},
 				},
 				(mark) "]",
 			],
@@ -53,7 +75,7 @@
 		    id: luxem-primitive,
 			name: "Luxem Primitive",
 			back: [(data-primitive) data],
-			middle: [(primitive) data],
+			middle: {data: (primitive) {}},
 			front: [
 				(primitive) data,
 			],

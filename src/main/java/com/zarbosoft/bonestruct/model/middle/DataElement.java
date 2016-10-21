@@ -6,8 +6,7 @@ import java.util.Set;
 
 @Luxem.Configuration
 public abstract class DataElement {
-	@Luxem.Configuration
-	public String key;
+	public String id;
 
 	public abstract void finish(Set<String> singleNodes, Set<String> arrayNodes);
 

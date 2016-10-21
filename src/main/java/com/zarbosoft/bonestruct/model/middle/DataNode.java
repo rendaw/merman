@@ -13,7 +13,7 @@ public class DataNode extends DataElement {
 	public String tag;
 
 	public Node get(final Map<String, Object> data) {
-		return (Node) data.get(key);
+		return (Node) data.get(id);
 	}
 
 	@Override

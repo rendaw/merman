@@ -4,162 +4,188 @@ import com.zarbosoft.bonestruct.Luxem;
 import com.zarbosoft.bonestruct.model.Node;
 import com.zarbosoft.bonestruct.model.NodeType;
 import com.zarbosoft.bonestruct.model.middle.DataRecord;
-import com.zarbosoft.bonestruct.visual.VisualNode;
+import com.zarbosoft.bonestruct.visual.Context;
+import com.zarbosoft.bonestruct.visual.nodes.parts.GroupVisualNode;
+import com.zarbosoft.bonestruct.visual.nodes.parts.NestedVisualNodePart;
+import com.zarbosoft.bonestruct.visual.nodes.parts.PrimitiveVisualNode;
+import com.zarbosoft.bonestruct.visual.nodes.parts.VisualNodePart;
+import com.zarbosoft.pidgoon.internal.Helper;
 import com.zarbosoft.pidgoon.internal.Pair;
-import javafx.geometry.Point2D;
-import javafx.scene.layout.Pane;
-import javafx.scene.text.Text;
+import javafx.beans.property.StringProperty;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
+import javafx.collections.WeakListChangeListener;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @Luxem.Configuration(name = "record")
 public class FrontDataRecord implements FrontPart {
 
 	@Luxem.Configuration
-	public String key;
+	public String middle;
 	@Luxem.Configuration
 	public List<FrontConstantPart> prefix;
+
+	@Luxem.Configuration
+	public static class KeyStyle extends FrontMark.Style {
+		@Luxem.Configuration(name = "soft-indent", optional = true)
+		public int softIndent = 0;
+	}
+
+	@Luxem.Configuration(name = "key-style", optional = true)
+	public KeyStyle keyStyle = new KeyStyle();
 	@Luxem.Configuration
 	public List<FrontConstantPart> infix;
+	@Luxem.Configuration(name = "value-style", optional = true)
+	public FrontMark.Style valueStyle = new FrontMark.Style();
 	@Luxem.Configuration
 	public List<FrontConstantPart> suffix;
 	@Luxem.Configuration
 	public List<FrontConstantPart> separator;
 	private DataRecord dataType;
 
-	@Override
-	public VisualNode createVisual(final Map<String, Object> data) {
-		class RecordKeyVisual implements VisualNode {
-			final Text text;
+	private class RecordVisual extends GroupVisualNode {
+		private final ListChangeListener<Pair<StringProperty, Node>> dataListener;
 
-			public RecordKeyVisual(final Pair<String, Node> pair) {
-				text = new Text(pair.first);
-			}
-
-			@Override
-			public Point2D end() {
-				return new Point2D(text.getLayoutBounds().getWidth(), 0);
-			}
-
-			@Override
-			public javafx.scene.Node visual() {
-				return text;
-			}
-
-			@Override
-			public void offset(final Point2D offset) {
-				text.setTranslateX(offset.getX());
-				text.setTranslateY(offset.getY());
-			}
+		public RecordVisual(final Context context, final ObservableList<Pair<StringProperty, Node>> nodes) {
+			// TODO replace dataListener with something that takes Context
+			dataListener = c -> {
+				while (c.next()) {
+					if (c.wasPermutated()) {
+						remove(context, c.getFrom(), c.getRemovedSize());
+						add(context, c.getFrom(), nodes.subList(c.getFrom(), c.getTo()));
+					} else if (c.wasUpdated()) {
+						throw new AssertionError("Record data shouldn't be updated.");
+					} else {
+						remove(context, c.getFrom(), c.getRemovedSize());
+						add(context, c.getFrom(), (List<Pair<StringProperty, Node>>) c.getAddedSubList());
+					}
+				}
+			};
+			nodes.addListener(new WeakListChangeListener<>(dataListener));
+			add(context, 0, nodes);
 		}
-		class RecordElementVisual implements VisualNode {
-			List<VisualNode> children = new ArrayList<>();
-			Point2D end = new Point2D(0, 0);
-			Pane pane = new Pane();
 
-			public RecordElementVisual(final boolean first, final Pair<String, Node> pair) {
-				for (final FrontConstantPart fix : prefix)
-					add(fix.createVisual());
-				add(new RecordKeyVisual(pair));
-				for (final FrontConstantPart fix : infix)
-					add(fix.createVisual());
-				add(pair.second.createVisual());
-				for (final FrontConstantPart fix : suffix)
-					add(fix.createVisual());
-				if (first) {
+		@Override
+		public void remove(final Context context, final int start, final int size) {
+			super.remove(context, start, size);
+			if (start == 0 && !children.isEmpty() && !separator.isEmpty())
+				((GroupVisualNode) children.get(0)).remove(context, 0, 1);
+		}
+
+		private void add(final Context context, final int start, final List<Pair<StringProperty, Node>> nodes) {
+			Helper.enumerate(nodes.stream(), start).forEach(p -> {
+				final GroupVisualNode group = new GroupVisualNode() {
+					@Override
+					public Break breakMode() {
+						return Break.NEVER;
+					}
+
+					@Override
+					public String alignmentName() {
+						return null;
+					}
+
+					@Override
+					public String alignmentNameCompact() {
+						return null;
+					}
+				};
+				if (p.first > 0 && !separator.isEmpty()) {
+					final GroupVisualNode separatorGroup = new GroupVisualNode() {
+						@Override
+						public Break breakMode() {
+							return Break.NEVER;
+						}
+
+						@Override
+						public String alignmentName() {
+							return null;
+						}
+
+						@Override
+						public String alignmentNameCompact() {
+							return null;
+						}
+					};
 					for (final FrontConstantPart fix : separator)
-						add(fix.createVisual());
+						separatorGroup.add(context, fix.createVisual(context));
+					group.add(context, separatorGroup);
 				}
-			}
+				for (final FrontConstantPart fix : prefix)
+					group.add(context, fix.createVisual(context));
+				group.add(context, new PrimitiveVisualNode(context, p.second.first) {
 
-			private void add(final VisualNode node) {
-				children.add(node);
-				pane.getChildren().add(node.visual());
-			}
+					@Override
+					protected int softIndent() {
+						return keyStyle.softIndent;
+					}
 
-			@Override
-			public Point2D end() {
-				return end;
-			}
+					@Override
+					protected boolean breakFirst() {
+						return false;
+					}
 
-			@Override
-			public javafx.scene.Node visual() {
-				return pane;
-			}
+					@Override
+					protected String alignment() {
+						return keyStyle.alignment;
+					}
 
-			@Override
-			public void offset(final Point2D offset) {
-				pane.setTranslateX(offset.getX());
-				pane.setTranslateY(offset.getY());
-			}
+					@Override
+					protected boolean level() {
+						return false;
+					}
+				});
+				for (final FrontConstantPart fix : infix)
+					group.add(context, fix.createVisual(context));
+				group.add(context, new NestedVisualNodePart(p.second.second.createVisual(context)) {
+					@Override
+					public Break breakMode() {
+						return valueStyle.breakMode;
+					}
 
-			@Override
-			public Iterator<VisualNode> children() {
-				return children.iterator();
-			}
+					@Override
+					public String alignmentName() {
+						return valueStyle.alignment;
+					}
 
-			@Override
-			public void layoutInitial() {
-				end = Point2D.ZERO;
-				for (final VisualNode child : children) {
-					child.offset(end);
-					end = end.add(child.end());
-				}
-			}
+					@Override
+					public String alignmentNameCompact() {
+						return valueStyle.alignmentCompact;
+					}
+				});
+				for (final FrontConstantPart fix : suffix)
+					group.add(context, fix.createVisual(context));
+				super.add(context, group, p.first);
+			});
 		}
-		class RecordVisual implements VisualNode {
-			List<VisualNode> children = new ArrayList<>();
-			Point2D end = new Point2D(0, 0);
-			Pane pane = new Pane();
 
-			public void add(final VisualNode node) {
-				this.children.add(node);
-				pane.getChildren().add(node.visual());
-				end = end.add(node.end());
-			}
-
-			@Override
-			public Point2D end() {
-				return end;
-			}
-
-			@Override
-			public javafx.scene.Node visual() {
-				return pane;
-			}
-
-			@Override
-			public Iterator<VisualNode> children() {
-				return children.iterator();
-			}
-
-			@Override
-			public void layoutInitial() {
-				end = Point2D.ZERO;
-				for (final VisualNode child : children) {
-					child.offset(end);
-					end = end.add(child.end());
-				}
-			}
-
-			@Override
-			public void offset(final Point2D offset) {
-				pane.setTranslateX(offset.getX());
-				pane.setTranslateY(offset.getY());
-			}
+		@Override
+		public Break breakMode() {
+			return Break.NEVER;
 		}
-		final RecordVisual out = new RecordVisual();
-		boolean first = true;
-		for (final Pair<String, Node> pair : dataType.get(data)) {
-			out.add(new RecordElementVisual(first, pair));
-			first = false;
+
+		@Override
+		public String alignmentName() {
+			return null;
 		}
-		return out;
+
+		@Override
+		public String alignmentNameCompact() {
+			return null;
+		}
+	}
+
+	@Override
+	public VisualNodePart createVisual(final Context context, final Map<String, Object> data) {
+		return new RecordVisual(context, dataType.get(data));
 	}
 
 	@Override
 	public void finish(final NodeType nodeType, final Set<String> middleUsed) {
-		middleUsed.add(key);
-		dataType = nodeType.getDataRecord(key);
+		middleUsed.add(middle);
+		dataType = nodeType.getDataRecord(middle);
 	}
 }
