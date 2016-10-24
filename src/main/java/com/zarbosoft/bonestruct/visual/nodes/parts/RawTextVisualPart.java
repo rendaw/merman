@@ -18,19 +18,8 @@ public abstract class RawTextVisualPart extends VisualNodePart {
 		visual.setText(value);
 	}
 
-	@Override
-	public Vector end() {
-		return new Vector(converseStart + visual.edge().converse, transverseStart);
-	}
-
-	@Override
-	public Vector edge() {
-		return new Vector(converseStart + visual.edge().converse, transverseStart + visual.edge().transverse);
-	}
-
-	@Override
-	public Vector start() {
-		return new Vector(converseStart, transverseStart);
+	public String getText() {
+		return visual.getText();
 	}
 
 	@Override
@@ -49,33 +38,38 @@ public abstract class RawTextVisualPart extends VisualNodePart {
 	}
 
 	@Override
-	public int startConverse() {
+	public int startConverse(final Context context) {
 		return converseStart;
 	}
 
 	@Override
-	public int startTransverse() {
+	public int startTransverse(final Context context) {
 		return transverseStart;
 	}
 
 	@Override
-	public int startTransverseEdge() {
-		return transverseStart + visual.edge().transverse;
+	public int startTransverseEdge(final Context context) {
+		return transverseStart + context.syntax.lineSpan;
 	}
 
 	@Override
-	public int endConverse() {
+	public int endConverse(final Context context) {
 		return converseStart + visual.edge().converse;
 	}
 
 	@Override
-	public int endTransverse() {
+	public int endTransverse(final Context context) {
 		return transverseStart;
 	}
 
 	@Override
-	public int endTransverseEdge() {
-		return transverseStart + visual.edge().transverse;
+	public int endTransverseEdge(final Context context) {
+		return transverseStart + context.syntax.lineSpan;
+	}
+
+	@Override
+	public int edge(final Context context) {
+		return converseStart + visual.edge().converse;
 	}
 
 	@Override
@@ -83,16 +77,18 @@ public abstract class RawTextVisualPart extends VisualNodePart {
 		if (placement.converseStart != null) {
 			converseStart = placement.converseStart;
 			final Adjustment parentAdjustment = new Adjustment();
-			parentAdjustment.converseEdge = parentAdjustment.converseEnd = edge().converse;
+			parentAdjustment.converseEnd = endConverse(context);
+			parentAdjustment.converseEdge = edge(context);
 			parent().adjust(context, parentAdjustment);
 		}
 		if (placement.parentTransverseStart != null) {
 			transverseStart = placement.parentTransverseStart;
 			final Adjustment parentAdjustment = new Adjustment();
-			parentAdjustment.transverseEdge = parentAdjustment.transverseEnd = edge().transverse;
+			parentAdjustment.transverseEnd = transverseStart;
+			parentAdjustment.transverseEdge = transverseStart + context.syntax.lineSpan;
 			parent().adjust(context, parentAdjustment);
 		}
-		final Vector start = new Vector(converseStart, transverseStart);
+		final Vector start = new Vector(converseStart, transverseStart + context.syntax.lineSpan / 2);
 		/*
 		System.out.println(String.format("Mark [%s] to %s", visual.getText(), start));
 		*/
@@ -107,5 +103,10 @@ public abstract class RawTextVisualPart extends VisualNodePart {
 	@Override
 	public void compact(final Context context) {
 		// nop
+	}
+
+	@Override
+	public String debugTreeType() {
+		return String.format("raw@%s %s", Integer.toHexString(hashCode()), visual.getText());
 	}
 }

@@ -37,40 +37,44 @@ public abstract class GroupVisualNode extends VisualNodePart {
 	}
 
 	@Override
-	public int startConverse() {
+	public int startConverse(final Context context) {
 		return converseStart;
 	}
 
 	@Override
-	public int startTransverse() {
+	public int startTransverse(final Context context) {
 		return parentTransverseStart;
 	}
 
 	@Override
-	public int startTransverseEdge() {
-		return transverseStartEdge;
+	public int startTransverseEdge(final Context context) {
+		return parentTransverseStart + context.syntax.lineSpan;
 	}
 
 	@Override
-	public int endConverse() {
+	public int endConverse(final Context context) {
 		return converseEnd;
 	}
 
 	@Override
-	public int endTransverse() {
-		return transverseEnd;
+	public int endTransverse(final Context context) {
+		return parentTransverseStart + transverseEnd;
 	}
 
 	@Override
-	public int endTransverseEdge() {
-		return transverseEdge;
+	public int endTransverseEdge(final Context context) {
+		return parentTransverseStart + transverseEnd + context.syntax.lineSpan;
+	}
+
+	@Override
+	public int edge(final Context context) {
+		return converseEdge;
 	}
 
 	class IdleTask extends com.zarbosoft.bonestruct.visual.IdleTask {
 		final Context context;
 		Integer converseStart;
 		Integer parentTransverseStart;
-		Integer transverseStartEdge;
 		Map<String, Alignment> alignments = new HashMap<>();
 
 		Map<Integer, ChildChange> childChanges = new HashMap<>();
@@ -91,11 +95,10 @@ public abstract class GroupVisualNode extends VisualNodePart {
 			idleCount += 1;
 
 			/*
-			System.out.println(String.format("%s: cs %d, ts %d, ste %d, cc %d %s",
+			System.out.println(String.format("%s: cs %d, ts %d, cc %d %s",
 					GroupVisualNode.this,
 					converseStart,
 					parentTransverseStart,
-					GroupVisualNode.this.transverseStartEdge,
 					childChanges.size(),
 					childChanges.entrySet().stream().map(e -> String.format(
 							"\n\t%d (cend %d, cedge %d, tend %d, tedge %d)",
@@ -136,7 +139,7 @@ public abstract class GroupVisualNode extends VisualNodePart {
 					if (child.breakMode() == Break.COMPACT) {
 						child.broken = true;
 						placeChild(context, child);
-					} else if (child.edge().converse > context.edge && minimal != null) {
+					} else if (child.edge(context) > context.edge && minimal != null) {
 						minimal.broken = true;
 						placeChild(context, minimal);
 					}
@@ -167,17 +170,6 @@ public abstract class GroupVisualNode extends VisualNodePart {
 				GroupVisualNode.this.parentTransverseStart = parentTransverseStart;
 				parentAdjustment.transverseEnd =
 						GroupVisualNode.this.parentTransverseStart + GroupVisualNode.this.transverseEnd;
-			}
-			if (transverseStartEdge != null) {
-				transverseStartEdge -= GroupVisualNode.this.parentTransverseStart;
-				if (transverseStartEdge != GroupVisualNode.this.transverseStartEdge) {
-					GroupVisualNode.this.transverseStartEdge = transverseStartEdge;
-					if (children.isEmpty()) {
-						transverseEdge = GroupVisualNode.this.transverseStartEdge;
-						parentAdjustment.transverseEdge = GroupVisualNode.this.transverseStartEdge;
-					} else
-						children.stream().filter(c -> c.broken).limit(1).forEach(c -> placeChild(context, c));
-				}
 			}
 
 			for (final int index : childChanges.keySet()) {
@@ -258,14 +250,14 @@ public abstract class GroupVisualNode extends VisualNodePart {
 				converseEdge = newConverse;
 				parentAdjustment.converseEdge = newConverse;
 			} else {
-				recalculateConverseEdge();
+				recalculateConverseEdge(context);
 				parentAdjustment.converseEdge = GroupVisualNode.this.converseEdge;
 			}
 		} else if (index == secondConverseIndex) {
 			if (newConverse > secondConverseEdge) {
 				secondConverseEdge = newConverse;
 			} else {
-				recalculateConverseEdge();
+				recalculateConverseEdge(context);
 			}
 		}
 		if (parent != null && !parentAdjustment.isEmpty())
@@ -288,7 +280,6 @@ public abstract class GroupVisualNode extends VisualNodePart {
 	int converseEnd = 0;
 	int converseEdge = 0;
 	int parentTransverseStart = 0;
-	int transverseStartEdge = 0;
 	int transverseEnd = 0;
 	int transverseEdge = 0;
 
@@ -309,22 +300,20 @@ public abstract class GroupVisualNode extends VisualNodePart {
 			idle.converseStart = placement.converseStart;
 		if (placement.parentTransverseStart != null)
 			idle.parentTransverseStart = placement.parentTransverseStart;
-		if (placement.transverseStartEdge != null)
-			idle.transverseStartEdge = placement.transverseStartEdge;
 		if (placement.alignments != null)
 			idle.alignments.putAll(placement.alignments);
 	}
 
-	private void recalculateConverseEdge() {
+	private void recalculateConverseEdge(final Context context) {
 		int newConverse = 0;
 		secondConverseEdge = 0;
 		for (int checkIndex = 0; checkIndex < children.size(); ++checkIndex) {
 			final VisualNodePart child = children.get(checkIndex);
-			if (child.edge().converse > newConverse) {
+			if (child.edge(context) > newConverse) {
 				secondConverseIndex = primaryConverseIndex;
 				secondConverseEdge = GroupVisualNode.this.converseEdge;
 				primaryConverseIndex = checkIndex;
-				newConverse = child.edge().converse;
+				newConverse = child.edge(context);
 			}
 		}
 		converseEdge = newConverse;
@@ -335,22 +324,18 @@ public abstract class GroupVisualNode extends VisualNodePart {
 		final int index = ((GroupVisualNodeParent) node.parent()).index;
 		final int priorConverseEnd;
 		final int priorTransverseStart;
-		final int priorTransverseEdge;
 		if (index == 0) {
 			priorConverseEnd = converseStart;
 			priorTransverseStart = 0;
-			priorTransverseEdge = GroupVisualNode.this.transverseStartEdge;
 		} else {
 			final VisualNodePart prior = children.get(index - 1);
-			priorConverseEnd = prior.end().converse;
-			priorTransverseStart = prior.start().transverse;
-			priorTransverseEdge = prior.edge().transverse;
+			priorConverseEnd = prior.endConverse(context);
+			priorTransverseStart = prior.startTransverse(context);
 		}
-		placement.transverseStartEdge = priorTransverseEdge;
 		if (node.broken) {
 			// TODO start record of used alignments until the next break, pass on
 			// TODO allow converse direction shifts at breaks, pass on until next break
-			placement.parentTransverseStart = priorTransverseEdge;
+			placement.parentTransverseStart = priorTransverseStart + context.syntax.lineSpan;
 		} else {
 			placement.converseStart = priorConverseEnd;
 			placement.parentTransverseStart = priorTransverseStart;
@@ -437,13 +422,12 @@ public abstract class GroupVisualNode extends VisualNodePart {
 		if (children.isEmpty()) {
 			parentAdjustment.converseEnd = GroupVisualNode.this.converseEnd;
 			parentAdjustment.transverseEnd = GroupVisualNode.this.transverseEnd;
-			parentAdjustment.transverseEdge = GroupVisualNode.this.transverseStartEdge;
 		} else {
 			if (index == children.size()) {
 				final VisualNodePart prior = children.get(index - 1);
-				parentAdjustment.converseEnd = prior.end().converse;
-				parentAdjustment.transverseEdge = parentTransverseStart + prior.edge().transverse;
-				parentAdjustment.transverseEnd = parentTransverseStart + prior.end().transverse;
+				parentAdjustment.converseEnd = prior.endConverse(context);
+				parentAdjustment.transverseEdge = parentTransverseStart + prior.endTransverseEdge(context);
+				parentAdjustment.transverseEnd = parentTransverseStart + prior.endTransverse(context);
 			} else {
 				placeChild(context, children.get(index));
 			}
@@ -510,17 +494,19 @@ public abstract class GroupVisualNode extends VisualNodePart {
 	}
 
 	@Override
-	public Vector end() {
-		return new Vector(converseEnd, parentTransverseStart + transverseEnd);
+	public String debugTreeType() {
+		return String.format("group@%s", Integer.toHexString(hashCode()));
 	}
 
-	@Override
-	public Vector edge() {
-		return new Vector(converseEdge, parentTransverseStart + transverseEdge);
-	}
-
-	@Override
-	public Vector start() {
-		return new Vector(converseStart, parentTransverseStart);
+	public String debugTree(final int indent) {
+		final String indentString = String.join("", Collections.nCopies(indent, "  "));
+		return String.format("%s%s%s",
+				indentString,
+				debugTreeType(),
+				children
+						.stream()
+						.map(c -> String.format("\n%s", c.debugTree(indent + 1)))
+						.collect(Collectors.joining(""))
+		);
 	}
 }

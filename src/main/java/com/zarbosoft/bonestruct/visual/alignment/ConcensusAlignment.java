@@ -10,7 +10,7 @@ public class ConcensusAlignment extends Alignment {
 		} else {
 			converse = 0;
 			for (final AlignmentListener listener : listeners) {
-				converse = Math.max(listener.getConverse(), converse);
+				converse = Math.max(listener.getConverse(context), converse);
 			}
 		}
 		submit(context);

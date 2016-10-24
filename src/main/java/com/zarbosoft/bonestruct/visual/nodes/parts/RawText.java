@@ -11,7 +11,7 @@ import javafx.scene.text.Text;
 public abstract class RawText extends Text {
 
 	public RawText() {
-		setTextOrigin(VPos.TOP);
+		setTextOrigin(VPos.CENTER);
 	}
 
 	public abstract Vector edge();

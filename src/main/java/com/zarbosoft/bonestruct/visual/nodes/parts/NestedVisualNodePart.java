@@ -5,7 +5,10 @@ import com.zarbosoft.bonestruct.visual.Vector;
 import com.zarbosoft.bonestruct.visual.nodes.Layer;
 import com.zarbosoft.bonestruct.visual.nodes.Obbox;
 import com.zarbosoft.bonestruct.visual.nodes.VisualNode;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
+
+import java.util.Collections;
 
 public abstract class NestedVisualNodePart extends VisualNodePart {
 	private final VisualNode body;
@@ -15,7 +18,9 @@ public abstract class NestedVisualNodePart extends VisualNodePart {
 
 	public NestedVisualNodePart(final VisualNode body) {
 		this.body = body;
-		background.getChildren().add(body.visual().background);
+		final Pane temp = new Pane();
+		temp.getChildren().add(body.visual().background);
+		background.getChildren().add(temp);
 	}
 
 	@Override
@@ -28,15 +33,16 @@ public abstract class NestedVisualNodePart extends VisualNodePart {
 				if (border != null) {
 					border.setSize(
 							context,
-							body.startConverse(),
-							body.startTransverse(),
-							body.startTransverseEdge(),
-							body.endConverse(),
-							body.endTransverse(),
-							body.endTransverseEdge()
+							body.startConverse(context),
+							body.startTransverse(context),
+							body.startTransverseEdge(context),
+							body.endConverse(context),
+							body.endTransverse(context),
+							body.endTransverseEdge(context)
 					);
 				}
-				NestedVisualNodePart.this.parent.adjust(context, adjustment);
+				if (NestedVisualNodePart.this.parent != null)
+					NestedVisualNodePart.this.parent.adjust(context, adjustment);
 			}
 
 			@Override
@@ -51,7 +57,8 @@ public abstract class NestedVisualNodePart extends VisualNodePart {
 
 			@Override
 			public void align(final Context context) {
-				NestedVisualNodePart.this.parent.align(context);
+				if (NestedVisualNodePart.this.parent != null)
+					NestedVisualNodePart.this.parent.align(context);
 			}
 
 			@Override
@@ -69,12 +76,12 @@ public abstract class NestedVisualNodePart extends VisualNodePart {
 	@Override
 	public Context.Hoverable hover(final Context context, final Vector point) {
 		if (Obbox.isIn(
-				body.startConverse(),
-				body.startTransverse(),
-				body.startTransverseEdge(),
-				body.endConverse(),
-				body.endTransverse(),
-				body.endTransverseEdge(),
+				body.startConverse(context),
+				body.startTransverse(context),
+				body.startTransverseEdge(context),
+				body.endConverse(context),
+				body.endTransverse(context),
+				body.endTransverseEdge(context),
 				point
 		)) {
 			return new Hoverable();
@@ -83,33 +90,38 @@ public abstract class NestedVisualNodePart extends VisualNodePart {
 	}
 
 	@Override
-	public int startConverse() {
-		return body.startConverse();
+	public int startConverse(final Context context) {
+		return body.startConverse(context);
 	}
 
 	@Override
-	public int startTransverse() {
-		return body.startTransverse();
+	public int startTransverse(final Context context) {
+		return body.startTransverse(context);
 	}
 
 	@Override
-	public int startTransverseEdge() {
-		return body.startTransverseEdge();
+	public int startTransverseEdge(final Context context) {
+		return body.startTransverseEdge(context);
 	}
 
 	@Override
-	public int endConverse() {
-		return body.endConverse();
+	public int endConverse(final Context context) {
+		return body.endConverse(context);
 	}
 
 	@Override
-	public int endTransverse() {
-		return body.endTransverse();
+	public int endTransverse(final Context context) {
+		return body.endTransverse(context);
 	}
 
 	@Override
-	public int endTransverseEdge() {
-		return body.endTransverseEdge();
+	public int endTransverseEdge(final Context context) {
+		return body.endTransverseEdge(context);
+	}
+
+	@Override
+	public int edge(final Context context) {
+		return body.edge(context);
 	}
 
 	@Override
@@ -123,21 +135,6 @@ public abstract class NestedVisualNodePart extends VisualNodePart {
 	}
 
 	@Override
-	public Vector end() {
-		return body.end();
-	}
-
-	@Override
-	public Vector edge() {
-		return body.edge();
-	}
-
-	@Override
-	public Vector start() {
-		return body.start();
-	}
-
-	@Override
 	public void compact(final Context context) {
 		// nop
 	}
@@ -146,12 +143,12 @@ public abstract class NestedVisualNodePart extends VisualNodePart {
 		@Override
 		public Context.Hoverable hover(final Context context, final Vector point) {
 			if (Obbox.isIn(
-					body.startConverse(),
-					body.startTransverse(),
-					body.startTransverseEdge(),
-					body.endConverse(),
-					body.endTransverse(),
-					body.endTransverseEdge(),
+					body.startConverse(context),
+					body.startTransverse(context),
+					body.startTransverseEdge(context),
+					body.endConverse(context),
+					body.endTransverse(context),
+					body.endTransverseEdge(context),
 					point
 			)) {
 				final Context.Hoverable out = body.hover(context, point);
@@ -160,20 +157,24 @@ public abstract class NestedVisualNodePart extends VisualNodePart {
 						border = Obbox.fromSettings(context.syntax.hover);
 						border.setSize(
 								context,
-								body.startConverse(),
-								body.startTransverse(),
-								body.startTransverseEdge(),
-								body.endConverse(),
-								body.endTransverse(),
-								body.endTransverseEdge()
+								body.startConverse(context),
+								body.startTransverse(context),
+								body.startTransverseEdge(context),
+								body.endConverse(context),
+								body.endTransverse(context),
+								body.endTransverseEdge(context)
 						);
-						background.getChildren().add(0, border);
+						final Pane temp = new Pane();
+						temp.getChildren().add(border);
+						background.getChildren().add(0, temp);
 					}
 					return this;
 				} else
 					return out;
-			} else
+			} else if (parent != null)
 				return parent.hoverUp();
+			else
+				return null;
 		}
 
 		@Override
@@ -183,5 +184,15 @@ public abstract class NestedVisualNodePart extends VisualNodePart {
 				border = null;
 			}
 		}
+	}
+
+	@Override
+	public String debugTreeType() {
+		return String.format("nested@%s", Integer.toHexString(hashCode()));
+	}
+
+	public String debugTree(final int indent) {
+		final String indentString = String.join("", Collections.nCopies(indent, "  "));
+		return String.format("%s%s\n%s", indentString, debugTreeType(), body.debugTree(indent + 1));
 	}
 }

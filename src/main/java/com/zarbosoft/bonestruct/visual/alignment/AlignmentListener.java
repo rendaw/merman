@@ -5,5 +5,5 @@ import com.zarbosoft.bonestruct.visual.Context;
 public interface AlignmentListener {
 	void align(Context context);
 
-	int getConverse();
+	int getConverse(Context context);
 }

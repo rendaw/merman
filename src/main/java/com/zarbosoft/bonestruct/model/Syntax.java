@@ -31,6 +31,15 @@ public class Syntax {
 	@Luxem.Configuration(optional = true)
 	public Color background = Color.WHITE;
 
+	@Luxem.Configuration(optional = true, name = "pad-vertical")
+	public int padVertical = 5;
+
+	@Luxem.Configuration(optional = true, name = "pad-horizontal")
+	public int padHorizontal = 5;
+
+	@Luxem.Configuration(optional = true, name = "line-span")
+	public int lineSpan = 16;
+
 	@Luxem.Configuration(optional = true)
 	public Obbox.Settings hover = new Obbox.Settings();
 
@@ -90,9 +99,6 @@ public class Syntax {
 	@Luxem.Configuration(name = "transverse-direction", optional = true)
 	public Direction transverseDirection = Direction.DOWN;
 
-	@Luxem.Configuration(name = "line-span", optional = true)
-	public int lineSpan = 16;
-
 	@Luxem.Configuration
 	public enum CompactionMode {
 		@Luxem.Configuration(name = "bottom-up")
@@ -121,7 +127,6 @@ public class Syntax {
 		if (!ImmutableSet.of(Direction.LEFT, Direction.RIGHT).contains(out.converseDirection) ||
 				(out.transverseDirection != Direction.DOWN))
 			throw new InvalidSyntax("Currently only converse directions left/right and transverse down are supported.");
-		/*
 		switch (out.converseDirection) {
 			case LEFT:
 			case RIGHT:
@@ -140,7 +145,6 @@ public class Syntax {
 				}
 				break;
 		}
-		*/
 		boolean foundRoot = false;
 		final Set<String> singleNodes = new HashSet<>();
 		final Set<String> arrayNodes = new HashSet<>();

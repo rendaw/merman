@@ -6,6 +6,7 @@ import com.zarbosoft.bonestruct.visual.Vector;
 import com.zarbosoft.bonestruct.visual.alignment.Alignment;
 import com.zarbosoft.bonestruct.visual.nodes.parts.VisualNodeParent;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -18,22 +19,23 @@ public abstract class VisualNode {
 
 	public abstract Context.Hoverable hover(Context context, Vector point);
 
-	public abstract int startConverse();
+	public abstract int startConverse(Context context);
 
-	public abstract int startTransverse();
+	public abstract int startTransverse(Context context);
 
-	public abstract int startTransverseEdge();
+	public abstract int startTransverseEdge(Context context);
 
-	public abstract int endConverse();
+	public abstract int endConverse(Context context);
 
-	public abstract int endTransverse();
+	public abstract int endTransverse(Context context);
 
-	public abstract int endTransverseEdge();
+	public abstract int endTransverseEdge(Context context);
+
+	public abstract int edge(Context context);
 
 	public static class Placement {
 		public Integer converseStart; // Absolute
 		public Integer parentTransverseStart; // Relative to parent
-		public Integer transverseStartEdge; // Relative to parent
 		public Map<String, Alignment> alignments;
 	}
 
@@ -58,21 +60,24 @@ public abstract class VisualNode {
 
 	public abstract void compact(Context context);
 
-	public abstract Vector end(); // cons absolute, trans relative to parent
-
-	public abstract Vector edge(); // cons absolute, trans relative to parent
-
-	public abstract Vector start();
-
-	public boolean isIn(final Vector point) {
+	public boolean isIn(final Context context, final Vector point) {
 		return Obbox.isIn(
-				startConverse(),
-				startTransverse(),
-				startTransverseEdge(),
-				endConverse(),
-				endTransverse(),
-				endTransverseEdge(),
+				startConverse(context),
+				startTransverse(context),
+				startTransverseEdge(context),
+				endConverse(context),
+				endTransverse(context),
+				endTransverseEdge(context),
 				point
 		);
+	}
+
+	public String debugTreeType() {
+		return toString();
+	}
+
+	public String debugTree(final int indent) {
+		final String indentString = String.join("", Collections.nCopies(indent, "  "));
+		return String.format("%s%s", indentString, debugTreeType());
 	}
 }

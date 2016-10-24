@@ -13,8 +13,8 @@ public abstract class VisualNodePart extends VisualNode implements AlignmentList
 	}
 
 	@Override
-	public int getConverse() {
-		return startConverse();
+	public int getConverse(final Context context) {
+		return startConverse(context);
 	}
 
 	public enum Break {

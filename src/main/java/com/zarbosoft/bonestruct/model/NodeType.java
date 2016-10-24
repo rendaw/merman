@@ -135,6 +135,11 @@ public class NodeType {
 			public String alignmentNameCompact() {
 				throw new AssertionError("Not implemented.");
 			}
+
+			@Override
+			public String debugTreeType() {
+				return String.format("node type@%s (%s)", Integer.toHexString(hashCode()), id);
+			}
 		}
 		final Visual out = new Visual();
 		for (final Map.Entry<String, AlignmentDefinition> entry : alignments.entrySet()) {
@@ -160,38 +165,43 @@ public class NodeType {
 			}
 
 			@Override
-			public int startConverse() {
-				return out.startConverse();
+			public int startConverse(final Context context) {
+				return out.startConverse(context);
 			}
 
 			@Override
-			public int startTransverse() {
-				return out.startTransverse();
+			public int startTransverse(final Context context) {
+				return out.startTransverse(context);
 			}
 
 			@Override
-			public int startTransverseEdge() {
-				return out.startTransverseEdge();
+			public int startTransverseEdge(final Context context) {
+				return out.startTransverseEdge(context);
 			}
 
 			@Override
-			public int endConverse() {
-				return out.endConverse();
+			public int endConverse(final Context context) {
+				return out.endConverse(context);
 			}
 
 			@Override
-			public int endTransverse() {
-				return out.endTransverse();
+			public int endTransverse(final Context context) {
+				return out.endTransverse(context);
 			}
 
 			@Override
-			public int endTransverseEdge() {
-				return out.endTransverseEdge();
+			public int endTransverseEdge(final Context context) {
+				return out.endTransverseEdge(context);
 			}
 
 			@Override
 			public void place(final Context context, final Placement placement) {
 				out.place(context, placement);
+			}
+
+			@Override
+			public int edge(final Context context) {
+				return out.edge(context);
 			}
 
 			@Override
@@ -205,18 +215,13 @@ public class NodeType {
 			}
 
 			@Override
-			public Vector end() {
-				return out.end();
+			public String debugTreeType() {
+				return String.format("node type 0@%s", Integer.toHexString(hashCode()));
 			}
 
-			@Override
-			public Vector edge() {
-				return out.edge();
-			}
-
-			@Override
-			public Vector start() {
-				return out.start();
+			public String debugTree(final int indent) {
+				final String indentString = String.join("", Collections.nCopies(indent, "  "));
+				return String.format("%s%s\n%s", indentString, debugTreeType(), out.debugTree(indent + 1));
 			}
 		};
 	}

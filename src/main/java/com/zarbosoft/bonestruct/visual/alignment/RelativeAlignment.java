@@ -30,7 +30,7 @@ public class RelativeAlignment extends Alignment implements AlignmentListener {
 	}
 
 	@Override
-	public int getConverse() {
+	public int getConverse(final Context context) {
 		return 0;
 	}
 }

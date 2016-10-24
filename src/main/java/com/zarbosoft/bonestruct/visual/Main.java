@@ -5,11 +5,13 @@ import com.zarbosoft.bonestruct.Luxem;
 import com.zarbosoft.bonestruct.model.Document;
 import com.zarbosoft.bonestruct.model.Syntax;
 import com.zarbosoft.bonestruct.visual.nodes.VisualNode;
+import com.zarbosoft.bonestruct.visual.nodes.parts.NestedVisualNodePart;
 import com.zarbosoft.pidgoon.internal.Pair;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.event.EventHandler;
+import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.input.MouseEvent;
@@ -77,7 +79,23 @@ public class Main extends Application {
 		//final Document doc = luxemSyntax.load("{analogue:bolivar}");
 		final Context context = new Context(luxemSyntax, doc, this::addIdle);
 		final VBox layout = new VBox();
-		final VisualNode root = doc.root.createVisual(context);
+		final VisualNode almostRoot = doc.root.createVisual(context);
+		final VisualNode root = new NestedVisualNodePart(almostRoot) {
+			@Override
+			public Break breakMode() {
+				return null;
+			}
+
+			@Override
+			public String alignmentName() {
+				return null;
+			}
+
+			@Override
+			public String alignmentNameCompact() {
+				return null;
+			}
+		};
 		/*
 		final VisualNode root;
 		{
@@ -110,6 +128,11 @@ public class Main extends Application {
 		// TODO walk tree and resolve relative alignments
 		final ScrollPane scroll = new ScrollPane();
 		final StackPane stack = new StackPane();
+		stack.setPadding(new Insets(doc.syntax.padVertical,
+				doc.syntax.padHorizontal,
+				doc.syntax.padVertical,
+				doc.syntax.padHorizontal
+		));
 		stack.getChildren().add(root.visual().background);
 		stack.getChildren().add(root.visual().foreground);
 		scroll.setContent(stack);
@@ -133,7 +156,10 @@ public class Main extends Application {
 					context.hoverIdle = context.new HoverIdle(context, root);
 					addIdle(context.hoverIdle);
 				}
-				context.hoverIdle.point = context.sceneToVector(scene, event.getX(), event.getY());
+				context.hoverIdle.point = context.sceneToVector(scene,
+						event.getX() - context.syntax.padHorizontal,
+						event.getY() - context.syntax.padVertical
+				);
 				/*
 				System.out.format(
 						"mouse x %f y %f c %d t %d\n",
@@ -252,7 +278,7 @@ public class Main extends Application {
 	}
 
 	void compact(final Context context, final Syntax.CompactionMode mode, final VisualNode root) {
-		if (root.edge().converse < context.edge)
+		if (root.edge(context) < context.edge)
 			return;
 		if (idleCompact != null) {
 			idleQueue.remove(idleCompact);
@@ -260,7 +286,7 @@ public class Main extends Application {
 		switch (mode) {
 			case BOTTOM_UP:
 				idleCompact = new IterativeDepthFirst<>(root, n -> {
-					if (n.edge().converse > context.edge) {
+					if (n.edge(context) > context.edge) {
 						n.compact(context);
 					}
 					return n.children();

@@ -11,6 +11,8 @@ import javafx.scene.paint.Color;
 public abstract class Obbox extends Canvas {
 	@Luxem.Configuration
 	public static class Settings {
+		@Luxem.Configuration(optional = true, name = "pad")
+		public int padding = 0;
 		@Luxem.Configuration(optional = true, name = "round-start")
 		public boolean roundStart = false;
 		@Luxem.Configuration(optional = true, name = "round-end")
@@ -37,6 +39,11 @@ public abstract class Obbox extends Canvas {
 
 	public static Obbox fromSettings(final Settings settings) {
 		return new Obbox() {
+			@Override
+			public int padding() {
+				return settings.padding;
+			}
+
 			@Override
 			public int roundRadius() {
 				return settings.roundRadius;
@@ -96,6 +103,8 @@ public abstract class Obbox extends Canvas {
 
 	int radius = 0;
 
+	public abstract int padding();
+
 	public abstract int roundRadius();
 
 	public abstract boolean roundStart();
@@ -133,15 +142,25 @@ public abstract class Obbox extends Canvas {
 	}
 
 	public void setSize(
-			final Context context, final int sc, int st, int ste, final int ec, int et, int ete
+			final Context context, int sc, int st, int ste, int ec, int et, int ete
 	) {
-		System.out.format("obbox %d s %d,%d e %d,%d\n", context.edge, sc, st, ec, et);
-		radius = Math.min(roundRadius(), Math.min(ste - st, ete - et));
 		clear();
-		final int padding = (int) (lineThickness() + 1);
-		resize2(context, context.edge + padding * 2, st, ete - st + padding * 2, padding);
+		sc -= padding();
+		st -= padding();
+		ste += padding();
+		ec += padding();
+		et -= padding();
+		ete += padding();
+		radius = roundRadius();
+		//radius = Math.min(roundRadius(), Math.min(ste - st, ete - et));
+		final int buffer = (int) (lineThickness() + 1);
+		final Point2D wh =
+				context.toScreenSpan(new Vector(context.edge + padding() * 2 + buffer * 2, ete - st + buffer * 2));
+		setWidth(wh.getX());
+		setHeight(wh.getY());
+		context.translate(this, new Vector(-(buffer + padding()), st - buffer));
 		final GraphicsContext gc = this.getGraphicsContext2D();
-		gc.translate(padding, padding);
+		gc.translate(buffer + padding(), buffer);
 		ste -= st;
 		et -= st;
 		ete -= st;
@@ -149,7 +168,7 @@ public abstract class Obbox extends Canvas {
 		if (fill()) {
 			gc.setFill(fillColor());
 			gc.beginPath();
-			path(context, gc, context.edge, sc, st, ste, ec, et, ete);
+			path(context, gc, -padding(), context.edge + padding(), sc, st, ste, ec, et, ete);
 			gc.closePath();
 			gc.fill();
 		}
@@ -157,23 +176,10 @@ public abstract class Obbox extends Canvas {
 			gc.setStroke(lineColor());
 			gc.setLineWidth(lineThickness());
 			gc.beginPath();
-			path(context, gc, context.edge, sc, st, ste, ec, et, ete);
+			path(context, gc, -padding(), context.edge + padding(), sc, st, ste, ec, et, ete);
 			gc.closePath();
 			gc.stroke();
 		}
-	}
-
-	private void resize2(
-			final Context context,
-			final int converse,
-			final int transverseStart,
-			final int transverse,
-			final int padding
-	) {
-		final Point2D wh = context.toScreenSpan(new Vector(converse, transverse));
-		setWidth(wh.getX());
-		setHeight(wh.getY());
-		context.translate(this, new Vector(-padding, transverseStart + -padding));
 	}
 
 	private void clear() {
@@ -185,30 +191,119 @@ public abstract class Obbox extends Canvas {
 	private void path(
 			final Context context,
 			final GraphicsContext gc,
-			final int ce,
-			final int sc,
-			final int st,
-			final int ste,
-			final int ec,
-			final int et,
-			final int ete
+			final int converseZero,
+			final int converseEdge,
+			final int startConverse,
+			final int startTransverse,
+			final int startTransverseEdge,
+			final int endConverse,
+			final int endTransverse,
+			final int endTransverseEdge
 	) {
-		if (st == et) {
-			moveTo(context, gc, sc, (st + ste) / 2);
-			cornerTo(context, gc, roundStart(), sc, st, (sc + ec) / 2, st);
-			cornerTo(context, gc, roundOuterEdges(), ec, st, ec, (st + ete) / 2);
-			cornerTo(context, gc, roundEnd(), ec, ete, (sc + ec) / 2, ete);
-			cornerTo(context, gc, roundOuterEdges(), sc, ete, sc, (st + ete) / 2);
+		if (startTransverse == endTransverse) {
+			moveTo(context, gc, startConverse, (startTransverse + startTransverseEdge) / 2);
+			cornerTo(
+					context,
+					gc,
+					roundStart(),
+					startConverse,
+					startTransverse,
+					(startConverse + endConverse) / 2,
+					startTransverse
+			);
+			cornerTo(
+					context,
+					gc,
+					roundOuterEdges(),
+					endConverse,
+					startTransverse,
+					endConverse,
+					(startTransverse + endTransverseEdge) / 2
+			);
+			cornerTo(
+					context,
+					gc,
+					roundEnd(),
+					endConverse,
+					endTransverseEdge,
+					(startConverse + endConverse) / 2,
+					endTransverseEdge
+			);
+			cornerTo(
+					context,
+					gc,
+					roundOuterEdges(),
+					startConverse,
+					endTransverseEdge,
+					startConverse,
+					(startTransverse + endTransverseEdge) / 2
+			);
 		} else {
-			moveTo(context, gc, sc, (st + ste) / 2);
-			cornerTo(context, gc, roundStart(), sc, st, (sc + ce) / 2, st);
-			cornerTo(context, gc, roundOuterEdges(), ce, st, ce, (st + et) / 2);
-			cornerTo(context, gc, roundInnerEdges(), ce, et, (ec + ce) / 2, et);
-			cornerTo(context, gc, roundConcave(), ec, et, ec, (et + ete) / 2);
-			cornerTo(context, gc, roundEnd(), ec, ete, ec / 2, ete);
-			cornerTo(context, gc, roundOuterEdges(), 0, ete, 0, (ste + ete) / 2);
-			cornerTo(context, gc, roundInnerEdges(), 0, ste, sc / 2, ste);
-			cornerTo(context, gc, roundConcave(), sc, ste, sc, (st + ste) / 2);
+			moveTo(context, gc, startConverse, (startTransverse + startTransverseEdge) / 2);
+			cornerTo(
+					context,
+					gc,
+					roundStart(),
+					startConverse,
+					startTransverse,
+					(startConverse + converseEdge) / 2,
+					startTransverse
+			);
+			cornerTo(
+					context,
+					gc,
+					roundOuterEdges(),
+					converseEdge,
+					startTransverse,
+					converseEdge,
+					(startTransverse + endTransverse) / 2
+			);
+			cornerTo(
+					context,
+					gc,
+					roundInnerEdges(),
+					converseEdge,
+					endTransverse,
+					(endConverse + converseEdge) / 2,
+					endTransverse
+			);
+			cornerTo(
+					context,
+					gc,
+					roundConcave(),
+					endConverse,
+					endTransverse,
+					endConverse,
+					(endTransverse + endTransverseEdge) / 2
+			);
+			cornerTo(context, gc, roundEnd(), endConverse, endTransverseEdge, endConverse / 2, endTransverseEdge);
+			cornerTo(
+					context,
+					gc,
+					roundOuterEdges(),
+					converseZero,
+					endTransverseEdge,
+					converseZero,
+					(startTransverseEdge + endTransverseEdge) / 2
+			);
+			cornerTo(
+					context,
+					gc,
+					roundInnerEdges(),
+					converseZero,
+					startTransverseEdge,
+					startConverse / 2,
+					startTransverseEdge
+			);
+			cornerTo(
+					context,
+					gc,
+					roundConcave(),
+					startConverse,
+					startTransverseEdge,
+					startConverse,
+					(startTransverse + startTransverseEdge) / 2
+			);
 		}
 	}
 

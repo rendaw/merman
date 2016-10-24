@@ -10,6 +10,7 @@ import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.beans.value.WeakChangeListener;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 
 import java.text.BreakIterator;
@@ -24,7 +25,9 @@ public abstract class PrimitiveVisualNode extends GroupVisualNode {
 	private VisualNodeParent parent;
 
 	public PrimitiveVisualNode(final Context context, final StringProperty data) {
-		background.getChildren().add(super.visual().background);
+		final Pane temp = new Pane();
+		temp.getChildren().add(super.visual().background);
+		background.getChildren().add(temp);
 		alignments.put("soft", new RelativeAlignment(alignment(), softIndent()));
 		dataListener = new ChangeListener<String>() {
 			@Override
@@ -91,12 +94,12 @@ public abstract class PrimitiveVisualNode extends GroupVisualNode {
 				if (border != null) {
 					border.setSize(
 							context,
-							startConverse(),
-							startTransverse(),
-							startTransverseEdge(),
-							endConverse(),
-							endTransverse(),
-							endTransverseEdge()
+							startConverse(context),
+							startTransverse(context),
+							startTransverseEdge(context),
+							endConverse(context),
+							endTransverse(context),
+							endTransverseEdge(context)
 					);
 				}
 				parent.adjust(context, adjustment);
@@ -134,6 +137,11 @@ public abstract class PrimitiveVisualNode extends GroupVisualNode {
 
 		final boolean first;
 
+		@Override
+		public String debugTreeType() {
+			return String.format("hard line@%s", Integer.toHexString(hashCode()));
+		}
+
 		HardLine(final boolean first) {
 			this.first = first;
 		}
@@ -155,8 +163,12 @@ public abstract class PrimitiveVisualNode extends GroupVisualNode {
 	}
 
 	class Line extends RawTextVisualPart {
-		String text;
 		private final boolean hard;
+
+		@Override
+		public String debugTreeType() {
+			return String.format("line@%s %s", Integer.toHexString(hashCode()), getText());
+		}
 
 		Line(final Context context, final boolean hard) {
 			super(context);
@@ -182,7 +194,7 @@ public abstract class PrimitiveVisualNode extends GroupVisualNode {
 	final List<HardLine> hardLines = new ArrayList<>();
 
 	public Context.Hoverable hover(final Context context, final Vector point) {
-		if (isIn(point)) {
+		if (isIn(context, point)) {
 			return new Hoverable();
 		}
 		return null;
@@ -191,19 +203,21 @@ public abstract class PrimitiveVisualNode extends GroupVisualNode {
 	private class Hoverable extends Context.Hoverable {
 		@Override
 		public Context.Hoverable hover(final Context context, final Vector point) {
-			if (isIn(point)) {
+			if (isIn(context, point)) {
 				if (border == null) {
 					border = Obbox.fromSettings(context.syntax.hover);
 					border.setSize(
 							context,
-							startConverse(),
-							startTransverse(),
-							startTransverseEdge(),
-							endConverse(),
-							endTransverse(),
-							endTransverseEdge()
+							startConverse(context),
+							startTransverse(context),
+							startTransverseEdge(context),
+							endConverse(context),
+							endTransverse(context),
+							endTransverseEdge(context)
 					);
-					background.getChildren().add(0, border);
+					final Pane temp = new Pane();
+					temp.getChildren().add(border);
+					background.getChildren().add(0, temp);
 				}
 				return this;
 			} else
@@ -228,15 +242,15 @@ public abstract class PrimitiveVisualNode extends GroupVisualNode {
 			for (final Iterator<Line> lineIter = hardLine.lines.iterator(); lineIter.hasNext(); ) {
 				line = lineIter.next();
 				if (buffer.length() > 0) {
-					line.setText(buffer.toString() + line.text);
+					line.setText(buffer.toString() + line.getText());
 					buffer.delete(0, buffer.length());
 				}
-				if (line.end().converse > context.edge) {
-					breakIterator.setText(line.text);
+				if (line.edge(context) > context.edge) {
+					breakIterator.setText(line.getText());
 					final int breakAt = breakIterator.preceding(line.visual.getUnder(context.edge));
 					if (breakAt > 0) {
-						buffer.append(line.text.substring(breakAt, -1));
-						line.setText(line.text.substring(0, breakAt));
+						buffer.append(line.getText().substring(breakAt, -1));
+						line.setText(line.getText().substring(0, breakAt));
 					}
 				}
 			}
@@ -244,15 +258,20 @@ public abstract class PrimitiveVisualNode extends GroupVisualNode {
 				line = new Line(context, false);
 				line.setText(buffer.toString());
 				buffer.delete(0, buffer.length());
-				if (line.end().converse > context.edge) {
-					breakIterator.setText(line.text);
+				if (line.edge(context) > context.edge) {
+					breakIterator.setText(line.getText());
 					final int breakAt = breakIterator.preceding(line.visual.getUnder(context.edge));
-					buffer.append(line.text.substring(breakAt, -1));
-					line.setText(line.text.substring(0, breakAt));
+					buffer.append(line.getText().substring(breakAt, -1));
+					line.setText(line.getText().substring(0, breakAt));
 				}
 				hardLine.lines.add(line);
 				hardLine.add(context, line, -1);
 			}
 		}
+	}
+
+	@Override
+	public String debugTreeType() {
+		return String.format("prim@%s", Integer.toHexString(hashCode()));
 	}
 }
