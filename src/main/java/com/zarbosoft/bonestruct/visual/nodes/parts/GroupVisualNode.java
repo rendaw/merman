@@ -37,6 +37,15 @@ public abstract class GroupVisualNode extends VisualNodePart {
 	}
 
 	@Override
+	public boolean select(final Context context) {
+		for (final VisualNodePart child : children) {
+			if (child.select(context))
+				return true;
+		}
+		return false;
+	}
+
+	@Override
 	public int startConverse(final Context context) {
 		return converseStart;
 	}

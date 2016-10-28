@@ -165,6 +165,11 @@ public class NodeType {
 			}
 
 			@Override
+			public boolean select(final Context context) {
+				return out.select(context);
+			}
+
+			@Override
 			public int startConverse(final Context context) {
 				return out.startConverse(context);
 			}

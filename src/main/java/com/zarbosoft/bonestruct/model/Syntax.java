@@ -31,6 +31,15 @@ public class Syntax {
 	@Luxem.Configuration(optional = true)
 	public Color background = Color.WHITE;
 
+	@Luxem.Configuration(optional = true)
+	public String font = null;
+
+	@Luxem.Configuration(optional = true, name = "font-size")
+	public Integer fontSize = null;
+
+	@Luxem.Configuration(optional = true, name = "font-color")
+	public Color fontColor = Color.BLACK;
+
 	@Luxem.Configuration(optional = true, name = "pad-vertical")
 	public int padVertical = 5;
 
@@ -57,10 +66,15 @@ public class Syntax {
 	// Root applies to whole document parsing
 	// For parsing text pastes, use the current location to find the correct rule
 
+	@Luxem.Configuration(optional = true)
+	public Obbox.Settings select = new Obbox.Settings();
+
+	@Luxem.Configuration(optional = true)
+	public Map<String, com.zarbosoft.luxemj.com.zarbosoft.luxemj.grammar.Node> hotkeys = new HashMap<>();
+
 	@Luxem.Configuration
 	public enum Direction {
-		@Luxem.Configuration(name = "up")
-		UP, @Luxem.Configuration(name = "down")
+		@Luxem.Configuration(name = "up")UP, @Luxem.Configuration(name = "down")
 		DOWN, @Luxem.Configuration(name = "left")
 		LEFT, @Luxem.Configuration(name = "right")
 		RIGHT;

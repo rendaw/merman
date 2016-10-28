@@ -16,6 +16,7 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.WeakListChangeListener;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -45,6 +46,8 @@ public class FrontDataRecord implements FrontPart {
 	@Luxem.Configuration
 	public List<FrontConstantPart> separator;
 	private DataRecord dataType;
+	@Luxem.Configuration(optional = true)
+	public Map<String, com.zarbosoft.luxemj.com.zarbosoft.luxemj.grammar.Node> hotkeys = new HashMap<>();
 
 	private class RecordVisual extends GroupVisualNode {
 		private final ListChangeListener<Pair<StringProperty, Node>> dataListener;
@@ -141,6 +144,11 @@ public class FrontDataRecord implements FrontPart {
 				for (final FrontConstantPart fix : infix)
 					group.add(context, fix.createVisual(context));
 				group.add(context, new NestedVisualNodePart(p.second.second.createVisual(context)) {
+					@Override
+					public Map<String, com.zarbosoft.luxemj.com.zarbosoft.luxemj.grammar.Node> getHotkeys(final Context contex) {
+						return hotkeys;
+					}
+
 					@Override
 					public Break breakMode() {
 						return valueStyle.breakMode;

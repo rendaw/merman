@@ -12,5 +12,7 @@ public abstract class VisualNodeParent {
 
 	public abstract void align(Context context);
 
-	public abstract Context.Hoverable hoverUp();
+	public abstract Context.Hoverable hoverUp(Context context);
+
+	public abstract void selectUp(Context context);
 }

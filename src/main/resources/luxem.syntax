@@ -2,6 +2,13 @@
     name: luxem,
     *TODO complete color selection*
 	background: [0.21568, 0.21568, 0.21568],
+	select: {
+	    line-color: [0.21568, 0.05, 0.43],
+	},
+	hotkeys: {
+	    exit: (seq) [(key) a, (key) escape],
+	    enter: (seq) [(key) a, (key) enter],
+	},
 	groups: {
 	    value: [
 	        luxem-object,

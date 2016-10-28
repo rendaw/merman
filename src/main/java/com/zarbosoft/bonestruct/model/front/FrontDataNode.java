@@ -6,7 +6,9 @@ import com.zarbosoft.bonestruct.visual.Context;
 import com.zarbosoft.bonestruct.visual.nodes.parts.NestedVisualNodePart;
 import com.zarbosoft.bonestruct.visual.nodes.parts.VisualNodePart;
 import com.zarbosoft.luxemj.Luxem;
+import com.zarbosoft.luxemj.com.zarbosoft.luxemj.grammar.Node;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -19,10 +21,17 @@ public class FrontDataNode implements FrontPart {
 
 	@Luxem.Configuration(name = "style", optional = true)
 	public FrontMark.Style style = new FrontMark.Style();
+	@Luxem.Configuration(optional = true)
+	public Map<String, com.zarbosoft.luxemj.com.zarbosoft.luxemj.grammar.Node> hotkeys = new HashMap<>();
 
 	@Override
 	public VisualNodePart createVisual(final Context context, final Map<String, Object> data) {
 		return new NestedVisualNodePart(dataType.get(data).createVisual(context)) {
+			@Override
+			public Map<String, Node> getHotkeys(final Context contex) {
+				return hotkeys;
+			}
+
 			@Override
 			public Break breakMode() {
 				return style.breakMode;

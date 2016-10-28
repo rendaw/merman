@@ -54,6 +54,11 @@ public class FrontSpace implements FrontConstantPart {
 			}
 
 			@Override
+			public boolean select(final Context context) {
+				return false;
+			}
+
+			@Override
 			public int startConverse(final Context context) {
 				return startConverse;
 			}

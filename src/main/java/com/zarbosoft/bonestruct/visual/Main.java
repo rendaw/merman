@@ -1,32 +1,34 @@
 package com.zarbosoft.bonestruct.visual;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterators;
 import com.zarbosoft.bonestruct.Luxem;
 import com.zarbosoft.bonestruct.model.Document;
 import com.zarbosoft.bonestruct.model.Syntax;
 import com.zarbosoft.bonestruct.visual.nodes.VisualNode;
 import com.zarbosoft.bonestruct.visual.nodes.parts.NestedVisualNodePart;
+import com.zarbosoft.luxemj.com.zarbosoft.luxemj.grammar.Node;
+import com.zarbosoft.pidgoon.InvalidStream;
+import com.zarbosoft.pidgoon.events.Parse;
 import com.zarbosoft.pidgoon.internal.Pair;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
+import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.Iterator;
-import java.util.PriorityQueue;
+import java.util.*;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -78,9 +80,13 @@ public class Main extends Application {
 		final Document doc = luxemSyntax.load("[{converse: 47,transverse:{ar:[2,9,13]},},[atler]]");
 		//final Document doc = luxemSyntax.load("{analogue:bolivar}");
 		final Context context = new Context(luxemSyntax, doc, this::addIdle);
-		final VBox layout = new VBox();
 		final VisualNode almostRoot = doc.root.createVisual(context);
 		final VisualNode root = new NestedVisualNodePart(almostRoot) {
+			@Override
+			public Map<String, Node> getHotkeys(final Context contex) {
+				return ImmutableMap.of();
+			}
+
 			@Override
 			public Break breakMode() {
 				return null;
@@ -96,6 +102,7 @@ public class Main extends Application {
 				return null;
 			}
 		};
+		root.select(context);
 		/*
 		final VisualNode root;
 		{
@@ -127,7 +134,9 @@ public class Main extends Application {
 		*/
 		// TODO walk tree and resolve relative alignments
 		final ScrollPane scroll = new ScrollPane();
+		scroll.setBackground(new Background(new BackgroundFill(doc.syntax.background, null, null)));
 		final StackPane stack = new StackPane();
+		stack.setBackground(new Background(new BackgroundFill(doc.syntax.background, null, null)));
 		stack.setPadding(new Insets(doc.syntax.padVertical,
 				doc.syntax.padHorizontal,
 				doc.syntax.padVertical,
@@ -136,39 +145,56 @@ public class Main extends Application {
 		stack.getChildren().add(root.visual().background);
 		stack.getChildren().add(root.visual().foreground);
 		scroll.setContent(stack);
+		final Group layout = new Group();
 		layout.getChildren().add(scroll);
-		final Scene scene = new Scene(layout, 300, 275);
-		scene.setOnMouseExited(new EventHandler<MouseEvent>() {
-			@Override
-			public void handle(final MouseEvent event) {
-				if (context.hoverIdle != null) {
-					context.hoverIdle.point = null;
-				} else if (context.hover != null) {
-					context.hover.clear(context);
-					context.hover = null;
-				}
+		final Scene scene = new Scene(layout, 300, 275, doc.syntax.background);
+		scene.setOnMouseExited(event -> {
+			if (context.hoverIdle != null) {
+				context.hoverIdle.point = null;
+			} else if (context.hover != null) {
+				context.hover.clear(context);
+				context.hover = null;
 			}
 		});
-		scene.setOnMouseMoved(new EventHandler<MouseEvent>() {
-			@Override
-			public void handle(final MouseEvent event) {
-				if (context.hoverIdle == null) {
-					context.hoverIdle = context.new HoverIdle(context, root);
-					addIdle(context.hoverIdle);
-				}
-				context.hoverIdle.point = context.sceneToVector(scene,
-						event.getX() - context.syntax.padHorizontal,
-						event.getY() - context.syntax.padVertical
-				);
-				/*
-				System.out.format(
-						"mouse x %f y %f c %d t %d\n",
-						event.getX(),
-						event.getY(),
-						context.hoverIdle.point.converse,
-						context.hoverIdle.point.transverse
-				);
-				*/
+		scene.setOnMouseMoved(event -> {
+			if (context.hoverIdle == null) {
+				context.hoverIdle = context.new HoverIdle(context, root);
+				addIdle(context.hoverIdle);
+			}
+			context.hoverIdle.point = context.sceneToVector(scene,
+					event.getX() - context.syntax.padHorizontal,
+					event.getY() - context.syntax.padVertical
+			);
+		});
+		scene.setOnKeyPressed(event -> {
+			if (context.hotkeyParse == null) {
+				context.hotkeyParse = new Parse<Context.Action>().grammar(context.hotkeyGrammar).parse();
+			}
+			final Keyboard.Event keyEvent = new Keyboard.Event(Keyboard.fromJFX(event.getCode()),
+					event.isControlDown(),
+					event.isAltDown(),
+					event.isShiftDown()
+			);
+			if (context.hotkeySequence.isEmpty())
+				context.hotkeySequence += keyEvent.toString();
+			else
+				context.hotkeySequence += ", " + keyEvent.toString();
+			boolean clean = false;
+			try {
+				context.hotkeyParse = context.hotkeyParse.push(keyEvent, context.hotkeySequence);
+			} catch (final InvalidStream e) {
+				clean = true;
+			}
+			final Context.Action action = context.hotkeyParse.finish();
+			if (action != null) {
+				clean = true;
+				action.run(context);
+			}
+			System.out.println(context.hotkeySequence);
+			if (clean) {
+				context.hotkeySequence = "";
+				context.hotkeyParse = null;
+				context.selection.receiveText(context, event.getText());
 			}
 		});
 		final ChangeListener<Number> converseSizeListener = (observable, oldValue, newValue) -> {

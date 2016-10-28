@@ -39,11 +39,11 @@ public class Luxem extends com.zarbosoft.luxemj.Luxem {
 						return s;
 					})).min(3).max(3))
 					.add(new Terminal(new LArrayCloseEvent())), s -> {
-				final Double red = (Double) s.stackTop();
+				final Double blue = s.stackTop();
 				s = (Store) s.popStack();
-				final Double green = (Double) s.stackTop();
+				final Double green = s.stackTop();
 				s = (Store) s.popStack();
-				final Double blue = (Double) s.stackTop();
+				final Double red = s.stackTop();
 				s = (Store) s.popStack();
 				return s.pushStack(new Color(red, green, blue, 1));
 			});

@@ -121,8 +121,13 @@ public abstract class PrimitiveVisualNode extends GroupVisualNode {
 			}
 
 			@Override
-			public Context.Hoverable hoverUp() {
+			public Context.Hoverable hoverUp(final Context context) {
 				return new Hoverable();
+			}
+
+			@Override
+			public void selectUp(final Context context) {
+				// TODO
 			}
 		};
 	}
@@ -164,6 +169,12 @@ public abstract class PrimitiveVisualNode extends GroupVisualNode {
 
 	class Line extends RawTextVisualPart {
 		private final boolean hard;
+
+		@Override
+		public boolean select(final Context context) {
+			// TODO
+			return false;
+		}
 
 		@Override
 		public String debugTreeType() {
@@ -221,7 +232,7 @@ public abstract class PrimitiveVisualNode extends GroupVisualNode {
 				}
 				return this;
 			} else
-				return parent().hoverUp();
+				return parent().hoverUp(context);
 		}
 
 		@Override

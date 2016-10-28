@@ -19,6 +19,8 @@ public abstract class VisualNode {
 
 	public abstract Context.Hoverable hover(Context context, Vector point);
 
+	public abstract boolean select(Context context);
+
 	public abstract int startConverse(Context context);
 
 	public abstract int startTransverse(Context context);

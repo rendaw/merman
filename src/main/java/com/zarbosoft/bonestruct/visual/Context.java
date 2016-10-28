@@ -3,6 +3,13 @@ package com.zarbosoft.bonestruct.visual;
 import com.zarbosoft.bonestruct.model.Document;
 import com.zarbosoft.bonestruct.model.Syntax;
 import com.zarbosoft.bonestruct.visual.nodes.VisualNode;
+import com.zarbosoft.pidgoon.events.BakedOperator;
+import com.zarbosoft.pidgoon.events.EventStream;
+import com.zarbosoft.pidgoon.events.Grammar;
+import com.zarbosoft.pidgoon.events.Terminal;
+import com.zarbosoft.pidgoon.internal.Node;
+import com.zarbosoft.pidgoon.nodes.Sequence;
+import com.zarbosoft.pidgoon.nodes.Union;
 import javafx.animation.Interpolator;
 import javafx.geometry.Point2D;
 import javafx.scene.Scene;
@@ -10,11 +17,51 @@ import javafx.scene.Scene;
 import java.util.function.Consumer;
 
 public class Context {
+	public Grammar hotkeyGrammar;
+	public EventStream<Action> hotkeyParse;
+	public String hotkeySequence = "";
+
+	public void setSelection(final Context context, final Selection selection) {
+		if (this.selection != null) {
+			this.selection.clear(context);
+		}
+		this.selection = selection;
+		hotkeyGrammar = new Grammar();
+		final Union union = new Union();
+		for (final Action action : selection.getActions(context)) {
+			Node rule = action.buildRule();
+			if (rule == null)
+				rule = new Sequence()
+						.add(new Terminal(new Keyboard.Event(Keyboard.Key.PAGE_UP, false, false, false)))
+						.add(Keyboard.ruleFromString(String.format(":%s", action.getName())));
+			union.add(new BakedOperator(rule, store -> store.pushStack(action)));
+		}
+		hotkeyGrammar.add("root", union);
+	}
+
 	public static abstract class Hoverable {
 
 		public abstract Hoverable hover(Context context, Vector point);
 
 		public abstract void clear(Context context);
+	}
+
+	public static abstract class Action {
+		public abstract Node buildRule();
+
+		public abstract void run(Context context);
+
+		public abstract String getName();
+	}
+
+	public static abstract class Selection {
+
+		public abstract void clear(Context context);
+
+		public void receiveText(final Context context, final String text) {
+		}
+
+		public abstract Iterable<Action> getActions(Context context);
 	}
 
 	public class HoverIdle extends IdleTask {
@@ -51,8 +98,8 @@ public class Context {
 	public int edge = 0;
 	public int transverseEdge = 0;
 	public Hoverable hover;
-	public VisualNode select;
 	public HoverIdle hoverIdle;
+	public Selection selection;
 
 	public Context(
 			final Syntax syntax, final Document document, final Consumer<IdleTask> addIdle

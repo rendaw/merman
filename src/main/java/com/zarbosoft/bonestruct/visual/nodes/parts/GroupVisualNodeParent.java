@@ -54,9 +54,12 @@ public class GroupVisualNodeParent extends VisualNodeParent {
 	}
 
 	@Override
-	public Context.Hoverable hoverUp() {
-		if (parent() != null)
-			return parent().hoverUp();
-		return null;
+	public Context.Hoverable hoverUp(final Context context) {
+		return parent().hoverUp(context);
+	}
+
+	@Override
+	public void selectUp(final Context context) {
+		parent().selectUp(context);
 	}
 }

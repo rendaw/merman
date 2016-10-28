@@ -7,6 +7,7 @@ import com.zarbosoft.bonestruct.visual.nodes.parts.PrimitiveVisualNode;
 import com.zarbosoft.bonestruct.visual.nodes.parts.VisualNodePart;
 import com.zarbosoft.luxemj.Luxem;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -31,6 +32,8 @@ public class FrontDataPrimitive implements FrontPart {
 
 	@Luxem.Configuration(optional = true)
 	public PrimitiveStyle style = new PrimitiveStyle();
+	@Luxem.Configuration(optional = true)
+	public Map<String, com.zarbosoft.luxemj.com.zarbosoft.luxemj.grammar.Node> hotkeys = new HashMap<>();
 
 	@Override
 	public VisualNodePart createVisual(final Context context, final Map<String, Object> data) {

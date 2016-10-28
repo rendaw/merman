@@ -37,6 +37,11 @@ public class FrontMark implements FrontConstantPart {
 			}
 
 			@Override
+			public boolean select(final Context context) {
+				return false;
+			}
+
+			@Override
 			public Break breakMode() {
 				return style.breakMode;
 			}
