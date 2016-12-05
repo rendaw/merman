@@ -1,32 +1,28 @@
 package com.zarbosoft.bonestruct.model.front;
 
-import com.zarbosoft.bonestruct.model.Node;
 import com.zarbosoft.bonestruct.model.NodeType;
 import com.zarbosoft.bonestruct.model.middle.DataArray;
 import com.zarbosoft.bonestruct.visual.Context;
-import com.zarbosoft.bonestruct.visual.nodes.parts.GroupVisualNode;
-import com.zarbosoft.bonestruct.visual.nodes.parts.NestedVisualNodePart;
+import com.zarbosoft.bonestruct.visual.nodes.VisualNode;
+import com.zarbosoft.bonestruct.visual.nodes.parts.ArrayVisualNode;
 import com.zarbosoft.bonestruct.visual.nodes.parts.VisualNodePart;
 import com.zarbosoft.luxemj.Luxem;
-import com.zarbosoft.pidgoon.internal.Helper;
-import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
-import javafx.collections.WeakListChangeListener;
+import com.zarbosoft.luxemj.com.zarbosoft.luxemj.grammar.Node;
+import org.pcollections.HashTreePSet;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Luxem.Configuration(name = "array")
-public class FrontDataArray implements FrontPart {
+public class FrontDataArray extends FrontPart {
 
 	@Luxem.Configuration
 	public String middle;
 	@Luxem.Configuration
 	public List<FrontConstantPart> prefix;
-	@Luxem.Configuration(name = "value-style", optional = true)
-	public FrontMark.Style valueStyle = new FrontMark.Style();
 	@Luxem.Configuration
 	public List<FrontConstantPart> suffix;
 	@Luxem.Configuration
@@ -41,122 +37,38 @@ public class FrontDataArray implements FrontPart {
 		dataType = nodeType.getDataArray(middle);
 	}
 
-	private class ArrayVisualNode extends GroupVisualNode {
-
-		private final ListChangeListener<Node> dataListener;
-
-		public ArrayVisualNode(final Context context, final ObservableList<Node> nodes) {
-			dataListener = c -> {
-				while (c.next()) {
-					if (c.wasPermutated()) {
-						remove(context, c.getFrom(), c.getRemovedSize());
-						add(context, c.getFrom(), nodes.subList(c.getFrom(), c.getTo()));
-					} else if (c.wasUpdated()) {
-						remove(context, c.getFrom(), c.getTo() - c.getFrom());
-						add(context, c.getFrom(), nodes.subList(c.getFrom(), c.getTo()));
-					} else {
-						remove(context, c.getFrom(), c.getRemovedSize());
-						add(context, c.getFrom(), (List<Node>) c.getAddedSubList());
-					}
-				}
-			};
-			nodes.addListener(new WeakListChangeListener<>(dataListener));
-			add(context, 0, nodes);
-		}
-
-		@Override
-		public void remove(final Context context, final int start, final int size) {
-			super.remove(context, start, size);
-			if (start == 0 && !children.isEmpty() && !separator.isEmpty())
-				((GroupVisualNode) children.get(0)).remove(context, 0, 1);
-		}
-
-		private void add(final Context context, final int start, final List<Node> nodes) {
-			Helper.enumerate(nodes.stream(), start).forEach(p -> {
-				final GroupVisualNode group = new GroupVisualNode() {
-					@Override
-					public Break breakMode() {
-						return Break.NEVER;
-					}
-
-					@Override
-					public String alignmentName() {
-						return null;
-					}
-
-					@Override
-					public String alignmentNameCompact() {
-						return null;
-					}
-				};
-				if (p.first > 0 && !separator.isEmpty()) {
-					final GroupVisualNode separatorGroup = new GroupVisualNode() {
-						@Override
-						public Break breakMode() {
-							return Break.NEVER;
-						}
-
-						@Override
-						public String alignmentName() {
-							return null;
-						}
-
-						@Override
-						public String alignmentNameCompact() {
-							return null;
-						}
-					};
-					for (final FrontConstantPart fix : separator)
-						separatorGroup.add(context, fix.createVisual(context));
-					group.add(context, separatorGroup);
-				}
-				for (final FrontConstantPart fix : prefix)
-					group.add(context, fix.createVisual(context));
-				group.add(context, new NestedVisualNodePart(p.second.createVisual(context)) {
-					@Override
-					public Map<String, com.zarbosoft.luxemj.com.zarbosoft.luxemj.grammar.Node> getHotkeys(final Context contex) {
-						return hotkeys;
-					}
-
-					@Override
-					public Break breakMode() {
-						return null;
-					}
-
-					@Override
-					public String alignmentName() {
-						return null;
-					}
-
-					@Override
-					public String alignmentNameCompact() {
-						return null;
-					}
-				});
-				for (final FrontConstantPart fix : suffix)
-					group.add(context, fix.createVisual(context));
-				super.add(context, group, p.first);
-			});
-		}
-
-		@Override
-		public Break breakMode() {
-			return Break.NEVER;
-		}
-
-		@Override
-		public String alignmentName() {
-			return null;
-		}
-
-		@Override
-		public String alignmentNameCompact() {
-			return null;
-		}
-	}
-
 	@Override
-	public VisualNodePart createVisual(final Context context, final Map<String, Object> data) {
-		return new ArrayVisualNode(context, dataType.get(data));
+	public VisualNodePart createVisual(
+			final Context context, final Map<String, Object> data, final Set<VisualNode.Tag> tags
+	) {
+		return new ArrayVisualNode(
+				context,
+				dataType.get(data),
+				HashTreePSet
+						.from(tags)
+						.plus(new VisualNode.PartTag("array"))
+						.plusAll(this.tags.stream().map(s -> new VisualNode.FreeTag(s)).collect(Collectors.toSet()))
+		) {
+
+			@Override
+			protected Map<String, Node> getHotkeys() {
+				return hotkeys;
+			}
+
+			@Override
+			protected List<FrontConstantPart> getPrefix() {
+				return prefix;
+			}
+
+			@Override
+			protected List<FrontConstantPart> getSuffix() {
+				return suffix;
+			}
+
+			@Override
+			protected List<FrontConstantPart> getSeparator() {
+				return separator;
+			}
+		};
 	}
 }

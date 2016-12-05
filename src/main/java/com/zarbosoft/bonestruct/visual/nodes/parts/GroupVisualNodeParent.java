@@ -1,7 +1,10 @@
 package com.zarbosoft.bonestruct.visual.nodes.parts;
 
+import com.zarbosoft.bonestruct.visual.Brick;
 import com.zarbosoft.bonestruct.visual.Context;
+import com.zarbosoft.bonestruct.visual.alignment.Alignment;
 import com.zarbosoft.bonestruct.visual.nodes.VisualNode;
+import com.zarbosoft.bonestruct.visual.nodes.VisualNodeParent;
 
 public class GroupVisualNodeParent extends VisualNodeParent {
 	public final GroupVisualNode target;
@@ -12,54 +15,63 @@ public class GroupVisualNodeParent extends VisualNodeParent {
 		this.index = index;
 	}
 
-	@Override
-	public void adjust(final Context context, final VisualNode.Adjustment adjustment) {
-		target.getIdle(context);
-		GroupVisualNode.ChildChange change = target.idle.childChanges.get(index);
-		if (change == null) {
-			change = new GroupVisualNode.ChildChange();
-			target.idle.childChanges.put(index, change);
-		}
-		if (adjustment.converseEdge != null)
-			change.converseEdge = adjustment.converseEdge;
-		if (adjustment.transverseEdge != null)
-			change.transverseEdge = adjustment.transverseEdge;
-		if (adjustment.converseEnd != null)
-			change.converseEnd = adjustment.converseEnd;
-		if (adjustment.transverseEnd != null)
-			change.transverseEnd = adjustment.transverseEnd;
-	}
-
-	@Override
-	public VisualNodeParent parent() {
-		if (target.parent() == null)
-			return null;
-		return target.parent();
-	}
-
-	@Override
-	public VisualNodePart target() {
-		return target;
-	}
-
-	@Override
-	public void align(final Context context) {
-		target.getIdle(context);
-		GroupVisualNode.ChildChange change = target.idle.childChanges.get(index);
-		if (change == null) {
-			change = new GroupVisualNode.ChildChange();
-			target.idle.childChanges.put(index, change);
-		}
-		change.alignment = true;
-	}
-
+	/*
 	@Override
 	public Context.Hoverable hoverUp(final Context context) {
 		return parent().hoverUp(context);
 	}
+	*/
 
 	@Override
 	public void selectUp(final Context context) {
-		parent().selectUp(context);
+		if (target.parent == null)
+			return;
+		target.parent.selectUp(context);
+	}
+
+	@Override
+	public Brick createNextBrick(final Context context) {
+		for (int i = index + 1; i < target.children.size(); ++i) {
+			final Brick brick = target.children.get(i).createFirstBrick(context);
+			if (brick != null)
+				return brick;
+		}
+		if (target.parent == null)
+			return null;
+		return target.parent.createNextBrick(context);
+	}
+
+	@Override
+	public VisualNode getNode() {
+		if (target.parent == null)
+			return null;
+		return target.parent.getNode();
+	}
+
+	@Override
+	public Alignment getAlignment(final String alignment) {
+		return target.getAlignment(alignment);
+	}
+
+	@Override
+	public Brick getPreviousBrick(final Context context) {
+		if (index == 0)
+			if (target.parent == null)
+				return null;
+			else
+				return target.parent.getPreviousBrick(context);
+		else
+			return target.children.get(index - 1).getLastBrick(context);
+	}
+
+	@Override
+	public Brick getNextBrick(final Context context) {
+		if (index == target.children.size())
+			if (target.parent == null)
+				return null;
+			else
+				return target.parent.getNextBrick(context);
+		else
+			return target.children.get(index + 1).getFirstBrick(context);
 	}
 }

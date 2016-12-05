@@ -1,55 +1,51 @@
 package com.zarbosoft.bonestruct.visual.nodes.parts;
 
-import com.zarbosoft.bonestruct.Luxem;
+import com.google.common.collect.ImmutableSet;
 import com.zarbosoft.bonestruct.visual.Context;
 import com.zarbosoft.bonestruct.visual.alignment.Alignment;
-import com.zarbosoft.bonestruct.visual.alignment.AlignmentListener;
 import com.zarbosoft.bonestruct.visual.nodes.VisualNode;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
-public abstract class VisualNodePart extends VisualNode implements AlignmentListener {
-	@Override
-	public void align(final Context context) {
-		parent().align(context);
+import java.util.Map;
+import java.util.Set;
+
+public abstract class VisualNodePart extends VisualNode {
+	public VisualNodePart(final Set<Tag> tags) {
+		super(tags);
 	}
 
 	@Override
-	public int getConverse(final Context context) {
-		return startConverse(context);
+	public int spacePriority() {
+		throw new NotImplementedException();
 	}
 
-	public enum Break {
-		@Luxem.Configuration(name = "always")
-		ALWAYS, @Luxem.Configuration(name = "compact")
-		COMPACT, @Luxem.Configuration(name = "minimal")
-		MINIMAL, @Luxem.Configuration(name = "never")
-		NEVER
+	@Override
+	public boolean canCompact() {
+		throw new NotImplementedException();
 	}
 
-	public abstract Break breakMode();
+	@Override
+	public boolean canExpand() {
+		throw new NotImplementedException();
+	}
 
+	@Override
+	public void compact(final Context context) {
+		changeTags(
+				context,
+				new TagsChange(ImmutableSet.of(new StateTag("compact")), ImmutableSet.of(new StateTag("expanded")))
+		);
+	}
 
-	/*
-	public abstract int spaceLeft();
+	@Override
+	public void expand(final Context context) {
+		changeTags(
+				context,
+				new TagsChange(ImmutableSet.of(new StateTag("expanded")), ImmutableSet.of(new StateTag("compact")))
+		);
+	}
 
-	public abstract int spaceLeftCompact();
-
-	public abstract int spaceRight();
-
-	public abstract int spaceRightCompact();
-
-	public abstract int spaceTop(); // Only when broken
-
-	public abstract int spaceTopCompact(); // Only when broken
-
-	public abstract int spaceBottom();
-
-	public abstract int spaceBottomCompact();
-	 */
-
-	public abstract String alignmentName();
-
-	public abstract String alignmentNameCompact();
-
-	boolean broken = false;
-	public Alignment alignment = null;
+	@Override
+	public void rootAlignments(final Context context, final Map<String, Alignment> alignments) {
+	}
 }

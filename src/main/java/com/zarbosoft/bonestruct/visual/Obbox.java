@@ -1,41 +1,60 @@
 package com.zarbosoft.bonestruct.visual;
 
 import com.zarbosoft.luxemj.Luxem;
+import com.zarbosoft.pidgoon.internal.Helper;
 import javafx.geometry.Point2D;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 
+import java.lang.reflect.Field;
+
 public abstract class Obbox extends Canvas {
 	@Luxem.Configuration
 	public static class Settings {
 		@Luxem.Configuration(optional = true, name = "pad")
-		public int padding = 0;
+		public Integer padding = null;
 		@Luxem.Configuration(optional = true, name = "round-start")
-		public boolean roundStart = false;
+		public Boolean roundStart = null;
 		@Luxem.Configuration(optional = true, name = "round-end")
-		public boolean roundEnd = false;
+		public Boolean roundEnd = null;
 		@Luxem.Configuration(optional = true, name = "round-outer-edges")
-		public boolean roundOuterEdges = false;
+		public Boolean roundOuterEdges = null;
 		@Luxem.Configuration(optional = true, name = "round-inner-edges")
-		public boolean roundInnerEdges = false;
+		public Boolean roundInnerEdges = null;
 		@Luxem.Configuration(optional = true, name = "round-concave")
-		public boolean roundConcave = false;
+		public Boolean roundConcave = null;
 		@Luxem.Configuration(optional = true, name = "round-radius")
-		public int roundRadius = 5;
+		public Integer roundRadius = null;
 		@Luxem.Configuration(optional = true, name = "line")
-		public boolean line = true;
+		public Boolean line = null;
 		@Luxem.Configuration(optional = true, name = "line-color")
-		public Color lineColor = Color.BLUEVIOLET;
+		public Color lineColor = null;
 		@Luxem.Configuration(optional = true, name = "line-thickness")
-		public double lineThickness = 1;
+		public Double lineThickness = null;
 		@Luxem.Configuration(optional = true, name = "fill")
-		public boolean fill = false;
+		public Boolean fill = null;
 		@Luxem.Configuration(optional = true, name = "fill-color")
-		public Color fillColor = Color.PAPAYAWHIP;
+		public Color fillColor = null;
+
+		public void merge(final Settings settings) {
+			for (final Field field : getClass().getFields()) {
+				if (field.getAnnotation(Luxem.Configuration.class) == null)
+					continue;
+				if (field.getType() != Integer.class &&
+						field.getType() != Double.class &&
+						field.getType() != Boolean.class &&
+						field.getType() != String.class &&
+						field.getType() != Color.class)
+					continue;
+				final Object value = Helper.uncheck(() -> field.get(settings));
+				if (value != null)
+					Helper.uncheck(() -> field.set(this, value));
+			}
+		}
 	}
 
-	public static Obbox fromSettings(final Settings settings) {
+	public static Obbox fromSettings(final BakedSettings settings) {
 		return new Obbox() {
 			@Override
 			public int padding() {
@@ -326,6 +345,37 @@ public abstract class Obbox extends Canvas {
 		} else {
 			gc.lineTo(point.getX(), point.getY());
 			gc.lineTo(point2.getX(), point2.getY());
+		}
+	}
+
+	public static class BakedSettings {
+		public int padding = 0;
+		public boolean roundStart = false;
+		public boolean roundEnd = false;
+		public boolean roundOuterEdges = false;
+		public boolean roundInnerEdges = false;
+		public boolean roundConcave = false;
+		public int roundRadius = 0;
+		public boolean line = false;
+		public Color lineColor = Color.BLACK;
+		public double lineThickness = 1;
+		public boolean fill = false;
+		public Color fillColor = Color.WHITE;
+
+		public void merge(final Settings settings) {
+			for (final Field field : Settings.class.getFields()) {
+				if (field.getAnnotation(Luxem.Configuration.class) == null)
+					continue;
+				if (field.getType() != Integer.class &&
+						field.getType() != Double.class &&
+						field.getType() != Boolean.class &&
+						field.getType() != String.class &&
+						field.getType() != Color.class)
+					continue;
+				final Object value = Helper.uncheck(() -> field.get(settings));
+				if (value != null)
+					Helper.uncheck(() -> getClass().getField(field.getName()).set(this, value));
+			}
 		}
 	}
 }

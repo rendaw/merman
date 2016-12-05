@@ -1,78 +1,84 @@
 package com.zarbosoft.bonestruct.visual.nodes;
 
 import com.google.common.collect.Iterators;
+import com.zarbosoft.bonestruct.visual.Brick;
 import com.zarbosoft.bonestruct.visual.Context;
-import com.zarbosoft.bonestruct.visual.Vector;
 import com.zarbosoft.bonestruct.visual.alignment.Alignment;
-import com.zarbosoft.bonestruct.visual.nodes.parts.VisualNodeParent;
+import com.zarbosoft.luxemj.Luxem;
+import com.zarbosoft.pidgoon.internal.Pair;
+import org.pcollections.HashTreePSet;
+import org.pcollections.PSet;
 
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 public abstract class VisualNode {
-	//public Vector start = new Vector(0, 0); // cons absolute, trans relative to preceding/parent
+	private final Set<Tag> tags = new HashSet<>();
+
+	public VisualNode(final Set<Tag> tags) {
+		this.tags.addAll(tags);
+	}
 
 	public abstract void setParent(VisualNodeParent parent);
 
 	public abstract VisualNodeParent parent();
 
+	/*
 	public abstract Context.Hoverable hover(Context context, Vector point);
-
+*/
 	public abstract boolean select(Context context);
 
-	public abstract int startConverse(Context context);
+	public abstract Brick createFirstBrick(Context context);
 
-	public abstract int startTransverse(Context context);
+	public abstract Brick getFirstBrick(Context context);
 
-	public abstract int startTransverseEdge(Context context);
-
-	public abstract int endConverse(Context context);
-
-	public abstract int endTransverse(Context context);
-
-	public abstract int endTransverseEdge(Context context);
-
-	public abstract int edge(Context context);
-
-	public static class Placement {
-		public Integer converseStart; // Absolute
-		public Integer parentTransverseStart; // Relative to parent
-		public Map<String, Alignment> alignments;
-	}
-
-	public static class Adjustment {
-		public Integer converseEnd; // Absolute
-		public Integer converseEdge; // Absolute
-		public Integer transverseEnd; // Relative to parent
-		public Integer transverseEdge; // Relative to parent
-
-		public boolean isEmpty() {
-			return converseEnd == null && converseEdge == null && transverseEnd == null && transverseEdge == null;
-		}
-	}
-
-	public abstract void place(Context context, final Placement placement);
-
-	public abstract Layer visual();
+	public abstract Brick getLastBrick(Context context);
 
 	public Iterator<VisualNode> children() {
 		return Iterators.forArray();
 	}
 
-	public abstract void compact(Context context);
-
+	/*
 	public boolean isIn(final Context context, final Vector point) {
+		final Brick firstBrick = getFirstBrick(context);
+		final Brick lastBrick = getLastBrick(context);
+		final int startConverse;
+		final int startTransverse;
+		final int startTransverseEdge;
+		if (firstBrick == null) {
+
+			startConverse = 0;
+			startTransverse = Integer.MAX_VALUE;
+			startTransverseEdge = Integer.MAX_VALUE;
+		} else {
+			startConverse = lastBrick.getConverse();
+			startTransverse = lastBrick.parent.getTransverse();
+			startTransverseEdge = lastBrick.parent.getTransverse() + lastBrick.transverseSpan(context);
+
+		}
+		final int endConverse;
+		final int endTransverse;
+		final int endTransverseEdge;
+		if (lastBrick == null) {
+			endConverse = context.edge;
+			endTransverse = Integer.MAX_VALUE;
+			endTransverseEdge = Integer.MAX_VALUE;
+		} else {
+
+			endConverse = lastBrick.getConverse();
+			endTransverse = lastBrick.parent.getTransverse();
+			endTransverseEdge = lastBrick.parent.getTransverse() + lastBrick.transverseSpan(context);
+		}
 		return Obbox.isIn(
-				startConverse(context),
-				startTransverse(context),
-				startTransverseEdge(context),
-				endConverse(context),
-				endTransverse(context),
-				endTransverseEdge(context),
+				startConverse,
+				startTransverse,
+				startTransverseEdge,
+				endConverse,
+				endTransverse,
+				endTransverseEdge,
 				point
 		);
 	}
+	*/
 
 	public String debugTreeType() {
 		return toString();
@@ -81,5 +87,173 @@ public abstract class VisualNode {
 	public String debugTree(final int indent) {
 		final String indentString = String.join("", Collections.nCopies(indent, "  "));
 		return String.format("%s%s", indentString, debugTreeType());
+	}
+
+	public abstract int spacePriority();
+
+	public abstract boolean canCompact();
+
+	public abstract void compact(Context context);
+
+	public abstract boolean canExpand();
+
+	public abstract void expand(Context context);
+
+	public abstract Iterable<Pair<Brick, Brick.Properties>> getPropertiesForTagsChange(
+			Context context, TagsChange change
+	);
+
+	public Alignment getAlignment(final String alignment) {
+		if (parent() != null)
+			return parent().getAlignment(alignment);
+		return null;
+	}
+
+	public abstract void rootAlignments(Context context, Map<String, Alignment> alignments);
+
+	public abstract void destroyBricks(Context context);
+
+	@Luxem.Configuration
+	public interface Tag {
+	}
+
+	public static class TagsChange {
+		public final PSet<Tag> add;
+		public final PSet<Tag> remove;
+
+		public TagsChange() {
+			this.add = HashTreePSet.empty();
+			this.remove = HashTreePSet.empty();
+		}
+
+		public TagsChange(final Set<Tag> add, final Set<Tag> remove) {
+			this.add = HashTreePSet.from(add);
+			this.remove = HashTreePSet.from(remove);
+		}
+
+		public TagsChange add(final Tag tag) {
+			return new TagsChange(add.plus(tag), remove.minus(tag));
+		}
+
+		public TagsChange remove(final Tag tag) {
+			return new TagsChange(remove.plus(tag), add.minus(tag));
+		}
+	}
+
+	public Set<Tag> tags() {
+		return tags;
+	}
+
+	public void changeTags(final Context context, final TagsChange tagsChange) {
+		tags.removeAll(tagsChange.remove);
+		tags.addAll(tagsChange.add);
+	}
+
+	@Luxem.Configuration(name = "type")
+	public static class TypeTag implements Tag {
+		@Luxem.Configuration
+		public String value;
+
+		public TypeTag() {
+		}
+
+		public TypeTag(final String value) {
+			this.value = value;
+		}
+
+		@Override
+		public boolean equals(final Object obj) {
+			return obj instanceof TypeTag && value.equals(((TypeTag) obj).value);
+		}
+
+		public String toString() {
+			return String.format("type:%s", value);
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(TypeTag.class.hashCode(), value);
+		}
+	}
+
+	@Luxem.Configuration(name = "part")
+	public static class PartTag implements Tag {
+		@Luxem.Configuration
+		public String value;
+
+		public PartTag() {
+		}
+
+		public PartTag(final String value) {
+			this.value = value;
+		}
+
+		@Override
+		public boolean equals(final Object obj) {
+			return obj instanceof PartTag && value.equals(((PartTag) obj).value);
+		}
+
+		public String toString() {
+			return String.format("part:%s", value);
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(PartTag.class.hashCode(), value);
+		}
+	}
+
+	@Luxem.Configuration(name = "state")
+	public static class StateTag implements Tag {
+		@Luxem.Configuration
+		public String value;
+
+		public StateTag() {
+		}
+
+		public StateTag(final String value) {
+			this.value = value;
+		}
+
+		@Override
+		public boolean equals(final Object obj) {
+			return obj instanceof StateTag && value.equals(((StateTag) obj).value);
+		}
+
+		public String toString() {
+			return String.format("state:%s", value);
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(StateTag.class.hashCode(), value);
+		}
+	}
+
+	@Luxem.Configuration(name = "free")
+	public static class FreeTag implements Tag {
+		@Luxem.Configuration
+		public String value;
+
+		public FreeTag() {
+		}
+
+		public FreeTag(final String value) {
+			this.value = value;
+		}
+
+		@Override
+		public boolean equals(final Object obj) {
+			return obj instanceof FreeTag && value.equals(((FreeTag) obj).value);
+		}
+
+		public String toString() {
+			return String.format("free:%s", value);
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(FreeTag.class.hashCode(), value);
+		}
 	}
 }

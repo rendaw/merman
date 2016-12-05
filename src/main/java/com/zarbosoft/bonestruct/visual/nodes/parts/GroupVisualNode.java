@@ -1,32 +1,42 @@
 package com.zarbosoft.bonestruct.visual.nodes.parts;
 
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
+import com.zarbosoft.bonestruct.visual.Brick;
 import com.zarbosoft.bonestruct.visual.Context;
-import com.zarbosoft.bonestruct.visual.Vector;
+import com.zarbosoft.bonestruct.visual.IdleTask;
 import com.zarbosoft.bonestruct.visual.alignment.Alignment;
-import com.zarbosoft.bonestruct.visual.nodes.Layer;
 import com.zarbosoft.bonestruct.visual.nodes.VisualNode;
-import javafx.scene.layout.Pane;
+import com.zarbosoft.bonestruct.visual.nodes.VisualNodeParent;
+import com.zarbosoft.pidgoon.internal.Helper;
+import com.zarbosoft.pidgoon.internal.Pair;
+import org.pcollections.HashTreePMap;
+import org.pcollections.PMap;
 
 import java.util.*;
 import java.util.function.IntFunction;
 import java.util.stream.Collectors;
 
-public abstract class GroupVisualNode extends VisualNodePart {
-	static public int idleCount = 0;
-
-	enum Compact {
-		COMPACT, EXPAND
+public class GroupVisualNode extends VisualNodePart {
+	public GroupVisualNode(final Set<Tag> tags) {
+		super(tags);
 	}
 
-	public static class ChildChange { // Only within IdleTask
-		Integer converseEnd;
-		Integer transverseEnd;
-		Integer converseEdge;
-		Integer transverseEdge;
-		boolean alignment;
+	@Override
+	public Brick getFirstBrick(final Context context) {
+		if (children.isEmpty())
+			return null;
+		return children.get(0).getFirstBrick(context);
 	}
 
+	@Override
+	public Brick getLastBrick(final Context context) {
+		if (children.isEmpty())
+			return null;
+		return Helper.last(children).getFirstBrick(context);
+	}
+
+	/*
 	public Context.Hoverable hover(final Context context, final Vector point) {
 		for (final VisualNodePart child : children) {
 			final Context.Hoverable out = child.hover(context, point);
@@ -35,6 +45,7 @@ public abstract class GroupVisualNode extends VisualNodePart {
 		}
 		return null;
 	}
+	*/
 
 	@Override
 	public boolean select(final Context context) {
@@ -46,231 +57,10 @@ public abstract class GroupVisualNode extends VisualNodePart {
 	}
 
 	@Override
-	public int startConverse(final Context context) {
-		return converseStart;
-	}
-
-	@Override
-	public int startTransverse(final Context context) {
-		return parentTransverseStart;
-	}
-
-	@Override
-	public int startTransverseEdge(final Context context) {
-		return parentTransverseStart + context.syntax.lineSpan;
-	}
-
-	@Override
-	public int endConverse(final Context context) {
-		return converseEnd;
-	}
-
-	@Override
-	public int endTransverse(final Context context) {
-		return parentTransverseStart + transverseEnd;
-	}
-
-	@Override
-	public int endTransverseEdge(final Context context) {
-		return parentTransverseStart + transverseEnd + context.syntax.lineSpan;
-	}
-
-	@Override
-	public int edge(final Context context) {
-		return converseEdge;
-	}
-
-	class IdleTask extends com.zarbosoft.bonestruct.visual.IdleTask {
-		final Context context;
-		Integer converseStart;
-		Integer parentTransverseStart;
-		Map<String, Alignment> alignments = new HashMap<>();
-
-		Map<Integer, ChildChange> childChanges = new HashMap<>();
-		Compact compact = null;
-
-		IdleTask(final Context context) {
-			this.context = context;
-		}
-
-		@Override
-		protected int priority() {
-			return -10;
-		}
-
-		@Override
-		public void run() {
-			idle = null;
-			idleCount += 1;
-
-			/*
-			System.out.println(String.format("%s: cs %d, ts %d, cc %d %s",
-					GroupVisualNode.this,
-					converseStart,
-					parentTransverseStart,
-					childChanges.size(),
-					childChanges.entrySet().stream().map(e -> String.format(
-							"\n\t%d (cend %d, cedge %d, tend %d, tedge %d)",
-							e.getKey(),
-							e.getValue().converseEnd,
-							e.getValue().converseEdge,
-							e.getValue().transverseEnd,
-							e.getValue().transverseEdge
-					)).collect(Collectors.joining(""))
-			));
-			*/
-			{
-				final VisualNode.Placement forwardAlignments = new VisualNode.Placement();
-				forwardAlignments.alignments = new HashMap<>();
-				for (final Map.Entry<String, Alignment> entry : alignments.entrySet()) {
-					final Alignment groupAlignment = GroupVisualNode.this.alignments.get(entry.getKey());
-					if (groupAlignment == null) {
-						forwardAlignments.alignments.put(entry.getKey(), entry.getValue());
-					} else {
-						groupAlignment.place(context, entry.getValue());
-					}
-				}
-				if (!forwardAlignments.alignments.isEmpty())
-					for (final VisualNodePart child : children)
-						child.place(context, forwardAlignments);
-			}
-
-			final VisualNode.Adjustment parentAdjustment = new VisualNode.Adjustment();
-
-			if (compact == Compact.COMPACT) {
-				VisualNodePart minimal = null;
-				for (final VisualNodePart child : children) {
-					if (child.alignmentNameCompact() != null) {
-						removeAlignment(context, child);
-						findAlignment(child, child.alignmentNameCompact());
-					}
-					child.compact(context);
-					if (child.breakMode() == Break.COMPACT) {
-						child.broken = true;
-						placeChild(context, child);
-					} else if (child.edge(context) > context.edge && minimal != null) {
-						minimal.broken = true;
-						placeChild(context, minimal);
-					}
-					if (child.broken) {
-						minimal = null;
-					} else {
-						if (child.breakMode() == Break.MINIMAL) {
-							minimal = child;
-						}
-					}
-				}
-				GroupVisualNode.this.compact = true;
-			} else if (compact == Compact.EXPAND) {
-				// TODO
-			}
-
-			if (converseStart != null && converseStart != GroupVisualNode.this.converseStart) {
-				GroupVisualNode.this.converseStart = converseStart;
-				if (children.isEmpty()) {
-					GroupVisualNode.this.converseEnd = GroupVisualNode.this.converseStart;
-					GroupVisualNode.this.converseEdge = GroupVisualNode.this.converseStart;
-					parentAdjustment.converseEnd = converseStart;
-				} else {
-					placeChild(context, children.get(0));
-				}
-			}
-			if (parentTransverseStart != null && parentTransverseStart != GroupVisualNode.this.parentTransverseStart) {
-				GroupVisualNode.this.parentTransverseStart = parentTransverseStart;
-				parentAdjustment.transverseEnd =
-						GroupVisualNode.this.parentTransverseStart + GroupVisualNode.this.transverseEnd;
-			}
-
-			for (final int index : childChanges.keySet()) {
-				final ChildChange change = childChanges.get(index);
-
-				if (change.alignment) {
-					placeChild(context, children.get(index));
-				}
-
-				// Change overall boundaries
-				if (change.converseEdge != null) {
-					if (change.converseEdge > GroupVisualNode.this.converseEdge) {
-						if (primaryConverseIndex != index) {
-							secondConverseEdge = GroupVisualNode.this.converseEdge;
-							secondConverseIndex = primaryConverseIndex;
-						}
-						converseEdge = change.converseEdge;
-						parentAdjustment.converseEdge = change.converseEdge;
-						primaryConverseIndex = index;
-					} else {
-						calculateReduceConverseEdge(context, index, change.converseEdge);
-					}
-				}
-				if (index == children.size() - 1) {
-					if (change.transverseEdge != null) {
-						parentAdjustment.transverseEdge =
-								GroupVisualNode.this.parentTransverseStart + change.transverseEdge;
-					}
-					if (change.transverseEnd != null) {
-						parentAdjustment.transverseEnd =
-								GroupVisualNode.this.parentTransverseStart + change.transverseEnd;
-					}
-				}
-
-				// Adjust next child or own bounds if last child
-				/*
-				System.out.println(String.format("From %s child %d of %d",
-						GroupVisualNode.this,
-						index,
-						children.size()
-				));
-				*/
-				if (index == children.size() - 1) {
-					if (change.converseEnd != null && change.converseEnd != GroupVisualNode.this.converseEnd) {
-						GroupVisualNode.this.converseEnd = change.converseEnd;
-						parentAdjustment.converseEnd = GroupVisualNode.this.converseEnd;
-					}
-					if (change.transverseEdge != null && change.transverseEdge != GroupVisualNode.this.transverseEdge) {
-						GroupVisualNode.this.transverseEdge = change.transverseEdge;
-						parentAdjustment.transverseEdge =
-								GroupVisualNode.this.parentTransverseStart + GroupVisualNode.this.transverseEdge;
-					}
-					if (change.transverseEnd != null && change.transverseEnd != GroupVisualNode.this.transverseEnd) {
-						GroupVisualNode.this.transverseEnd = change.transverseEnd;
-						parentAdjustment.transverseEnd =
-								GroupVisualNode.this.parentTransverseStart + GroupVisualNode.this.transverseEnd;
-					}
-				} else {
-					/*
-					System.out.println(String.format("Placing %s child %d", GroupVisualNode.this, index + 1));
-					*/
-					placeChild(context, children.get(index + 1));
-				}
-			}
-			childChanges.clear();
-
-			context.translate(foreground, new Vector(0, GroupVisualNode.this.parentTransverseStart));
-			context.translate(background, new Vector(0, GroupVisualNode.this.parentTransverseStart));
-			if (parent != null && !parentAdjustment.isEmpty())
-				parent.adjust(context, parentAdjustment);
-		}
-	}
-
-	private void calculateReduceConverseEdge(final Context context, final int index, final int newConverse) {
-		final VisualNode.Adjustment parentAdjustment = new VisualNode.Adjustment();
-		if (index == primaryConverseIndex) {
-			if (newConverse > secondConverseEdge) {
-				converseEdge = newConverse;
-				parentAdjustment.converseEdge = newConverse;
-			} else {
-				recalculateConverseEdge(context);
-				parentAdjustment.converseEdge = GroupVisualNode.this.converseEdge;
-			}
-		} else if (index == secondConverseIndex) {
-			if (newConverse > secondConverseEdge) {
-				secondConverseEdge = newConverse;
-			} else {
-				recalculateConverseEdge(context);
-			}
-		}
-		if (parent != null && !parentAdjustment.isEmpty())
-			parent.adjust(context, parentAdjustment);
+	public Brick createFirstBrick(final Context context) {
+		if (children.isEmpty())
+			return null;
+		return children.get(0).createFirstBrick(context);
 	}
 
 	public Map<String, Alignment> alignments = new HashMap<>();
@@ -279,18 +69,7 @@ public abstract class GroupVisualNode extends VisualNodePart {
 	// State
 	IdleTask idle;
 	protected List<VisualNodePart> children = new ArrayList<>();
-	Pane foreground = new Pane();
-	Pane background = new Pane();
 	boolean compact = false;
-	int primaryConverseIndex = 0;
-	int secondConverseIndex = 0;
-	int secondConverseEdge = 0; // Local
-	int converseStart = 0;
-	int converseEnd = 0;
-	int converseEdge = 0;
-	int parentTransverseStart = 0;
-	int transverseEnd = 0;
-	int transverseEdge = 0;
 
 	@Override
 	public void setParent(final VisualNodeParent parent) {
@@ -302,99 +81,23 @@ public abstract class GroupVisualNode extends VisualNodePart {
 		return parent;
 	}
 
-	@Override
-	public void place(final Context context, final VisualNode.Placement placement) {
-		getIdle(context);
-		if (placement.converseStart != null)
-			idle.converseStart = placement.converseStart;
-		if (placement.parentTransverseStart != null)
-			idle.parentTransverseStart = placement.parentTransverseStart;
-		if (placement.alignments != null)
-			idle.alignments.putAll(placement.alignments);
-	}
-
-	private void recalculateConverseEdge(final Context context) {
-		int newConverse = 0;
-		secondConverseEdge = 0;
-		for (int checkIndex = 0; checkIndex < children.size(); ++checkIndex) {
-			final VisualNodePart child = children.get(checkIndex);
-			if (child.edge(context) > newConverse) {
-				secondConverseIndex = primaryConverseIndex;
-				secondConverseEdge = GroupVisualNode.this.converseEdge;
-				primaryConverseIndex = checkIndex;
-				newConverse = child.edge(context);
-			}
-		}
-		converseEdge = newConverse;
-	}
-
-	private void placeChild(final Context context, final VisualNodePart node) {
-		final VisualNode.Placement placement = new VisualNode.Placement();
-		final int index = ((GroupVisualNodeParent) node.parent()).index;
-		final int priorConverseEnd;
-		final int priorTransverseStart;
-		if (index == 0) {
-			priorConverseEnd = converseStart;
-			priorTransverseStart = 0;
-		} else {
-			final VisualNodePart prior = children.get(index - 1);
-			priorConverseEnd = prior.endConverse(context);
-			priorTransverseStart = prior.startTransverse(context);
-		}
-		if (node.broken) {
-			// TODO start record of used alignments until the next break, pass on
-			// TODO allow converse direction shifts at breaks, pass on until next break
-			placement.parentTransverseStart = priorTransverseStart + context.syntax.lineSpan;
-		} else {
-			placement.converseStart = priorConverseEnd;
-			placement.parentTransverseStart = priorTransverseStart;
-		}
-		if (node.alignment != null)
-			placement.converseStart = Math.max(placement.converseStart, node.alignment.converse);
-		if (placement.converseStart != null && node.alignment != null)
-			node.alignment.set(context, placement.converseStart);
-		node.place(context, placement);
-	}
-
 	public void add(final Context context, final VisualNodePart node, int preindex) {
 		if (preindex < 0)
 			preindex = this.children.size() + preindex + 1;
 		if (preindex >= this.children.size() + 1)
 			throw new RuntimeException("Inserting visual node after group end.");
 		final int index = preindex;
-
-		// Adjust index refs
 		this.children.stream().skip(index).forEach(n -> ((GroupVisualNodeParent) n.parent()).index += 1);
-		if (idle != null) {
-			idle.childChanges = idle.childChanges
-					.entrySet()
-					.stream()
-					.collect(Collectors.toMap(e -> e.getKey() >= index ? e.getKey() + 1 : e.getKey(),
-							e -> e.getValue()
-					));
-		}
-
-		// Add references
 		node.setParent(new GroupVisualNodeParent(this, index));
-		if (!alignments.isEmpty()) {
-			final VisualNode.Placement placement = new VisualNode.Placement();
-			placement.alignments = Collections.unmodifiableMap(alignments);
-			node.place(context, placement);
-		}
-		if (compact && node.alignmentNameCompact() != null)
-			findAlignment(node, node.alignmentNameCompact());
-		else if (node.alignmentName() != null)
-			findAlignment(node, node.alignmentName());
 		this.children.add(index, node);
-		final Layer childVisual = node.visual();
-		foreground.getChildren().add(childVisual.foreground);
-		if (childVisual.background != null)
-			background.getChildren().add(childVisual.background);
-
-		// Adjust layout
-		if (node.breakMode() == Break.ALWAYS || compact && node.breakMode() == Break.COMPACT)
-			node.broken = true;
-		placeChild(context, node);
+		final Brick previousBrick = index == 0 ?
+				(parent == null ? null : parent.getPreviousBrick(context)) :
+				children.get(index - 1).getLastBrick(context);
+		final Brick nextBrick = index == this.children.size() - 1 ?
+				(parent == null ? null : parent.getNextBrick(context)) :
+				children.get(index + 1).getFirstBrick(context);
+		if (previousBrick != null && nextBrick != null)
+			context.fillFromEndBrick(previousBrick);
 	}
 
 	public void add(final Context context, final VisualNodePart node) {
@@ -408,40 +111,9 @@ public abstract class GroupVisualNode extends VisualNodePart {
 			throw new RuntimeException("Removing visual node after group end.");
 		final Integer index = preindex;
 		final VisualNodePart node = children.get(index);
-
-		// Reduce references
-		removeAlignment(context, node);
-		this.foreground.getChildren().remove(index);
-		this.background.getChildren().remove(index);
+		node.destroyBricks(context);
 		this.children.remove(index);
-
-		// Adjust index references
 		this.children.stream().skip(index).forEach(n -> ((GroupVisualNodeParent) n.parent()).index -= 1);
-		if (idle != null) {
-			idle.childChanges = idle.childChanges
-					.entrySet()
-					.stream()
-					.filter(e -> e.getKey() != index)
-					.collect(Collectors.toMap(e -> e.getKey() >= index ? index - 1 : index, e -> e.getValue()));
-		}
-
-		// Adjust layout
-		calculateReduceConverseEdge(context, index, 0);
-		final VisualNode.Adjustment parentAdjustment = new VisualNode.Adjustment();
-		if (children.isEmpty()) {
-			parentAdjustment.converseEnd = GroupVisualNode.this.converseEnd;
-			parentAdjustment.transverseEnd = GroupVisualNode.this.transverseEnd;
-		} else {
-			if (index == children.size()) {
-				final VisualNodePart prior = children.get(index - 1);
-				parentAdjustment.converseEnd = prior.endConverse(context);
-				parentAdjustment.transverseEdge = parentTransverseStart + prior.endTransverseEdge(context);
-				parentAdjustment.transverseEnd = parentTransverseStart + prior.endTransverse(context);
-			} else {
-				placeChild(context, children.get(index));
-			}
-		}
-		parent.adjust(context, parentAdjustment);
 	}
 
 	public void remove(final Context context, final int start, final int size) {
@@ -454,52 +126,12 @@ public abstract class GroupVisualNode extends VisualNodePart {
 		remove(context, 0, children.size());
 	}
 
-	private void findAlignment(final VisualNodePart node, final String name) {
-		if (name == null)
-			return;
-		VisualNodePart at = GroupVisualNode.this;
-		while (at != null) {
-			if (at instanceof GroupVisualNode && ((GroupVisualNode) at).alignments.containsKey(name)) {
-				node.alignment = ((GroupVisualNode) at).alignments.get(name);
-				node.alignment.listeners.add(node);
-				return;
-			}
-			at = ((GroupVisualNode) at).parent.target();
-		}
-	}
-
-	private void removeAlignment(final Context context, final VisualNodePart node) {
-		if (node.alignment == null)
-			return;
-		node.alignment.set(context, 0);
-		node.alignment.listeners.remove(node);
-	}
-
-	@Override
-	public Layer visual() {
-		return new Layer(foreground, background);
-	}
-
 	@Override
 	public Iterator<VisualNode> children() {
 		return Iterators.concat(children
 				.stream()
 				.map(c -> c.children())
 				.toArray((IntFunction<Iterator<VisualNode>[]>) Iterator[]::new));
-	}
-
-	IdleTask getIdle(final Context context) {
-		if (idle == null) {
-			idle = new IdleTask(context);
-			context.addIdle(idle);
-		}
-		return idle;
-	}
-
-	@Override
-	public void compact(final Context context) {
-		getIdle(context);
-		idle.compact = Compact.COMPACT;
 	}
 
 	@Override
@@ -509,7 +141,8 @@ public abstract class GroupVisualNode extends VisualNodePart {
 
 	public String debugTree(final int indent) {
 		final String indentString = String.join("", Collections.nCopies(indent, "  "));
-		return String.format("%s%s%s",
+		return String.format(
+				"%s%s%s",
 				indentString,
 				debugTreeType(),
 				children
@@ -517,5 +150,55 @@ public abstract class GroupVisualNode extends VisualNodePart {
 						.map(c -> String.format("\n%s", c.debugTree(indent + 1)))
 						.collect(Collectors.joining(""))
 		);
+	}
+
+	@Override
+	public void compact(final Context context) {
+		super.compact(context);
+		children.forEach(c -> c.compact(context));
+	}
+
+	@Override
+	public void expand(final Context context) {
+		super.expand(context);
+		children.forEach(c -> c.expand(context));
+	}
+
+	@Override
+	public Iterable<Pair<Brick, Brick.Properties>> getPropertiesForTagsChange(
+			final Context context, final TagsChange change
+	) {
+		return Iterables.concat(children
+				.stream()
+				.map(c -> c.getPropertiesForTagsChange(context, change))
+				.toArray(Iterable[]::new));
+	}
+
+	@Override
+	public Alignment getAlignment(final String alignment) {
+		final Alignment out = alignments.get(alignment);
+		if (out != null)
+			return out;
+		return super.getAlignment(alignment);
+	}
+
+	@Override
+	public void rootAlignments(final Context context, final Map<String, Alignment> alignments) {
+		PMap<String, Alignment> derived = HashTreePMap.from(alignments);
+		for (final Map.Entry<String, Alignment> e : this.alignments.entrySet()) {
+			final Alignment parent = alignments.get(e.getKey());
+			final Alignment alignment = e.getValue();
+			if (parent != null)
+				parent.place(context, parent);
+			derived = derived.plus(e.getKey(), alignment);
+		}
+		for (final VisualNodePart child : children)
+			child.rootAlignments(context, derived);
+	}
+
+	@Override
+	public void destroyBricks(final Context context) {
+		for (final VisualNodePart child : children)
+			child.destroyBricks(context);
 	}
 }

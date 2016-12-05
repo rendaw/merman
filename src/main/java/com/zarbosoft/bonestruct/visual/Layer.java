@@ -1,4 +1,4 @@
-package com.zarbosoft.bonestruct.visual.nodes;
+package com.zarbosoft.bonestruct.visual;
 
 import javafx.scene.Node;
 

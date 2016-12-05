@@ -1,23 +1,26 @@
 package com.zarbosoft.bonestruct.model;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.zarbosoft.bonestruct.InvalidSyntax;
 import com.zarbosoft.bonestruct.model.back.BackPart;
 import com.zarbosoft.bonestruct.model.front.FrontPart;
 import com.zarbosoft.bonestruct.model.middle.*;
+import com.zarbosoft.bonestruct.visual.Brick;
 import com.zarbosoft.bonestruct.visual.Context;
-import com.zarbosoft.bonestruct.visual.Vector;
+import com.zarbosoft.bonestruct.visual.alignment.Alignment;
 import com.zarbosoft.bonestruct.visual.alignment.AlignmentDefinition;
-import com.zarbosoft.bonestruct.visual.nodes.Layer;
 import com.zarbosoft.bonestruct.visual.nodes.VisualNode;
+import com.zarbosoft.bonestruct.visual.nodes.VisualNodeParent;
 import com.zarbosoft.bonestruct.visual.nodes.parts.GroupVisualNode;
-import com.zarbosoft.bonestruct.visual.nodes.parts.VisualNodeParent;
 import com.zarbosoft.luxemj.Luxem;
 import com.zarbosoft.pidgoon.events.BakedOperator;
 import com.zarbosoft.pidgoon.events.Store;
 import com.zarbosoft.pidgoon.internal.Helper;
 import com.zarbosoft.pidgoon.internal.Pair;
 import com.zarbosoft.pidgoon.nodes.Sequence;
+import org.pcollections.HashTreePSet;
+import org.pcollections.PSet;
 
 import java.util.*;
 
@@ -40,6 +43,9 @@ public class NodeType {
 
 	@Luxem.Configuration
 	public Map<String, AlignmentDefinition> alignments;
+
+	@Luxem.Configuration(name = "space-priority", optional = true)
+	public int spacePriority = 0;
 
 	public com.zarbosoft.pidgoon.internal.Node buildLoadRule() {
 		final Sequence seq = new Sequence();
@@ -119,120 +125,162 @@ public class NodeType {
 	}
 
 	public VisualNode createVisual(final Context context, final Map<String, Object> data) {
-		class Visual extends GroupVisualNode {
-			@Override
-			public Break breakMode() {
-				//return Break.NEVER;
-				return null;
-			}
-
-			@Override
-			public String alignmentName() {
-				throw new AssertionError("Not implemented.");
-			}
-
-			@Override
-			public String alignmentNameCompact() {
-				throw new AssertionError("Not implemented.");
-			}
-
-			@Override
-			public String debugTreeType() {
-				return String.format("node type@%s (%s)", Integer.toHexString(hashCode()), id);
-			}
-		}
-		final Visual out = new Visual();
-		for (final Map.Entry<String, AlignmentDefinition> entry : alignments.entrySet()) {
-			out.alignments.put(entry.getKey(), entry.getValue().create());
-		}
-		for (final FrontPart part : front) {
-			out.add(context, part.createVisual(context, data));
-		}
-		return new VisualNode() {
-			@Override
-			public void setParent(final VisualNodeParent parent) {
-				out.setParent(parent);
-			}
-
-			@Override
-			public VisualNodeParent parent() {
-				return out.parent();
-			}
-
-			@Override
-			public Context.Hoverable hover(final Context context, final Vector point) {
-				return out.hover(context, point);
-			}
-
-			@Override
-			public boolean select(final Context context) {
-				return out.select(context);
-			}
-
-			@Override
-			public int startConverse(final Context context) {
-				return out.startConverse(context);
-			}
-
-			@Override
-			public int startTransverse(final Context context) {
-				return out.startTransverse(context);
-			}
-
-			@Override
-			public int startTransverseEdge(final Context context) {
-				return out.startTransverseEdge(context);
-			}
-
-			@Override
-			public int endConverse(final Context context) {
-				return out.endConverse(context);
-			}
-
-			@Override
-			public int endTransverse(final Context context) {
-				return out.endTransverse(context);
-			}
-
-			@Override
-			public int endTransverseEdge(final Context context) {
-				return out.endTransverseEdge(context);
-			}
-
-			@Override
-			public void place(final Context context, final Placement placement) {
-				out.place(context, placement);
-			}
-
-			@Override
-			public int edge(final Context context) {
-				return out.edge(context);
-			}
-
-			@Override
-			public Layer visual() {
-				return out.visual();
-			}
-
-			@Override
-			public void compact(final Context context) {
-				out.compact(context);
-			}
-
-			@Override
-			public String debugTreeType() {
-				return String.format("node type 0@%s", Integer.toHexString(hashCode()));
-			}
-
-			public String debugTree(final int indent) {
-				final String indentString = String.join("", Collections.nCopies(indent, "  "));
-				return String.format("%s%s\n%s", indentString, debugTreeType(), out.debugTree(indent + 1));
-			}
-		};
+		return new NodeTypeVisual(context, data);
 	}
 
 	@Override
 	public String toString() {
 		return id;
+	}
+
+	private class NodeTypeVisual extends VisualNode {
+		private final GroupVisualNode body;
+		private boolean compact;
+		private VisualNodeParent parent;
+
+		public NodeTypeVisual(final Context context, final Map<String, Object> data) {
+			super(HashTreePSet.singleton(new TypeTag(id)));
+			final PSet<Tag> tags = HashTreePSet.from(tags());
+			compact = false;
+			body = new GroupVisualNode(ImmutableSet.of());
+			for (final Map.Entry<String, AlignmentDefinition> entry : alignments.entrySet()) {
+				body.alignments.put(entry.getKey(), entry.getValue().create());
+			}
+			Helper.enumerate(front.stream()).forEach(pair -> {
+				final FrontPart part = pair.second;
+				body.add(context,
+						part.createVisual(context, data, tags.plus(new PartTag(String.format("%d", pair.first))))
+				);
+			});
+			body.setParent(new VisualNodeParent() {
+
+				@Override
+				public void selectUp(final Context context) {
+					parent.selectUp(context);
+				}
+
+				@Override
+				public Brick createNextBrick(final Context context) {
+					return parent.createNextBrick(context);
+				}
+
+				@Override
+				public VisualNode getNode() {
+					return NodeTypeVisual.this;
+				}
+
+				@Override
+				public Alignment getAlignment(final String alignment) {
+					return null;
+				}
+
+				@Override
+				public Brick getPreviousBrick(final Context context) {
+					if (parent == null)
+						return null;
+					return parent.getPreviousBrick(context);
+				}
+
+				@Override
+				public Brick getNextBrick(final Context context) {
+					if (parent == null)
+						return null;
+					return parent.getNextBrick(context);
+				}
+			});
+		}
+
+		@Override
+		public void setParent(final VisualNodeParent parent) {
+			this.parent = parent;
+		}
+
+		@Override
+		public VisualNodeParent parent() {
+			return body.parent();
+		}
+
+			/*
+			@Override
+			public Context.Hoverable hover(final Context context, final Vector point) {
+				return body.hover(context, point);
+			}
+			*/
+
+		@Override
+		public boolean select(final Context context) {
+			return body.select(context);
+		}
+
+		@Override
+		public Brick createFirstBrick(final Context context) {
+			return body.createFirstBrick(context);
+		}
+
+		@Override
+		public Brick getFirstBrick(final Context context) {
+			return body.getFirstBrick(context);
+		}
+
+		@Override
+		public Brick getLastBrick(final Context context) {
+			return body.getLastBrick(context);
+		}
+
+		@Override
+		public String debugTreeType() {
+			return String.format("node type 0@%s", Integer.toHexString(hashCode()));
+		}
+
+		public String debugTree(final int indent) {
+			final String indentString = String.join("", Collections.nCopies(indent, "  "));
+			return String.format("%s%s\n%s", indentString, debugTreeType(), body.debugTree(indent + 1));
+		}
+
+		@Override
+		public int spacePriority() {
+			return spacePriority;
+		}
+
+		@Override
+		public boolean canCompact() {
+			return !compact;
+		}
+
+		@Override
+		public void compact(final Context context) {
+			body.compact(context);
+			compact = true;
+		}
+
+		@Override
+		public boolean canExpand() {
+			return compact;
+		}
+
+		@Override
+		public void expand(final Context context) {
+			body.expand(context);
+			compact = false;
+		}
+
+		@Override
+		public Iterable<Pair<Brick, Brick.Properties>> getPropertiesForTagsChange(
+				final Context context, final TagsChange change
+		) {
+			return body.getPropertiesForTagsChange(context, change);
+		}
+
+		@Override
+		public void rootAlignments(
+				final Context context, final Map<String, Alignment> alignments
+		) {
+			body.rootAlignments(context, alignments);
+		}
+
+		@Override
+		public void destroyBricks(final Context context) {
+			body.destroyBricks(context);
+		}
 	}
 }

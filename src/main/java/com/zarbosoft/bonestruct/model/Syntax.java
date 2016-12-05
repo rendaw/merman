@@ -2,18 +2,22 @@ package com.zarbosoft.bonestruct.model;
 
 import com.google.common.collect.ImmutableSet;
 import com.zarbosoft.bonestruct.InvalidSyntax;
-import com.zarbosoft.bonestruct.visual.nodes.Obbox;
+import com.zarbosoft.bonestruct.model.front.FrontConstantPart;
+import com.zarbosoft.bonestruct.visual.Hotkeys;
+import com.zarbosoft.bonestruct.visual.Obbox;
+import com.zarbosoft.bonestruct.visual.Style;
 import com.zarbosoft.luxemj.Luxem;
 import com.zarbosoft.luxemj.LuxemEvent;
 import com.zarbosoft.luxemj.path.LuxemArrayPath;
 import com.zarbosoft.luxemj.path.LuxemPath;
-import com.zarbosoft.pidgoon.events.EventStream;
-import com.zarbosoft.pidgoon.events.Grammar;
-import com.zarbosoft.pidgoon.events.Parse;
+import com.zarbosoft.pidgoon.events.*;
+import com.zarbosoft.pidgoon.internal.Helper;
 import com.zarbosoft.pidgoon.internal.Mutable;
 import com.zarbosoft.pidgoon.internal.Pair;
 import com.zarbosoft.pidgoon.nodes.Reference;
+import com.zarbosoft.pidgoon.nodes.Repeat;
 import com.zarbosoft.pidgoon.nodes.Union;
+import javafx.collections.FXCollections;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.scene.paint.Color;
@@ -31,29 +35,17 @@ public class Syntax {
 	@Luxem.Configuration(optional = true)
 	public Color background = Color.WHITE;
 
-	@Luxem.Configuration(optional = true)
-	public String font = null;
+	@Luxem.Configuration(optional = true, name = "pad-converse")
+	public int padConverse = 5;
 
-	@Luxem.Configuration(optional = true, name = "font-size")
-	public Integer fontSize = null;
-
-	@Luxem.Configuration(optional = true, name = "font-color")
-	public Color fontColor = Color.BLACK;
-
-	@Luxem.Configuration(optional = true, name = "pad-vertical")
-	public int padVertical = 5;
-
-	@Luxem.Configuration(optional = true, name = "pad-horizontal")
-	public int padHorizontal = 5;
-
-	@Luxem.Configuration(optional = true, name = "line-span")
-	public int lineSpan = 16;
-
-	@Luxem.Configuration(optional = true)
-	public Obbox.Settings hover = new Obbox.Settings();
+	@Luxem.Configuration(optional = true, name = "pad-transverse")
+	public int padTransverse = 5;
 
 	@Luxem.Configuration
 	public List<LuxemEvent> template;
+
+	@Luxem.Configuration
+	public List<Style> styles;
 
 	@Luxem.Configuration
 	public List<NodeType> types;
@@ -66,11 +58,21 @@ public class Syntax {
 	// Root applies to whole document parsing
 	// For parsing text pastes, use the current location to find the correct rule
 
+	@Luxem.Configuration(name = "root-prefix", optional = true)
+	public List<FrontConstantPart> rootPrefix;
+	@Luxem.Configuration(name = "root-separator", optional = true)
+	public List<FrontConstantPart> rootSeparator = new ArrayList<>();
+	@Luxem.Configuration(name = "root-suffix", optional = true)
+	public List<FrontConstantPart> rootSuffix;
+
+	@Luxem.Configuration(optional = true, name = "root-hotkeys")
+	public Map<String, com.zarbosoft.luxemj.com.zarbosoft.luxemj.grammar.Node> rootHotkeys = new HashMap<>();
+
 	@Luxem.Configuration(optional = true)
 	public Obbox.Settings select = new Obbox.Settings();
 
 	@Luxem.Configuration(optional = true)
-	public Map<String, com.zarbosoft.luxemj.com.zarbosoft.luxemj.grammar.Node> hotkeys = new HashMap<>();
+	public List<Hotkeys> hotkeys;
 
 	@Luxem.Configuration
 	public enum Direction {
@@ -233,19 +235,28 @@ public class Syntax {
 				v.forEach(n -> group.add(new Reference(n)));
 				grammar.add(k, group);
 			});
-			grammar.add("root", new Reference(root));
+			grammar.add("root", new BakedOperator(new Repeat(new BakedOperator(new Reference(root), store -> {
+				return Helper.stackSingleElement(store);
+			})), store -> {
+				final List<Node> out = new ArrayList<>();
+				store = (Store) Helper.<Node>stackPopSingleList(store, node -> {
+					out.add(node);
+				});
+				return store.pushStack(out);
+			}));
 		}
 		return grammar;
 	}
 
 	public Document create() {
-		final EventStream<Node> stream = new Parse<Node>().grammar(getGrammar()).node("root").parse();
+		final EventStream<List<Node>> stream =
+				new Parse<List<Node>>().stack(() -> 0).grammar(getGrammar()).node("root").parse();
 		final Mutable<LuxemPath> path = new Mutable<>(new LuxemArrayPath(null));
 		template.forEach(e -> {
 			path.value = path.value.push(e);
 			stream.push(e, path.value.toString());
 		});
-		return new Document(this, stream.finish());
+		return new Document(this, FXCollections.observableList(stream.finish()));
 	}
 
 	public Document load(final File file) throws FileNotFoundException, IOException {
@@ -261,8 +272,13 @@ public class Syntax {
 	}
 
 	public Document load(final InputStream data) {
-		return new Document(this,
-				new com.zarbosoft.luxemj.Parse<Node>().grammar(getGrammar()).node("root").parse(data)
+		return new Document(
+				this,
+				FXCollections.observableList(new com.zarbosoft.luxemj.Parse<List<Node>>()
+						.stack(() -> 0)
+						.grammar(getGrammar())
+						.node("root")
+						.parse(data))
 		);
 	}
 }

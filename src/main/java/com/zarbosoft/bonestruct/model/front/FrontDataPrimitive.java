@@ -3,62 +3,40 @@ package com.zarbosoft.bonestruct.model.front;
 import com.zarbosoft.bonestruct.model.NodeType;
 import com.zarbosoft.bonestruct.model.middle.DataPrimitive;
 import com.zarbosoft.bonestruct.visual.Context;
+import com.zarbosoft.bonestruct.visual.nodes.VisualNode;
 import com.zarbosoft.bonestruct.visual.nodes.parts.PrimitiveVisualNode;
 import com.zarbosoft.bonestruct.visual.nodes.parts.VisualNodePart;
 import com.zarbosoft.luxemj.Luxem;
+import org.pcollections.HashTreePSet;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Luxem.Configuration(name = "primitive")
-public class FrontDataPrimitive implements FrontPart {
+public class FrontDataPrimitive extends FrontPart {
 
 	@Luxem.Configuration
 	public String middle;
+
 	private DataPrimitive dataType;
 
-	@Luxem.Configuration
-	public static class PrimitiveStyle extends FrontMark.Style {
-		@Luxem.Configuration(optional = true)
-		public boolean block = false;
-
-		@Luxem.Configuration(name = "soft-indent", optional = true)
-		public int softIndent = 0;
-
-		@Luxem.Configuration(optional = true)
-		public boolean level = true;
-	}
-
-	@Luxem.Configuration(optional = true)
-	public PrimitiveStyle style = new PrimitiveStyle();
 	@Luxem.Configuration(optional = true)
 	public Map<String, com.zarbosoft.luxemj.com.zarbosoft.luxemj.grammar.Node> hotkeys = new HashMap<>();
 
 	@Override
-	public VisualNodePart createVisual(final Context context, final Map<String, Object> data) {
-		return new PrimitiveVisualNode(context, dataType.get(data)) {
-
-			@Override
-			protected int softIndent() {
-				return style.softIndent;
-			}
-
-			@Override
-			protected boolean breakFirst() {
-				return style.block;
-			}
-
-			@Override
-			protected boolean level() {
-				return style.level;
-			}
-
-			@Override
-			protected String alignment() {
-				return null;
-			}
-		};
+	public VisualNodePart createVisual(
+			final Context context, final Map<String, Object> data, final Set<VisualNode.Tag> tags
+	) {
+		return new PrimitiveVisualNode(
+				context,
+				dataType.get(data),
+				HashTreePSet
+						.from(tags)
+						.plus(new VisualNode.PartTag("primitive"))
+						.plusAll(this.tags.stream().map(s -> new VisualNode.FreeTag(s)).collect(Collectors.toSet()))
+		);
 	}
 
 	@Override
