@@ -46,7 +46,7 @@ public abstract class RawText {
 							}
 
 							@Override
-							protected int getConverse(final int edge) {
+							public int getConverse(final int edge) {
 								return edge - converseSpan() - (int) text.getLayoutY();
 							}
 
@@ -84,7 +84,7 @@ public abstract class RawText {
 							}
 
 							@Override
-							protected int getConverse(final int edge) {
+							public int getConverse(final int edge) {
 								return edge - converseSpan() - (int) text.getLayoutY();
 							}
 
@@ -128,7 +128,7 @@ public abstract class RawText {
 							}
 
 							@Override
-							protected int getConverse(final int edge) {
+							public int getConverse(final int edge) {
 								return (int) text.getLayoutY();
 							}
 
@@ -164,7 +164,7 @@ public abstract class RawText {
 							}
 
 							@Override
-							protected int getConverse(final int edge) {
+							public int getConverse(final int edge) {
 								return (int) text.getLayoutY();
 							}
 
@@ -203,7 +203,7 @@ public abstract class RawText {
 							}
 
 							@Override
-							protected int getConverse(final int edge) {
+							public int getConverse(final int edge) {
 								return edge - converseSpan() - (int) text.getLayoutX();
 							}
 
@@ -241,7 +241,7 @@ public abstract class RawText {
 							}
 
 							@Override
-							protected int getConverse(final int edge) {
+							public int getConverse(final int edge) {
 								return edge - converseSpan() - (int) text.getLayoutX();
 							}
 
@@ -285,7 +285,7 @@ public abstract class RawText {
 							}
 
 							@Override
-							protected int getConverse(final int edge) {
+							public int getConverse(final int edge) {
 								return (int) text.getLayoutX();
 							}
 
@@ -325,7 +325,7 @@ public abstract class RawText {
 							}
 
 							@Override
-							protected int getConverse(final int edge) {
+							public int getConverse(final int edge) {
 								return (int) text.getLayoutX();
 							}
 
@@ -371,5 +371,5 @@ public abstract class RawText {
 		return getConverse(edge) + converseSpan();
 	}
 
-	protected abstract int getConverse(int edge);
+	public abstract int getConverse(int edge);
 }

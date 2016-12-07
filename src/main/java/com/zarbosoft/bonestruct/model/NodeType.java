@@ -147,10 +147,7 @@ public class NodeType {
 				body.alignments.put(entry.getKey(), entry.getValue().create());
 			}
 			Helper.enumerate(front.stream()).forEach(pair -> {
-				final FrontPart part = pair.second;
-				body.add(context,
-						part.createVisual(context, data, tags.plus(new PartTag(String.format("%d", pair.first))))
-				);
+				body.add(context, pair.second.createVisual(context, data, tags));
 			});
 			body.setParent(new VisualNodeParent() {
 
@@ -171,7 +168,7 @@ public class NodeType {
 
 				@Override
 				public Alignment getAlignment(final String alignment) {
-					return null;
+					return parent.getAlignment(alignment);
 				}
 
 				@Override

@@ -2,6 +2,8 @@ package com.zarbosoft.bonestruct.visual.alignment;
 
 import com.zarbosoft.bonestruct.visual.Context;
 
+import java.util.Map;
+
 public class RelativeAlignment extends Alignment implements AlignmentListener {
 	private final String base;
 	private final int offset;
@@ -10,6 +12,7 @@ public class RelativeAlignment extends Alignment implements AlignmentListener {
 	public RelativeAlignment(final String base, final int offset) {
 		this.base = base;
 		this.offset = offset;
+		converse = offset;
 	}
 
 	@Override
@@ -18,19 +21,31 @@ public class RelativeAlignment extends Alignment implements AlignmentListener {
 	}
 
 	@Override
-	public void place(final Context context, final Alignment parent) {
-		alignment = parent;
+	public void root(final Context context, final Map<String, Alignment> parents) {
+		if (alignment != null) {
+			alignment.listeners.remove(this);
+		}
+		alignment = parents.get(base);
+		if (alignment == this)
+			throw new AssertionError("Alignment parented to self");
+		if (alignment != null)
+			alignment.listeners.add(this);
 		align(context);
 	}
 
 	@Override
 	public void align(final Context context) {
-		this.converse = this.alignment.converse + offset;
+		converse = (alignment == null ? 0 : alignment.converse) + offset;
 		submit(context);
 	}
 
 	@Override
 	public int getConverse(final Context context) {
-		return 0;
+		return converse;
+	}
+
+	@Override
+	public String toString() {
+		return String.format("relative-%d-p-%s", converse, alignment);
 	}
 }

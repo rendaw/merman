@@ -20,7 +20,6 @@ import javafx.collections.WeakListChangeListener;
 import org.pcollections.HashTreePSet;
 import org.pcollections.PSet;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -40,8 +39,10 @@ public class FrontDataRecord extends FrontPart {
 	@Luxem.Configuration
 	public List<FrontConstantPart> separator;
 	private DataRecord dataType;
-	@Luxem.Configuration(optional = true)
-	public Map<String, com.zarbosoft.luxemj.com.zarbosoft.luxemj.grammar.Node> hotkeys = new HashMap<>();
+	@Luxem.Configuration(name = "tag-first", optional = true)
+	public boolean tagFirst = false;
+	@Luxem.Configuration(name = "tag-last", optional = true)
+	public boolean tagLast = false;
 
 	private class RecordVisual extends GroupVisualNode {
 		private final ListChangeListener<Pair<StringProperty, Node>> dataListener;
@@ -70,12 +71,28 @@ public class FrontDataRecord extends FrontPart {
 
 		@Override
 		public void remove(final Context context, final int start, final int size) {
+			final boolean retagFirst = tagFirst && start == 0;
+			final boolean retagLast = tagLast && start + size == children.size();
 			super.remove(context, start, size);
 			if (start == 0 && !children.isEmpty() && !separator.isEmpty())
 				((GroupVisualNode) children.get(0)).remove(context, 0, 1);
+			if (!children.isEmpty()) {
+				if (retagFirst)
+					children.get(0).changeTags(context, new TagsChange().add(new PartTag("first")));
+				if (retagLast)
+					Helper.last(children).changeTags(context, new TagsChange().add(new PartTag("last")));
+			}
 		}
 
 		private void add(final Context context, final int start, final List<Pair<StringProperty, Node>> nodes) {
+			final boolean retagFirst = tagFirst && start == 0;
+			final boolean retagLast = tagLast && start == children.size();
+			if (!children.isEmpty()) {
+				if (retagFirst)
+					children.get(0).changeTags(context, new TagsChange().remove(new PartTag("first")));
+				if (retagLast)
+					Helper.last(children).changeTags(context, new TagsChange().remove(new PartTag("last")));
+			}
 			final PSet<Tag> tags = HashTreePSet.from(tags());
 			Helper.enumerate(nodes.stream(), start).forEach(p -> {
 				final GroupVisualNode group = new GroupVisualNode(ImmutableSet.of());
@@ -99,6 +116,12 @@ public class FrontDataRecord extends FrontPart {
 					group.add(context, fix.createVisual(context, tags.plus(new PartTag("suffix"))));
 				super.add(context, group, p.first);
 			});
+			if (!children.isEmpty()) {
+				if (retagFirst)
+					children.get(0).changeTags(context, new TagsChange().add(new PartTag("first")));
+				if (retagLast)
+					Helper.last(children).changeTags(context, new TagsChange().add(new PartTag("last")));
+			}
 		}
 	}
 

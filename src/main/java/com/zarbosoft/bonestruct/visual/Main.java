@@ -58,13 +58,23 @@ public class Main extends Application {
 		} catch (final IOException e) {
 			throw new UncheckedIOException(e);
 		}
-		//final Document doc = luxemSyntax.load("[dog, dog, dog, dog, dog],");
+		//final Document doc = luxemSyntax.load("[[dog, dog, dog, dog, dog, dogdogdog, dog, dog, dog]],");
 		final Document doc = luxemSyntax.load("[{converse: 47,transverse:{ar:[2,9,13]},},[atler]]");
 		//final Document doc = luxemSyntax.load("{analogue:bolivar}");
 		final Wall wall = new Wall();
 		final Context context = new Context(luxemSyntax, doc, this::addIdle, wall);
 		final ArrayVisualNode root =
 				new ArrayVisualNode(context, doc.top, ImmutableSet.of(new VisualNode.PartTag("root"))) {
+
+					@Override
+					protected boolean tagLast() {
+						return false;
+					}
+
+					@Override
+					protected boolean tagFirst() {
+						return false;
+					}
 
 					@Override
 					protected Map<String, Node> getHotkeys() {

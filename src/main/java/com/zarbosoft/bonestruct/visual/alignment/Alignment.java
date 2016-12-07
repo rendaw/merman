@@ -4,6 +4,7 @@ import com.zarbosoft.bonestruct.visual.Context;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public abstract class Alignment {
 	public int converse = 0;
@@ -17,5 +18,5 @@ public abstract class Alignment {
 		}
 	}
 
-	public abstract void place(Context context, Alignment parent);
+	public abstract void root(Context context, Map<String, Alignment> parents);
 }

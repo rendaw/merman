@@ -40,7 +40,6 @@ public class Wall {
 		courses.stream().forEach(l -> l.parent = this);
 		renumber(at);
 		visual.getChildren().addAll(at, courses.stream().map(l -> l.visual).collect(Collectors.toList()));
-		System.out.format("adding %d courses at %d\n", courses.size(), at);
 		getIdle(context, at);
 	}
 
@@ -143,7 +142,6 @@ public class Wall {
 				adjustIdle = null;
 				return;
 			}
-			System.out.format("adjusting course %d to %d\n", at + 1, children.get(at).transverseEdge(context));
 			children.get(at + 1).setTransverse(context, children.get(at).transverseEdge(context));
 			at += 1;
 			context.addIdle(this);

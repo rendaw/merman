@@ -2,6 +2,8 @@ package com.zarbosoft.bonestruct.visual.alignment;
 
 import com.zarbosoft.bonestruct.visual.Context;
 
+import java.util.Map;
+
 public class FixedAlignment extends Alignment {
 
 	@Override
@@ -9,6 +11,6 @@ public class FixedAlignment extends Alignment {
 	}
 
 	@Override
-	public void place(final Context context, final Alignment parent) {
+	public void root(final Context context, final Map<String, Alignment> parents) {
 	}
 }

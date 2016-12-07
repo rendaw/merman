@@ -45,12 +45,32 @@ public abstract class ArrayVisualNode extends GroupVisualNode {
 
 	@Override
 	public void remove(final Context context, final int start, final int size) {
+		final boolean retagFirst = tagFirst() && start == 0;
+		final boolean retagLast = tagLast() && start + size == children.size();
 		super.remove(context, start, size);
 		if (start == 0 && !children.isEmpty() && !separator.isEmpty())
 			((GroupVisualNode) children.get(0)).remove(context, 0, 1);
+		if (!children.isEmpty()) {
+			if (retagFirst)
+				children.get(0).changeTags(context, new TagsChange().add(new PartTag("first")));
+			if (retagLast)
+				Helper.last(children).changeTags(context, new TagsChange().add(new PartTag("last")));
+		}
 	}
 
+	protected abstract boolean tagLast();
+
+	protected abstract boolean tagFirst();
+
 	public void add(final Context context, final int start, final List<Node> nodes) {
+		final boolean retagFirst = tagFirst() && start == 0;
+		final boolean retagLast = tagLast() && start == children.size();
+		if (!children.isEmpty()) {
+			if (retagFirst)
+				children.get(0).changeTags(context, new TagsChange().remove(new PartTag("first")));
+			if (retagLast)
+				Helper.last(children).changeTags(context, new TagsChange().remove(new PartTag("last")));
+		}
 		final PSet<Tag> tags = HashTreePSet.from(tags());
 		Helper.enumerate(nodes.stream(), start).forEach(p -> {
 			final GroupVisualNode group = new GroupVisualNode(ImmutableSet.of());
@@ -70,6 +90,12 @@ public abstract class ArrayVisualNode extends GroupVisualNode {
 				group.add(context, fix.createVisual(context, tags.plus(new PartTag("suffix"))));
 			super.add(context, group, p.first);
 		});
+		if (!children.isEmpty()) {
+			if (retagFirst)
+				children.get(0).changeTags(context, new TagsChange().add(new PartTag("first")));
+			if (retagLast)
+				Helper.last(children).changeTags(context, new TagsChange().add(new PartTag("last")));
+		}
 	}
 
 	protected abstract Map<String, com.zarbosoft.luxemj.com.zarbosoft.luxemj.grammar.Node> getHotkeys();

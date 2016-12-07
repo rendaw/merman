@@ -11,17 +11,16 @@
 	        break: true,
 	    },
 	    {
-	        tags: [(type) luxem-object, (part) key, (state) compact],
-	        break: true,
+	        tags: [(free) base, (state) compact],
+	        align: base,
+	    },
+	    {
+	        tags: [(free) indent, (state) compact],
 	        align: indent,
 	    },
 	    {
-	        tags: [(type) luxem-object, (free) infix, (state) compact],
-	        align: value,
-	    },
-	    {
-	        tags: [(type) luxem-array, (free) prefix, (state) compact],
-	        align: indent,
+	        tags: [(free) record-table, (state) compact],
+	        align: record-table,
 	    },
 	],
 	hotkeys: [
@@ -52,23 +51,22 @@
 			    }
             },
             alignments: {
+                base: (relative) { base: indent, offset: 0 },
                 indent: (relative) { base: indent, offset: 16 },
-                value: (concensus) {},
+                record-table: (concensus) {},
             },
 			front: [
 				(mark) "{",
 				(record) {
 					middle: data,
+					prefix: [ (space) { tags: [indent, break] } ],
 					infix: [
 					    (mark) ":",
-					    (space) {},
+					    (space) { tags: [record-table] },
                     ],
 					separator: [ (mark) "," ],
 				},
-				(mark) {
-				    tags: [ break ],
-				    value: "}",
-				},
+				(mark) { value: "}", tags: [ break, base ], },
 			],
 		},
 		{
@@ -81,19 +79,17 @@
 			    }
             },
             alignments: {
+                base: (relative) { base: indent, offset: 0 },
                 indent: (relative) { base: indent, offset: 16 },
             },
 			front: [
 				(mark) "[",
 				(array) {
 					middle: data,
+					prefix: [ (space) { tags: [indent, break] } ],
 					separator: [ (mark) "," ],
-					prefix: [ (space) { tags: [prefix, break] } ],
 				},
-				(mark) {
-				    tags: [ break ],
-				    value: "]",
-				}
+				(mark) { value: "]", tags: [ break, base ], }
 			],
 		},
 		{

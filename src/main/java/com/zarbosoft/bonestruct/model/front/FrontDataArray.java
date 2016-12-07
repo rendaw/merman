@@ -30,6 +30,10 @@ public class FrontDataArray extends FrontPart {
 	private DataArray dataType;
 	@Luxem.Configuration(optional = true)
 	public Map<String, com.zarbosoft.luxemj.com.zarbosoft.luxemj.grammar.Node> hotkeys = new HashMap<>();
+	@Luxem.Configuration(name = "tag-first", optional = true)
+	public boolean tagFirst = false;
+	@Luxem.Configuration(name = "tag-last", optional = true)
+	public boolean tagLast = false;
 
 	@Override
 	public void finish(final NodeType nodeType, final Set<String> middleUsed) {
@@ -49,6 +53,16 @@ public class FrontDataArray extends FrontPart {
 						.plus(new VisualNode.PartTag("array"))
 						.plusAll(this.tags.stream().map(s -> new VisualNode.FreeTag(s)).collect(Collectors.toSet()))
 		) {
+
+			@Override
+			protected boolean tagLast() {
+				return tagLast;
+			}
+
+			@Override
+			protected boolean tagFirst() {
+				return tagFirst;
+			}
 
 			@Override
 			protected Map<String, Node> getHotkeys() {

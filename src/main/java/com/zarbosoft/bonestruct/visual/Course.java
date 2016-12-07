@@ -298,7 +298,6 @@ public class Course {
 			if (!priorities.isEmpty() && converse > context.edge)
 				break;
 		}
-		System.out.format("compact %d: %d / %d [%d]\n", index, converse, context.edge, priorities.size());
 		if (converse < context.edge) {
 			lastExpandCheckConverse = converse;
 			return false;
@@ -373,8 +372,9 @@ public class Course {
 				}
 			}
 
-			if (properties.alignment != null)
+			if (properties.alignment != null) {
 				converse += Math.max(converse, properties.alignment.converse);
+			}
 			converse += properties.converseSpan;
 			if (converse > context.edge) {
 				// Not enough space, stop

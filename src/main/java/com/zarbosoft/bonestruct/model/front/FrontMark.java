@@ -26,7 +26,7 @@ public class FrontMark extends FrontConstantPart {
 
 	private class MarkVisual extends VisualNodePart {
 		public VisualNodeParent parent;
-		private TextBrick brick = null;
+		private RawTextBrick brick = null;
 
 		public MarkVisual(final Set<Tag> tags) {
 			super(tags);
@@ -87,6 +87,14 @@ public class FrontMark extends FrontConstantPart {
 		}
 
 		@Override
+		public void changeTags(final Context context, final TagsChange tagsChange) {
+			super.changeTags(context, tagsChange);
+			if (brick != null) {
+				brick.setStyle(context);
+			}
+		}
+
+		@Override
 		public Iterable<Pair<Brick, Brick.Properties>> getPropertiesForTagsChange(
 				final Context context, final TagsChange change
 		) {
@@ -113,7 +121,11 @@ public class FrontMark extends FrontConstantPart {
 
 			public void setStyle(final Context context) {
 				style = context.getStyle(tags());
-				alignment = getAlignment(style);
+				if (alignment != null)
+					alignment.listeners.remove(this);
+				alignment = MarkVisual.this.getAlignment(style.alignment);
+				if (alignment != null)
+					alignment.listeners.add(this);
 				changed(context);
 				super.setStyle(style);
 			}

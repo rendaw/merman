@@ -7,6 +7,7 @@ import com.zarbosoft.bonestruct.visual.Context;
 import com.zarbosoft.bonestruct.visual.Style;
 import com.zarbosoft.bonestruct.visual.Vector;
 import com.zarbosoft.bonestruct.visual.alignment.Alignment;
+import com.zarbosoft.bonestruct.visual.alignment.AlignmentListener;
 import com.zarbosoft.bonestruct.visual.nodes.VisualNode;
 import com.zarbosoft.bonestruct.visual.nodes.VisualNodeParent;
 import com.zarbosoft.bonestruct.visual.nodes.parts.VisualNodePart;
@@ -87,7 +88,7 @@ public class FrontSpace extends FrontConstantPart {
 			}
 		}
 
-		private class SpaceBrick extends Brick {
+		private class SpaceBrick extends Brick implements AlignmentListener {
 			private int converse = 0;
 			private Style.Baked style;
 			private Alignment alignment;
@@ -99,7 +100,11 @@ public class FrontSpace extends FrontConstantPart {
 
 			public void setStyle(final Context context) {
 				this.style = context.getStyle(SpaceVisual.this.tags());
+				if (alignment != null)
+					alignment.listeners.remove(this);
 				alignment = SpaceVisual.this.getAlignment(style.alignment);
+				if (alignment != null)
+					alignment.listeners.add(this);
 				changed(context);
 			}
 
@@ -159,6 +164,16 @@ public class FrontSpace extends FrontConstantPart {
 			@Override
 			public void destroy(final Context context) {
 				brick = null;
+			}
+
+			@Override
+			public void align(final Context context) {
+				changed(context);
+			}
+
+			@Override
+			public int getConverse(final Context context) {
+				return converse;
 			}
 		}
 	}

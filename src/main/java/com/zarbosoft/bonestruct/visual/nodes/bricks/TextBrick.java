@@ -4,12 +4,13 @@ import com.zarbosoft.bonestruct.visual.Brick;
 import com.zarbosoft.bonestruct.visual.Context;
 import com.zarbosoft.bonestruct.visual.Style;
 import com.zarbosoft.bonestruct.visual.alignment.Alignment;
+import com.zarbosoft.bonestruct.visual.alignment.AlignmentListener;
 import com.zarbosoft.bonestruct.visual.nodes.parts.RawText;
 import com.zarbosoft.bonestruct.visual.nodes.parts.RawTextUtils;
 import javafx.scene.Node;
 import javafx.scene.text.Font;
 
-public abstract class TextBrick extends Brick {
+public abstract class TextBrick extends Brick implements AlignmentListener {
 	RawText text;
 
 	@Override
@@ -65,5 +66,15 @@ public abstract class TextBrick extends Brick {
 	@Override
 	public Properties properties() {
 		return properties(getStyle());
+	}
+
+	@Override
+	public void align(final Context context) {
+		changed(context);
+	}
+
+	@Override
+	public int getConverse(final Context context) {
+		return text.getConverse(context.edge);
 	}
 }

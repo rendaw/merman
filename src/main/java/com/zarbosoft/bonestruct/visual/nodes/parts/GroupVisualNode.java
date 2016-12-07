@@ -186,10 +186,8 @@ public class GroupVisualNode extends VisualNodePart {
 	public void rootAlignments(final Context context, final Map<String, Alignment> alignments) {
 		PMap<String, Alignment> derived = HashTreePMap.from(alignments);
 		for (final Map.Entry<String, Alignment> e : this.alignments.entrySet()) {
-			final Alignment parent = alignments.get(e.getKey());
 			final Alignment alignment = e.getValue();
-			if (parent != null)
-				parent.place(context, parent);
+			alignment.root(context, alignments);
 			derived = derived.plus(e.getKey(), alignment);
 		}
 		for (final VisualNodePart child : children)
