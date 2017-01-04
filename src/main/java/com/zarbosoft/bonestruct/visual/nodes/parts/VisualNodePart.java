@@ -48,4 +48,8 @@ public abstract class VisualNodePart extends VisualNode {
 	@Override
 	public void rootAlignments(final Context context, final Map<String, Alignment> alignments) {
 	}
+
+	public Context.Hoverable hover(final Context context) {
+		return parent().hover(context);
+	}
 }

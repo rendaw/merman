@@ -121,7 +121,7 @@ public class Course {
 		}
 		children.addAll(at, bricks);
 		renumber(at);
-		visual.getChildren().addAll(at, bricks.stream().map(c -> c.getVisual()).collect(Collectors.toList()));
+		visual.getChildren().addAll(at, bricks.stream().map(c -> c.getRawVisual()).collect(Collectors.toList()));
 		getIdlePlace(context);
 		idlePlace.at(at);
 		idlePlace.changed.addAll(bricks);
@@ -233,9 +233,13 @@ public class Course {
 			if (newAscent || newDescent) {
 				children.stream().forEach(b -> {
 					b.allocateTransverse(context, ascent, descent);
+					b.getAttachments(context).forEach(a -> a.setTransverseSpan(context, ascent, descent));
 				});
 			} else
-				changed.stream().forEach(b -> b.allocateTransverse(context, ascent, descent));
+				changed.stream().forEach(b -> {
+					b.allocateTransverse(context, ascent, descent);
+					b.getAttachments(context).forEach(a -> a.setTransverseSpan(context, ascent, descent));
+				});
 
 			/*
 			if (fixtures[0]) {
@@ -249,7 +253,7 @@ public class Course {
 			}
 			*/
 
-			// Do converse placement
+			// Do getConverse placement
 			final int at = first;
 			int converse = at == 0 ? 0 : children.get(at - 1).converseEdge(context);
 			for (int index = at; index < children.size(); ++index) {

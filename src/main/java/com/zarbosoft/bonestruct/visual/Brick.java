@@ -3,6 +3,7 @@ package com.zarbosoft.bonestruct.visual;
 import com.google.common.collect.ImmutableList;
 import com.zarbosoft.bonestruct.visual.alignment.Alignment;
 import com.zarbosoft.bonestruct.visual.nodes.VisualNode;
+import com.zarbosoft.bonestruct.visual.nodes.parts.VisualNodePart;
 import javafx.scene.Node;
 
 import java.util.HashSet;
@@ -15,9 +16,17 @@ public abstract class Brick {
 
 	public abstract int converseEdge(final Context context);
 
-	public abstract VisualNode getNode();
+	public final VisualNode getNode() { // Temp final
+		if (getVisual().parent() == null)
+			return null;
+		return getVisual().parent().getNode();
+	}
+
+	public abstract VisualNodePart getVisual();
 
 	public abstract Properties getPropertiesForTagsChange(Context context, VisualNode.TagsChange change);
+
+	public abstract int getConverse(Context context);
 
 	public static class Properties {
 		public final boolean broken;
@@ -43,7 +52,7 @@ public abstract class Brick {
 
 	public abstract Properties properties();
 
-	public abstract Node getVisual();
+	public abstract Node getRawVisual();
 
 	public abstract void setConverse(Context context, int converse);
 
@@ -62,6 +71,9 @@ public abstract class Brick {
 
 	public void addAttachment(final Context context, final Attachment attachment) {
 		attachments.add(attachment);
+		attachment.setConverse(context, getConverse(context));
+		attachment.setTransverse(context, parent.transverseStart);
+		attachment.setTransverseSpan(context, parent.ascent, parent.descent);
 		changed(context);
 	}
 

@@ -6,7 +6,6 @@ import com.zarbosoft.bonestruct.visual.Context;
 import com.zarbosoft.bonestruct.visual.Obbox;
 import com.zarbosoft.bonestruct.visual.Style;
 import com.zarbosoft.bonestruct.visual.alignment.Alignment;
-import com.zarbosoft.bonestruct.visual.nodes.VisualNode;
 import com.zarbosoft.bonestruct.visual.nodes.VisualNodeParent;
 import com.zarbosoft.bonestruct.visual.nodes.bricks.TextBrick;
 import com.zarbosoft.pidgoon.internal.Helper;
@@ -33,6 +32,7 @@ public class PrimitiveVisualNode extends VisualNodePart {
 	Style.Baked softStyle, hardStyle, firstStyle;
 	Set<Tag> softTags = new HashSet<>(), hardTags = new HashSet<>();
 	int brickCount = 0;
+	private Context.Hoverable hoverable;
 
 	private void getStyles(final Context context) {
 		final PSet<Tag> tags = HashTreePSet.from(tags());
@@ -77,6 +77,25 @@ public class PrimitiveVisualNode extends VisualNodePart {
 		return Helper.last(lines).brick;
 	}
 
+	@Override
+	public Context.Hoverable hover(final Context context) {
+		Context.Hoverable parentHoverable = null;
+		if (parent != null && (parentHoverable = parent.hover(context)) != null)
+			return parentHoverable;
+		if (hoverable == null) {
+			hoverable = new Context.Hoverable() {
+
+				// TODO hovery stuff
+
+				@Override
+				public void clear(final Context context) {
+					hoverable = null;
+				}
+			};
+		}
+		return hoverable;
+	}
+
 	private class Line {
 		public void destroy(final Context context) {
 			if (brick != null) {
@@ -92,8 +111,8 @@ public class PrimitiveVisualNode extends VisualNodePart {
 
 		private class LineBrick extends TextBrick {
 			@Override
-			public VisualNode getNode() {
-				return PrimitiveVisualNode.this.parent == null ? null : PrimitiveVisualNode.this.parent.getNode();
+			public VisualNodePart getVisual() {
+				return PrimitiveVisualNode.this;
 			}
 
 			@Override
@@ -204,104 +223,6 @@ public class PrimitiveVisualNode extends VisualNodePart {
 	public Brick createFirstBrick(final Context context) {
 		return lines.get(0).createBrick(context);
 	}
-
-	/*
-	public Context.Hoverable hover(final Context context, final Vector point) {
-		if (isIn(context, point)) {
-			return new Hoverable();
-		}
-		return null;
-	}
-
-	private class Hoverable extends Context.Hoverable {
-		@Override
-		public Context.Hoverable hover(final Context context, final Vector point) {
-			if (isIn(context, point)) {
-				if (border == null) {
-					border = Obbox.fromSettings(context.syntax.hover);
-					border.setSize(
-							context,
-							startConverse(context),
-							startTransverse(context),
-							startTransverseEdge(context),
-							endConverse(context),
-							endTransverse(context),
-							endTransverseEdge(context)
-					);
-					final Pane temp = new Pane();
-					temp.getChildren().add(border);
-					background.getChildren().add(0, temp);
-				}
-				return this;
-			} else
-				return parent().hoverUp(context);
-		}
-
-		@Override
-		public void clear(final Context context) {
-			if (border != null) {
-				background.getChildren().remove(0, 1);
-				border = null;
-			}
-		}
-	}
-
-	@Override
-	public void compact(final Context context) {
-		final StringBuilder buffer = new StringBuilder();
-
-		final BreakIterator breakIterator = BreakIterator.getLineInstance();
-		for (Line line : lines) {
-			if (buffer.length() > 0) {
-				line.setText(context, buffer.toString() + line.text);
-				buffer.delete(0, buffer.length());
-			}
-			if (line.edge(context) > context.edge) {
-				breakIterator.setText(line.getText());
-				final int breakAt = breakIterator.preceding(line.visual.getUnder(context.edge));
-				if (breakAt > 0) {
-					buffer.append(line.getText().substring(breakAt, -1));
-					line.setText(line.getText().substring(0, breakAt));
-				}
-			}
-		}
-		////////////
-
-
-		for (final HardLine hardLine : hardLines) {
-			final BreakIterator breakIterator = BreakIterator.getLineInstance();
-			Line line;
-			for (final Iterator<Line> lineIter = hardLine.lines.iterator(); lineIter.hasNext(); ) {
-				line = lineIter.next();
-				if (buffer.length() > 0) {
-					line.setText(buffer.toString() + line.getText());
-					buffer.delete(0, buffer.length());
-				}
-				if (line.edge(context) > context.edge) {
-					breakIterator.setText(line.getText());
-					final int breakAt = breakIterator.preceding(line.visual.getUnder(context.edge));
-					if (breakAt > 0) {
-						buffer.append(line.getText().substring(breakAt, -1));
-						line.setText(line.getText().substring(0, breakAt));
-					}
-				}
-			}
-			while (buffer.length() > 0) {
-				line = new Line(context, false);
-				line.setText(buffer.toString());
-				buffer.delete(0, buffer.length());
-				if (line.edge(context) > context.edge) {
-					breakIterator.setText(line.getText());
-					final int breakAt = breakIterator.preceding(line.visual.getUnder(context.edge));
-					buffer.append(line.getText().substring(breakAt, -1));
-					line.setText(line.getText().substring(0, breakAt));
-				}
-				hardLine.lines.add(line);
-				hardLine.add(context, line, -1);
-			}
-		}
-	}
-	*/
 
 	@Override
 	public String debugTreeType() {

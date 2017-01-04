@@ -16,15 +16,19 @@ import java.util.Map;
 import java.util.Set;
 
 public class NestedVisualNodePart extends VisualNodePart {
-	private final VisualNode body;
-	//Obbox border = null;
+	protected final VisualNode body;
 	VisualNodeParent parent;
 	boolean selected = false;
+	private BorderAttachment borderAttachment;
 
 	public NestedVisualNodePart(final VisualNode body, final Set<Tag> tags) {
 		super(tags);
 		this.body = body;
-		body.setParent(new VisualNodeParent() {
+		body.setParent(createParent());
+	}
+
+	protected VisualNodeParent createParent() {
+		return new VisualNodeParent() {
 			@Override
 			public void selectUp(final Context context) {
 				select(context);
@@ -34,7 +38,10 @@ public class NestedVisualNodePart extends VisualNodePart {
 			public Brick createNextBrick(final Context context) {
 				if (parent == null)
 					return null;
-				return parent.createNextBrick(context);
+				final Brick newLast = parent.createNextBrick(context);
+				if (hoverable != null && newLast != null)
+					hoverable.borderAttachment.setLast(context, newLast);
+				return newLast;
 			}
 
 			@Override
@@ -60,7 +67,40 @@ public class NestedVisualNodePart extends VisualNodePart {
 					return null;
 				return parent.getNextBrick(context);
 			}
-		});
+
+			class NestedHoverable extends Context.Hoverable {
+
+				BorderAttachment borderAttachment;
+
+				NestedHoverable(final Context context) {
+					borderAttachment = new BorderAttachment(
+							context,
+							context.syntax.hoverStyle,
+							body.getFirstBrick(context),
+							body.getLastBrick(context)
+					);
+				}
+
+				@Override
+				public void clear(final Context context) {
+					borderAttachment.destroy(context);
+					hoverable = null;
+				}
+			}
+
+			NestedHoverable hoverable;
+
+			@Override
+			public Context.Hoverable hover(final Context context) {
+				Context.Hoverable parentHoverable = null;
+				if (parent != null && (parentHoverable = parent.hover(context)) != null)
+					return parentHoverable;
+				if (hoverable != null)
+					return hoverable;
+				hoverable = new NestedHoverable(context);
+				return hoverable;
+			}
+		};
 	}
 
 	@Override
@@ -77,78 +117,6 @@ public class NestedVisualNodePart extends VisualNodePart {
 	public Brick createFirstBrick(final Context context) {
 		return body.createFirstBrick(context);
 	}
-
-	/*
-	@Override
-	public Context.Hoverable hover(final Context context, final Vector point) {
-		if (selected) {
-			return body.hover(context, point);
-		} else {
-			if (Obbox.isIn(
-					body.startConverse(context),
-					body.startTransverse(context),
-					body.startTransverseEdge(context),
-					body.endConverse(context),
-					body.endTransverse(context),
-					body.endTransverseEdge(context),
-					point
-			)) {
-				return new Hoverable();
-			}
-			return null;
-		}
-	}
-
-	private class Hoverable extends Context.Hoverable {
-		@Override
-		public Context.Hoverable hover(final Context context, final Vector point) {
-			if (Obbox.isIn(
-					body.startConverse(context),
-					body.startTransverse(context),
-					body.startTransverseEdge(context),
-					body.endConverse(context),
-					body.endTransverse(context),
-					body.endTransverseEdge(context),
-					point
-			)) {
-				final Context.Hoverable out = body.hover(context, point);
-				if (out == null) {
-					if (border == null)
-						createBorder(context, context.syntax.hover);
-					return this;
-				} else
-					return out;
-			} else if (parent != null)
-				return parent.hoverUp(context);
-			else
-				return null;
-		}
-
-		@Override
-		public void clear(final Context context) {
-			if (border != null) {
-				background.getChildren().remove(0, 1);
-				border = null;
-			}
-		}
-	}
-
-	private void createBorder(final Context context, final Obbox.Settings settings) {
-		border = Obbox.fromSettings(settings);
-		border.setSize(
-				context,
-				body.startConverse(context),
-				body.startTransverse(context),
-				body.startTransverseEdge(context),
-				body.endConverse(context),
-				body.endTransverse(context),
-				body.endTransverseEdge(context)
-		);
-		final Pane temp = new Pane();
-		temp.getChildren().add(border);
-		background.getChildren().add(0, temp);
-	}
-	*/
 
 	@Override
 	public boolean select(final Context context) {

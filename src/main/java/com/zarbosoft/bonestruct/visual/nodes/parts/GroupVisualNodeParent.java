@@ -74,4 +74,9 @@ public class GroupVisualNodeParent extends VisualNodeParent {
 		else
 			return target.children.get(index + 1).getFirstBrick(context);
 	}
+
+	@Override
+	public Context.Hoverable hover(final Context context) {
+		return target.hover(context);
+	}
 }

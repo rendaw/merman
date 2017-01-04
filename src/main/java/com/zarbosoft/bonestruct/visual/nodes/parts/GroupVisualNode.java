@@ -33,19 +33,8 @@ public class GroupVisualNode extends VisualNodePart {
 	public Brick getLastBrick(final Context context) {
 		if (children.isEmpty())
 			return null;
-		return Helper.last(children).getFirstBrick(context);
+		return Helper.last(children).getLastBrick(context);
 	}
-
-	/*
-	public Context.Hoverable hover(final Context context, final Vector point) {
-		for (final VisualNodePart child : children) {
-			final Context.Hoverable out = child.hover(context, point);
-			if (out != null)
-				return out;
-		}
-		return null;
-	}
-	*/
 
 	@Override
 	public boolean select(final Context context) {
@@ -64,7 +53,7 @@ public class GroupVisualNode extends VisualNodePart {
 	}
 
 	public Map<String, Alignment> alignments = new HashMap<>();
-	VisualNodeParent parent = null;
+	public VisualNodeParent parent = null;
 
 	// State
 	IdleTask idle;
@@ -88,8 +77,8 @@ public class GroupVisualNode extends VisualNodePart {
 			throw new RuntimeException("Inserting visual node after group end.");
 		final int index = preindex;
 		this.children.stream().skip(index).forEach(n -> ((GroupVisualNodeParent) n.parent()).index += 1);
-		node.setParent(new GroupVisualNodeParent(this, index));
 		this.children.add(index, node);
+		node.setParent(createParent(index));
 		final Brick previousBrick = index == 0 ?
 				(parent == null ? null : parent.getPreviousBrick(context)) :
 				children.get(index - 1).getLastBrick(context);
@@ -98,6 +87,10 @@ public class GroupVisualNode extends VisualNodePart {
 				children.get(index + 1).getFirstBrick(context);
 		if (previousBrick != null && nextBrick != null)
 			context.fillFromEndBrick(previousBrick);
+	}
+
+	protected VisualNodeParent createParent(final int index) {
+		return new GroupVisualNodeParent(this, index);
 	}
 
 	public void add(final Context context, final VisualNodePart node) {

@@ -5,9 +5,6 @@ import com.zarbosoft.bonestruct.visual.Context;
 import com.zarbosoft.bonestruct.visual.alignment.Alignment;
 
 public abstract class VisualNodeParent {
-	/*
-	public abstract Context.Hoverable hoverUp(Context context);
-*/
 	public abstract void selectUp(Context context);
 
 	public abstract Brick createNextBrick(Context context);
@@ -19,4 +16,6 @@ public abstract class VisualNodeParent {
 	public abstract Brick getPreviousBrick(Context context);
 
 	public abstract Brick getNextBrick(Context context);
+
+	public abstract Context.Hoverable hover(Context context);
 }

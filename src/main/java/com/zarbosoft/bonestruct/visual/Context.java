@@ -15,6 +15,7 @@ import com.zarbosoft.pidgoon.nodes.Sequence;
 import com.zarbosoft.pidgoon.nodes.Union;
 import javafx.animation.Interpolator;
 import javafx.geometry.Point2D;
+import javafx.scene.Group;
 import javafx.scene.Scene;
 
 import java.lang.ref.WeakReference;
@@ -28,6 +29,7 @@ public class Context {
 	public WeakHashMap<Set<VisualNode.Tag>, WeakReference<Style.Baked>> styleCache = new WeakHashMap<>();
 	public WeakHashMap<Set<VisualNode.Tag>, WeakReference<Hotkeys>> hotkeysCache = new WeakHashMap<>();
 	public final Wall wall;
+	public Group background;
 
 	public void root(final VisualNodePart node) {
 		wall.clear(this);
@@ -148,52 +150,72 @@ public class Context {
 		public abstract Iterable<Action> getActions(Context context);
 	}
 
-	/*
 	public static abstract class Hoverable {
-
-		public abstract Hoverable hover(Context context, Vector point);
-
 		public abstract void clear(Context context);
 	}
 
 	public class HoverIdle extends IdleTask {
 		public Vector point = null;
-		final VisualNode root;
 		Context context;
+		Brick at;
 
-		public HoverIdle(final Context context, final VisualNode root) {
-			this.root = root;
+		public HoverIdle(final Context context) {
 			this.context = context;
+			at = hoverBrick == null ? (
+					context.wall.children.get(0).children.isEmpty() ?
+							null :
+							context.wall.children.get(0).children.get(0)
+			) : hoverBrick;
 		}
 
 		@Override
 		public void run() {
-			if (hover != null && point == null) {
-				hover.clear(context);
-				hover = null;
-			} else {
-				final Hoverable oldHover = hover;
-				hover = hover == null ? root.hover(context, point) : hover.hover(context, point);
-				//System.out.format("hov c %d t %d old %s new %s\n", point.converse, point.transverse, oldHover, hover);
-				if (hover != oldHover) {
-					if (oldHover != null)
-						oldHover.clear(context);
-					addIdle(this);
-				} else
-					hoverIdle = null;
+			// TODO store indexes rather than brick ref
+			if (at == null) {
+				hoverIdle = null;
+				return;
 			}
+			if (point == null) {
+				if (hover != null)
+					hover.clear(context);
+				hover = null;
+				hoverBrick = null;
+				hoverIdle = null;
+				return;
+			}
+			if (point.transverse < at.parent.transverseStart && at.parent.index > 0) {
+				at = context.wall.children.get(at.parent.index - 1).children.get(0);
+			} else if (point.transverse > at.parent.transverseEdge(context) &&
+					at.parent.index < wall.children.size() - 1) {
+				at = context.wall.children.get(at.parent.index + 1).children.get(0);
+			} else {
+				while (point.converse < at.getConverse(context) && at.index > 0) {
+					at = at.parent.children.get(at.index - 1);
+				}
+				while (point.converse >= at.converseEdge(context) && at.index < at.parent.children.size() - 1) {
+					at = at.parent.children.get(at.index + 1);
+				}
+				final Hoverable old = hover;
+				hover = at.getVisual().hover(context);
+				if (hover != old) {
+					if (old != null)
+						old.clear(context);
+				}
+				hoverBrick = at;
+				hoverIdle = null;
+				return;
+			}
+			addIdle(this);
 		}
 	}
-	*/
 
 	public final Syntax syntax;
 	public final Document document;
 	public int edge = 0;
 	public int transverseEdge = 0;
-	/*
+	public Brick hoverBrick;
 	public Hoverable hover;
 	public HoverIdle hoverIdle;
-	*/
 	public Selection selection;
 
 	public Context(

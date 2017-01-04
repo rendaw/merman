@@ -2,7 +2,7 @@
     name: luxem,
     *TODO complete color selection*
 	background: [0.21568, 0.21568, 0.21568],
-	select: {
+	hover-style: {
 	    line-color: [0.21568, 0.05, 0.43],
 	},
 	styles: [
@@ -56,6 +56,13 @@
                 record-table: (concensus) {},
             },
 			front: [
+				(mark) "-",
+				(mark) "-",
+				(mark) "-",
+				(mark) "-",
+				(mark) "-",
+				(mark) "-",
+				(mark) "-",
 				(mark) "{",
 				(record) {
 					middle: data,

@@ -37,7 +37,7 @@ public abstract class TextBrick extends Brick implements AlignmentListener {
 	}
 
 	@Override
-	public Node getVisual() {
+	public Node getRawVisual() {
 		return text.getVisual();
 	}
 

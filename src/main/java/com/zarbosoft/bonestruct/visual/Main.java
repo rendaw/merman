@@ -25,6 +25,7 @@ import java.io.UncheckedIOException;
 import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -57,9 +58,21 @@ public class Main extends Application {
 			luxemSyntax = Syntax.loadSyntax(stream);
 		} catch (final IOException e) {
 			throw new UncheckedIOException(e);
-		}
+		}/* catch (final GrammarTooUncertain e) {
+			final PrintWriter out = Helper.uncheck(() -> new PrintWriter("syntax-ambiguous.csv", "UTF-8"));
+			List<ParseContext.AmbiguitySample> samples = new ArrayList<>();
+			BranchingStack<ParseContext.AmbiguitySample> stack = e.context.ambiguityHistory;
+			while (stack != null) {
+				samples.add(stack.top());
+				stack = stack.pop();
+			}
+			samples = Lists.reverse(samples);
+			samples.forEach(s -> out.format("%d,%s,%d,%d\n", s.step, s.position, s.ambiguity, s.duplicates));
+			out.close();
+			throw e;
+		}*/
 		//final Document doc = luxemSyntax.load("[[dog, dog, dog, dog, dog, dogdogdog, dog, dog, dog]],");
-		final Document doc = luxemSyntax.load("[{converse: 47,transverse:{ar:[2,9,13]},},[atler]]");
+		final Document doc = luxemSyntax.load("[{getConverse: 47,transverse:{ar:[2,9,13]},},[atler]]");
 		//final Document doc = luxemSyntax.load("{analogue:bolivar}");
 		final Wall wall = new Wall();
 		final Context context = new Context(luxemSyntax, doc, this::addIdle, wall);
@@ -97,59 +110,29 @@ public class Main extends Application {
 					}
 				};
 		context.root(root);
-		/*
-		final VisualNode root;
-		{
-			// Test
-			final GroupVisualNode x = new GroupVisualNode() {
-				@Override
-				public Break breakMode() {
-					return Break.NEVER;
-				}
-
-				@Override
-				public String alignmentName() {
-					return null;
-				}
-
-				@Override
-				public String alignmentNameCompact() {
-					return null;
-				}
-			};
-			final FrontMark a = new FrontMark();
-			a.value = "{";
-			x.add(context, a.createVisual(context));
-			final FrontMark b = new FrontMark();
-			b.value = "}";
-			x.add(context, b.createVisual(context));
-			root = x;
-		}
-		*/
-		// TODO walk tree and resolve relative alignments
 		final Group layout = new Group();
+		context.background = new Group();
+		layout.getChildren().add(context.background);
 		layout.getChildren().add(wall.visual);
 		final Scene scene = new Scene(layout, 300, 275, doc.syntax.background);
-			/*
 		scene.setOnMouseExited(event -> {
 			if (context.hoverIdle != null) {
 				context.hoverIdle.point = null;
 			} else if (context.hover != null) {
 				context.hover.clear(context);
 				context.hover = null;
+				context.hoverBrick = null;
 			}
 		});
 		scene.setOnMouseMoved(event -> {
 			if (context.hoverIdle == null) {
-				context.hoverIdle = context.new HoverIdle(context, root);
+				context.hoverIdle = context.new HoverIdle(context);
 				addIdle(context.hoverIdle);
 			}
-			context.hoverIdle.point = context.sceneToVector(scene,
-					event.getX() - context.syntax.padHorizontal,
-					event.getY() - context.syntax.padVertical
-			);
+			context.hoverIdle.point = context
+					.sceneToVector(scene, event.getX(), event.getY())
+					.add(new Vector(-context.syntax.padConverse, -context.syntax.padTransverse));
 		});
-		*/
 		scene.setOnKeyPressed(event -> {
 			if (context.hotkeyParse == null) {
 				context.hotkeyParse = new Parse<Context.Action>().grammar(context.hotkeyGrammar).parse();
@@ -198,29 +181,37 @@ public class Main extends Application {
 		switch (doc.syntax.converseDirection) {
 			case UP:
 				wall.visual.setLayoutY(-doc.syntax.padConverse);
+				context.background.setLayoutY(-doc.syntax.padConverse);
 				break;
 			case DOWN:
 				wall.visual.setLayoutY(doc.syntax.padConverse);
+				context.background.setLayoutY(doc.syntax.padConverse);
 				break;
 			case LEFT:
 				wall.visual.setLayoutX(-doc.syntax.padConverse);
+				context.background.setLayoutX(-doc.syntax.padConverse);
 				break;
 			case RIGHT:
 				wall.visual.setLayoutX(doc.syntax.padConverse);
+				context.background.setLayoutX(doc.syntax.padConverse);
 				break;
 		}
 		switch (doc.syntax.transverseDirection) {
 			case UP:
 				wall.visual.setLayoutY(-doc.syntax.padTransverse);
+				context.background.setLayoutY(-doc.syntax.padTransverse);
 				break;
 			case DOWN:
 				wall.visual.setLayoutY(doc.syntax.padTransverse);
+				context.background.setLayoutY(doc.syntax.padTransverse);
 				break;
 			case LEFT:
 				wall.visual.setLayoutX(-doc.syntax.padTransverse);
+				context.background.setLayoutX(-doc.syntax.padTransverse);
 				break;
 			case RIGHT:
 				wall.visual.setLayoutX(doc.syntax.padTransverse);
+				context.background.setLayoutX(doc.syntax.padTransverse);
 				break;
 		}
 		switch (doc.syntax.converseDirection) {
@@ -251,29 +242,33 @@ public class Main extends Application {
 	private void addIdle(final IdleTask task) {
 		idleQueue.add(task);
 		if (idleTimer == null) {
-			idleTimer = worker.scheduleWithFixedDelay(() -> {
-				//System.out.println("idle timer");
-				if (idlePending)
-					return;
-				idlePending = true;
-				Platform.runLater(() -> {
-					//System.out.println(String.format("idle timer inner: %d", idleQueue.size()));
-					// TODO measure pending event backlog, adjust batch size to accomodate
-					// by proxy? time since last invocation?
-					for (int i = 0; i < 1000; ++i) { // Batch
-						final IdleTask top = idleQueue.poll();
-						if (top == null) {
-							idleTimer.cancel(false);
-							idleTimer = null;
-							System.out.format("Idle stopping at %d\n", i);
-							break;
-						} else
-							top.run();
-					}
-					//System.out.format("Idle break at g i %d\n", GroupVisualNode.idleCount);
-					idlePending = false;
-				});
-			}, 0, 50, TimeUnit.MILLISECONDS);
+			try {
+				idleTimer = worker.scheduleWithFixedDelay(() -> {
+					//System.out.println("idle timer");
+					if (idlePending)
+						return;
+					idlePending = true;
+					Platform.runLater(() -> {
+						//System.out.println(String.format("idle timer inner: %d", idleQueue.size()));
+						// TODO measure pending event backlog, adjust batch size to accomodate
+						// by proxy? time since last invocation?
+						for (int i = 0; i < 1000; ++i) { // Batch
+							final IdleTask top = idleQueue.poll();
+							if (top == null) {
+								idleTimer.cancel(false);
+								idleTimer = null;
+								System.out.format("Idle stopping at %d\n", i);
+								break;
+							} else
+								top.run();
+						}
+						//System.out.format("Idle break at g i %d\n", GroupVisualNode.idleCount);
+						idlePending = false;
+					});
+				}, 0, 50, TimeUnit.MILLISECONDS);
+			} catch (final RejectedExecutionException e) {
+				// Happens on unhover when window closes to shutdown
+			}
 		}
 	}
 }

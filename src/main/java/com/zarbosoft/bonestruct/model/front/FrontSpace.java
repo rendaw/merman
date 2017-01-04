@@ -114,8 +114,8 @@ public class FrontSpace extends FrontConstantPart {
 			}
 
 			@Override
-			public VisualNode getNode() {
-				return SpaceVisual.this.parent == null ? null : SpaceVisual.this.parent.getNode();
+			public VisualNodePart getVisual() {
+				return SpaceVisual.this;
 			}
 
 			@Override
@@ -141,7 +141,7 @@ public class FrontSpace extends FrontConstantPart {
 			}
 
 			@Override
-			public Node getVisual() {
+			public Node getRawVisual() {
 				return visual;
 			}
 

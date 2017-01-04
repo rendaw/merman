@@ -22,9 +22,6 @@ public abstract class VisualNode {
 
 	public abstract VisualNodeParent parent();
 
-	/*
-	public abstract Context.Hoverable hover(Context context, Vector point);
-*/
 	public abstract boolean select(Context context);
 
 	public abstract Brick createFirstBrick(Context context);
@@ -36,49 +33,6 @@ public abstract class VisualNode {
 	public Iterator<VisualNode> children() {
 		return Iterators.forArray();
 	}
-
-	/*
-	public boolean isIn(final Context context, final Vector point) {
-		final Brick firstBrick = getFirstBrick(context);
-		final Brick lastBrick = getLastBrick(context);
-		final int startConverse;
-		final int startTransverse;
-		final int startTransverseEdge;
-		if (firstBrick == null) {
-
-			startConverse = 0;
-			startTransverse = Integer.MAX_VALUE;
-			startTransverseEdge = Integer.MAX_VALUE;
-		} else {
-			startConverse = lastBrick.getConverse();
-			startTransverse = lastBrick.parent.getTransverse();
-			startTransverseEdge = lastBrick.parent.getTransverse() + lastBrick.transverseSpan(context);
-
-		}
-		final int endConverse;
-		final int endTransverse;
-		final int endTransverseEdge;
-		if (lastBrick == null) {
-			endConverse = context.edge;
-			endTransverse = Integer.MAX_VALUE;
-			endTransverseEdge = Integer.MAX_VALUE;
-		} else {
-
-			endConverse = lastBrick.getConverse();
-			endTransverse = lastBrick.parent.getTransverse();
-			endTransverseEdge = lastBrick.parent.getTransverse() + lastBrick.transverseSpan(context);
-		}
-		return Obbox.isIn(
-				startConverse,
-				startTransverse,
-				startTransverseEdge,
-				endConverse,
-				endTransverse,
-				endTransverseEdge,
-				point
-		);
-	}
-	*/
 
 	public String debugTreeType() {
 		return toString();

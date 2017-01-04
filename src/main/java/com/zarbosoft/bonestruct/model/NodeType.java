@@ -139,8 +139,8 @@ public class NodeType {
 		private VisualNodeParent parent;
 
 		public NodeTypeVisual(final Context context, final Map<String, Object> data) {
-			super(HashTreePSet.singleton(new TypeTag(id)));
-			final PSet<Tag> tags = HashTreePSet.from(tags());
+			super(HashTreePSet.<Tag>empty().plus(new TypeTag(id)).plus(new PartTag("node")));
+			final PSet<Tag> tags = HashTreePSet.singleton(new TypeTag(id));
 			compact = false;
 			body = new GroupVisualNode(ImmutableSet.of());
 			for (final Map.Entry<String, AlignmentDefinition> entry : alignments.entrySet()) {
@@ -183,6 +183,13 @@ public class NodeType {
 					if (parent == null)
 						return null;
 					return parent.getNextBrick(context);
+				}
+
+				@Override
+				public Context.Hoverable hover(final Context context) {
+					if (parent == null)
+						return null;
+					return parent.hover(context);
 				}
 			});
 		}

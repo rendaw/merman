@@ -5,12 +5,14 @@ import com.zarbosoft.bonestruct.visual.Brick;
 import com.zarbosoft.bonestruct.visual.Context;
 import com.zarbosoft.bonestruct.visual.Style;
 import com.zarbosoft.bonestruct.visual.alignment.Alignment;
+import com.zarbosoft.bonestruct.visual.alignment.AlignmentListener;
 import com.zarbosoft.bonestruct.visual.nodes.VisualNode;
 import com.zarbosoft.bonestruct.visual.nodes.VisualNodeParent;
-import com.zarbosoft.bonestruct.visual.nodes.bricks.TextBrick;
+import com.zarbosoft.bonestruct.visual.nodes.parts.RawImage;
 import com.zarbosoft.bonestruct.visual.nodes.parts.VisualNodePart;
 import com.zarbosoft.luxemj.Luxem;
 import com.zarbosoft.pidgoon.internal.Pair;
+import javafx.scene.Node;
 import org.pcollections.HashTreePSet;
 
 import java.util.Arrays;
@@ -18,23 +20,15 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@Luxem.Configuration(name = "mark")
-public class FrontMark extends FrontConstantPart {
+@Luxem.Configuration(name = "image")
+public class FrontImage extends FrontConstantPart {
 
-	@Luxem.Configuration
-	public String value;
-
-	private class MarkVisual extends VisualNodePart {
+	private class ImageVisual extends VisualNodePart {
 		public VisualNodeParent parent;
-		private MarkBrick brick = null;
+		private ImageBrick brick = null;
 
-		public MarkVisual(final Set<Tag> tags) {
+		public ImageVisual(final Set<Tag> tags) {
 			super(tags);
-		}
-
-		public void setText(final Context context, final String value) {
-			if (brick != null)
-				brick.setText(context, value);
 		}
 
 		@Override
@@ -52,28 +46,17 @@ public class FrontMark extends FrontConstantPart {
 			return false;
 		}
 
-	/*
-	@Override
-	public Context.Hoverable hover(final Context context, final Vector point) {
-		return null;
-	}
-	*/
-
 		@Override
 		public Brick createFirstBrick(final Context context) {
 			if (brick != null)
 				throw new AssertionError("Brick should be initially empty or cleared after being deleted");
-			brick = new MarkBrick(context);
-			brick.setText(context, value);
+			brick = new ImageBrick(context);
 			return brick;
 		}
 
 		@Override
 		public String debugTreeType() {
-			return String.format("raw@%s %s",
-					Integer.toHexString(hashCode()),
-					brick == null ? "no brick" : brick.getText()
-			);
+			return String.format("image@%s", Integer.toHexString(hashCode()));
 		}
 
 		@Override
@@ -111,38 +94,44 @@ public class FrontMark extends FrontConstantPart {
 				brick.remove(context);
 		}
 
-		private class MarkBrick extends TextBrick {
+		private class ImageBrick extends Brick implements AlignmentListener {
+			private final RawImage image;
 			private Style.Baked style;
 			private Alignment alignment;
 
-			public MarkBrick(final Context context) {
+			public ImageBrick(final Context context) {
 				setStyle(context);
+				image = RawImage.create(context, style);
 			}
 
 			public void setStyle(final Context context) {
 				style = context.getStyle(tags());
 				if (alignment != null)
 					alignment.listeners.remove(this);
-				alignment = MarkVisual.this.getAlignment(style.alignment);
+				alignment = FrontImage.ImageVisual.this.getAlignment(style.alignment);
 				if (alignment != null)
 					alignment.listeners.add(this);
+				image.setStyle(style);
 				changed(context);
-				super.setStyle(style);
 			}
 
-			@Override
-			protected Alignment getAlignment(final Style.Baked style) {
-				return MarkVisual.this.getAlignment(style.alignment);
-			}
-
-			@Override
-			protected Style.Baked getStyle() {
-				return style;
+			public Properties properties(final Style.Baked style) {
+				return new Properties(style.broken,
+						(int) image.transverseSpan(),
+						(int) 0,
+						ImageVisual.this.getAlignment(style.alignment),
+						(int) image.converseSpan()
+				);
 			}
 
 			@Override
 			public Brick createNext(final Context context) {
-				return MarkVisual.this.parent.createNextBrick(context);
+				return FrontImage.ImageVisual.this.parent.createNextBrick(context);
+			}
+
+			@Override
+			public void allocateTransverse(final Context context, final int ascent, final int descent) {
+				image.setTransverse(ascent, context.transverseEdge);
 			}
 
 			@Override
@@ -151,8 +140,13 @@ public class FrontMark extends FrontConstantPart {
 			}
 
 			@Override
+			public int converseEdge(final Context context) {
+				return image.converseEdge(context.edge);
+			}
+
+			@Override
 			public VisualNodePart getVisual() {
-				return MarkVisual.this;
+				return FrontImage.ImageVisual.this;
 			}
 
 			@Override
@@ -164,16 +158,40 @@ public class FrontMark extends FrontConstantPart {
 				tags.addAll(change.add);
 				return properties(context.getStyle(tags));
 			}
+
+			@Override
+			public int getConverse(final Context context) {
+				return image.getConverse(context.edge);
+			}
+
+			@Override
+			public Properties properties() {
+				return properties(style);
+			}
+
+			@Override
+			public Node getRawVisual() {
+				return image.getVisual();
+			}
+
+			@Override
+			public void setConverse(final Context context, final int converse) {
+				image.setConverse(converse, context.edge);
+			}
+
+			@Override
+			public void align(final Context context) {
+				changed(context);
+			}
 		}
 	}
 
 	@Override
 	public VisualNodePart createVisual(final Context context, final Set<VisualNode.Tag> tags) {
-		final MarkVisual out = new MarkVisual(HashTreePSet
+		final ImageVisual out = new ImageVisual(HashTreePSet
 				.from(tags)
 				.plusAll(this.tags.stream().map(s -> new VisualNode.FreeTag(s)).collect(Collectors.toSet()))
-				.plus(new VisualNode.PartTag("mark")));
-		out.setText(context, value);
+				.plus(new VisualNode.PartTag("image")));
 		return out;
 	}
 }

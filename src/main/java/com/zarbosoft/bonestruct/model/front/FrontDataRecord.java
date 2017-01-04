@@ -5,12 +5,11 @@ import com.zarbosoft.bonestruct.Luxem;
 import com.zarbosoft.bonestruct.model.Node;
 import com.zarbosoft.bonestruct.model.NodeType;
 import com.zarbosoft.bonestruct.model.middle.DataRecord;
+import com.zarbosoft.bonestruct.visual.Brick;
 import com.zarbosoft.bonestruct.visual.Context;
 import com.zarbosoft.bonestruct.visual.nodes.VisualNode;
-import com.zarbosoft.bonestruct.visual.nodes.parts.GroupVisualNode;
-import com.zarbosoft.bonestruct.visual.nodes.parts.NestedVisualNodePart;
-import com.zarbosoft.bonestruct.visual.nodes.parts.PrimitiveVisualNode;
-import com.zarbosoft.bonestruct.visual.nodes.parts.VisualNodePart;
+import com.zarbosoft.bonestruct.visual.nodes.VisualNodeParent;
+import com.zarbosoft.bonestruct.visual.nodes.parts.*;
 import com.zarbosoft.pidgoon.internal.Helper;
 import com.zarbosoft.pidgoon.internal.Pair;
 import javafx.beans.property.StringProperty;
@@ -46,6 +45,7 @@ public class FrontDataRecord extends FrontPart {
 
 	private class RecordVisual extends GroupVisualNode {
 		private final ListChangeListener<Pair<StringProperty, Node>> dataListener;
+		private BorderAttachment borderAttachment;
 
 		public RecordVisual(
 				final Context context, final ObservableList<Pair<StringProperty, Node>> nodes, final Set<Tag> tags
@@ -69,13 +69,73 @@ public class FrontDataRecord extends FrontPart {
 			add(context, 0, nodes);
 		}
 
+		private class ChildGroup extends GroupVisualNode {
+
+			private final boolean selectable;
+
+			public ChildGroup(final Set<Tag> tags, final boolean selectable) {
+				super(tags);
+				this.selectable = selectable;
+			}
+		}
+
 		@Override
-		public void remove(final Context context, final int start, final int size) {
+		protected VisualNodeParent createParent(final int index) {
+			final boolean selectable = ((ChildGroup) children.get(index)).selectable;
+			return new GroupVisualNodeParent(this, index) {
+				class RecordHoverable extends Context.Hoverable {
+
+					BorderAttachment borderAttachment;
+
+					RecordHoverable(final Context context, final int index) {
+						borderAttachment = new BorderAttachment(context,
+								context.syntax.hoverStyle,
+								children.get(index).getFirstBrick(context),
+								children.get(index).getLastBrick(context)
+						);
+					}
+
+					@Override
+					public void clear(final Context context) {
+						borderAttachment.destroy(context);
+						hoverable = null;
+					}
+				}
+
+				RecordHoverable hoverable;
+
+				@Override
+				public Context.Hoverable hover(final Context context) {
+					if (!selectable) {
+						if (parent != null)
+							return parent.hover(context);
+						return null;
+					}
+					if (hoverable != null)
+						return hoverable;
+					hoverable = new RecordHoverable(context, index);
+					return hoverable;
+				}
+
+				@Override
+				public Brick createNextBrick(final Context context) {
+					final Brick newLast = super.createNextBrick(context);
+					if (hoverable != null && newLast != null)
+						hoverable.borderAttachment.setLast(context, newLast);
+					return newLast;
+				}
+			};
+		}
+
+		@Override
+		public void remove(final Context context, int start, int size) {
+			if (!separator.isEmpty()) {
+				size += size - 1;
+				start *= 2;
+			}
 			final boolean retagFirst = tagFirst && start == 0;
 			final boolean retagLast = tagLast && start + size == children.size();
 			super.remove(context, start, size);
-			if (start == 0 && !children.isEmpty() && !separator.isEmpty())
-				((GroupVisualNode) children.get(0)).remove(context, 0, 1);
 			if (!children.isEmpty()) {
 				if (retagFirst)
 					children.get(0).changeTags(context, new TagsChange().add(new PartTag("first")));
@@ -95,13 +155,15 @@ public class FrontDataRecord extends FrontPart {
 			}
 			final PSet<Tag> tags = HashTreePSet.from(tags());
 			Helper.enumerate(nodes.stream(), start).forEach(p -> {
-				final GroupVisualNode group = new GroupVisualNode(ImmutableSet.of());
+				int index = p.first;
 				if (p.first > 0 && !separator.isEmpty()) {
-					final GroupVisualNode separatorGroup = new GroupVisualNode(ImmutableSet.of());
+					index = index * 2 - 1;
+					final ChildGroup group = new ChildGroup(ImmutableSet.of(), false);
 					for (final FrontConstantPart fix : separator)
-						separatorGroup.add(context, fix.createVisual(context, tags.plus(new PartTag("separator"))));
-					group.add(context, separatorGroup);
+						group.add(context, fix.createVisual(context, tags.plus(new PartTag("separator"))));
+					super.add(context, group, index++);
 				}
+				final ChildGroup group = new ChildGroup(ImmutableSet.of(), true);
 				for (final FrontConstantPart fix : prefix)
 					group.add(context, fix.createVisual(context, tags.plus(new PartTag("prefix"))));
 				group.add(context, new PrimitiveVisualNode(context, p.second.first, tags.plus(new PartTag("key"))));
@@ -114,7 +176,7 @@ public class FrontDataRecord extends FrontPart {
 				);
 				for (final FrontConstantPart fix : suffix)
 					group.add(context, fix.createVisual(context, tags.plus(new PartTag("suffix"))));
-				super.add(context, group, p.first);
+				super.add(context, group, index);
 			});
 			if (!children.isEmpty()) {
 				if (retagFirst)

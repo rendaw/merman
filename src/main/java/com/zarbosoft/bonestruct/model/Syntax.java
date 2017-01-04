@@ -41,16 +41,22 @@ public class Syntax {
 	@Luxem.Configuration(optional = true, name = "pad-transverse")
 	public int padTransverse = 5;
 
-	@Luxem.Configuration
+	@Luxem.Configuration(optional = true)
 	public List<LuxemEvent> template;
 
-	@Luxem.Configuration
+	@Luxem.Configuration(optional = true)
 	public List<Style> styles;
+
+	@Luxem.Configuration(optional = true, name = "hover-style")
+	public Obbox.Settings hoverStyle = new Obbox.Settings();
+
+	@Luxem.Configuration(optional = true, name = "select-style")
+	public Obbox.Settings selectStyle = new Obbox.Settings();
 
 	@Luxem.Configuration
 	public List<NodeType> types;
 
-	@Luxem.Configuration
+	@Luxem.Configuration(optional = true)
 	public Map<String, java.util.Set<String>> groups;
 
 	@Luxem.Configuration
@@ -67,9 +73,6 @@ public class Syntax {
 
 	@Luxem.Configuration(optional = true, name = "root-hotkeys")
 	public Map<String, com.zarbosoft.luxemj.com.zarbosoft.luxemj.grammar.Node> rootHotkeys = new HashMap<>();
-
-	@Luxem.Configuration(optional = true)
-	public Obbox.Settings select = new Obbox.Settings();
 
 	@Luxem.Configuration(optional = true)
 	public List<Hotkeys> hotkeys;
@@ -109,7 +112,7 @@ public class Syntax {
 		}
 	}
 
-	@Luxem.Configuration(name = "converse-direction", optional = true)
+	@Luxem.Configuration(name = "getConverse-direction", optional = true)
 	public Direction converseDirection = Direction.RIGHT;
 
 	@Luxem.Configuration(name = "transverse-direction", optional = true)
@@ -136,20 +139,23 @@ public class Syntax {
 		final Syntax out = new com.zarbosoft.luxemj.Parse<Syntax>()
 				.grammar(com.zarbosoft.bonestruct.Luxem.grammarForType(Syntax.class))
 				.errorHistory(5)
+				.dumpAmbiguity(true)
 				.uncertainty(100)
+				.eventUncertainty(256)
 				.node("root")
 				.parse(stream);
 		// jfx, qt, and swing don't support vertical languages
 		if (!ImmutableSet.of(Direction.LEFT, Direction.RIGHT).contains(out.converseDirection) ||
 				(out.transverseDirection != Direction.DOWN))
-			throw new InvalidSyntax("Currently only converse directions left/right and transverse down are supported.");
+			throw new InvalidSyntax(
+					"Currently only getConverse directions left/right and transverse down are supported.");
 		switch (out.converseDirection) {
 			case LEFT:
 			case RIGHT:
 				switch (out.transverseDirection) {
 					case LEFT:
 					case RIGHT:
-						throw new InvalidSyntax("Secondary direction must cross converse direction axis.");
+						throw new InvalidSyntax("Secondary direction must cross getConverse direction axis.");
 				}
 				break;
 			case UP:
@@ -157,7 +163,7 @@ public class Syntax {
 				switch (out.transverseDirection) {
 					case UP:
 					case DOWN:
-						throw new InvalidSyntax("Secondary direction must cross converse direction axis.");
+						throw new InvalidSyntax("Secondary direction must cross getConverse direction axis.");
 				}
 				break;
 		}

@@ -63,7 +63,7 @@ public abstract class RawText {
 
 							@Override
 							public void setTransverse(final int transverse, final int edge) {
-								text.setLayoutX(edge - transverse - transverseSpan());
+								text.setLayoutX(edge - transverse);
 							}
 						};
 					case RIGHT:
@@ -143,7 +143,7 @@ public abstract class RawText {
 
 							@Override
 							public void setTransverse(final int transverse, final int edge) {
-								text.setLayoutX(edge - transverse - transverseSpan());
+								text.setLayoutX(edge - transverse);
 							}
 						};
 					case RIGHT:
@@ -220,7 +220,7 @@ public abstract class RawText {
 
 							@Override
 							public void setTransverse(final int transverse, final int edge) {
-								text.setLayoutY(edge - transverse - transverseSpan());
+								text.setLayoutY(edge - transverse);
 							}
 						};
 					case DOWN:
@@ -300,7 +300,7 @@ public abstract class RawText {
 
 							@Override
 							public void setTransverse(final int transverse, final int edge) {
-								text.setLayoutY(edge - transverse - transverseSpan());
+								text.setLayoutY(edge - transverse);
 							}
 						};
 					case DOWN:
