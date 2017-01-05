@@ -1,6 +1,6 @@
 package com.zarbosoft.bonestruct.editor.model.back;
 
-import com.zarbosoft.bonestruct.editor.Luxem;
+import com.zarbosoft.bonestruct.editor.luxem.Luxem;
 import com.zarbosoft.bonestruct.editor.model.NodeType;
 import com.zarbosoft.pidgoon.internal.Node;
 

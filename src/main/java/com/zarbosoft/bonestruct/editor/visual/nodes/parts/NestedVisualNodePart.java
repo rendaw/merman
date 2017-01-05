@@ -149,7 +149,7 @@ public class NestedVisualNodePart extends VisualNodePart {
 				return Arrays.asList(new Context.Action() {
 					@Override
 					public Node buildRule() {
-						final com.zarbosoft.luxemj.com.zarbosoft.luxemj.grammar.Node node;
+						final com.zarbosoft.luxemj.grammar.Node node;
 						node = hotkeys.hotkeys.get(getName());
 						if (node == null)
 							return null;
@@ -168,7 +168,7 @@ public class NestedVisualNodePart extends VisualNodePart {
 				}, new Context.Action() {
 					@Override
 					public Node buildRule() {
-						final com.zarbosoft.luxemj.com.zarbosoft.luxemj.grammar.Node node;
+						final com.zarbosoft.luxemj.grammar.Node node;
 						node = hotkeys.hotkeys.get(getName());
 						if (node == null)
 							//return null;

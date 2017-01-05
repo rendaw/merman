@@ -1,6 +1,6 @@
 package com.zarbosoft.bonestruct.editor.visual.alignment;
 
-import com.zarbosoft.bonestruct.editor.Luxem;
+import com.zarbosoft.bonestruct.editor.luxem.Luxem;
 
 @Luxem.Configuration(name = "relative")
 public class RelativeAlignmentDefinition implements AlignmentDefinition {

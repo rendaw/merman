@@ -1,6 +1,6 @@
 package com.zarbosoft.bonestruct.editor.model.front;
 
-import com.zarbosoft.bonestruct.editor.Luxem;
+import com.zarbosoft.bonestruct.editor.luxem.Luxem;
 import com.zarbosoft.bonestruct.editor.model.NodeType;
 import com.zarbosoft.bonestruct.editor.visual.Context;
 import com.zarbosoft.bonestruct.editor.visual.nodes.VisualNode;

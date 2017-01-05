@@ -1,7 +1,7 @@
 package com.zarbosoft.bonestruct.editor.model.middle;
 
 import com.zarbosoft.bonestruct.editor.InvalidSyntax;
-import com.zarbosoft.bonestruct.editor.Luxem;
+import com.zarbosoft.bonestruct.editor.luxem.Luxem;
 import com.zarbosoft.bonestruct.editor.model.Node;
 import com.zarbosoft.pidgoon.internal.Pair;
 import javafx.beans.property.StringProperty;

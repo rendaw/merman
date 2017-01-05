@@ -1,13 +1,14 @@
 package com.zarbosoft.bonestruct.editor;
 
 import com.google.common.collect.ImmutableSet;
+import com.zarbosoft.bonestruct.editor.luxem.Luxem;
 import com.zarbosoft.bonestruct.editor.model.Document;
 import com.zarbosoft.bonestruct.editor.model.Syntax;
 import com.zarbosoft.bonestruct.editor.model.front.FrontConstantPart;
 import com.zarbosoft.bonestruct.editor.visual.*;
 import com.zarbosoft.bonestruct.editor.visual.nodes.VisualNode;
 import com.zarbosoft.bonestruct.editor.visual.nodes.parts.ArrayVisualNode;
-import com.zarbosoft.luxemj.com.zarbosoft.luxemj.grammar.Node;
+import com.zarbosoft.luxemj.grammar.Node;
 import com.zarbosoft.pidgoon.InvalidStream;
 import com.zarbosoft.pidgoon.events.Parse;
 import javafx.beans.value.ChangeListener;

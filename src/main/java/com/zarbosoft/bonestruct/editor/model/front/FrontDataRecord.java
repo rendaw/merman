@@ -1,7 +1,7 @@
 package com.zarbosoft.bonestruct.editor.model.front;
 
 import com.google.common.collect.ImmutableSet;
-import com.zarbosoft.bonestruct.editor.Luxem;
+import com.zarbosoft.bonestruct.editor.luxem.Luxem;
 import com.zarbosoft.bonestruct.editor.model.Node;
 import com.zarbosoft.bonestruct.editor.model.NodeType;
 import com.zarbosoft.bonestruct.editor.model.middle.DataRecord;

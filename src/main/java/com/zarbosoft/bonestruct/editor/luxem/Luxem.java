@@ -1,4 +1,4 @@
-package com.zarbosoft.bonestruct.editor;
+package com.zarbosoft.bonestruct.editor.luxem;
 
 import com.zarbosoft.luxemj.source.LArrayCloseEvent;
 import com.zarbosoft.luxemj.source.LArrayOpenEvent;

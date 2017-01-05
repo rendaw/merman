@@ -1,6 +1,6 @@
 package com.zarbosoft.bonestruct.editor.model.middle;
 
-import com.zarbosoft.bonestruct.editor.Luxem;
+import com.zarbosoft.bonestruct.editor.luxem.Luxem;
 import javafx.beans.property.StringProperty;
 
 import java.util.Map;

@@ -87,7 +87,7 @@ public class Keyboard {
 	}
 
 	@Luxem.Configuration(name = "key")
-	public static class Terminal extends com.zarbosoft.luxemj.com.zarbosoft.luxemj.grammar.Terminal {
+	public static class Terminal extends com.zarbosoft.luxemj.grammar.Terminal {
 		@Luxem.Configuration
 		public Key key;
 		@Luxem.Configuration(optional = true)

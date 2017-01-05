@@ -72,7 +72,7 @@ public class Syntax {
 	public List<FrontConstantPart> rootSuffix;
 
 	@Luxem.Configuration(optional = true, name = "root-hotkeys")
-	public Map<String, com.zarbosoft.luxemj.com.zarbosoft.luxemj.grammar.Node> rootHotkeys = new HashMap<>();
+	public Map<String, com.zarbosoft.luxemj.grammar.Node> rootHotkeys = new HashMap<>();
 
 	@Luxem.Configuration(optional = true)
 	public List<Hotkeys> hotkeys;
@@ -112,7 +112,7 @@ public class Syntax {
 		}
 	}
 
-	@Luxem.Configuration(name = "getConverse-direction", optional = true)
+	@Luxem.Configuration(name = "converse-direction", optional = true)
 	public Direction converseDirection = Direction.RIGHT;
 
 	@Luxem.Configuration(name = "transverse-direction", optional = true)
@@ -137,7 +137,7 @@ public class Syntax {
 
 	public static Syntax loadSyntax(final InputStream stream) {
 		final Syntax out = new com.zarbosoft.luxemj.Parse<Syntax>()
-				.grammar(com.zarbosoft.bonestruct.editor.Luxem.grammarForType(Syntax.class))
+				.grammar(com.zarbosoft.bonestruct.editor.luxem.Luxem.grammarForType(Syntax.class))
 				.errorHistory(5)
 				.dumpAmbiguity(true)
 				.uncertainty(100)
@@ -147,15 +147,14 @@ public class Syntax {
 		// jfx, qt, and swing don't support vertical languages
 		if (!ImmutableSet.of(Direction.LEFT, Direction.RIGHT).contains(out.converseDirection) ||
 				(out.transverseDirection != Direction.DOWN))
-			throw new InvalidSyntax(
-					"Currently only getConverse directions left/right and transverse down are supported.");
+			throw new InvalidSyntax("Currently only converse directions left/right and transverse down are supported.");
 		switch (out.converseDirection) {
 			case LEFT:
 			case RIGHT:
 				switch (out.transverseDirection) {
 					case LEFT:
 					case RIGHT:
-						throw new InvalidSyntax("Secondary direction must cross getConverse direction axis.");
+						throw new InvalidSyntax("Secondary direction must cross converse direction axis.");
 				}
 				break;
 			case UP:
@@ -163,7 +162,7 @@ public class Syntax {
 				switch (out.transverseDirection) {
 					case UP:
 					case DOWN:
-						throw new InvalidSyntax("Secondary direction must cross getConverse direction axis.");
+						throw new InvalidSyntax("Secondary direction must cross converse direction axis.");
 				}
 				break;
 		}
