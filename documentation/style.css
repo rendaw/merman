@@ -36,7 +36,7 @@ body > p { text-indent: 16px; }
 tr { vertical-align: top; }
 td { padding: 8px; }
 td:nth-child(1) { padding-right: 12px; white-space: nowrap; width: 0px; }
-.definitions td:nth-child(1) { text-align: right; }
+.definitions td:nth-child(1) { text-align: right; min-width: 120px; }
 div { padding-left: 64px; }
 table { border-collapse: collapse; width: 100%; }
 code.block { border-top: 1px solid lightgrey; border-bottom: 1px solid lightgrey; padding: 4px; min-width: 400px; display: block; background-color: #F8FBFE;}
