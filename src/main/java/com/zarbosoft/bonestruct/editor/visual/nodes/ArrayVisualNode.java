@@ -148,11 +148,197 @@ public abstract class ArrayVisualNode extends GroupVisualNode {
 
 	protected abstract List<FrontConstantPart> getSuffix();
 
-	private class ArrayVisualNodeParent extends GroupVisualNodeParent {
+	private ArraySelection selection;
 
-		private BorderAttachment border;
+	private class ArraySelection extends Context.Selection {
+		BorderAttachment border;
+		int beginIndex;
+		int endIndex;
+
+		public ArraySelection(final Context context, final int index) {
+			beginIndex = endIndex = index;
+			border = new BorderAttachment(context,
+					context.syntax.selectStyle,
+					children.get(beginIndex).getFirstBrick(context),
+					children.get(endIndex).getLastBrick(context)
+			);
+		}
+
+		@Override
+		protected Hotkeys getHotkeys(final Context context) {
+			return context.getHotkeys(tags());
+		}
+
+		@Override
+		public void clear(final Context context) {
+			border.destroy(context);
+			selection = null;
+		}
+
+		@Override
+		public Iterable<Context.Action> getActions(final Context context) {
+			return ImmutableList.of(new Context.Action() {
+				@Override
+				public void run(final Context context) {
+
+				}
+
+				@Override
+				public String getName() {
+					return "enter";
+				}
+			}, new Context.Action() {
+				@Override
+				public void run(final Context context) {
+
+				}
+
+				@Override
+				public String getName() {
+					return "exit";
+				}
+			}, new Context.Action() {
+				@Override
+				public void run(final Context context) {
+
+				}
+
+				@Override
+				public String getName() {
+					return "next";
+				}
+			}, new Context.Action() {
+				@Override
+				public void run(final Context context) {
+
+				}
+
+				@Override
+				public String getName() {
+					return "previous";
+				}
+			}, new Context.Action() {
+				@Override
+				public void run(final Context context) {
+
+				}
+
+				@Override
+				public String getName() {
+					return "insert-before";
+				}
+			}, new Context.Action() {
+				@Override
+				public void run(final Context context) {
+
+				}
+
+				@Override
+				public String getName() {
+					return "insert-after";
+				}
+			}, new Context.Action() {
+				@Override
+				public void run(final Context context) {
+
+				}
+
+				@Override
+				public String getName() {
+					return "copy";
+				}
+			}, new Context.Action() {
+				@Override
+				public void run(final Context context) {
+
+				}
+
+				@Override
+				public String getName() {
+					return "cut";
+				}
+			}, new Context.Action() {
+				@Override
+				public void run(final Context context) {
+
+				}
+
+				@Override
+				public String getName() {
+					return "paste";
+				}
+			}, new Context.Action() {
+				@Override
+				public void run(final Context context) {
+
+				}
+
+				@Override
+				public String getName() {
+					return "reset-selection";
+				}
+			}, new Context.Action() {
+				@Override
+				public void run(final Context context) {
+
+				}
+
+				@Override
+				public String getName() {
+					return "gather-next";
+				}
+			}, new Context.Action() {
+				@Override
+				public void run(final Context context) {
+
+				}
+
+				@Override
+				public String getName() {
+					return "gather-previous";
+				}
+			}, new Context.Action() {
+				@Override
+				public void run(final Context context) {
+
+				}
+
+				@Override
+				public String getName() {
+					return "move-before";
+				}
+			}, new Context.Action() {
+				@Override
+				public void run(final Context context) {
+
+				}
+
+				@Override
+				public String getName() {
+					return "move-after";
+				}
+			});
+		}
+	}
+
+	private class ArrayVisualNodeParent extends GroupVisualNodeParent {
+		private class ArrayHoverable extends Context.Hoverable {
+			BorderAttachment border;
+
+			@Override
+			public void clear(final Context context) {
+				border.destroy(context);
+				border = null;
+				hoverable = null;
+			}
+
+			@Override
+			public void click(final Context context) {
+				selectDown(context);
+			}
+		}
+
 		private final boolean selectable;
-		private boolean selected = false;
 
 		public ArrayVisualNodeParent(final int index, final boolean selectable) {
 			super(ArrayVisualNode.this, index);
@@ -160,178 +346,14 @@ public abstract class ArrayVisualNode extends GroupVisualNode {
 		}
 
 		public void selectDown(final Context context) {
-			if (selected)
-				throw new AssertionError("Already selected");
-			else if (border != null) {
+			if (hoverable != null) {
 				context.clearHover();
 			}
-			selected = true;
-			border = new BorderAttachment(context,
-					context.syntax.selectStyle,
-					children.get(index).getFirstBrick(context),
-					children.get(index).getLastBrick(context)
-			);
-			context.setSelection(new Context.Selection() {
-				@Override
-				protected Hotkeys getHotkeys(final Context context) {
-					return context.getHotkeys(tags());
-				}
-
-				@Override
-				public void clear(final Context context) {
-					border.destroy(context);
-					border = null;
-					selected = false;
-				}
-
-				@Override
-				public Iterable<Context.Action> getActions(final Context context) {
-					return ImmutableList.of(new Context.Action() {
-						@Override
-						public void run(final Context context) {
-
-						}
-
-						@Override
-						public String getName() {
-							return "enter";
-						}
-					}, new Context.Action() {
-						@Override
-						public void run(final Context context) {
-
-						}
-
-						@Override
-						public String getName() {
-							return "exit";
-						}
-					}, new Context.Action() {
-						@Override
-						public void run(final Context context) {
-
-						}
-
-						@Override
-						public String getName() {
-							return "next";
-						}
-					}, new Context.Action() {
-						@Override
-						public void run(final Context context) {
-
-						}
-
-						@Override
-						public String getName() {
-							return "previous";
-						}
-					}, new Context.Action() {
-						@Override
-						public void run(final Context context) {
-
-						}
-
-						@Override
-						public String getName() {
-							return "insert-before";
-						}
-					}, new Context.Action() {
-						@Override
-						public void run(final Context context) {
-
-						}
-
-						@Override
-						public String getName() {
-							return "insert-after";
-						}
-					}, new Context.Action() {
-						@Override
-						public void run(final Context context) {
-
-						}
-
-						@Override
-						public String getName() {
-							return "copy";
-						}
-					}, new Context.Action() {
-						@Override
-						public void run(final Context context) {
-
-						}
-
-						@Override
-						public String getName() {
-							return "cut";
-						}
-					}, new Context.Action() {
-						@Override
-						public void run(final Context context) {
-
-						}
-
-						@Override
-						public String getName() {
-							return "paste";
-						}
-					}, new Context.Action() {
-						@Override
-						public void run(final Context context) {
-
-						}
-
-						@Override
-						public String getName() {
-							return "reset-selection";
-						}
-					}, new Context.Action() {
-						@Override
-						public void run(final Context context) {
-
-						}
-
-						@Override
-						public String getName() {
-							return "gather-next";
-						}
-					}, new Context.Action() {
-						@Override
-						public void run(final Context context) {
-
-						}
-
-						@Override
-						public String getName() {
-							return "gather-previous";
-						}
-					}, new Context.Action() {
-						@Override
-						public void run(final Context context) {
-
-						}
-
-						@Override
-						public String getName() {
-							return "move-before";
-						}
-					}, new Context.Action() {
-						@Override
-						public void run(final Context context) {
-
-						}
-
-						@Override
-						public String getName() {
-							return "move-after";
-						}
-					});
-				}
-			});
+			selection = new ArraySelection(context, index);
+			context.setSelection(selection);
 		}
 
-		Context.Hoverable hoverable;
+		ArrayHoverable hoverable;
 
 		@Override
 		public Context.Hoverable hover(final Context context, final Vector point) {
@@ -340,36 +362,26 @@ public abstract class ArrayVisualNode extends GroupVisualNode {
 					return parent.hover(context, point);
 				return null;
 			}
-			if (selected)
+			if (selection != null && selection.beginIndex == index && selection.endIndex == index)
 				return null;
 			if (hoverable != null)
 				return hoverable;
-			border = new BorderAttachment(context,
+			hoverable = new ArrayHoverable();
+			hoverable.border = new BorderAttachment(context,
 					context.syntax.hoverStyle,
 					children.get(index).getFirstBrick(context),
 					children.get(index).getLastBrick(context)
 			);
-			hoverable = new Context.Hoverable() {
-				@Override
-				public void clear(final Context context) {
-					border.destroy(context);
-					border = null;
-					hoverable = null;
-				}
-
-				@Override
-				public void click(final Context context) {
-					selectDown(context);
-				}
-			};
 			return hoverable;
 		}
 
 		@Override
 		public Brick createNextBrick(final Context context) {
-			if (border != null) {
-				border.setLast(context, children.get(index).getLastBrick(context));
+			if (hoverable != null) {
+				hoverable.border.setLast(context, children.get(index).getLastBrick(context));
 			}
+			if (selection != null && selection.endIndex == index)
+				selection.border.setLast(context, children.get(index).getLastBrick(context));
 			return super.createNextBrick(context);
 		}
 	}

@@ -2,6 +2,7 @@ package com.zarbosoft.bonestruct.editor.visual.nodes;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
+import com.zarbosoft.bonestruct.editor.model.Hotkeys;
 import com.zarbosoft.bonestruct.editor.model.ObboxStyle;
 import com.zarbosoft.bonestruct.editor.model.Style;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
@@ -9,6 +10,7 @@ import com.zarbosoft.bonestruct.editor.visual.Brick;
 import com.zarbosoft.bonestruct.editor.visual.Context;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.editor.visual.attachments.CursorAttachment;
+import com.zarbosoft.bonestruct.editor.visual.attachments.TextBorderAttachment;
 import com.zarbosoft.bonestruct.editor.visual.bricks.TextBrick;
 import com.zarbosoft.bonestruct.editor.visual.raw.Obbox;
 import com.zarbosoft.pidgoon.internal.Helper;
@@ -92,18 +94,59 @@ public class PrimitiveVisualNode extends VisualNodePart {
 		return ImmutableList.of(); // TODO
 	}
 
+	PrimitiveSelection selection;
+
+	private class PrimitiveSelection extends Context.Selection {
+		TextBorderAttachment border;
+		CursorAttachment cursor;
+		int beginIndex;
+		TextBrick beginBrick;
+		int endIndex;
+		TextBrick endBrick;
+
+		public PrimitiveSelection(final Context context, final TextBrick brick, final int index) {
+			beginBrick = endBrick = brick;
+			beginIndex = endIndex = index;
+			final ObboxStyle.Baked style = new ObboxStyle.Baked();
+			style.merge(context.syntax.hoverStyle);
+			cursor = new CursorAttachment(context, style);
+			cursor.setPosition(context, beginBrick, beginIndex);
+		}
+
+		@Override
+		public void clear(final Context context) {
+			if (border != null)
+				border.destroy(context);
+			if (cursor != null)
+				cursor.destroy(context);
+			selection = null;
+		}
+
+		@Override
+		protected Hotkeys getHotkeys(final Context context) {
+			return context.getHotkeys(tags());
+		}
+
+		@Override
+		public Iterable<Context.Action> getActions(final Context context) {
+			return PrimitiveVisualNode.this.getActions(context);
+		}
+	}
+
 	private class PrimitiveHoverable extends Context.Hoverable {
 		final CursorAttachment cursor;
+		TextBrick brick;
+		int index;
 
 		PrimitiveHoverable(final Context context) {
 			final ObboxStyle.Baked style = new ObboxStyle.Baked();
 			style.merge(context.syntax.hoverStyle);
 			cursor = new CursorAttachment(context, style);
-			context.background.getChildren().add(cursor);
 		}
 
 		public void setPosition(final Context context, final TextBrick brick, final int index) {
-			System.out.format("cursor %d at [%s]\n", index, brick.getText().substring(0, index));
+			this.brick = brick;
+			this.index = index;
 			cursor.setPosition(context, brick, index);
 		}
 
@@ -115,7 +158,8 @@ public class PrimitiveVisualNode extends VisualNodePart {
 
 		@Override
 		public void click(final Context context) {
-			// TODO
+			selection = new PrimitiveSelection(context, brick, index);
+			context.setSelection(selection);
 		}
 	}
 
@@ -192,7 +236,6 @@ public class PrimitiveVisualNode extends VisualNodePart {
 				if (hoverable == null) {
 					hoverable = new PrimitiveHoverable(context);
 				}
-				System.out.format("brick at c %d, point %d\n", brick.getConverse(context), point.converse);
 				hoverable.setPosition(context, this, getUnder(context, point));
 				return hoverable;
 			}

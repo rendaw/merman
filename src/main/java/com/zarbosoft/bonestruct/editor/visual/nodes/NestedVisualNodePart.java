@@ -144,7 +144,7 @@ public class NestedVisualNodePart extends VisualNodePart {
 
 			@Override
 			public Iterable<Context.Action> getActions(final Context context) {
-				return getActions(context);
+				return NestedVisualNodePart.this.getActions(context);
 			}
 		});
 		return true;

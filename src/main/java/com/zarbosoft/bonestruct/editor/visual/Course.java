@@ -121,6 +121,8 @@ public class Course {
 			}
 			brick.parent = this;
 			attachments.put(brick, ImmutableSet.copyOf(brick.getAttachments(context)));
+			for (final Attachment attachment : ImmutableSet.copyOf(brick.getAttachments(context)))
+				attachment.setTransverse(context, transverseStart);
 		}
 		children.addAll(at, bricks);
 		renumber(at);

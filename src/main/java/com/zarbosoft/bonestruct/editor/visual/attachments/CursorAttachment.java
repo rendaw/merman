@@ -50,8 +50,9 @@ public class CursorAttachment extends Canvas {
 	private int transverseAscent;
 	private TextBrick brick;
 
-	CursorAttachment(final Context context, final ObboxStyle.Baked style) {
+	public CursorAttachment(final Context context, final ObboxStyle.Baked style) {
 		this.style = style;
+		context.background.getChildren().add(this);
 	}
 
 	public void setPosition(final Context context, final TextBrick brick, final int index) {
@@ -114,5 +115,10 @@ public class CursorAttachment extends Canvas {
 				offset = new Point2D(halfBuffer, -ascent + descent - (style.roundStart ? halfBuffer : 0));
 				break;
 		}
+	}
+
+	public void destroy(final Context context) {
+		brick.removeAttachment(context, this.attachment);
+		context.background.getChildren().remove(this);
 	}
 }
