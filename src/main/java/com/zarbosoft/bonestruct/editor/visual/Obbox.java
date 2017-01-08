@@ -263,60 +263,84 @@ public abstract class Obbox extends Canvas {
 					converseEdge,
 					(startTransverse + endTransverse) / 2
 			);
-			cornerTo(
-					context,
-					gc,
-					roundInnerEdges(),
-					converseEdge,
-					endTransverse,
-					(endConverse + converseEdge) / 2,
-					endTransverse
-			);
-			cornerTo(
-					context,
-					gc,
-					roundConcave(),
-					endConverse,
-					endTransverse,
-					endConverse,
-					(endTransverse + endTransverseEdge) / 2
-			);
-			cornerTo(
-					context,
-					gc,
-					roundEnd(),
-					endConverse,
-					endTransverseEdge,
-					(converseZero + endConverse) / 2,
-					endTransverseEdge
-			);
-			cornerTo(
-					context,
-					gc,
-					roundOuterEdges(),
-					converseZero,
-					endTransverseEdge,
-					converseZero,
-					(startTransverseEdge + endTransverseEdge) / 2
-			);
-			cornerTo(
-					context,
-					gc,
-					roundInnerEdges(),
-					converseZero,
-					startTransverseEdge,
-					startConverse / 2,
-					startTransverseEdge
-			);
-			cornerTo(
-					context,
-					gc,
-					roundConcave(),
-					startConverse,
-					startTransverseEdge,
-					startConverse,
-					(startTransverse + startTransverseEdge) / 2
-			);
+			if (endConverse == converseEdge) {
+				cornerTo(
+						context,
+						gc,
+						roundInnerEdges(),
+						converseEdge,
+						endTransverseEdge,
+						(converseZero + converseEdge) / 2,
+						endTransverseEdge
+				);
+			} else {
+				cornerTo(
+						context,
+						gc,
+						roundInnerEdges(),
+						converseEdge,
+						endTransverse,
+						(endConverse + converseEdge) / 2,
+						endTransverse
+				);
+				cornerTo(
+						context,
+						gc,
+						roundConcave(),
+						endConverse,
+						endTransverse,
+						endConverse,
+						(endTransverse + endTransverseEdge) / 2
+				);
+				cornerTo(
+						context,
+						gc,
+						roundEnd(),
+						endConverse,
+						endTransverseEdge,
+						(converseZero + endConverse) / 2,
+						endTransverseEdge
+				);
+			}
+			if (startConverse == converseZero) {
+				cornerTo(
+						context,
+						gc,
+						roundOuterEdges(),
+						converseZero,
+						endTransverseEdge,
+						converseZero,
+						(startTransverse + startTransverseEdge) / 2
+				);
+			} else {
+				cornerTo(
+						context,
+						gc,
+						roundOuterEdges(),
+						converseZero,
+						endTransverseEdge,
+						converseZero,
+						(startTransverseEdge + endTransverseEdge) / 2
+				);
+				cornerTo(
+						context,
+						gc,
+						roundInnerEdges(),
+						converseZero,
+						startTransverseEdge,
+						startConverse / 2,
+						startTransverseEdge
+				);
+				cornerTo(
+						context,
+						gc,
+						roundConcave(),
+						startConverse,
+						startTransverseEdge,
+						startConverse,
+						(startTransverse + startTransverseEdge) / 2
+				);
+			}
 			gc.closePath();
 		}
 	}
