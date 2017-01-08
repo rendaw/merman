@@ -28,6 +28,10 @@ public abstract class Brick {
 
 	public abstract int getConverse(Context context);
 
+	public Context.Hoverable hover(final Context context, final Vector point) {
+		return getVisual().hover(context, point);
+	}
+
 	public static class Properties {
 		public final boolean broken;
 		public final int ascent;

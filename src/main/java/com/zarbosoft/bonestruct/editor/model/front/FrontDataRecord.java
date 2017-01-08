@@ -1,12 +1,16 @@
 package com.zarbosoft.bonestruct.editor.model.front;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import com.zarbosoft.bonestruct.editor.luxem.Luxem;
 import com.zarbosoft.bonestruct.editor.model.Node;
 import com.zarbosoft.bonestruct.editor.model.NodeType;
 import com.zarbosoft.bonestruct.editor.model.middle.DataRecord;
 import com.zarbosoft.bonestruct.editor.visual.Brick;
 import com.zarbosoft.bonestruct.editor.visual.Context;
+import com.zarbosoft.bonestruct.editor.visual.Hotkeys;
+import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.editor.visual.nodes.VisualNode;
 import com.zarbosoft.bonestruct.editor.visual.nodes.VisualNodeParent;
 import com.zarbosoft.bonestruct.editor.visual.nodes.parts.*;
@@ -80,51 +84,17 @@ public class FrontDataRecord extends FrontPart {
 		}
 
 		@Override
+		public boolean select(final Context context) {
+			if (children.isEmpty())
+				return false;
+			((RecordVisualNodeParent) children.get(0).parent()).selectDown(context);
+			return true;
+		}
+
+		@Override
 		protected VisualNodeParent createParent(final int index) {
 			final boolean selectable = ((ChildGroup) children.get(index)).selectable;
-			return new GroupVisualNodeParent(this, index) {
-				class RecordHoverable extends Context.Hoverable {
-
-					BorderAttachment borderAttachment;
-
-					RecordHoverable(final Context context, final int index) {
-						borderAttachment = new BorderAttachment(context,
-								context.syntax.hoverStyle,
-								children.get(index).getFirstBrick(context),
-								children.get(index).getLastBrick(context)
-						);
-					}
-
-					@Override
-					public void clear(final Context context) {
-						borderAttachment.destroy(context);
-						hoverable = null;
-					}
-				}
-
-				RecordHoverable hoverable;
-
-				@Override
-				public Context.Hoverable hover(final Context context) {
-					if (!selectable) {
-						if (parent != null)
-							return parent.hover(context);
-						return null;
-					}
-					if (hoverable != null)
-						return hoverable;
-					hoverable = new RecordHoverable(context, index);
-					return hoverable;
-				}
-
-				@Override
-				public Brick createNextBrick(final Context context) {
-					final Brick newLast = super.createNextBrick(context);
-					if (hoverable != null && newLast != null)
-						hoverable.borderAttachment.setLast(context, newLast);
-					return newLast;
-				}
-			};
+			return new RecordVisualNodeParent(index, selectable);
 		}
 
 		@Override
@@ -166,13 +136,47 @@ public class FrontDataRecord extends FrontPart {
 				final ChildGroup group = new ChildGroup(ImmutableSet.of(), true);
 				for (final FrontConstantPart fix : prefix)
 					group.add(context, fix.createVisual(context, tags.plus(new PartTag("prefix"))));
-				group.add(context, new PrimitiveVisualNode(context, p.second.first, tags.plus(new PartTag("key"))));
+				group.add(context, new PrimitiveVisualNode(context, p.second.first, tags.plus(new PartTag("key"))) {
+					@Override
+					protected Iterable<Context.Action> getActions(final Context context) {
+						return Iterables.concat(super.getActions(context), ImmutableList.of(new Context.Action() {
+
+							@Override
+							public void run(final Context context) {
+
+							}
+
+							@Override
+							public String getName() {
+								return "next";
+							}
+						}));
+					}
+				});
 				for (final FrontConstantPart fix : infix)
 					group.add(context, fix.createVisual(context, tags.plus(new PartTag("infix"))));
 				group.add(context,
 						new NestedVisualNodePart(p.second.second.createVisual(context),
 								tags.plus(new PartTag("nested"))
-						)
+						) {
+							@Override
+							protected Iterable<Context.Action> getActions(final Context context) {
+								return Iterables.concat(super.getActions(context),
+										ImmutableList.of(new Context.Action() {
+
+											@Override
+											public void run(final Context context) {
+
+											}
+
+											@Override
+											public String getName() {
+												return "previous";
+											}
+										})
+								);
+							}
+						}
 				);
 				for (final FrontConstantPart fix : suffix)
 					group.add(context, fix.createVisual(context, tags.plus(new PartTag("suffix"))));
@@ -183,6 +187,212 @@ public class FrontDataRecord extends FrontPart {
 					children.get(0).changeTags(context, new TagsChange().add(new PartTag("first")));
 				if (retagLast)
 					Helper.last(children).changeTags(context, new TagsChange().add(new PartTag("last")));
+			}
+		}
+
+		private class RecordVisualNodeParent extends GroupVisualNodeParent {
+			private final int index;
+			private final boolean selectable;
+			BorderAttachment border;
+			boolean selected;
+
+			public RecordVisualNodeParent(final int index, final boolean selectable) {
+				super(RecordVisual.this, index);
+				this.index = index;
+				this.selectable = selectable;
+			}
+
+			public void selectDown(final Context context) {
+				if (selected)
+					throw new AssertionError("Already selected");
+				else if (border != null) {
+					context.clearHover();
+				}
+				selected = true;
+				border = new BorderAttachment(context,
+						context.syntax.selectStyle,
+						children.get(index).getFirstBrick(context),
+						children.get(index).getLastBrick(context)
+				);
+				context.setSelection(new Context.Selection() {
+					@Override
+					protected Hotkeys getHotkeys(final Context context) {
+						return context.getHotkeys(tags());
+					}
+
+					@Override
+					public void clear(final Context context) {
+						border.destroy(context);
+						border = null;
+						selected = false;
+					}
+
+					@Override
+					public Iterable<Context.Action> getActions(final Context context) {
+						return ImmutableList.of(new Context.Action() {
+							@Override
+							public void run(final Context context) {
+
+							}
+
+							@Override
+							public String getName() {
+								return "enter";
+							}
+						}, new Context.Action() {
+							@Override
+							public void run(final Context context) {
+
+							}
+
+							@Override
+							public String getName() {
+								return "exit";
+							}
+						}, new Context.Action() {
+							@Override
+							public void run(final Context context) {
+
+							}
+
+							@Override
+							public String getName() {
+								return "next";
+							}
+						}, new Context.Action() {
+							@Override
+							public void run(final Context context) {
+
+							}
+
+							@Override
+							public String getName() {
+								return "previous";
+							}
+						}, new Context.Action() {
+							@Override
+							public void run(final Context context) {
+
+							}
+
+							@Override
+							public String getName() {
+								return "insert-before";
+							}
+						}, new Context.Action() {
+							@Override
+							public void run(final Context context) {
+
+							}
+
+							@Override
+							public String getName() {
+								return "insert-after";
+							}
+						}, new Context.Action() {
+							@Override
+							public void run(final Context context) {
+
+							}
+
+							@Override
+							public String getName() {
+								return "copy";
+							}
+						}, new Context.Action() {
+							@Override
+							public void run(final Context context) {
+
+							}
+
+							@Override
+							public String getName() {
+								return "cut";
+							}
+						}, new Context.Action() {
+							@Override
+							public void run(final Context context) {
+
+							}
+
+							@Override
+							public String getName() {
+								return "paste";
+							}
+						}, new Context.Action() {
+							@Override
+							public void run(final Context context) {
+
+							}
+
+							@Override
+							public String getName() {
+								return "reset-selection";
+							}
+						}, new Context.Action() {
+							@Override
+							public void run(final Context context) {
+
+							}
+
+							@Override
+							public String getName() {
+								return "gather-next";
+							}
+						}, new Context.Action() {
+							@Override
+							public void run(final Context context) {
+
+							}
+
+							@Override
+							public String getName() {
+								return "gather-previous";
+							}
+						});
+					}
+				});
+			}
+
+			Context.Hoverable hoverable;
+
+			@Override
+			public Context.Hoverable hover(final Context context, final Vector point) {
+				if (!selectable) {
+					if (parent != null)
+						return parent.hover(context, point);
+					return null;
+				}
+				if (selected)
+					return null;
+				if (hoverable != null)
+					return hoverable;
+				border = new BorderAttachment(context,
+						context.syntax.hoverStyle,
+						children.get(index).getFirstBrick(context),
+						children.get(index).getLastBrick(context)
+				);
+				hoverable = new Context.Hoverable() {
+					@Override
+					public void clear(final Context context) {
+						border.destroy(context);
+						border = null;
+						hoverable = null;
+					}
+
+					@Override
+					public void click(final Context context) {
+						selectDown(context);
+					}
+				};
+				return hoverable;
+			}
+
+			@Override
+			public Brick createNextBrick(final Context context) {
+				if (border != null)
+					border.setLast(context, children.get(index).getLastBrick(context));
+				return super.createNextBrick(context);
 			}
 		}
 	}

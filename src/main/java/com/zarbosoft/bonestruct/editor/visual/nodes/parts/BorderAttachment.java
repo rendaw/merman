@@ -65,6 +65,8 @@ public class BorderAttachment {
 		if (this.first != null)
 			this.first.removeAttachment(context, this.firstAttachment);
 		this.first = first;
+		if (first == null)
+			return;
 		this.first.addAttachment(context, this.firstAttachment);
 	}
 
@@ -72,6 +74,8 @@ public class BorderAttachment {
 		if (this.last != null)
 			this.last.removeAttachment(context, this.lastAttachment);
 		this.last = last;
+		if (last == null)
+			return;
 		this.last.addAttachment(context, this.lastAttachment);
 	}
 

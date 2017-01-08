@@ -175,6 +175,7 @@ public class FrontSpace extends FrontConstantPart {
 			public int getConverse(final Context context) {
 				return converse;
 			}
+
 		}
 	}
 

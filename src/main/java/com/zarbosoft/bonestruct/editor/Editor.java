@@ -56,6 +56,11 @@ public class Editor {
 		//final Document doc = luxemSyntax.load("{analogue:bolivar}");
 		final Wall wall = new Wall();
 		context = new Context(luxemSyntax, doc, addIdle, wall);
+		this.visual = new Pane();
+		visual.setBackground(new Background(new BackgroundFill(context.syntax.background, null, null)));
+		context.background = new Group();
+		visual.getChildren().add(context.background);
+		visual.getChildren().add(wall.visual);
 		final ArrayVisualNode root =
 				new ArrayVisualNode(context, doc.top, ImmutableSet.of(new VisualNode.PartTag("root"))) {
 
@@ -90,11 +95,6 @@ public class Editor {
 					}
 				};
 		context.root(root);
-		this.visual = new Pane();
-		visual.setBackground(new Background(new BackgroundFill(context.syntax.background, null, null)));
-		context.background = new Group();
-		visual.getChildren().add(context.background);
-		visual.getChildren().add(wall.visual);
 		visual.setOnMouseExited(event -> {
 			if (context.hoverIdle != null) {
 				context.hoverIdle.point = null;
@@ -112,6 +112,24 @@ public class Editor {
 			context.hoverIdle.point = context
 					.sceneToVector(visual, event.getX(), event.getY())
 					.add(new Vector(-context.syntax.padConverse, -context.syntax.padTransverse));
+		});
+		visual.setOnMouseClicked(event -> {
+			if (context.idleClick == null) {
+				context.idleClick = new IdleTask() {
+					@Override
+					public void run() {
+						if (context.hover != null)
+							context.hover.click(context);
+						context.idleClick = null;
+					}
+
+					@Override
+					protected int priority() {
+						return 490;
+					}
+				};
+				addIdle.accept(context.idleClick);
+			}
 		});
 		final ChangeListener<Number> converseSizeListener = (observable, oldValue, newValue) -> {
 			final int newValue2 = (int) newValue.doubleValue();

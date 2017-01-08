@@ -50,6 +50,11 @@ public class Context {
 		idleFill.ends.addLast(end);
 	}
 
+	public void clearHover() {
+		hover.clear(this);
+		hover = null;
+	}
+
 	public class IdleFill extends IdleTask {
 		public Deque<Brick> ends = new ArrayDeque<>();
 
@@ -76,19 +81,24 @@ public class Context {
 
 	IdleFill idleFill = null;
 
-	public void setSelection(final Context context, final Selection selection) {
+	public IdleTask idleClick = null;
+
+	public void setSelection(final Selection selection) {
 		if (this.selection != null) {
-			this.selection.clear(context);
+			this.selection.clear(this);
 		}
 		this.selection = selection;
 		hotkeyGrammar = new Grammar();
 		final Union union = new Union();
-		for (final Action action : selection.getActions(context)) {
-			Node rule = action.buildRule();
-			if (rule == null)
+		for (final Action action : selection.getActions(this)) {
+			final Node rule;
+			final com.zarbosoft.luxemj.grammar.Node hotkey = selection.getHotkeys(this).hotkeys.get(action.getName());
+			if (hotkey == null)
 				rule = new Sequence()
 						.add(new Terminal(new Keyboard.Event(Keyboard.Key.PAGE_UP, false, false, false)))
 						.add(Keyboard.ruleFromString(String.format(":%s", action.getName())));
+			else
+				rule = hotkey.build();
 			union.add(new BakedOperator(rule, store -> store.pushStack(action)));
 		}
 		hotkeyGrammar.add("root", union);
@@ -100,6 +110,7 @@ public class Context {
 				.stream()
 				.filter(e -> tags.equals(e.getKey()))
 				.map(e -> e.getValue().get())
+				.filter(v -> v != null)
 				.findFirst();
 		if (found.isPresent())
 			return found.get();
@@ -119,6 +130,7 @@ public class Context {
 				.stream()
 				.filter(e -> tags.equals(e.getKey()))
 				.map(e -> e.getValue().get())
+				.filter(v -> v != null)
 				.findFirst();
 		if (found.isPresent())
 			return found.get();
@@ -133,8 +145,6 @@ public class Context {
 	}
 
 	public static abstract class Action {
-		public abstract Node buildRule();
-
 		public abstract void run(Context context);
 
 		public abstract String getName();
@@ -144,6 +154,8 @@ public class Context {
 
 		public abstract void clear(Context context);
 
+		protected abstract Hotkeys getHotkeys(Context context);
+
 		public void receiveText(final Context context, final String text) {
 		}
 
@@ -152,12 +164,19 @@ public class Context {
 
 	public static abstract class Hoverable {
 		public abstract void clear(Context context);
+
+		public abstract void click(Context context);
 	}
 
 	public class HoverIdle extends IdleTask {
 		public Vector point = null;
 		Context context;
 		Brick at;
+
+		@Override
+		protected int priority() {
+			return 500;
+		}
 
 		public HoverIdle(final Context context) {
 			this.context = context;
@@ -176,9 +195,9 @@ public class Context {
 				return;
 			}
 			if (point == null) {
-				if (hover != null)
-					hover.clear(context);
-				hover = null;
+				if (hover != null) {
+					clearHover();
+				}
 				hoverBrick = null;
 				hoverIdle = null;
 				return;
@@ -196,7 +215,7 @@ public class Context {
 					at = at.parent.children.get(at.index + 1);
 				}
 				final Hoverable old = hover;
-				hover = at.getVisual().hover(context);
+				hover = at.hover(context, point);
 				if (hover != old) {
 					if (old != null)
 						old.clear(context);

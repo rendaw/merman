@@ -3,6 +3,7 @@ package com.zarbosoft.bonestruct.editor.visual.nodes.bricks;
 import com.zarbosoft.bonestruct.editor.visual.Brick;
 import com.zarbosoft.bonestruct.editor.visual.Context;
 import com.zarbosoft.bonestruct.editor.visual.Style;
+import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.editor.visual.alignment.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.alignment.AlignmentListener;
 import com.zarbosoft.bonestruct.editor.visual.nodes.parts.RawText;
@@ -76,5 +77,17 @@ public abstract class TextBrick extends Brick implements AlignmentListener {
 	@Override
 	public int getConverse(final Context context) {
 		return text.getConverse(context.edge);
+	}
+
+	public Font getFont() {
+		return text.getFont();
+	}
+
+	public int getConverseOffset(final int index) {
+		return text.getConverseOffset(index);
+	}
+
+	public int getUnder(final Context context, final Vector point) {
+		return text.getUnder(point.converse, context.edge);
 	}
 }

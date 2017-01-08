@@ -10,10 +10,13 @@ public class ConcensusAlignment extends Alignment {
 		if (gotConverse > this.converse) {
 			this.converse = gotConverse;
 		} else {
+			final int oldConverse = converse;
 			converse = 0;
 			for (final AlignmentListener listener : listeners) {
 				converse = Math.max(listener.getConverse(context), converse);
 			}
+			if (converse == oldConverse)
+				return;
 		}
 		submit(context);
 	}

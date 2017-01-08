@@ -73,11 +73,13 @@ public class Course {
 	}
 
 	private void breakCourse(final Context context, final int index) {
-		final List<Brick> transplant = ImmutableList.copyOf(children.subList(index, children.size()));
-		remove(context, index, transplant.size());
 		final Course next = new Course(context);
 		parent.add(context, this.index + 1, ImmutableList.of(next));
-		next.add(context, 0, transplant);
+		if (index < children.size()) {
+			final List<Brick> transplant = ImmutableList.copyOf(children.subList(index, children.size()));
+			remove(context, index, transplant.size());
+			next.add(context, 0, transplant);
+		}
 	}
 
 	/*
@@ -113,6 +115,7 @@ public class Course {
 			final Brick brick = bricks.get(i);
 			if (at + i > 0 && brick.properties().broken) {
 				breakCourse(context, at + i);
+				parent.children.get(index + 1).add(context, 0, bricks.subList(i, bricks.size()));
 				bricks = bricks.subList(0, i);
 				break;
 			}

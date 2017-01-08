@@ -2,6 +2,7 @@ package com.zarbosoft.bonestruct.editor.visual.nodes.parts;
 
 import com.zarbosoft.bonestruct.editor.visual.Brick;
 import com.zarbosoft.bonestruct.editor.visual.Context;
+import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.editor.visual.alignment.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.nodes.VisualNode;
 import com.zarbosoft.bonestruct.editor.visual.nodes.VisualNodeParent;
@@ -76,7 +77,7 @@ public class GroupVisualNodeParent extends VisualNodeParent {
 	}
 
 	@Override
-	public Context.Hoverable hover(final Context context) {
-		return target.hover(context);
+	public Context.Hoverable hover(final Context context, final Vector point) {
+		return target.hover(context, point);
 	}
 }

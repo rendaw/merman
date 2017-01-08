@@ -148,7 +148,6 @@ public abstract class Obbox extends Canvas {
 	public void setSize(
 			final Context context, int sc, int st, int ste, int ec, int et, int ete
 	) {
-		System.out.format("te.setSize(context, %d, %d, %d, %d, %d, %d);\n", sc, st, ste, ec, et, ete);
 		final boolean oneLine = st == et;
 		clear();
 		sc -= padding();
@@ -347,7 +346,7 @@ public abstract class Obbox extends Canvas {
 	}
 
 	public static class BakedSettings {
-		public int padding = 0;
+		public int padding = 4;
 		public boolean roundStart = false;
 		public boolean roundEnd = false;
 		public boolean roundOuterEdges = false;

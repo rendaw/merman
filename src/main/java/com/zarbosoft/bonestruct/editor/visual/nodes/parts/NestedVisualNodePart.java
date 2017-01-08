@@ -1,16 +1,16 @@
 package com.zarbosoft.bonestruct.editor.visual.nodes.parts;
 
+import com.google.common.collect.ImmutableList;
 import com.zarbosoft.bonestruct.editor.visual.Brick;
 import com.zarbosoft.bonestruct.editor.visual.Context;
 import com.zarbosoft.bonestruct.editor.visual.Hotkeys;
+import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.editor.visual.alignment.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.nodes.VisualNode;
 import com.zarbosoft.bonestruct.editor.visual.nodes.VisualNodeParent;
-import com.zarbosoft.pidgoon.internal.Node;
 import com.zarbosoft.pidgoon.internal.Pair;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
@@ -19,7 +19,8 @@ public class NestedVisualNodePart extends VisualNodePart {
 	protected final VisualNode body;
 	VisualNodeParent parent;
 	boolean selected = false;
-	private BorderAttachment borderAttachment;
+	private BorderAttachment border;
+	Context.Hoverable hoverable;
 
 	public NestedVisualNodePart(final VisualNode body, final Set<Tag> tags) {
 		super(tags);
@@ -36,12 +37,11 @@ public class NestedVisualNodePart extends VisualNodePart {
 
 			@Override
 			public Brick createNextBrick(final Context context) {
+				if (border != null)
+					border.setLast(context, body.getLastBrick(context));
 				if (parent == null)
 					return null;
-				final Brick newLast = parent.createNextBrick(context);
-				if (hoverable != null && newLast != null)
-					hoverable.borderAttachment.setLast(context, newLast);
-				return newLast;
+				return parent.createNextBrick(context);
 			}
 
 			@Override
@@ -68,36 +68,35 @@ public class NestedVisualNodePart extends VisualNodePart {
 				return parent.getNextBrick(context);
 			}
 
-			class NestedHoverable extends Context.Hoverable {
-
-				BorderAttachment borderAttachment;
-
-				NestedHoverable(final Context context) {
-					borderAttachment = new BorderAttachment(
-							context,
-							context.syntax.hoverStyle,
-							body.getFirstBrick(context),
-							body.getLastBrick(context)
-					);
-				}
-
-				@Override
-				public void clear(final Context context) {
-					borderAttachment.destroy(context);
-					hoverable = null;
-				}
-			}
-
-			NestedHoverable hoverable;
-
 			@Override
-			public Context.Hoverable hover(final Context context) {
-				Context.Hoverable parentHoverable = null;
-				if (parent != null && (parentHoverable = parent.hover(context)) != null)
-					return parentHoverable;
+			public Context.Hoverable hover(final Context context, final Vector point) {
+				if (selected)
+					return null;
+				if (parent != null) {
+					final Context.Hoverable parentHoverable = parent.hover(context, point);
+					if (parentHoverable != null)
+						return parentHoverable;
+				}
 				if (hoverable != null)
 					return hoverable;
-				hoverable = new NestedHoverable(context);
+				border = new BorderAttachment(context,
+						context.syntax.hoverStyle,
+						body.getFirstBrick(context),
+						body.getLastBrick(context)
+				);
+				hoverable = new Context.Hoverable() {
+					@Override
+					public void clear(final Context context) {
+						border.destroy(context);
+						border = null;
+						hoverable = null;
+					}
+
+					@Override
+					public void click(final Context context) {
+						select(context);
+					}
+				};
 				return hoverable;
 			}
 		};
@@ -122,75 +121,100 @@ public class NestedVisualNodePart extends VisualNodePart {
 	public boolean select(final Context context) {
 		if (selected)
 			throw new AssertionError("Already selected");
-		selected = true;
-		/*
-		if (border != null && context.hover != null) {
-			context.hover = null;
-			context.hover.clear(context);
+		else if (border != null) {
+			context.clearHover();
 		}
-		createBorder(context, context.syntax.select);
-		*/
-		context.setSelection(context, new Context.Selection() {
+		selected = true;
+		border = new BorderAttachment(context,
+				context.syntax.selectStyle,
+				body.getFirstBrick(context),
+				body.getLastBrick(context)
+		);
+		context.setSelection(new Context.Selection() {
 			@Override
 			public void clear(final Context context) {
-				/*
-				if (border != null) {
-					background.getChildren().remove(0, 1);
-					border = null;
-				}
-				*/
+				border.destroy(context);
+				border = null;
 				selected = false;
 			}
 
 			@Override
+			protected Hotkeys getHotkeys(final Context context) {
+				return context.getHotkeys(tags());
+			}
+
+			@Override
 			public Iterable<Context.Action> getActions(final Context context) {
-				final Hotkeys hotkeys = context.getHotkeys(tags());
-				// TODO update hotkeys/actions on tags change
-				return Arrays.asList(new Context.Action() {
-					@Override
-					public Node buildRule() {
-						final com.zarbosoft.luxemj.grammar.Node node;
-						node = hotkeys.hotkeys.get(getName());
-						if (node == null)
-							return null;
-						return node.build();
-					}
-
-					@Override
-					public void run(final Context context) {
-						body.select(context);
-					}
-
-					@Override
-					public String getName() {
-						return "enter";
-					}
-				}, new Context.Action() {
-					@Override
-					public Node buildRule() {
-						final com.zarbosoft.luxemj.grammar.Node node;
-						node = hotkeys.hotkeys.get(getName());
-						if (node == null)
-							//return null;
-							throw new AssertionError("ja");
-						return node.build();
-					}
-
-					@Override
-					public void run(final Context context) {
-						if (parent != null) {
-							parent.selectUp(context);
-						}
-					}
-
-					@Override
-					public String getName() {
-						return "exit";
-					}
-				});
+				return getActions(context);
 			}
 		});
 		return true;
+	}
+
+	protected Iterable<Context.Action> getActions(final Context context) {
+		return ImmutableList.of(new Context.Action() {
+			@Override
+			public void run(final Context context) {
+				body.select(context);
+			}
+
+			@Override
+			public String getName() {
+				return "enter";
+			}
+		}, new Context.Action() {
+			@Override
+			public void run(final Context context) {
+				if (parent != null) {
+					parent.selectUp(context);
+				}
+			}
+
+			@Override
+			public String getName() {
+				return "exit";
+			}
+		}, new Context.Action() {
+			@Override
+			public void run(final Context context) {
+
+			}
+
+			@Override
+			public String getName() {
+				return "delete";
+			}
+		}, new Context.Action() {
+			@Override
+			public void run(final Context context) {
+
+			}
+
+			@Override
+			public String getName() {
+				return "copy";
+			}
+		}, new Context.Action() {
+			@Override
+			public void run(final Context context) {
+
+			}
+
+			@Override
+			public String getName() {
+				return "cut";
+			}
+		}, new Context.Action() {
+			@Override
+			public void run(final Context context) {
+
+			}
+
+			@Override
+			public String getName() {
+				return "paste";
+			}
+		});
 	}
 
 	@Override

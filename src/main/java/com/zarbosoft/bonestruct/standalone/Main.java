@@ -69,10 +69,11 @@ public class Main extends Application {
 								idleTimer = null;
 								System.out.format("Idle stopping at %d\n", i);
 								break;
-							} else
+							} else {
 								top.run();
+							}
 						}
-						//System.out.format("Idle break at g i %d\n", GroupVisualNode.idleCount);
+						//System.out.format("Idle break at g i %d\n", idleCount);
 						idlePending = false;
 					});
 				}, 0, 50, TimeUnit.MILLISECONDS);

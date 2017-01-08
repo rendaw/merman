@@ -1,10 +1,8 @@
 package com.zarbosoft.bonestruct.editor.visual.nodes.parts;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
-import com.zarbosoft.bonestruct.editor.visual.Brick;
-import com.zarbosoft.bonestruct.editor.visual.Context;
-import com.zarbosoft.bonestruct.editor.visual.Obbox;
-import com.zarbosoft.bonestruct.editor.visual.Style;
+import com.zarbosoft.bonestruct.editor.visual.*;
 import com.zarbosoft.bonestruct.editor.visual.alignment.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.nodes.VisualNodeParent;
 import com.zarbosoft.bonestruct.editor.visual.nodes.bricks.TextBrick;
@@ -32,7 +30,7 @@ public class PrimitiveVisualNode extends VisualNodePart {
 	Style.Baked softStyle, hardStyle, firstStyle;
 	Set<Tag> softTags = new HashSet<>(), hardTags = new HashSet<>();
 	int brickCount = 0;
-	private Context.Hoverable hoverable;
+	private PrimitiveHoverable hoverable;
 
 	private void getStyles(final Context context) {
 		final PSet<Tag> tags = HashTreePSet.from(tags());
@@ -78,22 +76,42 @@ public class PrimitiveVisualNode extends VisualNodePart {
 	}
 
 	@Override
-	public Context.Hoverable hover(final Context context) {
-		Context.Hoverable parentHoverable = null;
-		if (parent != null && (parentHoverable = parent.hover(context)) != null)
-			return parentHoverable;
-		if (hoverable == null) {
-			hoverable = new Context.Hoverable() {
-
-				// TODO hovery stuff
-
-				@Override
-				public void clear(final Context context) {
-					hoverable = null;
-				}
-			};
+	public Context.Hoverable hover(final Context context, final Vector point) {
+		if (parent != null) {
+			return parent.hover(context, point);
 		}
-		return hoverable;
+		return null;
+	}
+
+	protected Iterable<Context.Action> getActions(final Context context) {
+		return ImmutableList.of(); // TODO
+	}
+
+	private class PrimitiveHoverable extends Context.Hoverable {
+		final CursorAttachment cursor;
+
+		PrimitiveHoverable(final Context context) {
+			final Obbox.BakedSettings style = new Obbox.BakedSettings();
+			style.merge(context.syntax.hoverStyle);
+			cursor = new CursorAttachment(context, style);
+			context.background.getChildren().add(cursor);
+		}
+
+		public void setPosition(final Context context, final TextBrick brick, final int index) {
+			System.out.format("cursor %d at [%s]\n", index, brick.getText().substring(0, index));
+			cursor.setPosition(context, brick, index);
+		}
+
+		@Override
+		public void clear(final Context context) {
+			context.background.getChildren().remove(cursor);
+			hoverable = null;
+		}
+
+		@Override
+		public void click(final Context context) {
+			// TODO
+		}
 	}
 
 	private class Line {
@@ -157,6 +175,21 @@ public class PrimitiveVisualNode extends VisualNodePart {
 			@Override
 			protected Style.Baked getStyle() {
 				return index == 0 ? firstStyle : hard ? hardStyle : softStyle;
+			}
+
+			@Override
+			public Context.Hoverable hover(final Context context, final Vector point) {
+				final Context.Hoverable out = PrimitiveVisualNode.this.hover(context, point);
+				if (out != null)
+					return out;
+				if (brick == null)
+					return null;
+				if (hoverable == null) {
+					hoverable = new PrimitiveHoverable(context);
+				}
+				System.out.format("brick at c %d, point %d\n", brick.getConverse(context), point.converse);
+				hoverable.setPosition(context, this, getUnder(context, point));
+				return hoverable;
 			}
 		}
 

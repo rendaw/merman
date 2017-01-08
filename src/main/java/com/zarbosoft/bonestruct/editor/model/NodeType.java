@@ -186,10 +186,12 @@ public class NodeType {
 				}
 
 				@Override
-				public Context.Hoverable hover(final Context context) {
+				public Context.Hoverable hover(
+						final Context context, final com.zarbosoft.bonestruct.editor.visual.Vector point
+				) {
 					if (parent == null)
 						return null;
-					return parent.hover(context);
+					return parent.hover(context, point);
 				}
 			});
 		}
