@@ -58,7 +58,7 @@ public abstract class Brick {
 
 	public abstract Node getRawVisual();
 
-	public abstract void setConverse(Context context, int converse);
+	public abstract void setConverse(Context context, int minConverse, int converse);
 
 	public abstract Brick createNext(Context context);
 

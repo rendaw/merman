@@ -93,6 +93,7 @@ public class FrontSpace extends FrontConstantPart {
 			private Style.Baked style;
 			private Alignment alignment;
 			private final Region visual = new Region();
+			private int minConverse;
 
 			public SpaceBrick(final Context context) {
 				setStyle(context);
@@ -146,7 +147,8 @@ public class FrontSpace extends FrontConstantPart {
 			}
 
 			@Override
-			public void setConverse(final Context context, final int converse) {
+			public void setConverse(final Context context, final int minConverse, final int converse) {
+				this.minConverse = minConverse;
 				this.converse = converse;
 				context.translate(visual, new Vector(converse, 0));
 			}
@@ -176,6 +178,10 @@ public class FrontSpace extends FrontConstantPart {
 				return converse;
 			}
 
+			@Override
+			public int getMinConverse(final Context context) {
+				return minConverse;
+			}
 		}
 	}
 

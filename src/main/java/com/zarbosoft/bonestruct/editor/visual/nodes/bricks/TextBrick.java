@@ -13,6 +13,7 @@ import javafx.scene.text.Font;
 
 public abstract class TextBrick extends Brick implements AlignmentListener {
 	RawText text;
+	private int minConverse;
 
 	@Override
 	public int converseEdge(final Context context) {
@@ -43,7 +44,8 @@ public abstract class TextBrick extends Brick implements AlignmentListener {
 	}
 
 	@Override
-	public void setConverse(final Context context, final int converse) {
+	public void setConverse(final Context context, final int minConverse, final int converse) {
+		this.minConverse = minConverse;
 		text.setConverse(converse, context.edge);
 	}
 
@@ -77,6 +79,11 @@ public abstract class TextBrick extends Brick implements AlignmentListener {
 	@Override
 	public int getConverse(final Context context) {
 		return text.getConverse(context.edge);
+	}
+
+	@Override
+	public int getMinConverse(final Context context) {
+		return minConverse;
 	}
 
 	public Font getFont() {

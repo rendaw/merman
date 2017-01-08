@@ -13,7 +13,7 @@ public class ConcensusAlignment extends Alignment {
 			final int oldConverse = converse;
 			converse = 0;
 			for (final AlignmentListener listener : listeners) {
-				converse = Math.max(listener.getConverse(context), converse);
+				converse = Math.max(listener.getMinConverse(context), converse);
 			}
 			if (converse == oldConverse)
 				return;

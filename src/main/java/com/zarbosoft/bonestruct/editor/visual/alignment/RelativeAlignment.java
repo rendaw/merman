@@ -40,7 +40,7 @@ public class RelativeAlignment extends Alignment implements AlignmentListener {
 	}
 
 	@Override
-	public int getConverse(final Context context) {
+	public int getMinConverse(final Context context) {
 		return converse;
 	}
 

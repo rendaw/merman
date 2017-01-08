@@ -98,6 +98,7 @@ public class FrontImage extends FrontConstantPart {
 			private final RawImage image;
 			private Style.Baked style;
 			private Alignment alignment;
+			private int minConverse;
 
 			public ImageBrick(final Context context) {
 				setStyle(context);
@@ -165,6 +166,11 @@ public class FrontImage extends FrontConstantPart {
 			}
 
 			@Override
+			public int getMinConverse(final Context context) {
+				return minConverse;
+			}
+
+			@Override
 			public Properties properties() {
 				return properties(style);
 			}
@@ -175,7 +181,8 @@ public class FrontImage extends FrontConstantPart {
 			}
 
 			@Override
-			public void setConverse(final Context context, final int converse) {
+			public void setConverse(final Context context, final int minConverse, final int converse) {
+				this.minConverse = minConverse;
 				image.setConverse(converse, context.edge);
 			}
 

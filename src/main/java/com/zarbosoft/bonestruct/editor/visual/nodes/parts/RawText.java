@@ -439,15 +439,9 @@ public abstract class RawText {
 	public int getConverseOffset(final int index) {
 		return (int) (
 				RawTextUtils.computeTextWidth(text.getFont(), text.getText().substring(0, index)) -
-						RawTextUtils.computeTextWidth(
-								text.getFont(),
-								text
-										.getText()
-										.substring(
-												Math.max(0, index - 1),
-												Math.min(text.getText().length(), Math.max(1, index))
-										)
-						) * 0.2
+						RawTextUtils.computeTextWidth(text.getFont(), text.getText().substring(Math.max(0, index - 1),
+								Math.min(text.getText().length(), Math.max(1, index))
+						)) * 0.2
 
 		);
 	}

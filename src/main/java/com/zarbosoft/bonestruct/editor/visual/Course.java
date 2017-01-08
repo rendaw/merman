@@ -262,8 +262,9 @@ public class Course {
 			for (int index = at; index < children.size(); ++index) {
 				final Brick brick = children.get(index);
 				final Brick.Properties properties = brick.properties();
+				final int minConverse = converse;
 				converse = Math.max(converse, properties.alignment == null ? 0 : properties.alignment.converse);
-				brick.setConverse(context, converse);
+				brick.setConverse(context, minConverse, converse);
 				for (final Attachment attachment : brick.getAttachments(context))
 					attachment.setConverse(context, converse);
 				if (properties.alignment != null)
