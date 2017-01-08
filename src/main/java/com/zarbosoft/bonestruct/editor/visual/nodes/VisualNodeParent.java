@@ -1,9 +1,9 @@
 package com.zarbosoft.bonestruct.editor.visual.nodes;
 
+import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.Brick;
 import com.zarbosoft.bonestruct.editor.visual.Context;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
-import com.zarbosoft.bonestruct.editor.visual.alignment.Alignment;
 
 public abstract class VisualNodeParent {
 	public abstract void selectUp(Context context);

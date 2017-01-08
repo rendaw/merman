@@ -1,7 +1,7 @@
-package com.zarbosoft.bonestruct.editor.visual.nodes.parts;
+package com.zarbosoft.bonestruct.editor.visual.raw;
 
+import com.zarbosoft.bonestruct.editor.model.Style;
 import com.zarbosoft.bonestruct.editor.visual.Context;
-import com.zarbosoft.bonestruct.editor.visual.Style;
 import javafx.geometry.Point2D;
 import javafx.geometry.VPos;
 import javafx.scene.Node;
@@ -439,14 +439,9 @@ public abstract class RawText {
 	public int getConverseOffset(final int index) {
 		return (int) (
 				RawTextUtils.computeTextWidth(text.getFont(), text.getText().substring(0, index)) -
-						RawTextUtils.computeTextWidth(
-								text.getFont(),
-								text
-										.getText()
-										.substring(Math.max(0, index - 1),
-												Math.min(text.getText().length(), Math.max(1, index))
-										)
-						) * 0.2
+						RawTextUtils.computeTextWidth(text.getFont(), text.getText().substring(Math.max(0, index - 1),
+								Math.min(text.getText().length(), Math.max(1, index))
+						)) * 0.2
 
 		);
 	}

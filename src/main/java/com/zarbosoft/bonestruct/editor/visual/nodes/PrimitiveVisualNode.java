@@ -1,11 +1,16 @@
-package com.zarbosoft.bonestruct.editor.visual.nodes.parts;
+package com.zarbosoft.bonestruct.editor.visual.nodes;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
-import com.zarbosoft.bonestruct.editor.visual.*;
-import com.zarbosoft.bonestruct.editor.visual.alignment.Alignment;
-import com.zarbosoft.bonestruct.editor.visual.nodes.VisualNodeParent;
-import com.zarbosoft.bonestruct.editor.visual.nodes.bricks.TextBrick;
+import com.zarbosoft.bonestruct.editor.model.ObboxStyle;
+import com.zarbosoft.bonestruct.editor.model.Style;
+import com.zarbosoft.bonestruct.editor.visual.Alignment;
+import com.zarbosoft.bonestruct.editor.visual.Brick;
+import com.zarbosoft.bonestruct.editor.visual.Context;
+import com.zarbosoft.bonestruct.editor.visual.Vector;
+import com.zarbosoft.bonestruct.editor.visual.attachments.CursorAttachment;
+import com.zarbosoft.bonestruct.editor.visual.bricks.TextBrick;
+import com.zarbosoft.bonestruct.editor.visual.raw.Obbox;
 import com.zarbosoft.pidgoon.internal.Helper;
 import com.zarbosoft.pidgoon.internal.Pair;
 import javafx.beans.property.StringProperty;
@@ -91,7 +96,7 @@ public class PrimitiveVisualNode extends VisualNodePart {
 		final CursorAttachment cursor;
 
 		PrimitiveHoverable(final Context context) {
-			final Obbox.BakedSettings style = new Obbox.BakedSettings();
+			final ObboxStyle.Baked style = new ObboxStyle.Baked();
 			style.merge(context.syntax.hoverStyle);
 			cursor = new CursorAttachment(context, style);
 			context.background.getChildren().add(cursor);

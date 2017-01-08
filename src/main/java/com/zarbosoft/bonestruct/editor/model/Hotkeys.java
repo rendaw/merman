@@ -1,4 +1,4 @@
-package com.zarbosoft.bonestruct.editor.visual;
+package com.zarbosoft.bonestruct.editor.model;
 
 import com.zarbosoft.bonestruct.editor.visual.nodes.VisualNode;
 import com.zarbosoft.luxemj.Luxem;

@@ -1,15 +1,17 @@
 package com.zarbosoft.bonestruct.editor.visual.alignment;
 
+import com.zarbosoft.bonestruct.editor.visual.Alignment;
+import com.zarbosoft.bonestruct.editor.visual.AlignmentListener;
 import com.zarbosoft.bonestruct.editor.visual.Context;
 
 import java.util.Map;
 
-public class RelativeAlignment extends Alignment implements AlignmentListener {
+public class RelativeAlignmentImplementation extends Alignment implements AlignmentListener {
 	private final String base;
 	private final int offset;
 	private Alignment alignment;
 
-	public RelativeAlignment(final String base, final int offset) {
+	public RelativeAlignmentImplementation(final String base, final int offset) {
 		this.base = base;
 		this.offset = offset;
 		converse = offset;
@@ -23,13 +25,13 @@ public class RelativeAlignment extends Alignment implements AlignmentListener {
 	@Override
 	public void root(final Context context, final Map<String, Alignment> parents) {
 		if (alignment != null) {
-			alignment.listeners.remove(this);
+			alignment.removeListener(context, this);
 		}
 		alignment = parents.get(base);
 		if (alignment == this)
 			throw new AssertionError("Alignment parented to self");
 		if (alignment != null)
-			alignment.listeners.add(this);
+			alignment.addListener(context, this);
 		align(context);
 	}
 

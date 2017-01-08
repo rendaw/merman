@@ -1,9 +1,10 @@
-package com.zarbosoft.bonestruct.editor.visual.nodes.parts;
+package com.zarbosoft.bonestruct.editor.visual.attachments;
 
+import com.zarbosoft.bonestruct.editor.model.ObboxStyle;
 import com.zarbosoft.bonestruct.editor.visual.Attachment;
 import com.zarbosoft.bonestruct.editor.visual.Brick;
 import com.zarbosoft.bonestruct.editor.visual.Context;
-import com.zarbosoft.bonestruct.editor.visual.Obbox;
+import com.zarbosoft.bonestruct.editor.visual.raw.Obbox;
 
 public class BorderAttachment {
 	Brick first;
@@ -52,8 +53,8 @@ public class BorderAttachment {
 	private int endTransverse;
 	private int endTransverseSpan;
 
-	public BorderAttachment(final Context context, final Obbox.Settings style, final Brick first, final Brick last) {
-		final Obbox.BakedSettings baked = new Obbox.BakedSettings();
+	public BorderAttachment(final Context context, final ObboxStyle style, final Brick first, final Brick last) {
+		final ObboxStyle.Baked baked = new ObboxStyle.Baked();
 		baked.merge(style);
 		border = Obbox.fromSettings(baked);
 		context.background.getChildren().add(border);

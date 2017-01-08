@@ -1,14 +1,14 @@
 package com.zarbosoft.bonestruct.editor.model.front;
 
 import com.google.common.collect.Iterables;
+import com.zarbosoft.bonestruct.editor.model.Style;
+import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.Brick;
 import com.zarbosoft.bonestruct.editor.visual.Context;
-import com.zarbosoft.bonestruct.editor.visual.Style;
-import com.zarbosoft.bonestruct.editor.visual.alignment.Alignment;
+import com.zarbosoft.bonestruct.editor.visual.bricks.TextBrick;
 import com.zarbosoft.bonestruct.editor.visual.nodes.VisualNode;
 import com.zarbosoft.bonestruct.editor.visual.nodes.VisualNodeParent;
-import com.zarbosoft.bonestruct.editor.visual.nodes.bricks.TextBrick;
-import com.zarbosoft.bonestruct.editor.visual.nodes.parts.VisualNodePart;
+import com.zarbosoft.bonestruct.editor.visual.nodes.VisualNodePart;
 import com.zarbosoft.luxemj.Luxem;
 import com.zarbosoft.pidgoon.internal.Pair;
 import org.pcollections.HashTreePSet;

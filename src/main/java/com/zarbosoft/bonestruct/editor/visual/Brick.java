@@ -1,9 +1,8 @@
 package com.zarbosoft.bonestruct.editor.visual;
 
 import com.google.common.collect.ImmutableList;
-import com.zarbosoft.bonestruct.editor.visual.alignment.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.nodes.VisualNode;
-import com.zarbosoft.bonestruct.editor.visual.nodes.parts.VisualNodePart;
+import com.zarbosoft.bonestruct.editor.visual.nodes.VisualNodePart;
 import javafx.scene.Node;
 
 import java.util.HashSet;

@@ -3,9 +3,12 @@ package com.zarbosoft.bonestruct.editor.visual;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.zarbosoft.bonestruct.editor.model.Document;
+import com.zarbosoft.bonestruct.editor.model.Hotkeys;
+import com.zarbosoft.bonestruct.editor.model.Style;
 import com.zarbosoft.bonestruct.editor.model.Syntax;
+import com.zarbosoft.bonestruct.editor.model.hid.Key;
 import com.zarbosoft.bonestruct.editor.visual.nodes.VisualNode;
-import com.zarbosoft.bonestruct.editor.visual.nodes.parts.VisualNodePart;
+import com.zarbosoft.bonestruct.editor.visual.nodes.VisualNodePart;
 import com.zarbosoft.pidgoon.events.BakedOperator;
 import com.zarbosoft.pidgoon.events.EventStream;
 import com.zarbosoft.pidgoon.events.Grammar;
@@ -95,7 +98,7 @@ public class Context {
 			final com.zarbosoft.luxemj.grammar.Node hotkey = selection.getHotkeys(this).hotkeys.get(action.getName());
 			if (hotkey == null)
 				rule = new Sequence()
-						.add(new Terminal(new Keyboard.Event(Keyboard.Key.PAGE_UP, false, false, false)))
+						.add(new Terminal(new Keyboard.Event(Key.PAGE_UP, false, false, false)))
 						.add(Keyboard.ruleFromString(String.format(":%s", action.getName())));
 			else
 				rule = hotkey.build();

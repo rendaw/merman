@@ -1,4 +1,4 @@
-package com.zarbosoft.bonestruct.editor.visual;
+package com.zarbosoft.bonestruct.editor.model;
 
 import com.zarbosoft.bonestruct.editor.visual.nodes.VisualNode;
 import com.zarbosoft.luxemj.Luxem;
@@ -17,7 +17,7 @@ public class Style {
 	public Set<VisualNode.Tag> tags;
 
 	@Luxem.Configuration(optional = true)
-	public Obbox.Settings border = new Obbox.Settings();
+	public ObboxStyle border = new ObboxStyle();
 
 	@Luxem.Configuration(name = "break", optional = true)
 	public Boolean broken = null;

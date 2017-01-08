@@ -1,10 +1,9 @@
-package com.zarbosoft.bonestruct.editor.visual.nodes.parts;
+package com.zarbosoft.bonestruct.editor.visual.nodes;
 
 import com.google.common.collect.ImmutableSet;
+import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.Context;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
-import com.zarbosoft.bonestruct.editor.visual.alignment.Alignment;
-import com.zarbosoft.bonestruct.editor.visual.nodes.VisualNode;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.Map;

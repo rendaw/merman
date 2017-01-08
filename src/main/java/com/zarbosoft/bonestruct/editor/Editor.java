@@ -5,9 +5,10 @@ import com.zarbosoft.bonestruct.editor.luxem.Luxem;
 import com.zarbosoft.bonestruct.editor.model.Document;
 import com.zarbosoft.bonestruct.editor.model.Syntax;
 import com.zarbosoft.bonestruct.editor.model.front.FrontConstantPart;
+import com.zarbosoft.bonestruct.editor.model.hid.Key;
 import com.zarbosoft.bonestruct.editor.visual.*;
+import com.zarbosoft.bonestruct.editor.visual.nodes.ArrayVisualNode;
 import com.zarbosoft.bonestruct.editor.visual.nodes.VisualNode;
-import com.zarbosoft.bonestruct.editor.visual.nodes.parts.ArrayVisualNode;
 import com.zarbosoft.luxemj.grammar.Node;
 import com.zarbosoft.pidgoon.InvalidStream;
 import com.zarbosoft.pidgoon.events.Parse;
@@ -213,7 +214,7 @@ public class Editor {
 		if (context.hotkeyParse == null) {
 			context.hotkeyParse = new Parse<Context.Action>().grammar(context.hotkeyGrammar).parse();
 		}
-		final Keyboard.Event keyEvent = new Keyboard.Event(Keyboard.fromJFX(event.getCode()),
+		final Keyboard.Event keyEvent = new Keyboard.Event(Key.fromJFX(event.getCode()),
 				event.isControlDown(),
 				event.isAltDown(),
 				event.isShiftDown()

@@ -2,15 +2,11 @@ package com.zarbosoft.bonestruct.editor.model.front;
 
 import com.google.common.collect.Iterables;
 import com.zarbosoft.bonestruct.editor.luxem.Luxem;
-import com.zarbosoft.bonestruct.editor.visual.Brick;
-import com.zarbosoft.bonestruct.editor.visual.Context;
-import com.zarbosoft.bonestruct.editor.visual.Style;
-import com.zarbosoft.bonestruct.editor.visual.Vector;
-import com.zarbosoft.bonestruct.editor.visual.alignment.Alignment;
-import com.zarbosoft.bonestruct.editor.visual.alignment.AlignmentListener;
+import com.zarbosoft.bonestruct.editor.model.Style;
+import com.zarbosoft.bonestruct.editor.visual.*;
 import com.zarbosoft.bonestruct.editor.visual.nodes.VisualNode;
 import com.zarbosoft.bonestruct.editor.visual.nodes.VisualNodeParent;
-import com.zarbosoft.bonestruct.editor.visual.nodes.parts.VisualNodePart;
+import com.zarbosoft.bonestruct.editor.visual.nodes.VisualNodePart;
 import com.zarbosoft.pidgoon.internal.Pair;
 import javafx.scene.Node;
 import javafx.scene.layout.Region;

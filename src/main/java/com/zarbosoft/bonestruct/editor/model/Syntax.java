@@ -3,9 +3,6 @@ package com.zarbosoft.bonestruct.editor.model;
 import com.google.common.collect.ImmutableSet;
 import com.zarbosoft.bonestruct.editor.InvalidSyntax;
 import com.zarbosoft.bonestruct.editor.model.front.FrontConstantPart;
-import com.zarbosoft.bonestruct.editor.visual.Hotkeys;
-import com.zarbosoft.bonestruct.editor.visual.Obbox;
-import com.zarbosoft.bonestruct.editor.visual.Style;
 import com.zarbosoft.luxemj.Luxem;
 import com.zarbosoft.luxemj.LuxemEvent;
 import com.zarbosoft.luxemj.path.LuxemArrayPath;
@@ -48,10 +45,10 @@ public class Syntax {
 	public List<Style> styles;
 
 	@Luxem.Configuration(optional = true, name = "hover-style")
-	public Obbox.Settings hoverStyle = new Obbox.Settings();
+	public ObboxStyle hoverStyle = new ObboxStyle();
 
 	@Luxem.Configuration(optional = true, name = "select-style")
-	public Obbox.Settings selectStyle = new Obbox.Settings();
+	public ObboxStyle selectStyle = new ObboxStyle();
 
 	@Luxem.Configuration
 	public List<NodeType> types;

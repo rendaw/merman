@@ -1,4 +1,4 @@
-package com.zarbosoft.bonestruct.editor.visual.nodes.parts;
+package com.zarbosoft.bonestruct.editor.visual.raw;
 
 import javafx.geometry.Bounds;
 import javafx.scene.text.Font;

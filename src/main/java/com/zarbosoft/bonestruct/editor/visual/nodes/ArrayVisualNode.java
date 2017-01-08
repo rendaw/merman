@@ -1,14 +1,14 @@
-package com.zarbosoft.bonestruct.editor.visual.nodes.parts;
+package com.zarbosoft.bonestruct.editor.visual.nodes;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.zarbosoft.bonestruct.editor.model.Hotkeys;
 import com.zarbosoft.bonestruct.editor.model.Node;
 import com.zarbosoft.bonestruct.editor.model.front.FrontConstantPart;
 import com.zarbosoft.bonestruct.editor.visual.Brick;
 import com.zarbosoft.bonestruct.editor.visual.Context;
-import com.zarbosoft.bonestruct.editor.visual.Hotkeys;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
-import com.zarbosoft.bonestruct.editor.visual.nodes.VisualNodeParent;
+import com.zarbosoft.bonestruct.editor.visual.attachments.BorderAttachment;
 import com.zarbosoft.pidgoon.internal.Helper;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -27,7 +27,7 @@ public abstract class ArrayVisualNode extends GroupVisualNode {
 	private final ListChangeListener<Node> dataListener;
 	private final ObservableList<Node> data;
 
-	public ArrayVisualNode(final Context context, final ObservableList<Node> nodes, final Set<Tag> tags) {
+	public ArrayVisualNode(final Context context, final ObservableList<Node> nodes, final Set<VisualNode.Tag> tags) {
 		super(tags);
 		this.data = nodes;
 		dataListener = c -> {
@@ -73,9 +73,11 @@ public abstract class ArrayVisualNode extends GroupVisualNode {
 		super.remove(context, start, size);
 		if (!children.isEmpty()) {
 			if (retagFirst)
-				children.get(0).changeTags(context, new TagsChange().add(new PartTag("first")));
+				children.get(0).changeTags(context, new VisualNode.TagsChange().add(new VisualNode.PartTag("first")));
 			if (retagLast)
-				Helper.last(children).changeTags(context, new TagsChange().add(new PartTag("last")));
+				Helper
+						.last(children)
+						.changeTags(context, new VisualNode.TagsChange().add(new VisualNode.PartTag("last")));
 		}
 	}
 
@@ -87,7 +89,7 @@ public abstract class ArrayVisualNode extends GroupVisualNode {
 
 		private final boolean selectable;
 
-		public ChildGroup(final Set<Tag> tags, final boolean selectable) {
+		public ChildGroup(final Set<VisualNode.Tag> tags, final boolean selectable) {
 			super(tags);
 			this.selectable = selectable;
 		}
@@ -98,36 +100,43 @@ public abstract class ArrayVisualNode extends GroupVisualNode {
 		final boolean retagLast = tagLast() && start == children.size();
 		if (!children.isEmpty()) {
 			if (retagFirst)
-				children.get(0).changeTags(context, new TagsChange().remove(new PartTag("first")));
+				children
+						.get(0)
+						.changeTags(context, new VisualNode.TagsChange().remove(new VisualNode.PartTag("first")));
 			if (retagLast)
-				Helper.last(children).changeTags(context, new TagsChange().remove(new PartTag("last")));
+				Helper
+						.last(children)
+						.changeTags(context, new VisualNode.TagsChange().remove(new VisualNode.PartTag("last")));
 		}
-		final PSet<Tag> tags = HashTreePSet.from(tags());
+		final PSet<VisualNode.Tag> tags = HashTreePSet.from(tags());
 		Helper.enumerate(nodes.stream(), start).forEach(p -> {
 			int index = p.first;
 			if (p.first > 0 && !separator.isEmpty()) {
 				index = index * 2 - 1;
 				final ChildGroup group = new ChildGroup(ImmutableSet.of(), false);
 				for (final FrontConstantPart fix : getSeparator())
-					group.add(context, fix.createVisual(context, tags.plus(new PartTag("separator"))));
+					group.add(context, fix.createVisual(context, tags.plus(new VisualNode.PartTag("separator"))));
 				super.add(context, group, index++);
 			}
 			final ChildGroup group = new ChildGroup(ImmutableSet.of(), true);
 			for (final FrontConstantPart fix : getPrefix())
-				group.add(context, fix.createVisual(context, tags.plus(new PartTag("prefix"))));
-			group.add(
-					context,
-					new NestedVisualNodePart(p.second.createVisual(context), tags.plus(new PartTag("nested")))
+				group.add(context, fix.createVisual(context, tags.plus(new VisualNode.PartTag("prefix"))));
+			group.add(context,
+					new NestedVisualNodePart(p.second.createVisual(context),
+							tags.plus(new VisualNode.PartTag("nested"))
+					)
 			);
 			for (final FrontConstantPart fix : getSuffix())
-				group.add(context, fix.createVisual(context, tags.plus(new PartTag("suffix"))));
+				group.add(context, fix.createVisual(context, tags.plus(new VisualNode.PartTag("suffix"))));
 			super.add(context, group, index);
 		});
 		if (!children.isEmpty()) {
 			if (retagFirst)
-				children.get(0).changeTags(context, new TagsChange().add(new PartTag("first")));
+				children.get(0).changeTags(context, new VisualNode.TagsChange().add(new VisualNode.PartTag("first")));
 			if (retagLast)
-				Helper.last(children).changeTags(context, new TagsChange().add(new PartTag("last")));
+				Helper
+						.last(children)
+						.changeTags(context, new VisualNode.TagsChange().add(new VisualNode.PartTag("last")));
 		}
 	}
 
@@ -157,8 +166,7 @@ public abstract class ArrayVisualNode extends GroupVisualNode {
 				context.clearHover();
 			}
 			selected = true;
-			border = new BorderAttachment(
-					context,
+			border = new BorderAttachment(context,
 					context.syntax.selectStyle,
 					children.get(index).getFirstBrick(context),
 					children.get(index).getLastBrick(context)
@@ -336,8 +344,7 @@ public abstract class ArrayVisualNode extends GroupVisualNode {
 				return null;
 			if (hoverable != null)
 				return hoverable;
-			border = new BorderAttachment(
-					context,
+			border = new BorderAttachment(context,
 					context.syntax.hoverStyle,
 					children.get(index).getFirstBrick(context),
 					children.get(index).getLastBrick(context)

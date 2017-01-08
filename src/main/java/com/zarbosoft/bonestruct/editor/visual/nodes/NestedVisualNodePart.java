@@ -1,13 +1,12 @@
-package com.zarbosoft.bonestruct.editor.visual.nodes.parts;
+package com.zarbosoft.bonestruct.editor.visual.nodes;
 
 import com.google.common.collect.ImmutableList;
+import com.zarbosoft.bonestruct.editor.model.Hotkeys;
+import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.Brick;
 import com.zarbosoft.bonestruct.editor.visual.Context;
-import com.zarbosoft.bonestruct.editor.visual.Hotkeys;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
-import com.zarbosoft.bonestruct.editor.visual.alignment.Alignment;
-import com.zarbosoft.bonestruct.editor.visual.nodes.VisualNode;
-import com.zarbosoft.bonestruct.editor.visual.nodes.VisualNodeParent;
+import com.zarbosoft.bonestruct.editor.visual.attachments.BorderAttachment;
 import com.zarbosoft.pidgoon.internal.Pair;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 

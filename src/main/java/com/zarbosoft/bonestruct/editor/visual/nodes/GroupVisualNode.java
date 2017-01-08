@@ -1,13 +1,11 @@
-package com.zarbosoft.bonestruct.editor.visual.nodes.parts;
+package com.zarbosoft.bonestruct.editor.visual.nodes;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
+import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.Brick;
 import com.zarbosoft.bonestruct.editor.visual.Context;
 import com.zarbosoft.bonestruct.editor.visual.IdleTask;
-import com.zarbosoft.bonestruct.editor.visual.alignment.Alignment;
-import com.zarbosoft.bonestruct.editor.visual.nodes.VisualNode;
-import com.zarbosoft.bonestruct.editor.visual.nodes.VisualNodeParent;
 import com.zarbosoft.pidgoon.internal.Helper;
 import com.zarbosoft.pidgoon.internal.Pair;
 import org.pcollections.HashTreePMap;

@@ -1,17 +1,18 @@
-package com.zarbosoft.bonestruct.editor.visual.nodes.parts;
+package com.zarbosoft.bonestruct.editor.visual.attachments;
 
+import com.zarbosoft.bonestruct.editor.model.ObboxStyle;
 import com.zarbosoft.bonestruct.editor.visual.Attachment;
 import com.zarbosoft.bonestruct.editor.visual.Context;
-import com.zarbosoft.bonestruct.editor.visual.Obbox;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
-import com.zarbosoft.bonestruct.editor.visual.nodes.bricks.TextBrick;
+import com.zarbosoft.bonestruct.editor.visual.bricks.TextBrick;
+import com.zarbosoft.bonestruct.editor.visual.raw.RawTextUtils;
 import javafx.geometry.Point2D;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.shape.StrokeLineCap;
 
 public class CursorAttachment extends Canvas {
-	private final Obbox.BakedSettings style;
+	private final ObboxStyle.Baked style;
 	private final Attachment attachment = new Attachment() {
 		@Override
 		public void setTransverse(final Context context, final int transverse) {
@@ -49,7 +50,7 @@ public class CursorAttachment extends Canvas {
 	private int transverseAscent;
 	private TextBrick brick;
 
-	CursorAttachment(final Context context, final Obbox.BakedSettings style) {
+	CursorAttachment(final Context context, final ObboxStyle.Baked style) {
 		this.style = style;
 	}
 

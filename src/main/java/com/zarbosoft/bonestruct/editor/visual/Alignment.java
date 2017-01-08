@@ -1,6 +1,4 @@
-package com.zarbosoft.bonestruct.editor.visual.alignment;
-
-import com.zarbosoft.bonestruct.editor.visual.Context;
+package com.zarbosoft.bonestruct.editor.visual;
 
 import java.util.ArrayList;
 import java.util.List;

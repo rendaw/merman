@@ -1,10 +1,12 @@
 package com.zarbosoft.bonestruct.editor.visual.alignment;
 
+import com.zarbosoft.bonestruct.editor.visual.Alignment;
+import com.zarbosoft.bonestruct.editor.visual.AlignmentListener;
 import com.zarbosoft.bonestruct.editor.visual.Context;
 
 import java.util.Map;
 
-public class ConcensusAlignment extends Alignment {
+public class ConcensusAlignmentImplementation extends Alignment {
 	@Override
 	public void set(final Context context, final int gotConverse) {
 		if (gotConverse == this.converse)
