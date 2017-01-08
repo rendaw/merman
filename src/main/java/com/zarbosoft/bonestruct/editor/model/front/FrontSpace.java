@@ -102,10 +102,10 @@ public class FrontSpace extends FrontConstantPart {
 			public void setStyle(final Context context) {
 				this.style = context.getStyle(SpaceVisual.this.tags());
 				if (alignment != null)
-					alignment.listeners.remove(this);
+					alignment.removeListener(context, this);
 				alignment = SpaceVisual.this.getAlignment(style.alignment);
 				if (alignment != null)
-					alignment.listeners.add(this);
+					alignment.addListener(context, this);
 				changed(context);
 			}
 
@@ -166,6 +166,8 @@ public class FrontSpace extends FrontConstantPart {
 			@Override
 			public void destroy(final Context context) {
 				brick = null;
+				if (alignment != null)
+					alignment.removeListener(context, this);
 			}
 
 			@Override

@@ -108,10 +108,10 @@ public class FrontImage extends FrontConstantPart {
 			public void setStyle(final Context context) {
 				style = context.getStyle(tags());
 				if (alignment != null)
-					alignment.listeners.remove(this);
+					alignment.removeListener(context, this);
 				alignment = FrontImage.ImageVisual.this.getAlignment(style.alignment);
 				if (alignment != null)
-					alignment.listeners.add(this);
+					alignment.addListener(context, this);
 				image.setStyle(style);
 				changed(context);
 			}
@@ -138,6 +138,8 @@ public class FrontImage extends FrontConstantPart {
 			@Override
 			public void destroy(final Context context) {
 				brick = null;
+				if (alignment != null)
+					alignment.removeListener(context, this);
 			}
 
 			@Override

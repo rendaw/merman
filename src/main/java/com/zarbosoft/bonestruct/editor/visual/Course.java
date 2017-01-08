@@ -2,6 +2,7 @@ package com.zarbosoft.bonestruct.editor.visual;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.zarbosoft.bonestruct.editor.visual.alignment.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.nodes.VisualNode;
 import com.zarbosoft.pidgoon.internal.Pair;
 import javafx.scene.Group;
@@ -257,18 +258,21 @@ public class Course {
 			*/
 
 			// Do getConverse placement
+			final Set<Alignment> seenAlignments = new HashSet<>();
 			final int at = first;
 			int converse = at == 0 ? 0 : children.get(at - 1).converseEdge(context);
 			for (int index = at; index < children.size(); ++index) {
 				final Brick brick = children.get(index);
 				final Brick.Properties properties = brick.properties();
 				final int minConverse = converse;
-				converse = Math.max(converse, properties.alignment == null ? 0 : properties.alignment.converse);
+				if (properties.alignment != null && !seenAlignments.contains(properties.alignment)) {
+					seenAlignments.add(properties.alignment);
+					converse = Math.max(converse, properties.alignment.converse);
+					properties.alignment.set(context, converse);
+				}
 				brick.setConverse(context, minConverse, converse);
 				for (final Attachment attachment : brick.getAttachments(context))
 					attachment.setConverse(context, converse);
-				if (properties.alignment != null)
-					properties.alignment.set(context, converse);
 				converse = brick.converseEdge(context);
 				if (converse > context.edge)
 					getIdleCompact(context);
