@@ -15,14 +15,12 @@ import com.zarbosoft.bonestruct.editor.visual.attachments.TextBorderAttachment;
 import com.zarbosoft.bonestruct.editor.visual.bricks.TextBrick;
 import com.zarbosoft.bonestruct.editor.visual.raw.Obbox;
 import com.zarbosoft.pidgoon.internal.Helper;
+import com.zarbosoft.pidgoon.internal.Mutable;
 import com.zarbosoft.pidgoon.internal.Pair;
 import org.pcollections.HashTreePSet;
 import org.pcollections.PSet;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class PrimitiveVisualNode extends VisualNodePart {
@@ -174,6 +172,10 @@ public class PrimitiveVisualNode extends VisualNodePart {
 	private class Line {
 		public int offset;
 
+		private Line(final boolean hard) {
+			this.hard = hard;
+		}
+
 		public void destroy(final Context context) {
 			if (brick != null) {
 				brick.remove(context);
@@ -251,7 +253,7 @@ public class PrimitiveVisualNode extends VisualNodePart {
 			}
 		}
 
-		boolean hard;
+		final boolean hard;
 		String text;
 		LineBrick brick;
 		private int index;
@@ -282,51 +284,98 @@ public class PrimitiveVisualNode extends VisualNodePart {
 			@Override
 			public void set(final Context context, final String newValue) {
 				destroy(context);
+				final Mutable<Integer> offset = new Mutable<>(0);
 				Helper.enumerate(Helper.stream(newValue.split("\n"))).forEach(pair -> {
-					final Line line = new Line();
+					final Line line = new Line(true);
 					line.setText(context, pair.second);
 					line.setIndex(context, pair.first);
+					line.offset = offset.value;
 					lines.add(line);
+					offset.value += 1 + pair.second.length();
 				});
 			}
 
-			@Override
-			public void added(final Context context, final int index, final String value) {
-				final Pair<Integer, Line> linePair = Helper
+			private int findContaining(final int offset) {
+				final Optional<Integer> found = Helper
 						.enumerate(lines.stream())
-						.filter(pair -> pair.second.offset + pair.second.text.length() >= index)
-						.findFirst()
-						.get();
-				final Line line = linePair.second;
+						.filter(pair -> pair.second.offset + pair.second.text.length() >= offset)
+						.map(pair -> pair.first)
+						.findFirst();
+				if (found.isPresent())
+					return found.get();
+				return lines.size();
+			}
+
+			@Override
+			public void added(final Context context, int offset, final String value) {
+				final Deque<String> segments = new ArrayDeque<>(Arrays.asList(value.split("\n")));
+				if (segments.isEmpty())
+					return;
+				int index = findContaining(offset);
+				Line line = lines.get(index);
+
+				// Insert text into first line at offset
 				final StringBuilder builder = new StringBuilder(line.text);
-				builder.insert(index - line.offset, value);
+				String segment = segments.pollFirst();
+				builder.insert(offset - line.offset, segment);
+				String remainder = null;
+				if (!segments.isEmpty()) {
+					remainder = builder.substring(offset - line.offset + segment.length());
+					builder.delete(offset - line.offset + segment.length(), remainder.length());
+				}
 				line.setText(context, builder.toString());
-				lines.stream().skip(linePair.first + 1).forEach(following -> following.offset += value.length());
+				offset = line.offset;
+
+				// Add new hard lines for remaining segments
+				while (true) {
+					index += 1;
+					offset += line.text.length();
+					segment = segments.pollFirst();
+					if (segment == null)
+						break;
+					line = new Line(true);
+					line.setText(context, segment);
+					line.setIndex(context, index);
+					offset += 1;
+					line.offset = offset;
+					lines.add(index, line);
+				}
+				if (remainder != null)
+					line.setText(context, line.text + remainder);
+
+				// Renumber/adjust offset of following lines
+				for (; index < lines.size(); ++index) {
+					line = lines.get(index);
+					if (line.hard)
+						offset += 1;
+					line.index = index;
+					line.offset = offset;
+					offset += line.text.length();
+				}
 			}
 
 			@Override
 			public void removed(final Context context, int offset, final int count) {
 				int remaining = count;
-				final int finalOffset = offset;
-				int index = Helper
-						.enumerate(lines.stream())
-						.filter(pair -> pair.second.offset + pair.second.text.length() >= finalOffset)
-						.map(pair -> pair.first)
-						.findFirst()
-						.get();
+				int index = findContaining(offset);
+				final Line base = lines.get(index);
 				while (remaining > 0) {
 					final Line line = lines.get(index);
 					line.offset -= count - remaining;
-					final String newText =
-							line.text.substring(offset - line.offset, Math.min(remaining, line.text.length()));
-					remaining -= line.text.length() - newText.length();
-					offset = 0;
-					if (newText.isEmpty()) {
+					if (offset == line.offset && line.hard)
+						remaining -= 1;
+					final String newText = line.text.substring(0, offset - line.offset) +
+							line.text.substring(Math.min(remaining, line.text.length()));
+					if (line == base) {
+						base.setText(context, newText);
+					} else {
+						if (!newText.isEmpty())
+							base.setText(context, base.text + newText);
 						line.destroy(context);
 						lines.remove(index);
-					} else {
-						line.setText(context, newText);
 					}
+					offset = line.offset + line.text.length();
+					remaining -= line.text.length() - newText.length();
 					index += 1;
 				}
 				lines.stream().skip(index).forEach(following -> following.offset -= count);
