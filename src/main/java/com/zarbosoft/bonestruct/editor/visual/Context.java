@@ -2,6 +2,8 @@ package com.zarbosoft.bonestruct.editor.visual;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
+import com.zarbosoft.bonestruct.editor.changes.History;
 import com.zarbosoft.bonestruct.editor.model.Document;
 import com.zarbosoft.bonestruct.editor.model.Hotkeys;
 import com.zarbosoft.bonestruct.editor.model.Style;
@@ -26,6 +28,7 @@ import java.util.*;
 import java.util.function.Consumer;
 
 public class Context {
+	public final History history;
 	public Grammar hotkeyGrammar;
 	public EventStream<Action> hotkeyParse;
 	public String hotkeySequence = "";
@@ -33,6 +36,7 @@ public class Context {
 	public WeakHashMap<Set<VisualNode.Tag>, WeakReference<Hotkeys>> hotkeysCache = new WeakHashMap<>();
 	public final Wall wall;
 	public Group background;
+	private final Iterable<Action> globalActions;
 
 	public void root(final VisualNodePart node) {
 		wall.clear(this);
@@ -93,7 +97,7 @@ public class Context {
 		this.selection = selection;
 		hotkeyGrammar = new Grammar();
 		final Union union = new Union();
-		for (final Action action : selection.getActions(this)) {
+		for (final Action action : Iterables.concat(selection.getActions(this), globalActions)) {
 			final Node rule;
 			final com.zarbosoft.luxemj.grammar.Node hotkey = selection.getHotkeys(this).hotkeys.get(action.getName());
 			if (hotkey == null)
@@ -241,12 +245,19 @@ public class Context {
 	public Selection selection;
 
 	public Context(
-			final Syntax syntax, final Document document, final Consumer<IdleTask> addIdle, final Wall wall
+			final Syntax syntax,
+			final Document document,
+			final Consumer<IdleTask> addIdle,
+			final Wall wall,
+			final Iterable<Action> globalActions,
+			final History history
 	) {
 		this.syntax = syntax;
 		this.document = document;
 		this.addIdle = addIdle;
 		this.wall = wall;
+		this.globalActions = globalActions;
+		this.history = history;
 	}
 
 	private final Consumer<IdleTask> addIdle;

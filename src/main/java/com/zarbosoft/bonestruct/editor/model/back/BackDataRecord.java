@@ -1,6 +1,7 @@
 package com.zarbosoft.bonestruct.editor.model.back;
 
 import com.zarbosoft.bonestruct.editor.model.NodeType;
+import com.zarbosoft.bonestruct.editor.model.middle.DataNode;
 import com.zarbosoft.bonestruct.editor.model.middle.DataRecord;
 import com.zarbosoft.luxemj.Luxem;
 import com.zarbosoft.luxemj.source.LKeyEvent;
@@ -15,11 +16,9 @@ import com.zarbosoft.pidgoon.internal.Pair;
 import com.zarbosoft.pidgoon.nodes.Reference;
 import com.zarbosoft.pidgoon.nodes.Repeat;
 import com.zarbosoft.pidgoon.nodes.Sequence;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 @Luxem.Configuration(name = "data-record")
@@ -33,15 +32,16 @@ public class BackDataRecord implements BackPart {
 		final Sequence sequence;
 		sequence = new Sequence();
 		sequence.add(new BakedOperator(new Terminal(new LObjectOpenEvent()), (store) -> store.pushStack(0)));
-		sequence.add(new Repeat(new BakedOperator(new Sequence().add(new BakedOperator(
-				new Terminal(new LKeyEvent(null)),
-				store -> store.pushStack(new SimpleStringProperty(((LKeyEvent) store.top()).value))
-		)).add(new Reference(dataType.tag)), (store) -> Helper.stackDoubleElement(store))));
+		sequence.add(new Repeat(new BakedOperator(new Sequence()
+				.add(new BakedOperator(new Terminal(new LKeyEvent(null)),
+						store -> store.pushStack(((LKeyEvent) store.top()).value)
+				))
+				.add(new Reference(dataType.tag)), (store) -> Helper.stackDoubleElement(store))));
 		sequence.add(new Terminal(new LObjectCloseEvent()));
 		return new BakedOperator(sequence, (store) -> {
-			final ObservableList<Object> value = FXCollections.observableArrayList();
-			store = (Store) Helper.stackPopSingleList(store, value::add);
-			Collections.reverse(value);
+			final List<Pair<String, DataNode.Value>> temp = new ArrayList<>();
+			store = (Store) Helper.<Pair<String, DataNode.Value>>stackPopSingleList(store, temp::add);
+			final DataRecord.Value value = new DataRecord.Value(temp);
 			store = (Store) store.pushStack(new Pair<>(middle, value));
 			return Helper.stackSingleElement(store);
 		});

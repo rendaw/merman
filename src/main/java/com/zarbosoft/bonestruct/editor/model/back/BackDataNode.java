@@ -20,7 +20,7 @@ public class BackDataNode implements BackPart {
 
 	public Node buildLoadRule() {
 		return new BakedOperator(new Reference(dataType.tag), (store) -> {
-			final Object value = store.stackTop();
+			final DataNode.Value value = store.stackTop();
 			store = (Store) store.popStack();
 			store = (Store) store.pushStack(new Pair<>(middle, value));
 			return Helper.stackSingleElement(store);

@@ -10,6 +10,8 @@ public abstract class DataElement {
 
 	public abstract void finish(Set<String> singleNodes, Set<String> arrayNodes);
 
+	public abstract Object create();
+
 	// TODO
 	/*
 	@Luxem.Configuration(optional = true)

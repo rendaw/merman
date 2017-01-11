@@ -2,6 +2,8 @@ package com.zarbosoft.bonestruct.editor.visual.nodes;
 
 import com.google.common.collect.ImmutableList;
 import com.zarbosoft.bonestruct.editor.model.Hotkeys;
+import com.zarbosoft.bonestruct.editor.model.Node;
+import com.zarbosoft.bonestruct.editor.model.middle.DataNode;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.Brick;
 import com.zarbosoft.bonestruct.editor.visual.Context;
@@ -15,16 +17,25 @@ import java.util.Map;
 import java.util.Set;
 
 public class NestedVisualNodePart extends VisualNodePart {
-	protected final VisualNode body;
+	private final DataNode.Value data;
+	protected VisualNode body;
 	VisualNodeParent parent;
 	boolean selected = false;
 	private BorderAttachment border;
 	Context.Hoverable hoverable;
 
-	public NestedVisualNodePart(final VisualNode body, final Set<Tag> tags) {
+	public NestedVisualNodePart(final Context context, final DataNode.Value data, final Set<Tag> tags) {
 		super(tags);
-		this.body = body;
-		body.setParent(createParent());
+		this.data = data;
+		data.addListener(new DataNode.Listener() {
+
+			@Override
+			public void set(final Context context, final Node node) {
+				NestedVisualNodePart.this.set(context, node);
+			}
+
+		});
+		set(context, data.get());
 	}
 
 	protected VisualNodeParent createParent() {
@@ -150,6 +161,24 @@ public class NestedVisualNodePart extends VisualNodePart {
 		return true;
 	}
 
+	private void clear(final Context context) {
+		if (body == null)
+			return;
+		body.destroyBricks(context);
+	}
+
+	private void set(final Context context, final Node data) {
+		clear(context);
+		this.body = data.createVisual(context);
+		body.setParent(createParent());
+		if (parent != null) {
+			final Brick previousBrick = parent.getPreviousBrick(context);
+			final Brick nextBrick = parent.getNextBrick(context);
+			if (previousBrick != null && nextBrick != null)
+				context.fillFromEndBrick(previousBrick);
+		}
+	}
+
 	protected Iterable<Context.Action> getActions(final Context context) {
 		return ImmutableList.of(new Context.Action() {
 			@Override
@@ -176,7 +205,7 @@ public class NestedVisualNodePart extends VisualNodePart {
 		}, new Context.Action() {
 			@Override
 			public void run(final Context context) {
-
+				context.history.apply(context, new DataNode.ChangeSet(data, context.syntax.bud.create()));
 			}
 
 			@Override

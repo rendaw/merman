@@ -47,6 +47,14 @@ public class NodeType {
 	@Luxem.Configuration(name = "space-priority", optional = true)
 	public int spacePriority = 0;
 
+	public Node create() {
+		final Node node = new Node();
+		node.data = new HashMap<>();
+		middle.forEach((k, v) -> node.data.put(k, v.create()));
+		node.type = this;
+		return node;
+	}
+
 	public com.zarbosoft.pidgoon.internal.Node buildLoadRule() {
 		final Sequence seq = new Sequence();
 		seq.add(new BakedOperator((store) -> store.pushStack(0)));
@@ -59,7 +67,7 @@ public class NodeType {
 			final Node node = new Node();
 			node.data = data;
 			node.type = this;
-			return store.pushStack(node);
+			return store.pushStack(new DataNode.Value(node));
 		});
 	}
 

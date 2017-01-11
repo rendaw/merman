@@ -3,6 +3,9 @@ package com.zarbosoft.bonestruct.editor.model;
 import com.google.common.collect.ImmutableSet;
 import com.zarbosoft.bonestruct.editor.InvalidSyntax;
 import com.zarbosoft.bonestruct.editor.model.front.FrontConstantPart;
+import com.zarbosoft.bonestruct.editor.model.middle.DataArray;
+import com.zarbosoft.bonestruct.editor.model.middle.DataNode;
+import com.zarbosoft.bonestruct.editor.model.middle.DataPrimitive;
 import com.zarbosoft.luxemj.Luxem;
 import com.zarbosoft.luxemj.LuxemEvent;
 import com.zarbosoft.luxemj.path.LuxemArrayPath;
@@ -14,7 +17,6 @@ import com.zarbosoft.pidgoon.internal.Pair;
 import com.zarbosoft.pidgoon.nodes.Reference;
 import com.zarbosoft.pidgoon.nodes.Repeat;
 import com.zarbosoft.pidgoon.nodes.Union;
-import javafx.collections.FXCollections;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.scene.paint.Color;
@@ -73,6 +75,7 @@ public class Syntax {
 
 	@Luxem.Configuration(optional = true)
 	public List<Hotkeys> hotkeys;
+	public NodeType bud;
 
 	@Luxem.Configuration
 	public enum Direction {
@@ -192,9 +195,23 @@ public class Syntax {
 				singleNodes.add(t.id);
 			if (reverseGroups.containsKey(t.id) && t.back.size() > 1)
 				reverseGroups.get(t.id).first = false;
-			if (t.id.equals(out.root))
+			if (t.id.equals("__bud")) {
+				if (out.bud != null)
+					throw new InvalidSyntax("Multiple definitions of [__bud].");
+				if (t.middle.size() != 1)
+					throw new InvalidSyntax("__bud must have one middle element.");
+				if (!t.middle.containsKey("value"))
+					throw new InvalidSyntax("__bud must have one middle element named [value].");
+				if (!(t.middle.get("value") instanceof DataPrimitive))
+					throw new InvalidSyntax("__bud middle element [value] must be primitive.");
+				out.bud = t;
+			}
+			if (t.id.equals(out.root)) {
 				foundRoot = true;
+			}
 		}
+		if (out.bud == null)
+			throw new InvalidSyntax("__bud type definition missing.");
 		boolean changing = true;
 		while (changing) {
 			changing = false;
@@ -240,10 +257,8 @@ public class Syntax {
 			grammar.add("root", new BakedOperator(new Repeat(new BakedOperator(new Reference(root), store -> {
 				return Helper.stackSingleElement(store);
 			})), store -> {
-				final List<Node> out = new ArrayList<>();
-				store = (Store) Helper.<Node>stackPopSingleList(store, node -> {
-					out.add(node);
-				});
+				final List<DataNode.Value> out = new ArrayList<>();
+				store = (Store) Helper.<DataNode.Value>stackPopSingleList(store, out::add);
 				return store.pushStack(out);
 			}));
 		}
@@ -251,14 +266,14 @@ public class Syntax {
 	}
 
 	public Document create() {
-		final EventStream<List<Node>> stream =
-				new Parse<List<Node>>().stack(() -> 0).grammar(getGrammar()).node("root").parse();
+		final EventStream<List<DataNode.Value>> stream =
+				new Parse<List<DataNode.Value>>().stack(() -> 0).grammar(getGrammar()).node("root").parse();
 		final Mutable<LuxemPath> path = new Mutable<>(new LuxemArrayPath(null));
 		template.forEach(e -> {
 			path.value = path.value.push(e);
 			stream.push(e, path.value.toString());
 		});
-		return new Document(this, FXCollections.observableList(stream.finish()));
+		return new Document(this, new DataArray.Value(stream.finish()));
 	}
 
 	public Document load(final File file) throws FileNotFoundException, IOException {
@@ -276,7 +291,7 @@ public class Syntax {
 	public Document load(final InputStream data) {
 		return new Document(
 				this,
-				FXCollections.observableList(new com.zarbosoft.luxemj.Parse<List<Node>>()
+				new DataArray.Value(new com.zarbosoft.luxemj.Parse<List<DataNode.Value>>()
 						.stack(() -> 0)
 						.grammar(getGrammar())
 						.node("root")

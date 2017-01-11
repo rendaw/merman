@@ -78,4 +78,8 @@ public class GroupVisualNodeParent extends VisualNodeParent {
 	public Context.Hoverable hover(final Context context, final Vector point) {
 		return target.hover(context, point);
 	}
+
+	public int getIndex() {
+		return index;
+	}
 }

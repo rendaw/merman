@@ -1,13 +1,13 @@
 package com.zarbosoft.bonestruct.editor.model;
 
-import javafx.collections.ObservableList;
+import com.zarbosoft.bonestruct.editor.model.middle.DataArray;
 
 public class Document {
 
 	public Syntax syntax;
-	public ObservableList<Node> top;
+	public DataArray.Value top;
 
-	public Document(final Syntax syntax, final ObservableList<Node> top) {
+	public Document(final Syntax syntax, final DataArray.Value top) {
 		this.syntax = syntax;
 		this.top = top;
 	}

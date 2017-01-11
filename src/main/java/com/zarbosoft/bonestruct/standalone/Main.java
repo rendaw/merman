@@ -1,6 +1,9 @@
 package com.zarbosoft.bonestruct.standalone;
 
+import com.google.common.collect.ImmutableList;
 import com.zarbosoft.bonestruct.editor.Editor;
+import com.zarbosoft.bonestruct.editor.changes.History;
+import com.zarbosoft.bonestruct.editor.visual.Context;
 import com.zarbosoft.bonestruct.editor.visual.IdleTask;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -39,8 +42,19 @@ public class Main extends Application {
 				worker.shutdown();
 			}
 		});
+		final History history = new History();
 		//final Editor editor = new Editor(this::addIdle, getParameters().getUnnamed().get(0));
-		final Editor editor = new Editor(this::addIdle, "todo");
+		final Editor editor = new Editor(this::addIdle, "todo", ImmutableList.of(new Context.Action() {
+			@Override
+			public void run(final Context context) {
+				Platform.exit();
+			}
+
+			@Override
+			public String getName() {
+				return "quit";
+			}
+		}), history);
 		final Scene scene = new Scene(editor.getVisual(), 300, 275);
 		scene.setOnKeyPressed(event -> {
 			editor.handleKey(event);

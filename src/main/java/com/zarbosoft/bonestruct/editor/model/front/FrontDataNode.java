@@ -30,7 +30,8 @@ public class FrontDataNode extends FrontPart {
 			final Context context, final Map<String, Object> data, final Set<VisualNode.Tag> tags
 	) {
 		return new NestedVisualNodePart(
-				dataType.get(data).createVisual(context),
+				context,
+				dataType.get(data),
 				HashTreePSet
 						.from(tags)
 						.plus(new VisualNode.PartTag("nested"))

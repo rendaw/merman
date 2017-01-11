@@ -1,6 +1,9 @@
 package com.zarbosoft.bonestruct.editor;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.zarbosoft.bonestruct.editor.changes.History;
 import com.zarbosoft.bonestruct.editor.luxem.Luxem;
 import com.zarbosoft.bonestruct.editor.model.Document;
 import com.zarbosoft.bonestruct.editor.model.Syntax;
@@ -30,7 +33,12 @@ public class Editor {
 	private final Context context;
 	private final Pane visual;
 
-	public Editor(final Consumer<IdleTask> addIdle, final String path) {
+	public Editor(
+			final Consumer<IdleTask> addIdle,
+			final String path,
+			final Iterable<Context.Action> globalActions,
+			final History history
+	) {
 		Luxem.grammar(); // Make sure the luxem grammar is loaded beforehand so the new resource stream doesn't get closed by that resource stream
 		final Syntax luxemSyntax;
 		try (
@@ -56,7 +64,27 @@ public class Editor {
 		final Document doc = luxemSyntax.load("[{getConverse: 47,transverse:{ar:[2,9,13]},},[atler]]");
 		//final Document doc = luxemSyntax.load("{analogue:bolivar}");
 		final Wall wall = new Wall();
-		context = new Context(luxemSyntax, doc, addIdle, wall);
+		context = new Context(luxemSyntax, doc, addIdle, wall, Iterables.concat(ImmutableList.of(new Context.Action() {
+			@Override
+			public void run(final Context context) {
+
+			}
+
+			@Override
+			public String getName() {
+				return "undo";
+			}
+		}, new Context.Action() {
+			@Override
+			public void run(final Context context) {
+
+			}
+
+			@Override
+			public String getName() {
+				return "redo";
+			}
+		}), globalActions), history);
 		this.visual = new Pane();
 		visual.setBackground(new Background(new BackgroundFill(context.syntax.background, null, null)));
 		context.background = new Group();

@@ -3,16 +3,14 @@ package com.zarbosoft.bonestruct.editor.visual.nodes;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.zarbosoft.bonestruct.editor.model.Hotkeys;
-import com.zarbosoft.bonestruct.editor.model.Node;
 import com.zarbosoft.bonestruct.editor.model.front.FrontConstantPart;
+import com.zarbosoft.bonestruct.editor.model.middle.DataArray;
+import com.zarbosoft.bonestruct.editor.model.middle.DataNode;
 import com.zarbosoft.bonestruct.editor.visual.Brick;
 import com.zarbosoft.bonestruct.editor.visual.Context;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.editor.visual.attachments.BorderAttachment;
 import com.zarbosoft.pidgoon.internal.Helper;
-import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
-import javafx.collections.WeakListChangeListener;
 import org.pcollections.HashTreePSet;
 import org.pcollections.PSet;
 
@@ -24,28 +22,25 @@ import static java.io.File.separator;
 
 public abstract class ArrayVisualNode extends GroupVisualNode {
 
-	private final ListChangeListener<Node> dataListener;
-	private final ObservableList<Node> data;
+	private final DataArray.Listener dataListener;
+	private final DataArray.Value data;
 
-	public ArrayVisualNode(final Context context, final ObservableList<Node> nodes, final Set<VisualNode.Tag> tags) {
+	public ArrayVisualNode(final Context context, final DataArray.Value data, final Set<VisualNode.Tag> tags) {
 		super(tags);
-		this.data = nodes;
-		dataListener = c -> {
-			while (c.next()) {
-				if (c.wasPermutated()) {
-					remove(context, c.getFrom(), c.getRemovedSize());
-					add(context, c.getFrom(), nodes.subList(c.getFrom(), c.getTo()));
-				} else if (c.wasUpdated()) {
-					remove(context, c.getFrom(), c.getTo() - c.getFrom());
-					add(context, c.getFrom(), nodes.subList(c.getFrom(), c.getTo()));
-				} else {
-					remove(context, c.getFrom(), c.getRemovedSize());
-					add(context, c.getFrom(), (List<Node>) c.getAddedSubList());
-				}
+		this.data = data;
+		dataListener = new DataArray.Listener() {
+			@Override
+			public void added(final Context context, final int index, final List<DataNode.Value> nodes) {
+				ArrayVisualNode.this.add(context, index, nodes);
+			}
+
+			@Override
+			public void removed(final Context context, final int index, final int count) {
+				remove(context, index, count);
 			}
 		};
-		nodes.addListener(new WeakListChangeListener<>(dataListener));
-		add(context, 0, nodes);
+		data.addListener(dataListener);
+		add(context, 0, data.get());
 	}
 
 	@Override
@@ -95,7 +90,7 @@ public abstract class ArrayVisualNode extends GroupVisualNode {
 		}
 	}
 
-	public void add(final Context context, final int start, final List<Node> nodes) {
+	public void add(final Context context, final int start, final List<DataNode.Value> nodes) {
 		final boolean retagFirst = tagFirst() && start == 0;
 		final boolean retagLast = tagLast() && start == children.size();
 		if (!children.isEmpty()) {
@@ -122,9 +117,7 @@ public abstract class ArrayVisualNode extends GroupVisualNode {
 			for (final FrontConstantPart fix : getPrefix())
 				group.add(context, fix.createVisual(context, tags.plus(new VisualNode.PartTag("prefix"))));
 			group.add(context,
-					new NestedVisualNodePart(p.second.createVisual(context),
-							tags.plus(new VisualNode.PartTag("nested"))
-					)
+					new NestedVisualNodePart(context, p.second, tags.plus(new VisualNode.PartTag("nested")))
 			);
 			for (final FrontConstantPart fix : getSuffix())
 				group.add(context, fix.createVisual(context, tags.plus(new VisualNode.PartTag("suffix"))));

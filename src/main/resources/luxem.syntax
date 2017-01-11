@@ -34,6 +34,7 @@
 	],
 	groups: {
 	    value: [
+            __bud,
 	        luxem-object,
 	        luxem-array,
 	        luxem-primitive,
@@ -41,6 +42,19 @@
 	},
 	root: value,
 	types: [
+		{
+		    id: __bud,
+			name: "Bud",
+			back: [
+			    (type) __bud,
+			    (data-primitive) value,
+			],
+			middle: {value: (primitive) {}},
+			front: [
+			    (mark) "*",
+				(primitive) value,
+			],
+		},
 		{
 		    id: luxem-object,
 			name: "Luxem Object",

@@ -5,6 +5,7 @@ import com.google.common.collect.Iterables;
 import com.zarbosoft.bonestruct.editor.model.Hotkeys;
 import com.zarbosoft.bonestruct.editor.model.ObboxStyle;
 import com.zarbosoft.bonestruct.editor.model.Style;
+import com.zarbosoft.bonestruct.editor.model.middle.DataPrimitive;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.Brick;
 import com.zarbosoft.bonestruct.editor.visual.Context;
@@ -15,10 +16,6 @@ import com.zarbosoft.bonestruct.editor.visual.bricks.TextBrick;
 import com.zarbosoft.bonestruct.editor.visual.raw.Obbox;
 import com.zarbosoft.pidgoon.internal.Helper;
 import com.zarbosoft.pidgoon.internal.Pair;
-import javafx.beans.property.StringProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.beans.value.WeakChangeListener;
 import org.pcollections.HashTreePSet;
 import org.pcollections.PSet;
 
@@ -30,7 +27,9 @@ import java.util.stream.Collectors;
 
 public class PrimitiveVisualNode extends VisualNodePart {
 	// INVARIANT: Leaf nodes must always create at least one brick
-	private final ChangeListener<String> dataListener;
+	// TODO index line offsets for faster insert/remove
+	// TODO compact/expand
+	private final DataPrimitive.Listener dataListener;
 	private final Obbox border = null;
 	private VisualNodeParent parent;
 	Alignment softAlignment, hardAlignment, firstAlignment;
@@ -65,7 +64,11 @@ public class PrimitiveVisualNode extends VisualNodePart {
 
 	@Override
 	public boolean select(final Context context) {
-		return false; // TODO
+		if (lines.get(0).brick == null)
+			return false;
+		selection = new PrimitiveSelection(context, lines.get(0).brick, 0);
+		context.setSelection(selection);
+		return true;
 	}
 
 	@Override
@@ -108,7 +111,7 @@ public class PrimitiveVisualNode extends VisualNodePart {
 			beginBrick = endBrick = brick;
 			beginIndex = endIndex = index;
 			final ObboxStyle.Baked style = new ObboxStyle.Baked();
-			style.merge(context.syntax.hoverStyle);
+			style.merge(context.syntax.selectStyle);
 			cursor = new CursorAttachment(context, style);
 			cursor.setPosition(context, beginBrick, beginIndex);
 		}
@@ -120,6 +123,7 @@ public class PrimitiveVisualNode extends VisualNodePart {
 			if (cursor != null)
 				cursor.destroy(context);
 			selection = null;
+			commit(context);
 		}
 
 		@Override
@@ -131,6 +135,10 @@ public class PrimitiveVisualNode extends VisualNodePart {
 		public Iterable<Context.Action> getActions(final Context context) {
 			return PrimitiveVisualNode.this.getActions(context);
 		}
+	}
+
+	protected void commit(final Context context) {
+
 	}
 
 	private class PrimitiveHoverable extends Context.Hoverable {
@@ -164,6 +172,8 @@ public class PrimitiveVisualNode extends VisualNodePart {
 	}
 
 	private class Line {
+		public int offset;
+
 		public void destroy(final Context context) {
 			if (brick != null) {
 				brick.remove(context);
@@ -266,17 +276,11 @@ public class PrimitiveVisualNode extends VisualNodePart {
 
 	List<Line> lines = new ArrayList<>();
 
-	public PrimitiveVisualNode(final Context context, final StringProperty data, final Set<Tag> tags) {
+	public PrimitiveVisualNode(final Context context, final DataPrimitive.Value data, final Set<Tag> tags) {
 		super(HashTreePSet.from(tags).plus(new PartTag("primitive")));
-		dataListener = new ChangeListener<String>() {
+		dataListener = new DataPrimitive.Listener() {
 			@Override
-			public void changed(
-					final ObservableValue<? extends String> observable, final String oldValue, final String newValue
-			) {
-				// TODO change binding so Context is passed in
-				// TODO make more efficient, don't recreate all lines
-				// TODO actually, the data should be a list of string properties (per hard line) rather than a single
-				// and at the top level it should be a list binding
+			public void set(final Context context, final String newValue) {
 				destroy(context);
 				Helper.enumerate(Helper.stream(newValue.split("\n"))).forEach(pair -> {
 					final Line line = new Line();
@@ -285,9 +289,51 @@ public class PrimitiveVisualNode extends VisualNodePart {
 					lines.add(line);
 				});
 			}
+
+			@Override
+			public void added(final Context context, final int index, final String value) {
+				final Pair<Integer, Line> linePair = Helper
+						.enumerate(lines.stream())
+						.filter(pair -> pair.second.offset + pair.second.text.length() >= index)
+						.findFirst()
+						.get();
+				final Line line = linePair.second;
+				final StringBuilder builder = new StringBuilder(line.text);
+				builder.insert(index - line.offset, value);
+				line.setText(context, builder.toString());
+				lines.stream().skip(linePair.first + 1).forEach(following -> following.offset += value.length());
+			}
+
+			@Override
+			public void removed(final Context context, int offset, final int count) {
+				int remaining = count;
+				final int finalOffset = offset;
+				int index = Helper
+						.enumerate(lines.stream())
+						.filter(pair -> pair.second.offset + pair.second.text.length() >= finalOffset)
+						.map(pair -> pair.first)
+						.findFirst()
+						.get();
+				while (remaining > 0) {
+					final Line line = lines.get(index);
+					line.offset -= count - remaining;
+					final String newText =
+							line.text.substring(offset - line.offset, Math.min(remaining, line.text.length()));
+					remaining -= line.text.length() - newText.length();
+					offset = 0;
+					if (newText.isEmpty()) {
+						line.destroy(context);
+						lines.remove(index);
+					} else {
+						line.setText(context, newText);
+					}
+					index += 1;
+				}
+				lines.stream().skip(index).forEach(following -> following.offset -= count);
+			}
 		};
-		data.addListener(new WeakChangeListener<>(dataListener));
-		dataListener.changed(null, null, data.getValue());
+		data.addListener(dataListener);
+		dataListener.set(context, data.get());
 	}
 
 	@Override
