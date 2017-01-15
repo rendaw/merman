@@ -42,6 +42,10 @@ public class DataPrimitive extends DataElement {
 		public String get() {
 			return value.toString();
 		}
+
+		public int length() {
+			return value.length();
+		}
 	}
 
 	public Value get(final Map<String, Object> data) {

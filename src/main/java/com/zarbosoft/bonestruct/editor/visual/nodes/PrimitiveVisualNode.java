@@ -115,8 +115,8 @@ public class PrimitiveVisualNode extends VisualNodePart {
 		}
 
 		private void setOffsets(final Context context, final int beginOffset, final int endOffset) {
-			this.beginOffset = Math.max(0, Math.min(data.get().length(), beginOffset));
-			this.endOffset = Math.max(beginOffset, Math.min(data.get().length(), endOffset));
+			this.beginOffset = Math.max(0, Math.min(data.length(), beginOffset));
+			this.endOffset = Math.max(beginOffset, Math.min(data.length(), endOffset));
 			if (beginOffset == endOffset) {
 				if (border != null)
 					border.destroy(context);
@@ -179,6 +179,23 @@ public class PrimitiveVisualNode extends VisualNodePart {
 	private class PrimitiveSelection extends Context.Selection {
 		final RangeAttachment range;
 		final boolean direct;
+		final BreakIterator clusterIterator = BreakIterator.getCharacterInstance();
+		private final DataPrimitive.Listener clusterListener = new DataPrimitive.Listener() {
+			@Override
+			public void set(final Context context, final String value) {
+				clusterIterator.setText(value);
+			}
+
+			@Override
+			public void added(final Context context, final int index, final String value) {
+				clusterIterator.setText(data.get());
+			}
+
+			@Override
+			public void removed(final Context context, final int index, final int count) {
+				clusterIterator.setText(data.get());
+			}
+		};
 
 		public PrimitiveSelection(
 				final Context context, final int beginOffset, final int endOffset, final boolean direct
@@ -188,6 +205,8 @@ public class PrimitiveVisualNode extends VisualNodePart {
 			range = new RangeAttachment(style);
 			range.setOffsets(context, beginOffset, endOffset);
 			this.direct = direct;
+			clusterIterator.setText(data.get());
+			data.addListener(this.clusterListener);
 		}
 
 		public PrimitiveSelection(final Context context, final int beginOffset, final int endOffset) {
@@ -199,6 +218,7 @@ public class PrimitiveVisualNode extends VisualNodePart {
 			range.destroy(context);
 			selection = null;
 			commit(context);
+			data.removeListener(clusterListener);
 		}
 
 		@Override
@@ -233,8 +253,8 @@ public class PrimitiveVisualNode extends VisualNodePart {
 			}, new Context.Action() {
 				@Override
 				public void run(final Context context) {
-					if (range.beginOffset < data.get().length()) {
-						range.setOffsets(context, range.beginOffset + 1);
+					if (range.beginOffset < data.length()) {
+						range.setOffsets(context, clusterIterator.following(range.beginOffset));
 					}
 				}
 
@@ -246,7 +266,7 @@ public class PrimitiveVisualNode extends VisualNodePart {
 				@Override
 				public void run(final Context context) {
 					if (range.beginOffset > 0) {
-						range.setOffsets(context, range.beginOffset - 1);
+						range.setOffsets(context, clusterIterator.preceding(range.beginOffset));
 					}
 				}
 
@@ -326,10 +346,12 @@ public class PrimitiveVisualNode extends VisualNodePart {
 				@Override
 				public void run(final Context context) {
 					if (range.beginOffset == range.endOffset) {
-						if (range.beginOffset > 0)
+						if (range.beginOffset > 0) {
+							final int preceding = clusterIterator.preceding(range.beginOffset);
 							context.history.apply(context,
-									new DataPrimitive.ChangeRemove(data, range.beginOffset - 1, 1)
+									new DataPrimitive.ChangeRemove(data, preceding, range.beginOffset - preceding)
 							);
+						}
 					} else
 						context.history.apply(context,
 								new DataPrimitive.ChangeRemove(data,
@@ -347,8 +369,15 @@ public class PrimitiveVisualNode extends VisualNodePart {
 				@Override
 				public void run(final Context context) {
 					if (range.beginOffset == range.endOffset) {
-						if (range.endOffset < data.get().length())
-							context.history.apply(context, new DataPrimitive.ChangeRemove(data, range.beginOffset, 1));
+						if (range.endOffset < data.length()) {
+							final int following = clusterIterator.following(range.beginOffset);
+							context.history.apply(context,
+									new DataPrimitive.ChangeRemove(data,
+											range.beginOffset,
+											following - range.beginOffset
+									)
+							);
+						}
 
 					} else
 						context.history.apply(context,
@@ -473,7 +502,7 @@ public class PrimitiveVisualNode extends VisualNodePart {
 			}, new Context.Action() {
 				@Override
 				public void run(final Context context) {
-					range.setEndOffset(context, range.endOffset + 1);
+					range.setEndOffset(context, clusterIterator.following(range.endOffset));
 				}
 
 				@Override
@@ -483,7 +512,7 @@ public class PrimitiveVisualNode extends VisualNodePart {
 			}, new Context.Action() {
 				@Override
 				public void run(final Context context) {
-					range.setBeginOffset(context, range.beginOffset - 1);
+					range.setBeginOffset(context, clusterIterator.preceding(range.beginOffset));
 				}
 
 				@Override
