@@ -8,15 +8,11 @@ import com.zarbosoft.bonestruct.editor.model.Document;
 import com.zarbosoft.bonestruct.editor.model.Hotkeys;
 import com.zarbosoft.bonestruct.editor.model.Style;
 import com.zarbosoft.bonestruct.editor.model.Syntax;
-import com.zarbosoft.bonestruct.editor.model.hid.Key;
 import com.zarbosoft.bonestruct.editor.visual.nodes.VisualNode;
 import com.zarbosoft.bonestruct.editor.visual.nodes.VisualNodePart;
 import com.zarbosoft.pidgoon.events.BakedOperator;
 import com.zarbosoft.pidgoon.events.EventStream;
 import com.zarbosoft.pidgoon.events.Grammar;
-import com.zarbosoft.pidgoon.events.Terminal;
-import com.zarbosoft.pidgoon.internal.Node;
-import com.zarbosoft.pidgoon.nodes.Sequence;
 import com.zarbosoft.pidgoon.nodes.Union;
 import javafx.animation.Interpolator;
 import javafx.geometry.Point2D;
@@ -64,6 +60,7 @@ public class Context {
 
 	public class IdleFill extends IdleTask {
 		public Deque<Brick> ends = new ArrayDeque<>();
+		public Deque<Brick> starts = new ArrayDeque<>();
 
 		@Override
 		protected int priority() {
@@ -71,22 +68,37 @@ public class Context {
 		}
 
 		@Override
-		public void run() {
-			if (ends.isEmpty()) {
+		public void runImplementation() {
+			if (ends.isEmpty() && starts.isEmpty()) {
 				idleFill = null;
 				return;
 			}
-			final Brick next = ends.pollLast();
-			final Brick created = next.createNext(Context.this);
-			if (created != null) {
-				next.addAfter(Context.this, created);
-				ends.addLast(created);
+			if (!ends.isEmpty()) {
+				final Brick next = ends.pollLast();
+				final Brick created = next.createNext(Context.this);
+				if (created != null) {
+					next.addAfter(Context.this, created);
+					ends.addLast(created);
+				}
+			}
+			if (!starts.isEmpty()) {
+				final Brick previous = starts.pollLast();
+				final Brick created = previous.createPrevious(Context.this);
+				if (created != null) {
+					previous.addBefore(Context.this, created);
+					starts.addLast(created);
+				}
 			}
 			Context.this.addIdle(this);
 		}
+
+		@Override
+		protected void destroyed() {
+			idleFill = null;
+		}
 	}
 
-	IdleFill idleFill = null;
+	public IdleFill idleFill = null;
 
 	public IdleTask idleClick = null;
 
@@ -98,15 +110,13 @@ public class Context {
 		hotkeyGrammar = new Grammar();
 		final Union union = new Union();
 		for (final Action action : Iterables.concat(selection.getActions(this), globalActions)) {
-			final Node rule;
-			final com.zarbosoft.luxemj.grammar.Node hotkey = selection.getHotkeys(this).hotkeys.get(action.getName());
-			if (hotkey == null)
-				rule = new Sequence()
-						.add(new Terminal(new Keyboard.Event(Key.PAGE_UP, false, false, false)))
-						.add(Keyboard.ruleFromString(String.format(":%s", action.getName())));
-			else
-				rule = hotkey.build();
-			union.add(new BakedOperator(rule, store -> store.pushStack(action)));
+			final List<com.zarbosoft.luxemj.grammar.Node> hotkeyEntries =
+					selection.getHotkeys(this).hotkeys.get(action.getName());
+			if (hotkeyEntries == null)
+				continue;
+			for (final com.zarbosoft.luxemj.grammar.Node hotkey : hotkeyEntries) {
+				union.add(new BakedOperator(hotkey.build(), store -> store.pushStack(action)));
+			}
 		}
 		hotkeyGrammar.add("root", union);
 	}
@@ -195,7 +205,7 @@ public class Context {
 		}
 
 		@Override
-		public void run() {
+		public void runImplementation() {
 			// TODO store indexes rather than brick ref
 			if (at == null) {
 				hoverIdle = null;
@@ -232,6 +242,11 @@ public class Context {
 				return;
 			}
 			addIdle(this);
+		}
+
+		@Override
+		protected void destroyed() {
+			hoverIdle = null;
 		}
 	}
 

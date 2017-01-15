@@ -51,7 +51,7 @@ public class FrontSpace extends FrontConstantPart {
 		@Override
 		public void destroyBricks(final Context context) {
 			if (brick != null)
-				brick.remove(context);
+				brick.destroy(context);
 		}
 
 		@Override
@@ -74,6 +74,11 @@ public class FrontSpace extends FrontConstantPart {
 			if (brick == null)
 				brick = new SpaceBrick(context);
 			return brick;
+		}
+
+		@Override
+		public Brick createLastBrick(final Context context) {
+			return createFirstBrick(context);
 		}
 
 		@Override
@@ -155,12 +160,17 @@ public class FrontSpace extends FrontConstantPart {
 			}
 
 			@Override
+			public Brick createPrevious(final Context context) {
+				return SpaceVisual.this.parent.createPreviousBrick(context);
+			}
+
+			@Override
 			public void allocateTransverse(final Context context, final int ascent, final int descent) {
 
 			}
 
 			@Override
-			public void destroy(final Context context) {
+			public void destroyed(final Context context) {
 				brick = null;
 				if (alignment != null)
 					alignment.removeListener(context, this);

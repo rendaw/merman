@@ -17,6 +17,7 @@ import com.zarbosoft.pidgoon.InvalidStream;
 import com.zarbosoft.pidgoon.events.Parse;
 import javafx.beans.value.ChangeListener;
 import javafx.scene.Group;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
@@ -61,7 +62,8 @@ public class Editor {
 			throw e;
 		}*/
 		//final Document doc = luxemSyntax.load("[[dog, dog, dog, dog, dog, dogdogdog, dog, dog, dog]],");
-		final Document doc = luxemSyntax.load("[{getConverse: 47,transverse:{ar:[2,9,13]},},[atler]]");
+		//final Document doc = luxemSyntax.load("[{getConverse: 47,transverse:{ar:[2,9,13]},},[atler]]");
+		final Document doc = luxemSyntax.load("[\"one\"]");
 		//final Document doc = luxemSyntax.load("{analogue:bolivar}");
 		final Wall wall = new Wall();
 		context = new Context(luxemSyntax, doc, addIdle, wall, Iterables.concat(ImmutableList.of(new Context.Action() {
@@ -146,9 +148,14 @@ public class Editor {
 			if (context.idleClick == null) {
 				context.idleClick = new IdleTask() {
 					@Override
-					public void run() {
+					public void runImplementation() {
 						if (context.hover != null)
 							context.hover.click(context);
+						context.idleClick = null;
+					}
+
+					@Override
+					protected void destroyed() {
 						context.idleClick = null;
 					}
 
@@ -252,20 +259,38 @@ public class Editor {
 		else
 			context.hotkeySequence += ", " + keyEvent.toString();
 		boolean clean = false;
+		boolean receiveText = false;
 		try {
 			context.hotkeyParse = context.hotkeyParse.push(keyEvent, context.hotkeySequence);
 		} catch (final InvalidStream e) {
 			clean = true;
+			receiveText = true;
 		}
 		final Context.Action action = context.hotkeyParse.finish();
 		if (action != null) {
 			clean = true;
 			action.run(context);
-		}
+		} else
+			receiveText = true;
 		if (clean) {
 			context.hotkeySequence = "";
 			context.hotkeyParse = null;
-			context.selection.receiveText(context, event.getText());
 		}
+		if (receiveText) {
+			if (event.getCode() == KeyCode.ENTER)
+				context.selection.receiveText(context, "\n");
+			else
+				context.selection.receiveText(context, event.getText());
+		}
+	}
+
+	public void destroy(final Context context) {
+		if (context.hoverIdle != null)
+			context.hoverIdle.destroy();
+		if (context.idleFill != null)
+			context.idleFill.destroy();
+		if (context.idleClick != null)
+			context.idleClick.destroy();
+		context.wall.clear(context);
 	}
 }

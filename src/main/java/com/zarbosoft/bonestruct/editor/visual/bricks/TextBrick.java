@@ -53,14 +53,11 @@ public abstract class TextBrick extends Brick implements AlignmentListener {
 	public void setText(final Context context, final String text) {
 		if (this.text == null)
 			this.text = RawText.create(context, getStyle());
-		this.text.setText(text);
+		this.text.setText(text.replaceAll("\\p{Cntrl}", "\u25A2"));
+		changed(context);
 	}
 
 	protected abstract Style.Baked getStyle();
-
-	public String getText() {
-		return text.getText();
-	}
 
 	@Override
 	public Properties properties() {

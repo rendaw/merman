@@ -52,28 +52,18 @@ public class FrontMark extends FrontConstantPart {
 			return false;
 		}
 
-	/*
-	@Override
-	public Context.Hoverable hover(final Context context, final Vector point) {
-		return null;
-	}
-	*/
-
 		@Override
 		public Brick createFirstBrick(final Context context) {
 			if (brick != null)
-				throw new AssertionError("Brick should be initially empty or cleared after being deleted");
+				return null;
 			brick = new MarkBrick(context);
 			brick.setText(context, value);
 			return brick;
 		}
 
 		@Override
-		public String debugTreeType() {
-			return String.format("raw@%s %s",
-					Integer.toHexString(hashCode()),
-					brick == null ? "no brick" : brick.getText()
-			);
+		public Brick createLastBrick(final Context context) {
+			return createFirstBrick(context);
 		}
 
 		@Override
@@ -108,7 +98,7 @@ public class FrontMark extends FrontConstantPart {
 		@Override
 		public void destroyBricks(final Context context) {
 			if (brick != null)
-				brick.remove(context);
+				brick.destroy(context);
 		}
 
 		private class MarkBrick extends TextBrick {
@@ -146,7 +136,12 @@ public class FrontMark extends FrontConstantPart {
 			}
 
 			@Override
-			public void destroy(final Context context) {
+			public Brick createPrevious(final Context context) {
+				return MarkVisual.this.parent.createPreviousBrick(context);
+			}
+
+			@Override
+			public void destroyed(final Context context) {
 				brick = null;
 				if (alignment != null)
 					alignment.removeListener(context, this);

@@ -28,19 +28,23 @@ import java.util.*;
 @Luxem.Configuration
 public class Syntax {
 
-	@Luxem.Configuration
+	@Luxem.Configuration(description = "The name of the syntax.  This may be used in menus and dialogs.")
 	public String name;
 
-	@Luxem.Configuration(optional = true)
+	@Luxem.Configuration(optional = true, description = "The background color of the document.")
 	public Color background = Color.WHITE;
 
-	@Luxem.Configuration(optional = true, name = "pad-converse")
+	@Luxem.Configuration(optional = true, name = "pad-converse",
+			description = "Pad the converse edge of the editor by this many pixels.")
 	public int padConverse = 5;
 
-	@Luxem.Configuration(optional = true, name = "pad-transverse")
+	@Luxem.Configuration(optional = true, name = "pad-transverse",
+			description = "Pad the transverse edge of the editor by this many pixels.")
 	public int padTransverse = 5;
 
-	@Luxem.Configuration(optional = true)
+	@Luxem.Configuration(optional = true, description =
+			"If the path to a writable document does not yet exist, a new document will be created " +
+					"with this contents.")
 	public List<LuxemEvent> template;
 
 	@Luxem.Configuration(optional = true)
@@ -52,13 +56,18 @@ public class Syntax {
 	@Luxem.Configuration(optional = true, name = "select-style")
 	public ObboxStyle selectStyle = new ObboxStyle();
 
-	@Luxem.Configuration
+	@Luxem.Configuration(description = "The definitions of all distinct element types in a document.\n" +
+			"A type with the id __bud, and a single middle primitive element named 'value' must exist.  This will be " +
+			"used as a placeholder when entering text before it is distinguishable as any other defined element.")
 	public List<NodeType> types;
 
-	@Luxem.Configuration(optional = true)
+	@Luxem.Configuration(optional = true, description =
+			"Pseudo-types representing a group of types.  Group ids can be used anywhere a type id " +
+					"is required.")
 	public Map<String, java.util.Set<String>> groups;
 
-	@Luxem.Configuration
+	@Luxem.Configuration(description = "The id of the type of root elements in a document.  This is not used when " +
+			"pasting code; in that case the context is used to determine the paste's root.")
 	public String root;
 	// Root applies to whole document parsing
 	// For parsing text pastes, use the current location to find the correct rule
@@ -76,6 +85,14 @@ public class Syntax {
 	@Luxem.Configuration(optional = true)
 	public List<Hotkeys> hotkeys;
 	public NodeType bud;
+
+	@Luxem.Configuration(optional = true, name = "modal-primitive-editing", description =
+			"In modeless editing, a selected primitive is always in direct editing mode.  Non-hotkey keypresses " +
+					"will modify the primitive text.  In modal editing an extra 'enter' action will be available " +
+					"to enter the direct editing mode.  After entering, non-hotkey kepresses will modify the " +
+					"primitive text.  In the indirect editing action names will more closely match the action names " +
+					"of other node types.")
+	public boolean modalPrimitiveEditing = false;
 
 	@Luxem.Configuration
 	public enum Direction {
@@ -112,10 +129,12 @@ public class Syntax {
 		}
 	}
 
-	@Luxem.Configuration(name = "converse-direction", optional = true)
+	@Luxem.Configuration(name = "converse-direction", optional = true,
+			description = "The direction of text flow in a line.  In English, this will be RIGHT.")
 	public Direction converseDirection = Direction.RIGHT;
 
-	@Luxem.Configuration(name = "transverse-direction", optional = true)
+	@Luxem.Configuration(name = "transverse-direction", optional = true,
+			description = "The direction of successive lines.  In English, this will be DOWN.")
 	public Direction transverseDirection = Direction.DOWN;
 
 	@Luxem.Configuration

@@ -33,6 +33,16 @@ public class Main extends Application {
 	@Override
 	public void start(final Stage primaryStage) {
 		/*
+		TODO
+		editing, actions for everythinga
+		global context
+		save
+		modal editing
+		plugins
+		persistent history
+		selection history
+		 */
+		/*
 		if (getParameters().getUnnamed().isEmpty())
 			throw new IllegalArgumentException("Must specify a filename as first argument.");
 			*/

@@ -4,10 +4,7 @@ import com.zarbosoft.bonestruct.editor.visual.nodes.VisualNode;
 import com.zarbosoft.luxemj.Luxem;
 import com.zarbosoft.luxemj.grammar.Node;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @Luxem.Configuration
 public class Hotkeys {
@@ -15,7 +12,7 @@ public class Hotkeys {
 	public Set<VisualNode.Tag> tags = new HashSet<>();
 
 	@Luxem.Configuration
-	public Map<String, Node> hotkeys = new HashMap<>();
+	public Map<String, List<Node>> hotkeys = new HashMap<>();
 
 	public Hotkeys() {
 

@@ -55,6 +55,11 @@ public class FrontImage extends FrontConstantPart {
 		}
 
 		@Override
+		public Brick createLastBrick(final Context context) {
+			return createFirstBrick(context);
+		}
+
+		@Override
 		public String debugTreeType() {
 			return String.format("image@%s", Integer.toHexString(hashCode()));
 		}
@@ -91,7 +96,7 @@ public class FrontImage extends FrontConstantPart {
 		@Override
 		public void destroyBricks(final Context context) {
 			if (brick != null)
-				brick.remove(context);
+				brick.destroy(context);
 		}
 
 		private class ImageBrick extends Brick implements AlignmentListener {
@@ -131,12 +136,17 @@ public class FrontImage extends FrontConstantPart {
 			}
 
 			@Override
+			public Brick createPrevious(final Context context) {
+				return FrontImage.ImageVisual.this.parent.createPreviousBrick(context);
+			}
+
+			@Override
 			public void allocateTransverse(final Context context, final int ascent, final int descent) {
 				image.setTransverse(ascent, context.transverseEdge);
 			}
 
 			@Override
-			public void destroy(final Context context) {
+			public void destroyed(final Context context) {
 				brick = null;
 				if (alignment != null)
 					alignment.removeListener(context, this);

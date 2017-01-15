@@ -31,6 +31,11 @@ public class CursorAttachment extends Canvas {
 			transverseAscent = ascent;
 			place(context);
 		}
+
+		@Override
+		public void destroy(final Context context) {
+			brick = null;
+		}
 	};
 	private int index;
 
@@ -57,8 +62,10 @@ public class CursorAttachment extends Canvas {
 
 	public void setPosition(final Context context, final TextBrick brick, final int index) {
 		if (this.brick != brick) {
+			offset = null;
 			if (this.brick != null)
 				this.brick.removeAttachment(context, this.attachment);
+
 			this.brick = brick;
 			if (this.brick == null)
 				return;
@@ -118,7 +125,8 @@ public class CursorAttachment extends Canvas {
 	}
 
 	public void destroy(final Context context) {
-		brick.removeAttachment(context, this.attachment);
+		if (brick != null)
+			brick.removeAttachment(context, this.attachment);
 		context.background.getChildren().remove(this);
 	}
 }

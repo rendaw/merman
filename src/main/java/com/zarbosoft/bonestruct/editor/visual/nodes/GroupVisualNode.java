@@ -50,6 +50,13 @@ public class GroupVisualNode extends VisualNodePart {
 		return children.get(0).createFirstBrick(context);
 	}
 
+	@Override
+	public Brick createLastBrick(final Context context) {
+		if (children.isEmpty())
+			return null;
+		return Helper.last(children).createFirstBrick(context);
+	}
+
 	public Map<String, Alignment> alignments = new HashMap<>();
 	public VisualNodeParent parent = null;
 
@@ -80,7 +87,7 @@ public class GroupVisualNode extends VisualNodePart {
 		final Brick previousBrick = index == 0 ?
 				(parent == null ? null : parent.getPreviousBrick(context)) :
 				children.get(index - 1).getLastBrick(context);
-		final Brick nextBrick = index == this.children.size() - 1 ?
+		final Brick nextBrick = index + 1 >= this.children.size() ?
 				(parent == null ? null : parent.getNextBrick(context)) :
 				children.get(index + 1).getFirstBrick(context);
 		if (previousBrick != null && nextBrick != null)

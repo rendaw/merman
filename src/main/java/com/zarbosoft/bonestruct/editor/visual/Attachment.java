@@ -6,4 +6,6 @@ public abstract class Attachment {
 	public abstract void setConverse(Context context, int converse);
 
 	public abstract void setTransverseSpan(Context context, int ascent, int descent);
+
+	public abstract void destroy(Context context);
 }

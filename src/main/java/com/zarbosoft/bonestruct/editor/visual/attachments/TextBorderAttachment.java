@@ -30,6 +30,11 @@ public class TextBorderAttachment {
 			startTransverseSpan = ascent + descent;
 			redraw(context);
 		}
+
+		@Override
+		public void destroy(final Context context) {
+			first = null;
+		}
 	};
 	private final Attachment lastAttachment = new Attachment() {
 		@Override
@@ -49,6 +54,11 @@ public class TextBorderAttachment {
 			endTransverseSpan = ascent + descent;
 			redraw(context);
 		}
+
+		@Override
+		public void destroy(final Context context) {
+			last = null;
+		}
 	};
 	private int startConverse;
 	private int startTransverse;
@@ -58,21 +68,10 @@ public class TextBorderAttachment {
 	private int endTransverseSpan;
 
 	public TextBorderAttachment(
-			final Context context,
-			final ObboxStyle style,
-			final TextBrick first,
-			final int firstIndex,
-			final TextBrick last,
-			final int lastIndex
+			final Context context, final ObboxStyle.Baked style
 	) {
-		final ObboxStyle.Baked baked = new ObboxStyle.Baked();
-		baked.merge(style);
-		border = Obbox.fromSettings(baked);
+		border = Obbox.fromSettings(style);
 		context.background.getChildren().add(border);
-		this.firstIndex = firstIndex;
-		this.lastIndex = lastIndex;
-		setFirst(context, first);
-		setLast(context, last);
 	}
 
 	public void setFirst(final Context context, final TextBrick first) {
@@ -104,8 +103,10 @@ public class TextBorderAttachment {
 	}
 
 	public void destroy(final Context context) {
-		this.first.removeAttachment(context, this.firstAttachment);
-		this.last.removeAttachment(context, this.lastAttachment);
+		if (first != null)
+			first.removeAttachment(context, this.firstAttachment);
+		if (last != null)
+			last.removeAttachment(context, this.lastAttachment);
 		context.background.getChildren().remove(border);
 	}
 

@@ -22,15 +22,14 @@
 	        tags: [(free) record-table, (state) compact],
 	        align: record-table,
 	    },
-	],
-	hotkeys: [
 	    {
-	        tags: [],
-	        hotkeys: {
-                exit: (seq) [(key) a, (key) escape],
-                enter: (seq) [(key) a, (key) enter],
-	        }
+	        tags:[(part) primitive, (state) hard],
+	        break: true,
 	    },
+	    {
+	        tags:[(part) primitive, (state) soft],
+	        break: true,
+	    }
 	],
 	groups: {
 	    value: [
@@ -122,5 +121,23 @@
 				(primitive) data,
 			],
 		}
-	]
+	],
+	hotkeys: [
+	    {
+	        tags: [],
+	        hotkeys: {
+                exit: [ (key) left ],
+                enter: [ (key) right ],
+                next: [ (key) down ],
+                previous: [ (key) up ],
+                delete: [ (key) x ],
+                delete-next: [ (key) x ],
+                text-next: [ (key) right ],
+                text-previous: [ (key) left ],
+                text-exit: [ (key) escape ],
+                text-delete-next: [ (key) delete ],
+                text-delete-previous: [ (key) backspace ],
+	        }
+	    },
+	],
 }

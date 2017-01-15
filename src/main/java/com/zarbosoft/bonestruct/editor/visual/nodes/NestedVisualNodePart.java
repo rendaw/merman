@@ -55,6 +55,15 @@ public class NestedVisualNodePart extends VisualNodePart {
 			}
 
 			@Override
+			public Brick createPreviousBrick(final Context context) {
+				if (border != null)
+					border.setFirst(context, body.getFirstBrick(context));
+				if (parent == null)
+					return null;
+				return parent.createPreviousBrick(context);
+			}
+
+			@Override
 			public VisualNode getNode() {
 				throw new NotImplementedException();
 			}
@@ -125,6 +134,11 @@ public class NestedVisualNodePart extends VisualNodePart {
 	@Override
 	public Brick createFirstBrick(final Context context) {
 		return body.createFirstBrick(context);
+	}
+
+	@Override
+	public Brick createLastBrick(final Context context) {
+		return body.createLastBrick(context);
 	}
 
 	@Override

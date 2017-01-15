@@ -170,6 +170,11 @@ public class NodeType {
 				}
 
 				@Override
+				public Brick createPreviousBrick(final Context context) {
+					return parent.createPreviousBrick(context);
+				}
+
+				@Override
 				public VisualNode getNode() {
 					return NodeTypeVisual.this;
 				}
@@ -229,6 +234,11 @@ public class NodeType {
 		@Override
 		public Brick createFirstBrick(final Context context) {
 			return body.createFirstBrick(context);
+		}
+
+		@Override
+		public Brick createLastBrick(final Context context) {
+			return body.createLastBrick(context);
 		}
 
 		@Override

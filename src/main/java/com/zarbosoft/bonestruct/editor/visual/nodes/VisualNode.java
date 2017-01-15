@@ -26,6 +26,8 @@ public abstract class VisualNode {
 
 	public abstract Brick createFirstBrick(Context context);
 
+	public abstract Brick createLastBrick(Context context);
+
 	public abstract Brick getFirstBrick(Context context);
 
 	public abstract Brick getLastBrick(Context context);

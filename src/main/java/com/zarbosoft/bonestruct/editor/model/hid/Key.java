@@ -8,7 +8,7 @@ public enum Key {
 	@Luxem.Configuration(name = "enter")
 	ENTER,
 
-	@Luxem.Configuration(name = "back-space")
+	@Luxem.Configuration(name = "backspace")
 	BACK_SPACE,
 
 	@Luxem.Configuration(name = "tab")

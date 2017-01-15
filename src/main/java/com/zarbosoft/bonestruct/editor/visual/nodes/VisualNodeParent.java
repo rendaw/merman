@@ -19,4 +19,6 @@ public abstract class VisualNodeParent {
 	public abstract Brick getNextBrick(Context context);
 
 	public abstract Context.Hoverable hover(Context context, Vector point);
+
+	public abstract Brick createPreviousBrick(Context context);
 }

@@ -52,4 +52,5 @@ public abstract class VisualNodePart extends VisualNode {
 	public Context.Hoverable hover(final Context context, final Vector point) {
 		return parent().hover(context, point);
 	}
+
 }

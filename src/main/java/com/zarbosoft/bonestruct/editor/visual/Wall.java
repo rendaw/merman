@@ -1,5 +1,6 @@
 package com.zarbosoft.bonestruct.editor.visual;
 
+import com.zarbosoft.pidgoon.internal.Helper;
 import javafx.scene.Group;
 
 import java.util.ArrayList;
@@ -8,16 +9,20 @@ import java.util.stream.Collectors;
 
 public class Wall {
 	public Group visual = new Group();
-	List<Course> children = new ArrayList<>();
+	public List<Course> children = new ArrayList<>();
 	private AdjustIdleTask adjustIdle;
 	private IdleCompactTask idleCompact;
 	private IdleExpandTask idleExpand;
 
 	public void clear(final Context context) {
-		for (final Course course : children) {
-			course.clear(context);
-		}
-		children.clear();
+		while (!children.isEmpty())
+			Helper.last(children).destroy(context);
+		if (idleCompact != null)
+			idleCompact.destroy();
+		if (idleExpand != null)
+			idleExpand.destroy();
+		if (adjustIdle != null)
+			adjustIdle.destroy();
 	}
 
 	private void renumber(final int at) {
@@ -43,14 +48,13 @@ public class Wall {
 		getIdle(context, at);
 	}
 
-	public void remove(final Context context, final int at, final int count) {
-		for (int i = 0; i < count; ++i)
-			children.remove(at + i);
-		visual.getChildren().remove(at, at + count);
+	public void remove(final Context context, final int at) {
+		children.remove(at);
+		visual.getChildren().remove(at);
 		if (at < children.size()) {
 			renumber(at);
+			getIdle(context, at);
 		}
-		getIdle(context, at);
 	}
 
 	public void idleCompact(final Context context) {
@@ -83,7 +87,7 @@ public class Wall {
 		}
 
 		@Override
-		public void run() {
+		public void runImplementation() {
 			if (at >= children.size()) {
 				idleCompact = null;
 				return;
@@ -93,6 +97,11 @@ public class Wall {
 				at += 1;
 			}
 			context.addIdle(this);
+		}
+
+		@Override
+		protected void destroyed() {
+			idleCompact = null;
 		}
 	}
 
@@ -110,7 +119,7 @@ public class Wall {
 		}
 
 		@Override
-		public void run() {
+		public void runImplementation() {
 			if (at >= children.size()) {
 				idleExpand = null;
 				return;
@@ -120,6 +129,11 @@ public class Wall {
 				at += 1;
 			}
 			context.addIdle(this);
+		}
+
+		@Override
+		protected void destroyed() {
+			idleExpand = null;
 		}
 	}
 
@@ -137,14 +151,22 @@ public class Wall {
 		}
 
 		@Override
-		public void run() {
-			if (at + 1 >= children.size()) {
+		public void runImplementation() {
+			if (at >= children.size()) {
 				adjustIdle = null;
 				return;
 			}
-			children.get(at + 1).setTransverse(context, children.get(at).transverseEdge(context));
+			if (at == 0)
+				children.get(at).setTransverse(context, 0);
+			else
+				children.get(at).setTransverse(context, children.get(at - 1).transverseEdge(context));
 			at += 1;
 			context.addIdle(this);
+		}
+
+		@Override
+		protected void destroyed() {
+			adjustIdle = null;
 		}
 	}
 

@@ -41,6 +41,18 @@ public class GroupVisualNodeParent extends VisualNodeParent {
 	}
 
 	@Override
+	public Brick createPreviousBrick(final Context context) {
+		for (int i = index - 1; i >= 0; --i) {
+			final Brick brick = target.children.get(i).createLastBrick(context);
+			if (brick != null)
+				return brick;
+		}
+		if (target.parent == null)
+			return null;
+		return target.parent.createPreviousBrick(context);
+	}
+
+	@Override
 	public VisualNode getNode() {
 		if (target.parent == null)
 			return null;
@@ -65,7 +77,7 @@ public class GroupVisualNodeParent extends VisualNodeParent {
 
 	@Override
 	public Brick getNextBrick(final Context context) {
-		if (index == target.children.size())
+		if (index + 1 >= target.children.size())
 			if (target.parent == null)
 				return null;
 			else

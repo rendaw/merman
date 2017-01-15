@@ -28,6 +28,11 @@ public class BorderAttachment {
 			startTransverseSpan = ascent + descent;
 			redraw(context);
 		}
+
+		@Override
+		public void destroy(final Context context) {
+			first = null;
+		}
 	};
 	private final Attachment lastAttachment = new Attachment() {
 		@Override
@@ -46,6 +51,11 @@ public class BorderAttachment {
 			endTransverseSpan = ascent + descent;
 			redraw(context);
 		}
+
+		@Override
+		public void destroy(final Context context) {
+			last = null;
+		}
 	};
 	private int startConverse;
 	private int startTransverse;
@@ -60,6 +70,7 @@ public class BorderAttachment {
 		context.background.getChildren().add(border);
 		setFirst(context, first);
 		setLast(context, last);
+		redraw(context);
 	}
 
 	public void setFirst(final Context context, final Brick first) {
@@ -81,8 +92,10 @@ public class BorderAttachment {
 	}
 
 	public void destroy(final Context context) {
-		this.first.removeAttachment(context, this.firstAttachment);
-		this.last.removeAttachment(context, this.lastAttachment);
+		if (first != null)
+			this.first.removeAttachment(context, this.firstAttachment);
+		if (last != null)
+			this.last.removeAttachment(context, this.lastAttachment);
 		context.background.getChildren().remove(border);
 	}
 

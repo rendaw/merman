@@ -3,6 +3,7 @@ package com.zarbosoft.bonestruct.editor.visual;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.zarbosoft.bonestruct.editor.visual.nodes.VisualNode;
+import com.zarbosoft.pidgoon.internal.Helper;
 import com.zarbosoft.pidgoon.internal.Pair;
 import javafx.scene.Group;
 
@@ -21,7 +22,7 @@ public class Course {
 	int transverseStart = 0;
 	int ascent = 0;
 	int descent = 0;
-	List<Brick> children = new ArrayList<>();
+	public List<Brick> children = new ArrayList<>();
 	//Fixture fixtures[] = new Fixture[2];
 	private final Map<Brick, Set<Attachment>> attachments = new HashMap<>();
 	int lastExpandCheckConverse = 0;
@@ -50,36 +51,52 @@ public class Course {
 		}
 	}
 
-	public void changed(final Context context, final int index) {
-		final Brick brick = children.get(index);
+	public void changed(final Context context, final int at) {
+		final Brick brick = children.get(at);
 		final Brick.Properties properties = brick.properties();
-		if (index > 0 && properties.broken) {
-			breakCourse(context, index);
+		if (at > 0 && properties.broken) {
+			breakCourse(context, at);
 			return;
-		} else if (index == 0 && !properties.broken && this.index > 0) {
-			joinCourse(context);
+		} else if (at == 0 && !properties.broken && this.index > 0) {
+			joinPreviousCourse(context);
 			return;
 		}
 		getIdlePlace(context);
-		idlePlace.at(index);
+		idlePlace.at(at);
+		idlePlace.changed.add(brick);
 	}
 
-	private void joinCourse(final Context context) {
+	public void attachmentsChanged(final Context context, final int at) {
+		final Brick brick = children.get(at);
+		attachments.put(brick, brick.getAttachments(context));
+	}
+
+	private void joinPreviousCourse(final Context context) {
+		visual.getChildren().clear();
 		final Course previous = parent.children.get(this.index - 1);
-		final ImmutableList<Brick> transplant = ImmutableList.copyOf(children);
-		remove(context, 0, children.size());
-		previous.add(context, previous.children.size(), transplant);
-		parent.remove(context, this.index, 1);
+		previous.add(context, previous.children.size(), children);
+		destroyInner(context);
 	}
 
-	private void breakCourse(final Context context, final int index) {
+	public Course breakCourse(final Context context, final int index) {
+		if (index == 0)
+			throw new AssertionError("Breaking course at 0.");
 		final Course next = new Course(context);
 		parent.add(context, this.index + 1, ImmutableList.of(next));
 		if (index < children.size()) {
 			final List<Brick> transplant = ImmutableList.copyOf(children.subList(index, children.size()));
-			remove(context, index, transplant.size());
+			getIdlePlace(context);
+			for (final Brick brick : transplant) {
+				idlePlace.removeMaxAscent = Math.max(idlePlace.removeMaxAscent, brick.properties().ascent);
+				idlePlace.removeMaxDescent = Math.max(idlePlace.removeMaxDescent, brick.properties().descent);
+				idlePlace.changed.remove(brick);
+				attachments.remove(brick);
+			}
+			children.subList(index, children.size()).clear();
+			visual.getChildren().remove(index, visual.getChildren().size());
 			next.add(context, 0, transplant);
 		}
+		return next;
 	}
 
 	/*
@@ -108,48 +125,59 @@ public class Course {
 	}
 	*/
 
-	public void add(final Context context, final int at, List<Brick> bricks) {
+	public void add(final Context context, final int at, final List<Brick> bricks) {
 		if (bricks.size() == 0)
 			throw new AssertionError("Adding no bricks");
+		children.addAll(at, bricks);
+		for (final Brick brick : bricks)
+			brick.parent = this;
+		renumber(at);
+		visual.getChildren().addAll(at, bricks.stream().map(c -> c.getRawVisual()).collect(Collectors.toList()));
 		for (int i = 0; i < bricks.size(); ++i) {
 			final Brick brick = bricks.get(i);
-			if (at + i > 0 && brick.properties().broken) {
-				breakCourse(context, at + i);
-				parent.children.get(index + 1).add(context, 0, bricks.subList(i, bricks.size()));
-				bricks = bricks.subList(0, i);
-				break;
-			}
-			brick.parent = this;
 			attachments.put(brick, ImmutableSet.copyOf(brick.getAttachments(context)));
 			for (final Attachment attachment : ImmutableSet.copyOf(brick.getAttachments(context)))
 				attachment.setTransverse(context, transverseStart);
 		}
-		children.addAll(at, bricks);
-		renumber(at);
-		visual.getChildren().addAll(at, bricks.stream().map(c -> c.getRawVisual()).collect(Collectors.toList()));
 		getIdlePlace(context);
 		idlePlace.at(at);
 		idlePlace.changed.addAll(bricks);
 	}
 
-	public void remove(final Context context, final int at, final int count) {
-		if (count == 0)
-			throw new AssertionError("Removing no bricks");
-		getIdlePlace(context);
-		idlePlace.at(at);
-		for (int i = 0; i < count; ++i) {
-			final Brick brick = children.get(at + i);
-			idlePlace.removeMaxAscent = Math.max(idlePlace.removeMaxAscent, brick.properties().ascent);
-			idlePlace.removeMaxDescent = Math.max(idlePlace.removeMaxDescent, brick.properties().descent);
-			idlePlace.changed.remove(brick);
-			attachments.remove(brick);
-			brick.parent = null;
+	public void removeFromSystem(final Context context, final int at) {
+		final Brick brick = children.get(at);
+		children.remove(at);
+		if (children.isEmpty()) {
+			destroyInner(context);
+		} else {
+			if (at == 0) {
+				joinPreviousCourse(context);
+			} else {
+				brick.parent = null;
+				attachments.remove(brick);
+				visual.getChildren().remove(at);
+				getIdlePlace(context);
+				idlePlace.at(at);
+				idlePlace.removeMaxAscent = Math.max(idlePlace.removeMaxAscent, brick.properties().ascent);
+				idlePlace.removeMaxDescent = Math.max(idlePlace.removeMaxDescent, brick.properties().descent);
+				idlePlace.changed.remove(brick);
+			}
 		}
-		children.subList(at, at + count).clear();
-		if (at < children.size()) {
-			renumber(at);
-		}
-		visual.getChildren().remove(at, at + count);
+	}
+
+	private void destroyInner(final Context context) {
+		if (idlePlace != null)
+			idlePlace.destroy();
+		if (idleCompact != null)
+			idleCompact.destroy();
+		if (idleExpand != null)
+			idleExpand.destroy();
+		parent.remove(context, index);
+	}
+
+	public void destroy(final Context context) {
+		while (!children.isEmpty())
+			Helper.last(children).destroy(context);
 	}
 
 	private void renumber(final int at) {
@@ -179,13 +207,6 @@ public class Course {
 		}
 	}
 
-	public void clear(final Context context) {
-		for (final Brick brick : children) {
-			brick.destroy(context);
-		}
-		children.clear();
-	}
-
 	class IdlePlaceTask extends com.zarbosoft.bonestruct.editor.visual.IdleTask {
 
 		private final Context context;
@@ -205,7 +226,7 @@ public class Course {
 		}
 
 		@Override
-		public void run() {
+		public void runImplementation() {
 			// Update attachments
 			changed.stream().forEach(b -> attachments.put(b, ImmutableSet.copyOf(b.getAttachments(context))));
 
@@ -261,7 +282,9 @@ public class Course {
 			// Do getConverse placement
 			final Set<Alignment> seenAlignments = new HashSet<>();
 			final int at = first;
-			int converse = at == 0 ? 0 : children.get(at - 1).converseEdge(context);
+			int converse = at == 0 ?
+					0 :
+					(at >= children.size() ? Helper.last(children) : children.get(at - 1)).converseEdge(context);
 			for (int index = at; index < children.size(); ++index) {
 				final Brick brick = children.get(index);
 				final Brick.Properties properties = brick.properties();
@@ -285,6 +308,11 @@ public class Course {
 			if (newAscent || newDescent/* || fixtures[0] || fixtures[1]*/)
 				parent.adjust(context, at);
 
+			idlePlace = null;
+		}
+
+		@Override
+		protected void destroyed() {
 			idlePlace = null;
 		}
 
@@ -335,12 +363,17 @@ public class Course {
 		}
 
 		@Override
-		public void run() {
+		public void runImplementation() {
 			if (compact(context)) {
 				context.addIdle(this);
 			} else {
 				idleCompact = null;
 			}
+		}
+
+		@Override
+		protected void destroyed() {
+			idleCompact = null;
 		}
 	}
 
@@ -415,12 +448,17 @@ public class Course {
 		}
 
 		@Override
-		public void run() {
+		public void runImplementation() {
 			if (expand(context)) {
 				context.addIdle(this);
 			} else {
 				idleExpand = null;
 			}
+		}
+
+		@Override
+		protected void destroyed() {
+			idleExpand = null;
 		}
 	}
 }

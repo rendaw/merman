@@ -17,9 +17,12 @@ import com.zarbosoft.bonestruct.editor.visual.raw.Obbox;
 import com.zarbosoft.pidgoon.internal.Helper;
 import com.zarbosoft.pidgoon.internal.Mutable;
 import com.zarbosoft.pidgoon.internal.Pair;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
 import org.pcollections.HashTreePSet;
 import org.pcollections.PSet;
 
+import java.text.BreakIterator;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -29,6 +32,7 @@ public class PrimitiveVisualNode extends VisualNodePart {
 	// TODO compact/expand
 	private final DataPrimitive.Listener dataListener;
 	private final Obbox border = null;
+	private final DataPrimitive.Value data;
 	private VisualNodeParent parent;
 	Alignment softAlignment, hardAlignment, firstAlignment;
 	Style.Baked softStyle, hardStyle, firstStyle;
@@ -38,7 +42,7 @@ public class PrimitiveVisualNode extends VisualNodePart {
 
 	private void getStyles(final Context context) {
 		final PSet<Tag> tags = HashTreePSet.from(tags());
-		firstStyle = context.getStyle(tags.plus(new StateTag("hard")).plus(new StateTag("first")));
+		firstStyle = context.getStyle(tags.plus(new StateTag("first")));
 		hardStyle = context.getStyle(tags.plus(new StateTag("hard")));
 		softStyle = context.getStyle(tags.plus(new StateTag("soft")));
 		firstAlignment = getAlignment(firstStyle.alignment);
@@ -64,7 +68,7 @@ public class PrimitiveVisualNode extends VisualNodePart {
 	public boolean select(final Context context) {
 		if (lines.get(0).brick == null)
 			return false;
-		selection = new PrimitiveSelection(context, lines.get(0).brick, 0);
+		selection = new PrimitiveSelection(context, 0, 0);
 		context.setSelection(selection);
 		return true;
 	}
@@ -92,34 +96,107 @@ public class PrimitiveVisualNode extends VisualNodePart {
 	}
 
 	protected Iterable<Context.Action> getActions(final Context context) {
-		return ImmutableList.of(); // TODO
+		return ImmutableList.of();
 	}
 
 	PrimitiveSelection selection;
 
-	private class PrimitiveSelection extends Context.Selection {
+	private class RangeAttachment {
 		TextBorderAttachment border;
 		CursorAttachment cursor;
-		int beginIndex;
-		TextBrick beginBrick;
-		int endIndex;
-		TextBrick endBrick;
+		Line beginLine;
+		Line endLine;
+		int beginOffset;
+		int endOffset;
+		private final ObboxStyle.Baked style;
 
-		public PrimitiveSelection(final Context context, final TextBrick brick, final int index) {
-			beginBrick = endBrick = brick;
-			beginIndex = endIndex = index;
-			final ObboxStyle.Baked style = new ObboxStyle.Baked();
-			style.merge(context.syntax.selectStyle);
-			cursor = new CursorAttachment(context, style);
-			cursor.setPosition(context, beginBrick, beginIndex);
+		private RangeAttachment(final ObboxStyle.Baked style) {
+			this.style = style;
 		}
 
-		@Override
-		public void clear(final Context context) {
+		private void setOffsets(final Context context, final int beginOffset, final int endOffset) {
+			this.beginOffset = Math.max(0, Math.min(data.get().length(), beginOffset));
+			this.endOffset = Math.max(beginOffset, Math.min(data.get().length(), endOffset));
+			if (beginOffset == endOffset) {
+				if (border != null)
+					border.destroy(context);
+				if (cursor == null) {
+					cursor = new CursorAttachment(context, style);
+				}
+				final int index = findContaining(beginOffset);
+				beginLine = endLine = lines.get(index);
+				if (beginLine.brick != null)
+					cursor.setPosition(context, beginLine.brick, beginOffset - beginLine.offset);
+			} else {
+				if (cursor != null)
+					cursor.destroy(context);
+				if (border == null) {
+					border = new TextBorderAttachment(context, style);
+					border.setLast(context, beginLine.brick);
+					border.setLastIndex(context, beginOffset - beginLine.offset);
+				}
+				final int beginIndex = findContaining(beginOffset);
+				if (beginLine == null || beginLine.index != beginIndex) {
+					beginLine = lines.get(beginIndex);
+					if (beginLine.brick != null)
+						border.setFirst(context, beginLine.brick);
+				}
+				border.setFirstIndex(context, beginIndex - beginLine.offset);
+				final int endIndex = findContaining(endOffset);
+				if (endLine == null || endLine.index != endIndex) {
+					endLine = lines.get(endIndex);
+					if (endLine.brick != null)
+						border.setLast(context, endLine.brick);
+				}
+				border.setLastIndex(context, endIndex - endLine.offset);
+			}
+		}
+
+		private void setOffsets(final Context context, final int offset) {
+			setOffsets(context, offset, offset);
+		}
+
+		private void setBeginOffset(final Context context, final int offset) {
+			setOffsets(context, offset, endOffset);
+		}
+
+		private void setEndOffset(final Context context, final int offset) {
+			setOffsets(context, beginOffset, offset);
+		}
+
+		public void destroy(final Context context) {
 			if (border != null)
 				border.destroy(context);
 			if (cursor != null)
 				cursor.destroy(context);
+		}
+
+		public void nudge(final Context context) {
+			setOffsets(context, beginOffset, endOffset);
+		}
+	}
+
+	private class PrimitiveSelection extends Context.Selection {
+		final RangeAttachment range;
+		final boolean direct;
+
+		public PrimitiveSelection(
+				final Context context, final int beginOffset, final int endOffset, final boolean direct
+		) {
+			final ObboxStyle.Baked style = new ObboxStyle.Baked();
+			style.merge(context.syntax.selectStyle);
+			range = new RangeAttachment(style);
+			range.setOffsets(context, beginOffset, endOffset);
+			this.direct = direct;
+		}
+
+		public PrimitiveSelection(final Context context, final int beginOffset, final int endOffset) {
+			this(context, beginOffset, endOffset, context.syntax.modalPrimitiveEditing ? false : true);
+		}
+
+		@Override
+		public void clear(final Context context) {
+			range.destroy(context);
 			selection = null;
 			commit(context);
 		}
@@ -130,8 +207,329 @@ public class PrimitiveVisualNode extends VisualNodePart {
 		}
 
 		@Override
+		public void receiveText(final Context context, final String text) {
+			if (range.beginOffset != range.endOffset)
+				context.history.apply(context,
+						new DataPrimitive.ChangeRemove(data, range.beginOffset, range.endOffset - range.beginOffset)
+				);
+			context.history.apply(context, new DataPrimitive.ChangeAdd(data, range.beginOffset, text));
+		}
+
+		@Override
 		public Iterable<Context.Action> getActions(final Context context) {
-			return PrimitiveVisualNode.this.getActions(context);
+			final String prefix = direct ? "text-" : "";
+			final Iterable<Context.Action> out = Iterables.concat(ImmutableList.of(new Context.Action() {
+				@Override
+				public void run(final Context context) {
+					if (parent != null) {
+						parent.selectUp(context);
+					}
+				}
+
+				@Override
+				public String getName() {
+					return prefix + "exit";
+				}
+			}, new Context.Action() {
+				@Override
+				public void run(final Context context) {
+					if (range.beginOffset < data.get().length()) {
+						range.setOffsets(context, range.beginOffset + 1);
+					}
+				}
+
+				@Override
+				public String getName() {
+					return prefix + "next";
+				}
+			}, new Context.Action() {
+				@Override
+				public void run(final Context context) {
+					if (range.beginOffset > 0) {
+						range.setOffsets(context, range.beginOffset - 1);
+					}
+				}
+
+				@Override
+				public String getName() {
+					return prefix + "previous";
+				}
+			}, new Context.Action() {
+				@Override
+				public void run(final Context context) {
+					final BreakIterator iter = BreakIterator.getWordInstance();
+					iter.setText(data.get());
+					range.setOffsets(context, iter.following(range.beginOffset));
+				}
+
+				@Override
+				public String getName() {
+					return prefix + "next-word";
+				}
+			}, new Context.Action() {
+				@Override
+				public void run(final Context context) {
+					final BreakIterator iter = BreakIterator.getWordInstance();
+					iter.setText(data.get());
+					range.setOffsets(context, iter.preceding(range.beginOffset));
+				}
+
+				@Override
+				public String getName() {
+					return prefix + "previous-word";
+				}
+			}, new Context.Action() {
+				@Override
+				public void run(final Context context) {
+					range.setOffsets(context, range.beginLine.offset);
+				}
+
+				@Override
+				public String getName() {
+					return prefix + "line-begin";
+				}
+			}, new Context.Action() {
+				@Override
+				public void run(final Context context) {
+					range.setOffsets(context, range.beginLine.offset + range.beginLine.text.length());
+				}
+
+				@Override
+				public String getName() {
+					return prefix + "line-end";
+				}
+			}, new Context.Action() {
+				@Override
+				public void run(final Context context) {
+					if (range.beginLine.index < lines.size()) {
+						range.setOffsets(context, lines.get(range.beginLine.index + 1).offset);
+					}
+				}
+
+				@Override
+				public String getName() {
+					return prefix + "next-line";
+				}
+			}, new Context.Action() {
+				@Override
+				public void run(final Context context) {
+					if (range.beginLine.index > 0) {
+						range.setOffsets(context, lines.get(range.beginLine.index - 1).offset);
+					}
+				}
+
+				@Override
+				public String getName() {
+					return prefix + "previous-line";
+				}
+			}, new Context.Action() {
+				@Override
+				public void run(final Context context) {
+					if (range.beginOffset == range.endOffset) {
+						if (range.beginOffset > 0)
+							context.history.apply(context,
+									new DataPrimitive.ChangeRemove(data, range.beginOffset - 1, 1)
+							);
+					} else
+						context.history.apply(context,
+								new DataPrimitive.ChangeRemove(data,
+										range.beginOffset,
+										range.endOffset - range.beginOffset
+								)
+						);
+				}
+
+				@Override
+				public String getName() {
+					return prefix + "delete-previous";
+				}
+			}, new Context.Action() {
+				@Override
+				public void run(final Context context) {
+					if (range.beginOffset == range.endOffset) {
+						if (range.endOffset < data.get().length())
+							context.history.apply(context, new DataPrimitive.ChangeRemove(data, range.beginOffset, 1));
+
+					} else
+						context.history.apply(context,
+								new DataPrimitive.ChangeRemove(data,
+										range.beginOffset,
+										range.endOffset - range.beginOffset
+								)
+						);
+				}
+
+				@Override
+				public String getName() {
+					return prefix + "delete-next";
+				}
+			}, new Context.Action() {
+				@Override
+				public void run(final Context context) {
+					context.history.finishChange();
+					if (range.beginOffset != range.endOffset)
+						context.history.apply(context,
+								new DataPrimitive.ChangeRemove(data,
+										range.beginOffset,
+										range.endOffset - range.beginOffset
+								)
+						);
+					context.history.apply(context, new DataPrimitive.ChangeAdd(data, range.beginOffset, "\n"));
+					context.history.finishChange();
+				}
+
+				@Override
+				public String getName() {
+					return prefix + "split";
+				}
+			}, new Context.Action() {
+				@Override
+				public void run(final Context context) {
+					if (range.beginOffset == range.endOffset) {
+						if (range.beginLine.index + 1 < lines.size()) {
+							context.history.finishChange();
+							context.history.apply(context,
+									new DataPrimitive.ChangeRemove(data,
+											lines.get(range.beginLine.index + 1).offset - 1,
+											1
+									)
+							);
+						}
+						context.history.finishChange();
+					} else {
+						context.history.finishChange();
+						for (int index = range.beginLine.index + 1; index <= range.endLine.index; ++index) {
+							context.history.apply(context,
+									new DataPrimitive.ChangeRemove(data, lines.get(index).offset - 1, 1)
+							);
+						}
+						context.history.finishChange();
+					}
+				}
+
+				@Override
+				public String getName() {
+					return prefix + "join";
+				}
+			}, new Context.Action() {
+				@Override
+				public void run(final Context context) {
+					final ClipboardContent content = new ClipboardContent();
+					content.putString(data.get().substring(range.beginOffset, range.endOffset));
+					Clipboard.getSystemClipboard().setContent(content);
+				}
+
+				@Override
+				public String getName() {
+					return prefix + "copy";
+				}
+			}, new Context.Action() {
+				@Override
+				public void run(final Context context) {
+					final ClipboardContent content = new ClipboardContent();
+					content.putString(data.get().substring(range.beginOffset, range.endOffset));
+					Clipboard.getSystemClipboard().setContent(content);
+					context.history.finishChange();
+					context.history.apply(context,
+							new DataPrimitive.ChangeRemove(data, range.beginOffset, range.endOffset)
+					);
+				}
+
+				@Override
+				public String getName() {
+					return prefix + "cut";
+				}
+			}, new Context.Action() {
+				@Override
+				public void run(final Context context) {
+					final String value = Clipboard.getSystemClipboard().getString();
+					if (value != null) {
+						context.history.finishChange();
+						if (range.beginOffset != range.endOffset)
+							context.history.apply(context,
+									new DataPrimitive.ChangeRemove(data,
+											range.beginOffset,
+											range.endOffset - range.beginOffset
+									)
+							);
+						context.history.apply(context, new DataPrimitive.ChangeAdd(data, range.beginOffset, value));
+					}
+				}
+
+				@Override
+				public String getName() {
+					return prefix + "paste";
+				}
+			}, new Context.Action() {
+				@Override
+				public void run(final Context context) {
+					reset(context);
+				}
+
+				@Override
+				public String getName() {
+					return prefix + "reset-selection";
+				}
+			}, new Context.Action() {
+				@Override
+				public void run(final Context context) {
+					range.setEndOffset(context, range.endOffset + 1);
+				}
+
+				@Override
+				public String getName() {
+					return prefix + "gather-next";
+				}
+			}, new Context.Action() {
+				@Override
+				public void run(final Context context) {
+					range.setBeginOffset(context, range.beginOffset - 1);
+				}
+
+				@Override
+				public String getName() {
+					return prefix + "gather-previous";
+				}
+			}), PrimitiveVisualNode.this.getActions(context));
+			if (context.syntax.modalPrimitiveEditing) {
+				if (direct)
+					return Iterables.concat(out, ImmutableList.of(new Context.Action() {
+						@Override
+						public void run(final Context context) {
+							context.setSelection(new PrimitiveSelection(context,
+									range.beginOffset,
+									range.endOffset,
+									false
+							));
+						}
+
+						@Override
+						public String getName() {
+							return prefix + "exit";
+						}
+					}));
+				else
+					return Iterables.concat(out, ImmutableList.of(new Context.Action() {
+						@Override
+						public void run(final Context context) {
+							context.setSelection(new PrimitiveSelection(context,
+									range.beginOffset,
+									range.endOffset,
+									true
+							));
+						}
+
+						@Override
+						public String getName() {
+							return "enter";
+						}
+					}));
+			} else
+				return out;
+		}
+
+		private void reset(final Context context) {
+			range.setOffsets(context, range.beginOffset);
 		}
 	}
 
@@ -140,31 +538,27 @@ public class PrimitiveVisualNode extends VisualNodePart {
 	}
 
 	private class PrimitiveHoverable extends Context.Hoverable {
-		final CursorAttachment cursor;
-		TextBrick brick;
-		int index;
+		RangeAttachment range;
 
 		PrimitiveHoverable(final Context context) {
 			final ObboxStyle.Baked style = new ObboxStyle.Baked();
 			style.merge(context.syntax.hoverStyle);
-			cursor = new CursorAttachment(context, style);
+			range = new RangeAttachment(style);
 		}
 
-		public void setPosition(final Context context, final TextBrick brick, final int index) {
-			this.brick = brick;
-			this.index = index;
-			cursor.setPosition(context, brick, index);
+		public void setPosition(final Context context, final int offset) {
+			//range.setOffsets(context, offset);
 		}
 
 		@Override
 		public void clear(final Context context) {
-			context.background.getChildren().remove(cursor);
+			range.destroy(context);
 			hoverable = null;
 		}
 
 		@Override
 		public void click(final Context context) {
-			selection = new PrimitiveSelection(context, brick, index);
+			selection = new PrimitiveSelection(context, range.beginOffset, range.endOffset);
 			context.setSelection(selection);
 		}
 	}
@@ -178,7 +572,7 @@ public class PrimitiveVisualNode extends VisualNodePart {
 
 		public void destroy(final Context context) {
 			if (brick != null) {
-				brick.remove(context);
+				brick.destroy(context);
 			}
 		}
 
@@ -215,7 +609,17 @@ public class PrimitiveVisualNode extends VisualNodePart {
 			}
 
 			@Override
-			public void destroy(final Context context) {
+			public Brick createPrevious(final Context context) {
+				if (Line.this.index == 0)
+					if (PrimitiveVisualNode.this.parent == null)
+						return null;
+					else
+						return PrimitiveVisualNode.this.parent.createPreviousBrick(context);
+				return lines.get(Line.this.index - 1).createBrick(context);
+			}
+
+			@Override
+			public void destroyed(final Context context) {
 				brick = null;
 				brickCount -= 1;
 				if (brickCount == 0) {
@@ -230,25 +634,27 @@ public class PrimitiveVisualNode extends VisualNodePart {
 
 			@Override
 			protected Alignment getAlignment(final Style.Baked style) {
-				return index == 0 ? firstAlignment : hard ? hardAlignment : softAlignment;
+				return Line.this.index == 0 ? firstAlignment : hard ? hardAlignment : softAlignment;
 			}
 
 			@Override
 			protected Style.Baked getStyle() {
-				return index == 0 ? firstStyle : hard ? hardStyle : softStyle;
+				return Line.this.index == 0 ? firstStyle : hard ? hardStyle : softStyle;
 			}
 
 			@Override
 			public Context.Hoverable hover(final Context context, final Vector point) {
-				final Context.Hoverable out = PrimitiveVisualNode.this.hover(context, point);
-				if (out != null)
-					return out;
+				if (selection == null) {
+					final Context.Hoverable out = PrimitiveVisualNode.this.hover(context, point);
+					if (out != null)
+						return out;
+				}
 				if (brick == null)
 					return null;
 				if (hoverable == null) {
 					hoverable = new PrimitiveHoverable(context);
 				}
-				hoverable.setPosition(context, this, getUnder(context, point));
+				hoverable.setPosition(context, offset + getUnder(context, point));
 				return hoverable;
 			}
 		}
@@ -266,26 +672,40 @@ public class PrimitiveVisualNode extends VisualNodePart {
 
 		public Brick createBrick(final Context context) {
 			if (brick != null)
-				throw new AssertionError("brick exists");
+				return null;
 			brickCount += 1;
 			if (brickCount == 1)
 				getStyles(context);
 			brick = new LineBrick();
 			brick.setText(context, text);
+			if (selection != null && (selection.range.beginLine == Line.this || selection.range.endLine == Line.this))
+				selection.range.nudge(context);
 			return brick;
 		}
 	}
 
 	List<Line> lines = new ArrayList<>();
 
+	private int findContaining(final int offset) {
+		final Optional<Integer> found = lines
+				.stream()
+				.filter(line -> line.offset + line.text.length() >= offset)
+				.map(line -> line.index)
+				.findFirst();
+		if (found.isPresent())
+			return found.get();
+		return lines.size();
+	}
+
 	public PrimitiveVisualNode(final Context context, final DataPrimitive.Value data, final Set<Tag> tags) {
 		super(HashTreePSet.from(tags).plus(new PartTag("primitive")));
+		this.data = data;
 		dataListener = new DataPrimitive.Listener() {
 			@Override
 			public void set(final Context context, final String newValue) {
 				destroy(context);
 				final Mutable<Integer> offset = new Mutable<>(0);
-				Helper.enumerate(Helper.stream(newValue.split("\n"))).forEach(pair -> {
+				Helper.enumerate(Helper.stream(newValue.split("\n", -1))).forEach(pair -> {
 					final Line line = new Line(true);
 					line.setText(context, pair.second);
 					line.setIndex(context, pair.first);
@@ -293,52 +713,64 @@ public class PrimitiveVisualNode extends VisualNodePart {
 					lines.add(line);
 					offset.value += 1 + pair.second.length();
 				});
-			}
-
-			private int findContaining(final int offset) {
-				final Optional<Integer> found = Helper
-						.enumerate(lines.stream())
-						.filter(pair -> pair.second.offset + pair.second.text.length() >= offset)
-						.map(pair -> pair.first)
-						.findFirst();
-				if (found.isPresent())
-					return found.get();
-				return lines.size();
+				if (selection != null) {
+					selection.range.setOffsets(context,
+							Math.max(0, Math.min(newValue.length(), selection.range.beginOffset))
+					);
+				}
+				final Brick previousBrick = parent == null ? null : parent.getPreviousBrick(context);
+				final Brick nextBrick = parent == null ? null : parent.getNextBrick(context);
+				if (previousBrick != null && nextBrick != null)
+					context.fillFromEndBrick(previousBrick);
 			}
 
 			@Override
-			public void added(final Context context, int offset, final String value) {
-				final Deque<String> segments = new ArrayDeque<>(Arrays.asList(value.split("\n")));
+			public void added(final Context context, final int offset, final String value) {
+				final Deque<String> segments = new ArrayDeque<>(Arrays.asList(value.split("\n", -1)));
 				if (segments.isEmpty())
 					return;
-				int index = findContaining(offset);
+				final int originalIndex = findContaining(offset);
+				int index = originalIndex;
 				Line line = lines.get(index);
+
+				int movingOffset = offset;
 
 				// Insert text into first line at offset
 				final StringBuilder builder = new StringBuilder(line.text);
 				String segment = segments.pollFirst();
-				builder.insert(offset - line.offset, segment);
+				builder.insert(movingOffset - line.offset, segment);
 				String remainder = null;
 				if (!segments.isEmpty()) {
-					remainder = builder.substring(offset - line.offset + segment.length());
-					builder.delete(offset - line.offset + segment.length(), remainder.length());
+					remainder = builder.substring(movingOffset - line.offset + segment.length());
+					builder.delete(movingOffset - line.offset + segment.length(), builder.length());
 				}
 				line.setText(context, builder.toString());
-				offset = line.offset;
+				movingOffset = line.offset;
 
 				// Add new hard lines for remaining segments
 				while (true) {
 					index += 1;
-					offset += line.text.length();
+					movingOffset += line.text.length();
 					segment = segments.pollFirst();
 					if (segment == null)
 						break;
 					line = new Line(true);
 					line.setText(context, segment);
 					line.setIndex(context, index);
-					offset += 1;
-					line.offset = offset;
+					movingOffset += 1;
+					line.offset = movingOffset;
 					lines.add(index, line);
+
+					if (index == originalIndex + 1) {
+						final Brick previousBrick = index == 0 ?
+								(parent == null ? null : parent.getPreviousBrick(context)) :
+								lines.get(index - 1).brick;
+						final Brick nextBrick = index + 1 >= lines.size() ?
+								(parent == null ? null : parent.getNextBrick(context)) :
+								lines.get(index + 1).brick;
+						if (previousBrick != null && nextBrick != null)
+							context.fillFromEndBrick(previousBrick);
+					}
 				}
 				if (remainder != null)
 					line.setText(context, line.text + remainder);
@@ -347,25 +779,38 @@ public class PrimitiveVisualNode extends VisualNodePart {
 				for (; index < lines.size(); ++index) {
 					line = lines.get(index);
 					if (line.hard)
-						offset += 1;
+						movingOffset += 1;
 					line.index = index;
-					line.offset = offset;
-					offset += line.text.length();
+					line.offset = movingOffset;
+					movingOffset += line.text.length();
+				}
+
+				if (selection != null) {
+					final int newBegin;
+					if (selection.range.beginOffset < offset)
+						newBegin = selection.range.beginOffset;
+					else
+						newBegin = selection.range.beginOffset + value.length();
+					selection.range.setOffsets(context, newBegin);
 				}
 			}
 
 			@Override
-			public void removed(final Context context, int offset, final int count) {
+			public void removed(final Context context, final int offset, final int count) {
 				int remaining = count;
 				int index = findContaining(offset);
 				final Line base = lines.get(index);
+				int movingOffset = offset;
 				while (remaining > 0) {
 					final Line line = lines.get(index);
 					line.offset -= count - remaining;
-					if (offset == line.offset && line.hard)
+					if (line != base && line.hard && movingOffset == line.offset - 1) {
 						remaining -= 1;
-					final String newText = line.text.substring(0, offset - line.offset) +
-							line.text.substring(Math.min(remaining, line.text.length()));
+						movingOffset += 1;
+					}
+					final int exciseStart = movingOffset - line.offset;
+					final int exciseEnd = Math.min(movingOffset - line.offset + remaining, line.text.length());
+					final String newText = line.text.substring(0, exciseStart) + line.text.substring(exciseEnd);
 					if (line == base) {
 						base.setText(context, newText);
 					} else {
@@ -374,11 +819,33 @@ public class PrimitiveVisualNode extends VisualNodePart {
 						line.destroy(context);
 						lines.remove(index);
 					}
-					offset = line.offset + line.text.length();
-					remaining -= line.text.length() - newText.length();
+					movingOffset = line.offset + line.text.length();
+					remaining -= exciseEnd - exciseStart;
 					index += 1;
 				}
-				lines.stream().skip(index).forEach(following -> following.offset -= count);
+				Helper.enumerate(lines.stream().skip(base.index + 1)).forEach(pair -> {
+					pair.second.index = base.index + 1 + pair.first;
+					pair.second.offset -= count;
+				});
+				if (hoverable != null)
+					hoverable.clear(context);
+				if (selection != null) {
+					final int newBegin;
+					final int newEnd;
+					if (selection.range.beginOffset < offset)
+						newBegin = selection.range.beginOffset;
+					else if (selection.range.beginOffset < offset + count)
+						newBegin = offset;
+					else
+						newBegin = selection.range.beginOffset - count;
+					if (selection.range.endOffset < offset)
+						newEnd = selection.range.endOffset;
+					else if (selection.range.endOffset < offset + count)
+						newEnd = offset;
+					else
+						newEnd = selection.range.endOffset - count;
+					selection.range.setOffsets(context, newBegin, newEnd);
+				}
 			}
 		};
 		data.addListener(dataListener);
@@ -398,6 +865,11 @@ public class PrimitiveVisualNode extends VisualNodePart {
 	@Override
 	public Brick createFirstBrick(final Context context) {
 		return lines.get(0).createBrick(context);
+	}
+
+	@Override
+	public Brick createLastBrick(final Context context) {
+		return Helper.last(lines).createBrick(context);
 	}
 
 	@Override
