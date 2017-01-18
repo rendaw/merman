@@ -1,4 +1,4 @@
-package com.zarbosoft.bonestruct.editor.visual.nodes;
+package com.zarbosoft.bonestruct.editor.visual.tree;
 
 import com.google.common.collect.ImmutableSet;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
@@ -52,5 +52,4 @@ public abstract class VisualNodePart extends VisualNode {
 	public Context.Hoverable hover(final Context context, final Vector point) {
 		return parent().hover(context, point);
 	}
-
 }

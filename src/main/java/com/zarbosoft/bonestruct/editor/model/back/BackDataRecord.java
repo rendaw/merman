@@ -1,6 +1,7 @@
 package com.zarbosoft.bonestruct.editor.model.back;
 
 import com.zarbosoft.bonestruct.editor.model.NodeType;
+import com.zarbosoft.bonestruct.editor.model.Syntax;
 import com.zarbosoft.bonestruct.editor.model.middle.DataNode;
 import com.zarbosoft.bonestruct.editor.model.middle.DataRecord;
 import com.zarbosoft.luxemj.Luxem;
@@ -28,7 +29,7 @@ public class BackDataRecord implements BackPart {
 	private DataRecord dataType;
 
 	@Override
-	public Node buildLoadRule() {
+	public Node buildLoadRule(final Syntax syntax) {
 		final Sequence sequence;
 		sequence = new Sequence();
 		sequence.add(new BakedOperator(new Terminal(new LObjectOpenEvent()), (store) -> store.pushStack(0)));

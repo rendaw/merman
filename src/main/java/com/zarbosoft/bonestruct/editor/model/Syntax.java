@@ -267,7 +267,7 @@ public class Syntax {
 	private Grammar getGrammar() {
 		if (grammar == null) {
 			grammar = new Grammar();
-			types.forEach(t -> grammar.add(t.id, t.buildLoadRule()));
+			types.forEach(t -> grammar.add(t.id, t.buildLoadRule(this)));
 			groups.forEach((k, v) -> {
 				final Union group = new Union();
 				v.forEach(n -> group.add(new Reference(n)));
@@ -292,7 +292,7 @@ public class Syntax {
 			path.value = path.value.push(e);
 			stream.push(e, path.value.toString());
 		});
-		return new Document(this, new DataArray.Value(stream.finish()));
+		return new Document(this, new DataArray.Value(this, stream.finish()));
 	}
 
 	public Document load(final File file) throws FileNotFoundException, IOException {
@@ -308,13 +308,13 @@ public class Syntax {
 	}
 
 	public Document load(final InputStream data) {
-		return new Document(
+		return new Document(this, new DataArray.Value(
 				this,
-				new DataArray.Value(new com.zarbosoft.luxemj.Parse<List<DataNode.Value>>()
+				new com.zarbosoft.luxemj.Parse<List<DataNode.Value>>()
 						.stack(() -> 0)
 						.grammar(getGrammar())
 						.node("root")
-						.parse(data))
-		);
+						.parse(data)
+		));
 	}
 }

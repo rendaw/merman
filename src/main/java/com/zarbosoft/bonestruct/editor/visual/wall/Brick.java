@@ -1,8 +1,11 @@
-package com.zarbosoft.bonestruct.editor.visual;
+package com.zarbosoft.bonestruct.editor.visual.wall;
 
 import com.google.common.collect.ImmutableList;
-import com.zarbosoft.bonestruct.editor.visual.nodes.VisualNode;
-import com.zarbosoft.bonestruct.editor.visual.nodes.VisualNodePart;
+import com.zarbosoft.bonestruct.editor.visual.Alignment;
+import com.zarbosoft.bonestruct.editor.visual.Context;
+import com.zarbosoft.bonestruct.editor.visual.Vector;
+import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
+import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
 import javafx.scene.Node;
 
 import java.util.HashSet;
@@ -78,6 +81,7 @@ public abstract class Brick {
 			parent.breakCourse(context, index + 1).add(context, 0, ImmutableList.of(brick));
 		} else
 			parent.add(context, index + 1, ImmutableList.of(brick));
+		ImmutableList.copyOf(attachments).forEach(a -> a.addAfter(context, brick));
 	}
 
 	public void addBefore(final Context context, final Brick brick) {
@@ -97,6 +101,7 @@ public abstract class Brick {
 			} else
 				parent.add(context, index, ImmutableList.of(brick));
 		}
+		ImmutableList.copyOf(attachments).forEach(a -> a.addBefore(context, brick));
 	}
 
 	/**

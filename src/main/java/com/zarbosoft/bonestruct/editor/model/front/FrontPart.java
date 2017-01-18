@@ -3,8 +3,8 @@ package com.zarbosoft.bonestruct.editor.model.front;
 import com.zarbosoft.bonestruct.editor.luxem.Luxem;
 import com.zarbosoft.bonestruct.editor.model.NodeType;
 import com.zarbosoft.bonestruct.editor.visual.Context;
-import com.zarbosoft.bonestruct.editor.visual.nodes.VisualNode;
-import com.zarbosoft.bonestruct.editor.visual.nodes.VisualNodePart;
+import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
+import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
 
 import java.util.Map;
 import java.util.Set;

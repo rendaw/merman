@@ -1,8 +1,10 @@
-package com.zarbosoft.bonestruct.editor.visual;
+package com.zarbosoft.bonestruct.editor.visual.wall;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.zarbosoft.bonestruct.editor.visual.nodes.VisualNode;
+import com.zarbosoft.bonestruct.editor.visual.Alignment;
+import com.zarbosoft.bonestruct.editor.visual.Context;
+import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
 import com.zarbosoft.pidgoon.internal.Helper;
 import com.zarbosoft.pidgoon.internal.Pair;
 import javafx.scene.Group;
@@ -13,13 +15,13 @@ import java.util.stream.Collectors;
 public class Course {
 
 	public int index;
-	public Group visual = new Group();
-	public Group brickVisual = new Group();
-	public Wall parent;
+	Group visual = new Group();
+	Group brickVisual = new Group();
+	Wall parent;
 	private IdlePlaceTask idlePlace;
 	private IdleCompactTask idleCompact;
 	private IdleExpandTask idleExpand;
-	int transverseStart = 0;
+	public int transverseStart = 0;
 	int ascent = 0;
 	int descent = 0;
 	public List<Brick> children = new ArrayList<>();
@@ -27,7 +29,7 @@ public class Course {
 	private final Map<Brick, Set<Attachment>> attachments = new HashMap<>();
 	int lastExpandCheckConverse = 0;
 
-	public Course(final Context context) {
+	Course(final Context context) {
 		visual.getChildren().add(0, brickVisual);
 	}
 
@@ -41,9 +43,9 @@ public class Course {
 		return out;
 	}
 
-	public void setTransverse(final Context context, final int transverse) {
+	void setTransverse(final Context context, final int transverse) {
 		transverseStart = transverse;
-		context.translate(visual, new Vector(0, transverseStart));
+		context.translate(visual, new com.zarbosoft.bonestruct.editor.visual.Vector(0, transverseStart));
 		parent.adjust(context, index);
 		for (final Map.Entry<Brick, Set<Attachment>> pair : attachments.entrySet()) {
 			for (final Attachment attachment : pair.getValue())
@@ -51,7 +53,7 @@ public class Course {
 		}
 	}
 
-	public void changed(final Context context, final int at) {
+	void changed(final Context context, final int at) {
 		final Brick brick = children.get(at);
 		final Brick.Properties properties = brick.properties();
 		if (at > 0 && properties.broken) {
@@ -66,7 +68,7 @@ public class Course {
 		idlePlace.changed.add(brick);
 	}
 
-	public void attachmentsChanged(final Context context, final int at) {
+	void attachmentsChanged(final Context context, final int at) {
 		final Brick brick = children.get(at);
 		attachments.put(brick, brick.getAttachments(context));
 	}
@@ -78,7 +80,7 @@ public class Course {
 		destroyInner(context);
 	}
 
-	public Course breakCourse(final Context context, final int index) {
+	Course breakCourse(final Context context, final int index) {
 		if (index == 0)
 			throw new AssertionError("Breaking course at 0.");
 		final Course next = new Course(context);
@@ -100,14 +102,14 @@ public class Course {
 	}
 
 	/*
-	public void fixtureChanged(final Context context, final int index) {
+void fixtureChanged(final Context context, final int index) {
 		if (index != 0 && index != 1)
 			throw new AssertionError("Invalid fixture index");
 		getIdlePlace(context);
 		idlePlace.fixtures[index] = true;
 	}
 
-	public void setFixture(final Context context, final int index, final Fixture fixture) {
+void setFixture(final Context context, final int index, final Fixture fixture) {
 		if (index != 0 && index != 1)
 			throw new AssertionError("Invalid fixture index");
 		if (fixtures[index] != null) {
@@ -125,7 +127,7 @@ public class Course {
 	}
 	*/
 
-	public void add(final Context context, final int at, final List<Brick> bricks) {
+	void add(final Context context, final int at, final List<Brick> bricks) {
 		if (bricks.size() == 0)
 			throw new AssertionError("Adding no bricks");
 		children.addAll(at, bricks);
@@ -144,7 +146,7 @@ public class Course {
 		idlePlace.changed.addAll(bricks);
 	}
 
-	public void removeFromSystem(final Context context, final int at) {
+	void removeFromSystem(final Context context, final int at) {
 		final Brick brick = children.get(at);
 		children.remove(at);
 		if (children.isEmpty()) {
@@ -175,7 +177,7 @@ public class Course {
 		parent.remove(context, index);
 	}
 
-	public void destroy(final Context context) {
+	void destroy(final Context context) {
 		while (!children.isEmpty())
 			Helper.last(children).destroy(context);
 	}
@@ -322,7 +324,7 @@ public class Course {
 		}
 	}
 
-	public boolean compact(final Context context) {
+	boolean compact(final Context context) {
 		final PriorityQueue<VisualNode> priorities = new PriorityQueue<>(11, new Comparator<VisualNode>() {
 			@Override
 			public int compare(final VisualNode o1, final VisualNode o2) {
@@ -377,7 +379,7 @@ public class Course {
 		}
 	}
 
-	public boolean expand(final Context context) {
+	boolean expand(final Context context) {
 		final PriorityQueue<VisualNode> priorities = new PriorityQueue<>(11, new Comparator<VisualNode>() {
 			@Override
 			public int compare(final VisualNode o1, final VisualNode o2) {

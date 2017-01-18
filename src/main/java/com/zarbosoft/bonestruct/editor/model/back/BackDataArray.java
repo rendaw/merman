@@ -1,6 +1,7 @@
 package com.zarbosoft.bonestruct.editor.model.back;
 
 import com.zarbosoft.bonestruct.editor.model.NodeType;
+import com.zarbosoft.bonestruct.editor.model.Syntax;
 import com.zarbosoft.bonestruct.editor.model.middle.DataArray;
 import com.zarbosoft.bonestruct.editor.model.middle.DataNode;
 import com.zarbosoft.luxemj.Luxem;
@@ -28,7 +29,7 @@ public class BackDataArray implements BackPart {
 	private DataArray dataType;
 
 	@Override
-	public Node buildLoadRule() {
+	public Node buildLoadRule(final Syntax syntax) {
 		final Sequence sequence;
 		sequence = new Sequence();
 		sequence.add(new BakedOperator(new Terminal(new LArrayOpenEvent()), (store) -> store.pushStack(0)));
@@ -41,7 +42,7 @@ public class BackDataArray implements BackPart {
 			final List<DataNode.Value> temp = new ArrayList<>();
 			store = (Store) com.zarbosoft.pidgoon.internal.Helper.<DataNode.Value>stackPopSingleList(store, temp::add);
 			Collections.reverse(temp);
-			final DataArray.Value value = new DataArray.Value(temp);
+			final DataArray.Value value = new DataArray.Value(syntax, temp);
 			store = (Store) store.pushStack(new Pair<>(middle, value));
 			return Helper.stackSingleElement(store);
 		});

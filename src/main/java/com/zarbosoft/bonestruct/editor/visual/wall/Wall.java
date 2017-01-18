@@ -1,5 +1,8 @@
-package com.zarbosoft.bonestruct.editor.visual;
+package com.zarbosoft.bonestruct.editor.visual.wall;
 
+import com.google.common.collect.ImmutableList;
+import com.zarbosoft.bonestruct.editor.visual.Context;
+import com.zarbosoft.bonestruct.editor.visual.IdleTask;
 import com.zarbosoft.pidgoon.internal.Helper;
 import javafx.scene.Group;
 
@@ -10,9 +13,10 @@ import java.util.stream.Collectors;
 public class Wall {
 	public Group visual = new Group();
 	public List<Course> children = new ArrayList<>();
-	private AdjustIdleTask adjustIdle;
+	private IdleAdjustTask idleAdjust;
 	private IdleCompactTask idleCompact;
 	private IdleExpandTask idleExpand;
+	private Course cornerstoneCourse;
 
 	public void clear(final Context context) {
 		while (!children.isEmpty())
@@ -21,8 +25,8 @@ public class Wall {
 			idleCompact.destroy();
 		if (idleExpand != null)
 			idleExpand.destroy();
-		if (adjustIdle != null)
-			adjustIdle.destroy();
+		if (idleAdjust != null)
+			idleAdjust.destroy();
 	}
 
 	private void renumber(final int at) {
@@ -31,29 +35,41 @@ public class Wall {
 		}
 	}
 
-	private void getIdle(final Context context, final int at) {
-		if (adjustIdle == null) {
-			adjustIdle = new AdjustIdleTask(context);
-			context.addIdle(adjustIdle);
+	private void getIdle(final Context context) {
+		if (idleAdjust == null) {
+			idleAdjust = new IdleAdjustTask(context);
+			context.addIdle(idleAdjust);
 		}
-		if (at < adjustIdle.at)
-			adjustIdle.at = at;
 	}
 
-	public void add(final Context context, final int at, final List<Course> courses) {
+	void add(final Context context, final int at, final List<Course> courses) {
+		final boolean adjustForward = cornerstoneCourse == null ? true : at > cornerstoneCourse.index;
 		children.addAll(at, courses);
 		courses.stream().forEach(l -> l.parent = this);
 		renumber(at);
 		visual.getChildren().addAll(at, courses.stream().map(l -> l.visual).collect(Collectors.toList()));
-		getIdle(context, at);
+		getIdle(context);
+		if (children.size() > 1) {
+			if (idleAdjust.backward >= at)
+				idleAdjust.backward += 1;
+			if (idleAdjust.forward >= at && idleAdjust.forward < Integer.MAX_VALUE)
+				idleAdjust.forward += 1;
+			idleAdjust.at(at);
+		}
 	}
 
-	public void remove(final Context context, final int at) {
+	void remove(final Context context, final int at) {
+		final boolean adjustForward = at > cornerstoneCourse.index;
 		children.remove(at);
 		visual.getChildren().remove(at);
 		if (at < children.size()) {
 			renumber(at);
-			getIdle(context, at);
+			getIdle(context);
+			if (at < idleAdjust.backward)
+				idleAdjust.backward -= 1;
+			if (at < idleAdjust.forward && idleAdjust.forward < Integer.MAX_VALUE)
+				idleAdjust.forward -= 1;
+			idleAdjust.at(at);
 		}
 	}
 
@@ -71,6 +87,16 @@ public class Wall {
 			context.addIdle(idleExpand);
 		}
 		idleExpand.at = 0;
+	}
+
+	public void setCornerstone(final Context context, final Brick cornerstone) {
+		if (cornerstone.parent == null) {
+			clear(context);
+			final Course course = new Course(context);
+			add(context, 0, ImmutableList.of(course));
+			course.add(context, 0, ImmutableList.of(cornerstone));
+		}
+		this.cornerstoneCourse = cornerstone.parent;
 	}
 
 	class IdleCompactTask extends com.zarbosoft.bonestruct.editor.visual.IdleTask {
@@ -137,11 +163,12 @@ public class Wall {
 		}
 	}
 
-	class AdjustIdleTask extends IdleTask {
+	class IdleAdjustTask extends IdleTask {
 		final private Context context;
-		int at = Integer.MAX_VALUE;
+		int forward = Integer.MAX_VALUE;
+		int backward = Integer.MIN_VALUE;
 
-		AdjustIdleTask(final Context context) {
+		IdleAdjustTask(final Context context) {
 			this.context = context;
 		}
 
@@ -152,25 +179,41 @@ public class Wall {
 
 		@Override
 		public void runImplementation() {
-			if (at >= children.size()) {
-				adjustIdle = null;
-				return;
+			boolean modified = false;
+			if (forward < children.size()) {
+				// Always > 0 because of cornerstone
+				children.get(forward).setTransverse(context, children.get(forward - 1).transverseEdge(context));
+				forward += 1;
+				modified = true;
 			}
-			if (at == 0)
-				children.get(at).setTransverse(context, 0);
-			else
-				children.get(at).setTransverse(context, children.get(at - 1).transverseEdge(context));
-			at += 1;
-			context.addIdle(this);
+			if (backward >= 0) {
+				// Always < children size because of cornerstone
+				children.get(backward).setTransverse(context, children.get(backward + 1).transverseEdge(context));
+				backward -= 1;
+				modified = true;
+			}
+			if (!modified) {
+				idleAdjust = null;
+			} else {
+				context.addIdle(this);
+			}
 		}
 
 		@Override
 		protected void destroyed() {
-			adjustIdle = null;
+			idleAdjust = null;
+		}
+
+		public void at(final int at) {
+			if (at < cornerstoneCourse.index && at > backward)
+				backward = at;
+			else if (at > cornerstoneCourse.index && at < forward)
+				forward = at;
 		}
 	}
 
 	void adjust(final Context context, final int at) {
-		getIdle(context, at);
+		getIdle(context);
+		idleAdjust.at(at);
 	}
 }

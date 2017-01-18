@@ -6,10 +6,13 @@ import com.zarbosoft.bonestruct.editor.model.Hotkeys;
 import com.zarbosoft.bonestruct.editor.model.front.FrontConstantPart;
 import com.zarbosoft.bonestruct.editor.model.middle.DataArray;
 import com.zarbosoft.bonestruct.editor.model.middle.DataNode;
-import com.zarbosoft.bonestruct.editor.visual.Brick;
 import com.zarbosoft.bonestruct.editor.visual.Context;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
-import com.zarbosoft.bonestruct.editor.visual.attachments.BorderAttachment;
+import com.zarbosoft.bonestruct.editor.visual.attachments.VisualBorderAttachment;
+import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
+import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodeParent;
+import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
+import com.zarbosoft.bonestruct.editor.visual.wall.Brick;
 import com.zarbosoft.pidgoon.internal.Helper;
 import org.pcollections.HashTreePSet;
 import org.pcollections.PSet;
@@ -74,6 +77,21 @@ public abstract class ArrayVisualNode extends GroupVisualNode {
 						.last(children)
 						.changeTags(context, new VisualNode.TagsChange().add(new VisualNode.PartTag("last")));
 		}
+		if (hoverable != null) {
+			if (hoverable.index > start + size) {
+				hoverable.setIndex(context, hoverable.index - size);
+			} else if (hoverable.index >= start) {
+				context.clearHover();
+			}
+		}
+		if (selection != null) {
+			if (selection.beginIndex >= start) {
+				selection.setBegin(context, Math.max(start, selection.beginIndex - size));
+			}
+			if (selection.endIndex >= start) {
+				selection.setEnd(context, Math.max(start, selection.endIndex - size));
+			}
+		}
 	}
 
 	protected abstract boolean tagLast();
@@ -87,6 +105,38 @@ public abstract class ArrayVisualNode extends GroupVisualNode {
 		public ChildGroup(final Set<VisualNode.Tag> tags, final boolean selectable) {
 			super(tags);
 			this.selectable = selectable;
+		}
+
+		@Override
+		public Brick createFirstBrick(final Context context) {
+			final Brick out = super.createFirstBrick(context);
+			if (selection != null) {
+				if (selection.beginIndex == ((ArrayVisualNodeParent) parent).index)
+					selection.border.setFirst(context, out);
+				if (selection.endIndex == ((ArrayVisualNodeParent) parent).index)
+					selection.border.notifySeedBrick(context, out);
+			}
+			if (hoverable != null && hoverable.index == ((ArrayVisualNodeParent) parent).index) {
+				hoverable.border.setFirst(context, out);
+				hoverable.border.notifySeedBrick(context, out);
+			}
+			return out;
+		}
+
+		@Override
+		public Brick createLastBrick(final Context context) {
+			final Brick out = super.createLastBrick(context);
+			if (selection != null) {
+				if (selection.beginIndex == ((ArrayVisualNodeParent) parent).index)
+					selection.border.notifySeedBrick(context, out);
+				if (selection.endIndex == ((ArrayVisualNodeParent) parent).index)
+					selection.border.setLast(context, out);
+			}
+			if (hoverable != null && hoverable.index == ((ArrayVisualNodeParent) parent).index) {
+				hoverable.border.setLast(context, out);
+				hoverable.border.notifySeedBrick(context, out);
+			}
+			return out;
 		}
 	}
 
@@ -131,6 +181,17 @@ public abstract class ArrayVisualNode extends GroupVisualNode {
 						.last(children)
 						.changeTags(context, new VisualNode.TagsChange().add(new VisualNode.PartTag("last")));
 		}
+		if (hoverable != null && hoverable.index >= start) {
+			hoverable.setIndex(context, hoverable.index + nodes.size());
+		}
+		if (selection != null) {
+			if (selection.endIndex >= start) {
+				selection.setEnd(context, selection.endIndex + nodes.size());
+			}
+			if (selection.beginIndex >= start) {
+				selection.setBegin(context, selection.beginIndex - nodes.size());
+			}
+		}
 	}
 
 	protected abstract Map<String, com.zarbosoft.luxemj.grammar.Node> getHotkeys();
@@ -141,20 +202,56 @@ public abstract class ArrayVisualNode extends GroupVisualNode {
 
 	protected abstract List<FrontConstantPart> getSuffix();
 
+	private ArrayHoverable hoverable;
+
+	private class ArrayHoverable extends Context.Hoverable {
+		private int index;
+		VisualBorderAttachment border;
+
+		public ArrayHoverable(final Context context) {
+			border = new VisualBorderAttachment(context, context.syntax.hoverStyle);
+		}
+
+		public void setIndex(final Context context, final int index) {
+			this.index = index;
+			border.setFirst(context, children.get(index));
+			border.setLast(context, children.get(index));
+		}
+
+		@Override
+		public void clear(final Context context) {
+			border.destroy(context);
+			border = null;
+			hoverable = null;
+		}
+
+		@Override
+		public void click(final Context context) {
+			((ArrayVisualNodeParent) children.get(index).parent()).selectDown(context);
+		}
+	}
+
 	private ArraySelection selection;
 
 	private class ArraySelection extends Context.Selection {
-		BorderAttachment border;
+		VisualBorderAttachment border;
 		int beginIndex;
 		int endIndex;
 
 		public ArraySelection(final Context context, final int index) {
-			beginIndex = endIndex = index;
-			border = new BorderAttachment(context,
-					context.syntax.selectStyle,
-					children.get(beginIndex).getFirstBrick(context),
-					children.get(endIndex).getLastBrick(context)
-			);
+			border = new VisualBorderAttachment(context, context.syntax.selectStyle);
+			setBegin(context, index);
+			setEnd(context, index);
+		}
+
+		private void setEnd(final Context context, final int index) {
+			endIndex = index;
+			border.setLast(context, children.get(index));
+		}
+
+		private void setBegin(final Context context, final int index) {
+			beginIndex = index;
+			border.setFirst(context, children.get(index));
 		}
 
 		@Override
@@ -312,24 +409,14 @@ public abstract class ArrayVisualNode extends GroupVisualNode {
 				}
 			});
 		}
+
+		@Override
+		public VisualNodePart getVisual() {
+			return ArrayVisualNode.this;
+		}
 	}
 
 	private class ArrayVisualNodeParent extends GroupVisualNodeParent {
-		private class ArrayHoverable extends Context.Hoverable {
-			BorderAttachment border;
-
-			@Override
-			public void clear(final Context context) {
-				border.destroy(context);
-				border = null;
-				hoverable = null;
-			}
-
-			@Override
-			public void click(final Context context) {
-				selectDown(context);
-			}
-		}
 
 		private final boolean selectable;
 
@@ -339,14 +426,12 @@ public abstract class ArrayVisualNode extends GroupVisualNode {
 		}
 
 		public void selectDown(final Context context) {
-			if (hoverable != null) {
+			if (hoverable != null && hoverable.index == index) {
 				context.clearHover();
 			}
 			selection = new ArraySelection(context, index);
 			context.setSelection(selection);
 		}
-
-		ArrayHoverable hoverable;
 
 		@Override
 		public Context.Hoverable hover(final Context context, final Vector point) {
@@ -355,27 +440,36 @@ public abstract class ArrayVisualNode extends GroupVisualNode {
 					return parent.hover(context, point);
 				return null;
 			}
-			if (selection != null && selection.beginIndex == index && selection.endIndex == index)
+			if (selection != null && selection.beginIndex == index && selection.endIndex == index) {
+				if (hoverable != null)
+					context.clearHover();
 				return null;
-			if (hoverable != null)
-				return hoverable;
-			hoverable = new ArrayHoverable();
-			hoverable.border = new BorderAttachment(context,
-					context.syntax.hoverStyle,
-					children.get(index).getFirstBrick(context),
-					children.get(index).getLastBrick(context)
-			);
+			}
+			if (hoverable == null) {
+				hoverable = new ArrayHoverable(context);
+			}
+			hoverable.setIndex(context, index);
 			return hoverable;
 		}
 
 		@Override
+		public Brick createPreviousBrick(final Context context) {
+			final Brick next = super.createNextBrick(context);
+			if (selection != null && index == selection.beginIndex)
+				selection.border.notifyPreviousBrickPastEdge(context, next);
+			if (hoverable != null && index == hoverable.index)
+				hoverable.border.notifyPreviousBrickPastEdge(context, next);
+			return next;
+		}
+
+		@Override
 		public Brick createNextBrick(final Context context) {
-			if (hoverable != null) {
-				hoverable.border.setLast(context, children.get(index).getLastBrick(context));
-			}
-			if (selection != null && selection.endIndex == index)
-				selection.border.setLast(context, children.get(index).getLastBrick(context));
-			return super.createNextBrick(context);
+			final Brick next = super.createNextBrick(context);
+			if (selection != null && index == selection.endIndex)
+				selection.border.notifyNextBrickPastEdge(context, next);
+			if (hoverable != null && index == hoverable.index)
+				hoverable.border.notifyNextBrickPastEdge(context, next);
+			return next;
 		}
 	}
 }

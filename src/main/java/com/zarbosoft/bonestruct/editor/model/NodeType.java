@@ -8,11 +8,11 @@ import com.zarbosoft.bonestruct.editor.model.front.FrontPart;
 import com.zarbosoft.bonestruct.editor.model.middle.*;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.AlignmentDefinition;
-import com.zarbosoft.bonestruct.editor.visual.Brick;
 import com.zarbosoft.bonestruct.editor.visual.Context;
 import com.zarbosoft.bonestruct.editor.visual.nodes.GroupVisualNode;
-import com.zarbosoft.bonestruct.editor.visual.nodes.VisualNode;
-import com.zarbosoft.bonestruct.editor.visual.nodes.VisualNodeParent;
+import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
+import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodeParent;
+import com.zarbosoft.bonestruct.editor.visual.wall.Brick;
 import com.zarbosoft.luxemj.Luxem;
 import com.zarbosoft.pidgoon.events.BakedOperator;
 import com.zarbosoft.pidgoon.events.Store;
@@ -55,10 +55,10 @@ public class NodeType {
 		return node;
 	}
 
-	public com.zarbosoft.pidgoon.internal.Node buildLoadRule() {
+	public com.zarbosoft.pidgoon.internal.Node buildLoadRule(final Syntax syntax) {
 		final Sequence seq = new Sequence();
 		seq.add(new BakedOperator((store) -> store.pushStack(0)));
-		back.forEach(p -> seq.add(p.buildLoadRule()));
+		back.forEach(p -> seq.add(p.buildLoadRule(syntax)));
 		return new BakedOperator(seq, store -> {
 			final Map<String, Object> data = new HashMap<>();
 			store = (Store) Helper.<Pair<String, Object>>stackPopSingleList(store,
@@ -175,6 +175,11 @@ public class NodeType {
 				}
 
 				@Override
+				public VisualNode getTarget() {
+					return parent.getTarget();
+				}
+
+				@Override
 				public VisualNode getNode() {
 					return NodeTypeVisual.this;
 				}
@@ -249,16 +254,6 @@ public class NodeType {
 		@Override
 		public Brick getLastBrick(final Context context) {
 			return body.getLastBrick(context);
-		}
-
-		@Override
-		public String debugTreeType() {
-			return String.format("node type 0@%s", Integer.toHexString(hashCode()));
-		}
-
-		public String debugTree(final int indent) {
-			final String indentString = String.join("", Collections.nCopies(indent, "  "));
-			return String.format("%s%s\n%s", indentString, debugTreeType(), body.debugTree(indent + 1));
 		}
 
 		@Override

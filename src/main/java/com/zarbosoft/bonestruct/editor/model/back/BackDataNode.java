@@ -1,6 +1,7 @@
 package com.zarbosoft.bonestruct.editor.model.back;
 
 import com.zarbosoft.bonestruct.editor.model.NodeType;
+import com.zarbosoft.bonestruct.editor.model.Syntax;
 import com.zarbosoft.bonestruct.editor.model.middle.DataNode;
 import com.zarbosoft.luxemj.Luxem;
 import com.zarbosoft.pidgoon.events.BakedOperator;
@@ -18,7 +19,7 @@ public class BackDataNode implements BackPart {
 	public String middle;
 	private DataNode dataType;
 
-	public Node buildLoadRule() {
+	public Node buildLoadRule(final Syntax syntax) {
 		return new BakedOperator(new Reference(dataType.tag), (store) -> {
 			final DataNode.Value value = store.stackTop();
 			store = (Store) store.popStack();

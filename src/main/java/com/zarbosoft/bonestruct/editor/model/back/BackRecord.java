@@ -1,6 +1,7 @@
 package com.zarbosoft.bonestruct.editor.model.back;
 
 import com.zarbosoft.bonestruct.editor.model.NodeType;
+import com.zarbosoft.bonestruct.editor.model.Syntax;
 import com.zarbosoft.luxemj.Luxem;
 import com.zarbosoft.luxemj.source.LKeyEvent;
 import com.zarbosoft.luxemj.source.LObjectCloseEvent;
@@ -18,13 +19,13 @@ public class BackRecord implements BackPart {
 	public Map<String, BackPart> pairs;
 
 	@Override
-	public Node buildLoadRule() {
+	public Node buildLoadRule(final Syntax syntax) {
 		final Sequence sequence;
 		sequence = new Sequence();
 		sequence.add(new Terminal(new LObjectOpenEvent()));
 		final Set set = new Set();
 		pairs.forEach((key, value) -> {
-			set.add(new Sequence().add(new Terminal(new LKeyEvent(key))).add(value.buildLoadRule()));
+			set.add(new Sequence().add(new Terminal(new LKeyEvent(key))).add(value.buildLoadRule(syntax)));
 		});
 		sequence.add(set);
 		sequence.add(new Terminal(new LObjectCloseEvent()));

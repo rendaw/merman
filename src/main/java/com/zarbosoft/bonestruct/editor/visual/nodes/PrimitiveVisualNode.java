@@ -7,13 +7,15 @@ import com.zarbosoft.bonestruct.editor.model.ObboxStyle;
 import com.zarbosoft.bonestruct.editor.model.Style;
 import com.zarbosoft.bonestruct.editor.model.middle.DataPrimitive;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
-import com.zarbosoft.bonestruct.editor.visual.Brick;
 import com.zarbosoft.bonestruct.editor.visual.Context;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.editor.visual.attachments.CursorAttachment;
 import com.zarbosoft.bonestruct.editor.visual.attachments.TextBorderAttachment;
 import com.zarbosoft.bonestruct.editor.visual.bricks.TextBrick;
 import com.zarbosoft.bonestruct.editor.visual.raw.Obbox;
+import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodeParent;
+import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
+import com.zarbosoft.bonestruct.editor.visual.wall.Brick;
 import com.zarbosoft.pidgoon.internal.Helper;
 import com.zarbosoft.pidgoon.internal.Mutable;
 import com.zarbosoft.pidgoon.internal.Pair;
@@ -557,6 +559,11 @@ public class PrimitiveVisualNode extends VisualNodePart {
 				return out;
 		}
 
+		@Override
+		public VisualNodePart getVisual() {
+			return PrimitiveVisualNode.this;
+		}
+
 		private void reset(final Context context) {
 			range.setOffsets(context, range.beginOffset);
 		}
@@ -576,7 +583,7 @@ public class PrimitiveVisualNode extends VisualNodePart {
 		}
 
 		public void setPosition(final Context context, final int offset) {
-			//range.setOffsets(context, offset);
+			range.setOffsets(context, offset);
 		}
 
 		@Override
@@ -629,11 +636,12 @@ public class PrimitiveVisualNode extends VisualNodePart {
 
 			@Override
 			public Brick createNext(final Context context) {
-				if (Line.this.index == lines.size() - 1)
+				if (Line.this.index == lines.size() - 1) {
 					if (PrimitiveVisualNode.this.parent == null)
 						return null;
 					else
 						return PrimitiveVisualNode.this.parent.createNextBrick(context);
+				}
 				return lines.get(Line.this.index + 1).createBrick(context);
 			}
 
@@ -899,11 +907,6 @@ public class PrimitiveVisualNode extends VisualNodePart {
 	@Override
 	public Brick createLastBrick(final Context context) {
 		return Helper.last(lines).createBrick(context);
-	}
-
-	@Override
-	public String debugTreeType() {
-		return String.format("prim@%s", Integer.toHexString(hashCode()));
 	}
 
 	@Override

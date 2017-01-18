@@ -3,10 +3,14 @@ package com.zarbosoft.bonestruct.editor.model.front;
 import com.google.common.collect.Iterables;
 import com.zarbosoft.bonestruct.editor.luxem.Luxem;
 import com.zarbosoft.bonestruct.editor.model.Style;
-import com.zarbosoft.bonestruct.editor.visual.*;
-import com.zarbosoft.bonestruct.editor.visual.nodes.VisualNode;
-import com.zarbosoft.bonestruct.editor.visual.nodes.VisualNodeParent;
-import com.zarbosoft.bonestruct.editor.visual.nodes.VisualNodePart;
+import com.zarbosoft.bonestruct.editor.visual.Alignment;
+import com.zarbosoft.bonestruct.editor.visual.AlignmentListener;
+import com.zarbosoft.bonestruct.editor.visual.Context;
+import com.zarbosoft.bonestruct.editor.visual.Vector;
+import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
+import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodeParent;
+import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
+import com.zarbosoft.bonestruct.editor.visual.wall.Brick;
 import com.zarbosoft.pidgoon.internal.Pair;
 import javafx.scene.Node;
 import javafx.scene.layout.Region;
@@ -71,8 +75,9 @@ public class FrontSpace extends FrontConstantPart {
 
 		@Override
 		public Brick createFirstBrick(final Context context) {
-			if (brick == null)
-				brick = new SpaceBrick(context);
+			if (brick != null)
+				return null;
+			brick = new SpaceBrick(context);
 			return brick;
 		}
 

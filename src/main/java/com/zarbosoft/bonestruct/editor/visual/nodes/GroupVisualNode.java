@@ -3,9 +3,12 @@ package com.zarbosoft.bonestruct.editor.visual.nodes;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
-import com.zarbosoft.bonestruct.editor.visual.Brick;
 import com.zarbosoft.bonestruct.editor.visual.Context;
 import com.zarbosoft.bonestruct.editor.visual.IdleTask;
+import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
+import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodeParent;
+import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
+import com.zarbosoft.bonestruct.editor.visual.wall.Brick;
 import com.zarbosoft.pidgoon.internal.Helper;
 import com.zarbosoft.pidgoon.internal.Pair;
 import org.pcollections.HashTreePMap;
@@ -13,7 +16,6 @@ import org.pcollections.PMap;
 
 import java.util.*;
 import java.util.function.IntFunction;
-import java.util.stream.Collectors;
 
 public class GroupVisualNode extends VisualNodePart {
 	public GroupVisualNode(final Set<Tag> tags) {
@@ -130,24 +132,6 @@ public class GroupVisualNode extends VisualNodePart {
 				.stream()
 				.map(c -> c.children())
 				.toArray((IntFunction<Iterator<VisualNode>[]>) Iterator[]::new));
-	}
-
-	@Override
-	public String debugTreeType() {
-		return String.format("group@%s", Integer.toHexString(hashCode()));
-	}
-
-	public String debugTree(final int indent) {
-		final String indentString = String.join("", Collections.nCopies(indent, "  "));
-		return String.format(
-				"%s%s%s",
-				indentString,
-				debugTreeType(),
-				children
-						.stream()
-						.map(c -> String.format("\n%s", c.debugTree(indent + 1)))
-						.collect(Collectors.joining(""))
-		);
 	}
 
 	@Override

@@ -1,5 +1,6 @@
 package com.zarbosoft.bonestruct.editor.model.back;
 
+import com.zarbosoft.bonestruct.editor.model.Syntax;
 import com.zarbosoft.luxemj.Luxem;
 import com.zarbosoft.luxemj.source.LPrimitiveEvent;
 import com.zarbosoft.pidgoon.events.Terminal;
@@ -11,7 +12,7 @@ public class BackPrimitive implements BackPart {
 	public String value;
 
 	@Override
-	public Node buildLoadRule() {
+	public Node buildLoadRule(final Syntax syntax) {
 		return new Terminal(new LPrimitiveEvent(value));
 	}
 }

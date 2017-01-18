@@ -1,7 +1,7 @@
 package com.zarbosoft.bonestruct.editor.model;
 
 import com.zarbosoft.bonestruct.editor.visual.Context;
-import com.zarbosoft.bonestruct.editor.visual.nodes.VisualNode;
+import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
 
 import java.util.Map;
 

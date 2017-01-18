@@ -2,6 +2,7 @@ package com.zarbosoft.bonestruct.editor.model.middle;
 
 import com.zarbosoft.bonestruct.editor.InvalidSyntax;
 import com.zarbosoft.bonestruct.editor.changes.Change;
+import com.zarbosoft.bonestruct.editor.model.Syntax;
 import com.zarbosoft.bonestruct.editor.visual.Context;
 import com.zarbosoft.luxemj.Luxem;
 
@@ -29,8 +30,10 @@ public class DataArray extends DataElement {
 			listeners.remove(listener);
 		}
 
-		public Value(final List<DataNode.Value> data) {
+		public Value(final Syntax syntax, final List<DataNode.Value> data) {
 			value.addAll(data);
+			if (data.isEmpty())
+				value.add(new DataNode.Value(syntax.bud.create()));
 		}
 
 		public Value() {

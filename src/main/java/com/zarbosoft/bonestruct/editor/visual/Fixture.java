@@ -1,5 +1,6 @@
 package com.zarbosoft.bonestruct.editor.visual;
 
+import com.zarbosoft.bonestruct.editor.visual.wall.Course;
 import javafx.scene.Node;
 
 public abstract class Fixture {

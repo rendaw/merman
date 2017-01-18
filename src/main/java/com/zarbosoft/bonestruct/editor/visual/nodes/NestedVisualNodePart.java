@@ -5,14 +5,16 @@ import com.zarbosoft.bonestruct.editor.model.Hotkeys;
 import com.zarbosoft.bonestruct.editor.model.Node;
 import com.zarbosoft.bonestruct.editor.model.middle.DataNode;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
-import com.zarbosoft.bonestruct.editor.visual.Brick;
 import com.zarbosoft.bonestruct.editor.visual.Context;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
-import com.zarbosoft.bonestruct.editor.visual.attachments.BorderAttachment;
+import com.zarbosoft.bonestruct.editor.visual.attachments.VisualBorderAttachment;
+import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
+import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodeParent;
+import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
+import com.zarbosoft.bonestruct.editor.visual.wall.Brick;
 import com.zarbosoft.pidgoon.internal.Pair;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
-import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
@@ -21,8 +23,9 @@ public class NestedVisualNodePart extends VisualNodePart {
 	protected VisualNode body;
 	VisualNodeParent parent;
 	boolean selected = false;
-	private BorderAttachment border;
+	private VisualBorderAttachment border;
 	Context.Hoverable hoverable;
+	private Context.Selection selection;
 
 	public NestedVisualNodePart(final Context context, final DataNode.Value data, final Set<Tag> tags) {
 		super(tags);
@@ -47,20 +50,27 @@ public class NestedVisualNodePart extends VisualNodePart {
 
 			@Override
 			public Brick createNextBrick(final Context context) {
+				Brick out = null;
+				if (parent != null)
+					out = parent.createNextBrick(context);
 				if (border != null)
-					border.setLast(context, body.getLastBrick(context));
-				if (parent == null)
-					return null;
-				return parent.createNextBrick(context);
+					border.notifyNextBrickPastEdge(context, out);
+				return out;
 			}
 
 			@Override
 			public Brick createPreviousBrick(final Context context) {
+				Brick out = null;
+				if (parent != null)
+					out = parent.createPreviousBrick(context);
 				if (border != null)
-					border.setFirst(context, body.getFirstBrick(context));
-				if (parent == null)
-					return null;
-				return parent.createPreviousBrick(context);
+					border.notifyPreviousBrickPastEdge(context, out);
+				return out;
+			}
+
+			@Override
+			public VisualNode getTarget() {
+				return NestedVisualNodePart.this;
 			}
 
 			@Override
@@ -98,11 +108,9 @@ public class NestedVisualNodePart extends VisualNodePart {
 				}
 				if (hoverable != null)
 					return hoverable;
-				border = new BorderAttachment(context,
-						context.syntax.hoverStyle,
-						body.getFirstBrick(context),
-						body.getLastBrick(context)
-				);
+				border = new VisualBorderAttachment(context, context.syntax.hoverStyle);
+				border.setFirst(context, body);
+				border.setLast(context, body);
 				hoverable = new Context.Hoverable() {
 					@Override
 					public void clear(final Context context) {
@@ -133,12 +141,22 @@ public class NestedVisualNodePart extends VisualNodePart {
 
 	@Override
 	public Brick createFirstBrick(final Context context) {
-		return body.createFirstBrick(context);
+		final Brick out = body.createFirstBrick(context);
+		if (border != null) {
+			border.setFirst(context, out);
+			border.notifySeedBrick(context, out);
+		}
+		return out;
 	}
 
 	@Override
 	public Brick createLastBrick(final Context context) {
-		return body.createLastBrick(context);
+		final Brick out = body.createLastBrick(context);
+		if (border != null) {
+			border.setLast(context, out);
+			border.notifySeedBrick(context, out);
+		}
+		return out;
 	}
 
 	@Override
@@ -149,11 +167,9 @@ public class NestedVisualNodePart extends VisualNodePart {
 			context.clearHover();
 		}
 		selected = true;
-		border = new BorderAttachment(context,
-				context.syntax.selectStyle,
-				body.getFirstBrick(context),
-				body.getLastBrick(context)
-		);
+		border = new VisualBorderAttachment(context, context.syntax.selectStyle);
+		border.setFirst(context, body);
+		border.setLast(context, body);
 		context.setSelection(new Context.Selection() {
 			@Override
 			public void clear(final Context context) {
@@ -171,19 +187,23 @@ public class NestedVisualNodePart extends VisualNodePart {
 			public Iterable<Context.Action> getActions(final Context context) {
 				return NestedVisualNodePart.this.getActions(context);
 			}
+
+			@Override
+			public VisualNodePart getVisual() {
+				return NestedVisualNodePart.this;
+			}
 		});
 		return true;
 	}
 
-	private void clear(final Context context) {
-		if (body == null)
-			return;
-		body.destroyBricks(context);
-	}
-
 	private void set(final Context context, final Node data) {
-		clear(context);
+		if (body != null)
+			body.destroyBricks(context);
 		this.body = data.createVisual(context);
+		if (border != null) {
+			border.setFirst(context, body);
+			border.setLast(context, body);
+		}
 		body.setParent(createParent());
 		if (parent != null) {
 			final Brick previousBrick = parent.getPreviousBrick(context);
@@ -267,16 +287,6 @@ public class NestedVisualNodePart extends VisualNodePart {
 	@Override
 	public Brick getLastBrick(final Context context) {
 		return body.getLastBrick(context);
-	}
-
-	@Override
-	public String debugTreeType() {
-		return String.format("nested@%s", Integer.toHexString(hashCode()));
-	}
-
-	public String debugTree(final int indent) {
-		final String indentString = String.join("", Collections.nCopies(indent, "  "));
-		return String.format("%s%s\n%s", indentString, debugTreeType(), body.debugTree(indent + 1));
 	}
 
 	@Override

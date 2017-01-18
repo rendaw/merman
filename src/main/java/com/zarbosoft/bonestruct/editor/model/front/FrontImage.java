@@ -4,12 +4,12 @@ import com.google.common.collect.Iterables;
 import com.zarbosoft.bonestruct.editor.model.Style;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.AlignmentListener;
-import com.zarbosoft.bonestruct.editor.visual.Brick;
 import com.zarbosoft.bonestruct.editor.visual.Context;
-import com.zarbosoft.bonestruct.editor.visual.nodes.VisualNode;
-import com.zarbosoft.bonestruct.editor.visual.nodes.VisualNodeParent;
-import com.zarbosoft.bonestruct.editor.visual.nodes.VisualNodePart;
 import com.zarbosoft.bonestruct.editor.visual.raw.RawImage;
+import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
+import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodeParent;
+import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
+import com.zarbosoft.bonestruct.editor.visual.wall.Brick;
 import com.zarbosoft.luxemj.Luxem;
 import com.zarbosoft.pidgoon.internal.Pair;
 import javafx.scene.Node;
@@ -57,11 +57,6 @@ public class FrontImage extends FrontConstantPart {
 		@Override
 		public Brick createLastBrick(final Context context) {
 			return createFirstBrick(context);
-		}
-
-		@Override
-		public String debugTreeType() {
-			return String.format("image@%s", Integer.toHexString(hashCode()));
 		}
 
 		@Override

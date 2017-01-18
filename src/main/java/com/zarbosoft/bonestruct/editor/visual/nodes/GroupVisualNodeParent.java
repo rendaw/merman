@@ -1,25 +1,20 @@
 package com.zarbosoft.bonestruct.editor.visual.nodes;
 
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
-import com.zarbosoft.bonestruct.editor.visual.Brick;
 import com.zarbosoft.bonestruct.editor.visual.Context;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
+import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
+import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodeParent;
+import com.zarbosoft.bonestruct.editor.visual.wall.Brick;
 
 public class GroupVisualNodeParent extends VisualNodeParent {
 	public final GroupVisualNode target;
-	int index;
+	public int index;
 
 	public GroupVisualNodeParent(final GroupVisualNode target, final int index) {
 		this.target = target;
 		this.index = index;
 	}
-
-	/*
-	@Override
-	public Context.Hoverable hoverUp(final Context context) {
-		return parent().hoverUp(context);
-	}
-	*/
 
 	@Override
 	public void selectUp(final Context context) {
@@ -30,11 +25,8 @@ public class GroupVisualNodeParent extends VisualNodeParent {
 
 	@Override
 	public Brick createNextBrick(final Context context) {
-		for (int i = index + 1; i < target.children.size(); ++i) {
-			final Brick brick = target.children.get(i).createFirstBrick(context);
-			if (brick != null)
-				return brick;
-		}
+		if (index + 1 < target.children.size())
+			return target.children.get(index + 1).createFirstBrick(context);
 		if (target.parent == null)
 			return null;
 		return target.parent.createNextBrick(context);
@@ -42,14 +34,16 @@ public class GroupVisualNodeParent extends VisualNodeParent {
 
 	@Override
 	public Brick createPreviousBrick(final Context context) {
-		for (int i = index - 1; i >= 0; --i) {
-			final Brick brick = target.children.get(i).createLastBrick(context);
-			if (brick != null)
-				return brick;
-		}
+		if (index > 0)
+			return target.children.get(index - 1).createLastBrick(context);
 		if (target.parent == null)
 			return null;
 		return target.parent.createPreviousBrick(context);
+	}
+
+	@Override
+	public VisualNode getTarget() {
+		return target;
 	}
 
 	@Override

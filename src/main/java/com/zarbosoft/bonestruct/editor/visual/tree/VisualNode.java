@@ -1,9 +1,9 @@
-package com.zarbosoft.bonestruct.editor.visual.nodes;
+package com.zarbosoft.bonestruct.editor.visual.tree;
 
 import com.google.common.collect.Iterators;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
-import com.zarbosoft.bonestruct.editor.visual.Brick;
 import com.zarbosoft.bonestruct.editor.visual.Context;
+import com.zarbosoft.bonestruct.editor.visual.wall.Brick;
 import com.zarbosoft.luxemj.Luxem;
 import com.zarbosoft.pidgoon.internal.Pair;
 import org.pcollections.HashTreePSet;
@@ -32,17 +32,14 @@ public abstract class VisualNode {
 
 	public abstract Brick getLastBrick(Context context);
 
+	public boolean isAncestor(final VisualNodePart node) {
+		if (parent() == null)
+			return false;
+		return parent().getTarget().isAncestor(node);
+	}
+
 	public Iterator<VisualNode> children() {
 		return Iterators.forArray();
-	}
-
-	public String debugTreeType() {
-		return toString();
-	}
-
-	public String debugTree(final int indent) {
-		final String indentString = String.join("", Collections.nCopies(indent, "  "));
-		return String.format("%s%s", indentString, debugTreeType());
 	}
 
 	public abstract int spacePriority();

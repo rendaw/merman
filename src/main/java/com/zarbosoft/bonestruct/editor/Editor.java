@@ -9,9 +9,13 @@ import com.zarbosoft.bonestruct.editor.model.Document;
 import com.zarbosoft.bonestruct.editor.model.Syntax;
 import com.zarbosoft.bonestruct.editor.model.front.FrontConstantPart;
 import com.zarbosoft.bonestruct.editor.model.hid.Key;
-import com.zarbosoft.bonestruct.editor.visual.*;
+import com.zarbosoft.bonestruct.editor.visual.Context;
+import com.zarbosoft.bonestruct.editor.visual.IdleTask;
+import com.zarbosoft.bonestruct.editor.visual.Keyboard;
+import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.editor.visual.nodes.ArrayVisualNode;
-import com.zarbosoft.bonestruct.editor.visual.nodes.VisualNode;
+import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
+import com.zarbosoft.bonestruct.editor.visual.wall.Wall;
 import com.zarbosoft.luxemj.grammar.Node;
 import com.zarbosoft.pidgoon.InvalidStream;
 import com.zarbosoft.pidgoon.events.Parse;
@@ -62,8 +66,9 @@ public class Editor {
 			throw e;
 		}*/
 		//final Document doc = luxemSyntax.load("[[dog, dog, dog, dog, dog, dogdogdog, dog, dog, dog]],");
+		final Document doc = luxemSyntax.load("[dog, dog, dog, dog, dog, dogdogdog, dog,],");
 		//final Document doc = luxemSyntax.load("[{getConverse: 47,transverse:{ar:[2,9,13]},},[atler]]");
-		final Document doc = luxemSyntax.load("[\"one\"]");
+		//final Document doc = luxemSyntax.load("[\"one\"]");
 		//final Document doc = luxemSyntax.load("{analogue:bolivar}");
 		final Wall wall = new Wall();
 		context = new Context(luxemSyntax, doc, addIdle, wall, Iterables.concat(ImmutableList.of(new Context.Action() {
@@ -125,12 +130,12 @@ public class Editor {
 						return doc.syntax.rootSuffix;
 					}
 				};
-		context.root(root);
+		root.select(context);
 		visual.setOnMouseExited(event -> {
 			if (context.hoverIdle != null) {
 				context.hoverIdle.point = null;
 			} else if (context.hover != null) {
-				context.hover.clear(context);
+				context.clearHover();
 				context.hover = null;
 				context.hoverBrick = null;
 			}

@@ -1,6 +1,5 @@
 package com.zarbosoft.bonestruct.editor.visual;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.zarbosoft.bonestruct.editor.changes.History;
@@ -8,8 +7,10 @@ import com.zarbosoft.bonestruct.editor.model.Document;
 import com.zarbosoft.bonestruct.editor.model.Hotkeys;
 import com.zarbosoft.bonestruct.editor.model.Style;
 import com.zarbosoft.bonestruct.editor.model.Syntax;
-import com.zarbosoft.bonestruct.editor.visual.nodes.VisualNode;
-import com.zarbosoft.bonestruct.editor.visual.nodes.VisualNodePart;
+import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
+import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
+import com.zarbosoft.bonestruct.editor.visual.wall.Brick;
+import com.zarbosoft.bonestruct.editor.visual.wall.Wall;
 import com.zarbosoft.pidgoon.events.BakedOperator;
 import com.zarbosoft.pidgoon.events.EventStream;
 import com.zarbosoft.pidgoon.events.Grammar;
@@ -33,17 +34,10 @@ public class Context {
 	public final Wall wall;
 	public Group background;
 	private final Iterable<Action> globalActions;
-
-	public void root(final VisualNodePart node) {
-		wall.clear(this);
-		final Course course = new Course(this);
-		wall.add(this, 0, ImmutableList.of(course));
-		node.rootAlignments(this, ImmutableMap.of());
-		final Brick first = node.createFirstBrick(this);
-		course.add(this, 0, ImmutableList.of(first));
-		node.select(this);
-		this.fillFromEndBrick(first);
-	}
+	public VisualNodePart window;
+	public Brick cornerstone;
+	public int cornerstoneTransverse;
+	public int scrollTransverse;
 
 	public void fillFromEndBrick(final Brick end) {
 		if (idleFill == null) {
@@ -51,6 +45,14 @@ public class Context {
 			addIdle(idleFill);
 		}
 		idleFill.ends.addLast(end);
+	}
+
+	private void fillFromStartBrick(final Brick start) {
+		if (idleFill == null) {
+			idleFill = new IdleFill();
+			addIdle(idleFill);
+		}
+		idleFill.starts.addLast(start);
 	}
 
 	public void clearHover() {
@@ -107,6 +109,25 @@ public class Context {
 			this.selection.clear(this);
 		}
 		this.selection = selection;
+
+		final VisualNodePart visual = this.selection.getVisual();
+		if (!visual.isAncestor(window)) {
+			window = visual;
+			window.rootAlignments(this, ImmutableMap.of());
+			// TODO set depth indicator
+		}
+		final Brick newCornerstone = visual.getFirstBrick(this);
+		if (newCornerstone == null) {
+			cornerstone = visual.createFirstBrick(this);
+			cornerstoneTransverse = 0;
+		} else {
+			cornerstone = newCornerstone;
+			cornerstoneTransverse = newCornerstone.parent.transverseStart;
+		}
+		wall.setCornerstone(this, cornerstone);
+		fillFromEndBrick(cornerstone);
+		fillFromStartBrick(cornerstone);
+
 		hotkeyGrammar = new Grammar();
 		final Union union = new Union();
 		for (final Action action : Iterables.concat(selection.getActions(this), globalActions)) {
@@ -168,8 +189,7 @@ public class Context {
 	}
 
 	public static abstract class Selection {
-
-		public abstract void clear(Context context);
+		protected abstract void clear(Context context);
 
 		protected abstract Hotkeys getHotkeys(Context context);
 
@@ -177,10 +197,12 @@ public class Context {
 		}
 
 		public abstract Iterable<Action> getActions(Context context);
+
+		public abstract VisualNodePart getVisual();
 	}
 
 	public static abstract class Hoverable {
-		public abstract void clear(Context context);
+		protected abstract void clear(Context context);
 
 		public abstract void click(Context context);
 	}

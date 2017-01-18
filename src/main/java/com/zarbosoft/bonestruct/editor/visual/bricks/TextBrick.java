@@ -1,9 +1,13 @@
 package com.zarbosoft.bonestruct.editor.visual.bricks;
 
 import com.zarbosoft.bonestruct.editor.model.Style;
-import com.zarbosoft.bonestruct.editor.visual.*;
+import com.zarbosoft.bonestruct.editor.visual.Alignment;
+import com.zarbosoft.bonestruct.editor.visual.AlignmentListener;
+import com.zarbosoft.bonestruct.editor.visual.Context;
+import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.editor.visual.raw.RawText;
 import com.zarbosoft.bonestruct.editor.visual.raw.RawTextUtils;
+import com.zarbosoft.bonestruct.editor.visual.wall.Brick;
 import javafx.scene.Node;
 import javafx.scene.text.Font;
 
