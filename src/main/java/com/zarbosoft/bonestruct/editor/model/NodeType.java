@@ -44,7 +44,10 @@ public class NodeType {
 	@Luxem.Configuration
 	public Map<String, AlignmentDefinition> alignments;
 
-	@Luxem.Configuration(name = "space-priority", optional = true)
+	@Luxem.Configuration(name = "space-priority", optional = true, description =
+			"When wrapping a line that's too long, the node in the line with the highest " +
+					"space priority will be wrapped first.  When unwrapping the line, the lowest node will be " +
+					"unwrapped first.  Positive and negative numbers are allowed.")
 	public int spacePriority = 0;
 
 	public Node create() {

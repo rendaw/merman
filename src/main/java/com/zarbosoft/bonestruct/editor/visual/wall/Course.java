@@ -2,6 +2,7 @@ package com.zarbosoft.bonestruct.editor.visual.wall;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.zarbosoft.bonestruct.ChainComparator;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.Context;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
@@ -325,12 +326,9 @@ void setFixture(final Context context, final int index, final Fixture fixture) {
 	}
 
 	boolean compact(final Context context) {
-		final PriorityQueue<VisualNode> priorities = new PriorityQueue<>(11, new Comparator<VisualNode>() {
-			@Override
-			public int compare(final VisualNode o1, final VisualNode o2) {
-				return Integer.compare(o1.spacePriority(), o2.spacePriority());
-			}
-		});
+		final PriorityQueue<VisualNode> priorities = new PriorityQueue<>(11,
+				new ChainComparator<VisualNode>().greaterFirst(VisualNode::spacePriority).build()
+		);
 		int converse = 0;
 		for (int index = 0; index < children.size(); ++index) {
 			final Brick brick = children.get(index);
@@ -380,58 +378,52 @@ void setFixture(final Context context, final int index, final Fixture fixture) {
 	}
 
 	boolean expand(final Context context) {
-		final PriorityQueue<VisualNode> priorities = new PriorityQueue<>(11, new Comparator<VisualNode>() {
-			@Override
-			public int compare(final VisualNode o1, final VisualNode o2) {
-				return Integer.compare(o2.spacePriority(), o1.spacePriority());
-			}
-		});
+		final PriorityQueue<VisualNode> priorities = new PriorityQueue<>(11,
+				new ChainComparator<VisualNode>().lesserFirst(VisualNode::spacePriority).build()
+		);
 		for (int index = 0; index < children.size(); ++index) {
 			final Brick brick = children.get(index);
 			final VisualNode node = brick.getNode();
 			if (node.canExpand())
 				priorities.add(node);
 		}
-		if (priorities.isEmpty()) {
-			// Row is empty (new doc only?)
+		if (priorities.isEmpty())
 			return false;
-		}
 		final VisualNode top = priorities.poll();
 		final Iterable<Pair<Brick, Brick.Properties>> brickProperties = top.getPropertiesForTagsChange(context,
 				new VisualNode.TagsChange(ImmutableSet.of(new VisualNode.StateTag("expanded")),
 						ImmutableSet.of(new VisualNode.StateTag("compact"))
 				)
 		);
+		final Map<Brick, Brick.Properties> lookup =
+				Helper.stream(brickProperties.iterator()).collect(Collectors.toMap(p -> p.first, p -> p.second));
+		final Set<Brick> seen = new HashSet<>();
 		int converse = 0;
-		Course lastCourse = null;
-		Course effectiveCourse = null;
+		Course course = null;
 		for (final Pair<Brick, Brick.Properties> pair : brickProperties) {
 			final Brick brick = pair.first;
-			final Brick.Properties properties = pair.second;
-			if (lastCourse == null) {
-				effectiveCourse = lastCourse = brick.parent;
+			if (seen.contains(brick))
+				continue;
+			if (course == null) {
+			} else if (brick.parent.index == course.index + 1 && !pair.second.broken && brick.index == 0) {
+			} else {
 				converse = 0;
-			} else if (brick.parent != lastCourse) {
-				lastCourse = brick.parent;
-				final boolean join = brick.index == 0 && properties.broken;
-				if (!join || lastCourse.parent.children.get(lastCourse.index - 1) != effectiveCourse) {
-					converse = 0;
-					effectiveCourse = brick.parent;
+			}
+			course = brick.parent;
+			for (final Brick at : course.children) {
+				final Brick.Properties properties;
+				if (lookup.containsKey(at)) {
+					seen.add(at);
+					properties = lookup.get(at);
+				} else
+					properties = at.properties();
+				if (properties.alignment != null) {
+					converse = Math.max(converse, properties.alignment.converse);
 				}
+				converse += properties.converseSpan;
+				if (converse >= context.edge)
+					return false;
 			}
-
-			if (properties.alignment != null) {
-				converse += Math.max(converse, properties.alignment.converse);
-			}
-			converse += properties.converseSpan;
-			if (converse > context.edge) {
-				// Not enough space, stop
-				return false;
-			}
-		}
-		if (lastCourse == null) {
-			// Nothing left to expand
-			return false;
 		}
 		top.expand(context);
 		return true;
