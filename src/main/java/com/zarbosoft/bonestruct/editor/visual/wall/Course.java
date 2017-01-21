@@ -83,17 +83,20 @@ public class Course {
 		parent.add(context, this.index + 1, ImmutableList.of(next));
 		if (index < children.size()) {
 			final List<Brick> transplant = ImmutableList.copyOf(children.subList(index, children.size()));
+			boolean beddingChanged = false;
 			getIdlePlace(context);
 			for (final Brick brick : transplant) {
 				idlePlace.removeMaxAscent = Math.max(idlePlace.removeMaxAscent, brick.properties().ascent);
 				idlePlace.removeMaxDescent = Math.max(idlePlace.removeMaxDescent, brick.properties().descent);
 				idlePlace.changed.remove(brick);
 				if (!brick.getBeddings(context).isEmpty())
-					beddingChanged(context);
+					beddingChanged = true;
 			}
 			children.subList(index, children.size()).clear();
 			visual.getChildren().remove(index, visual.getChildren().size());
 			next.add(context, 0, transplant);
+			if (beddingChanged)
+				beddingChanged(context);
 		}
 		return next;
 	}
@@ -102,13 +105,19 @@ public class Course {
 		if (bricks.size() == 0)
 			throw new AssertionError("Adding no bricks");
 		children.addAll(at, bricks);
-		for (final Brick brick : bricks)
+		boolean beddingChanged = false;
+		for (final Brick brick : bricks) {
 			brick.parent = this;
+			if (!brick.getBeddings(context).isEmpty())
+				beddingChanged = true;
+		}
 		renumber(at);
 		visual.getChildren().addAll(at, bricks.stream().map(c -> c.getRawVisual()).collect(Collectors.toList()));
 		getIdlePlace(context);
 		idlePlace.at(at);
 		idlePlace.changed.addAll(bricks);
+		if (beddingChanged)
+			beddingChanged(context);
 	}
 
 	void removeFromSystem(final Context context, final int at) {

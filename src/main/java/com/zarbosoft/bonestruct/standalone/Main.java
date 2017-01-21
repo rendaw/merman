@@ -34,29 +34,20 @@ public class Main extends Application {
 	public void start(final Stage primaryStage) {
 		/*
 		TODO
-		scrolling = jumpTo
-			center brick + center transverse
-				base new courses and placement on center
-				center = begin brick of selection
-				if no brick, clear and regenerate bricks from createFirstBrick on selection;
-					center transverse = 0
-			if course end > screen end, move visual (backgroudn/fg) forward
-			if course start < screen start, move visual back
-			(if no brick instantaneous visual move)
-		banner
-			selection change sets visual attachment
-			visual brick create sets brick (course) attachment
-			on course move,
-			transition no data -> data
-				smooth increase fixture
 		details
 		windowing
 		editing, actions for everythinga
 		global context
 		save
-		plugins
 		persistent history
 		selection history
+		modes (global) - plugins can create too
+			ex: nav/edit, edit, nav, debug, refactor
+			style/tag based on mode
+		plugins from dir
+		syntaxes from dir && install reference syntaxes automatically
+		document distributing plugins
+		document distributions
 		 */
 		/*
 		if (getParameters().getUnnamed().isEmpty())

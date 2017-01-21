@@ -45,6 +45,7 @@ public class Editor {
 	int scrollEnd;
 	int scrollStartBeddingBefore;
 	int scrollStartBeddingAfter;
+	private int scroll;
 
 	public Editor(
 			final Consumer<IdleTask> addIdle,
@@ -193,7 +194,7 @@ public class Editor {
 			}
 			context.hoverIdle.point = context
 					.sceneToVector(visual, event.getX(), event.getY())
-					.add(new Vector(-context.syntax.padConverse, -context.syntax.padTransverse));
+					.add(new Vector(-context.syntax.padConverse, scroll));
 		});
 		visual.setOnMouseClicked(event -> {
 			if (context.idleClick == null) {
@@ -248,10 +249,6 @@ public class Editor {
 	}
 
 	private void scrollVisible(final Context context) {
-		final int scroll = context.sceneToVector(visual,
-				context.wall.visual.getLayoutX(),
-				-context.wall.visual.getLayoutY()
-		).transverse;
 		final int minimum = scrollStart - scrollStartBeddingBefore - context.syntax.padTransverse;
 		final int maximum = scrollEnd + scrollStartBeddingAfter + context.syntax.padTransverse;
 		final int maxDiff = scroll + context.transverseEdge - maximum;
@@ -270,6 +267,7 @@ public class Editor {
 					new Vector(context.syntax.padConverse, -newScroll),
 					context.syntax.animateCoursePlacement
 			);
+			scroll = newScroll;
 		}
 	}
 
