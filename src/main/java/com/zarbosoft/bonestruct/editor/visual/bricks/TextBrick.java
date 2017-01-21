@@ -17,7 +17,7 @@ public abstract class TextBrick extends Brick implements AlignmentListener {
 
 	@Override
 	public int converseEdge(final Context context) {
-		return text.converseEdge(context.edge);
+		return text.converseEdge(context);
 	}
 
 	public Properties properties(final Style.Baked style) {
@@ -46,18 +46,18 @@ public abstract class TextBrick extends Brick implements AlignmentListener {
 	@Override
 	public void setConverse(final Context context, final int minConverse, final int converse) {
 		this.minConverse = minConverse;
-		text.setConverse(converse, context.edge);
+		text.setConverse(context, converse);
 	}
 
 	@Override
 	public void allocateTransverse(final Context context, final int ascent, final int descent) {
-		text.setTransverse(ascent, context.transverseEdge);
+		text.setTransverse(context, ascent);
 	}
 
 	public void setText(final Context context, final String text) {
 		if (this.text == null)
-			this.text = RawText.create(context, getStyle());
-		this.text.setText(text.replaceAll("\\p{Cntrl}", "\u25A2"));
+			this.text = new RawText(context, getStyle());
+		this.text.setText(context, text.replaceAll("\\p{Cntrl}", "\u25A2"));
 		changed(context);
 	}
 
@@ -75,7 +75,7 @@ public abstract class TextBrick extends Brick implements AlignmentListener {
 
 	@Override
 	public int getConverse(final Context context) {
-		return text.getConverse(context.edge);
+		return text.getConverse(context);
 	}
 
 	@Override
@@ -92,6 +92,6 @@ public abstract class TextBrick extends Brick implements AlignmentListener {
 	}
 
 	public int getUnder(final Context context, final Vector point) {
-		return text.getUnder(point.converse, context.edge);
+		return text.getUnder(context, point.converse, context.edge);
 	}
 }

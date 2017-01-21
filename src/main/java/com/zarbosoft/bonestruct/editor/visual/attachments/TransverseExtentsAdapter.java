@@ -17,6 +17,33 @@ public class TransverseExtentsAdapter {
 	private final Set<Listener> listeners = new HashSet<>();
 	private Brick first;
 	private Brick last;
+
+	Attachment firstAttachment = new Attachment() {
+		@Override
+		public void setTransverse(final Context context, final int transverse) {
+			transverseStart = transverse;
+			notifyStartChanged(context);
+		}
+
+		@Override
+		public void destroy(final Context context) {
+			first = null;
+		}
+	};
+	Brick.BeddingListener firstBeddingListener = new Brick.BeddingListener() {
+		@Override
+		public void beddingChanged(final Context context, final int beddingBefore, final int beddingAfter) {
+			if (beddingBefore == TransverseExtentsAdapter.this.beddingBefore)
+				return;
+			TransverseExtentsAdapter.this.beddingBefore = beddingBefore;
+			ImmutableSet.copyOf(listeners).stream().forEach(l -> l.beddingBeforeChanged(context, beddingBefore));
+		}
+	};
+
+	private void notifyStartChanged(final Context context) {
+		ImmutableSet.copyOf(listeners).stream().forEach(l -> l.transverseChanged(context, transverseStart));
+	}
+
 	Attachment lastAttachment = new Attachment() {
 		@Override
 		public void setTransverse(final Context context, final int transverse) {
@@ -50,32 +77,6 @@ public class TransverseExtentsAdapter {
 				.copyOf(listeners)
 				.stream()
 				.forEach(l -> l.transverseEdgeChanged(context, endTransverseStart + endTransverseSpan));
-	}
-
-	Attachment firstAttachment = new Attachment() {
-		@Override
-		public void setTransverse(final Context context, final int transverse) {
-			transverseStart = transverse;
-			notifyStartChanged(context);
-		}
-
-		@Override
-		public void destroy(final Context context) {
-			first = null;
-		}
-	};
-	Brick.BeddingListener firstBeddingListener = new Brick.BeddingListener() {
-		@Override
-		public void beddingChanged(final Context context, final int beddingBefore, final int beddingAfter) {
-			if (beddingBefore == TransverseExtentsAdapter.this.beddingBefore)
-				return;
-			TransverseExtentsAdapter.this.beddingBefore = beddingBefore;
-			ImmutableSet.copyOf(listeners).stream().forEach(l -> l.beddingBeforeChanged(context, beddingBefore));
-		}
-	};
-
-	private void notifyStartChanged(final Context context) {
-		ImmutableSet.copyOf(listeners).stream().forEach(l -> l.transverseChanged(context, transverseStart));
 	}
 
 	public VisualAttachmentAdapter.BoundsListener boundsListener = new VisualAttachmentAdapter.BoundsListener() {

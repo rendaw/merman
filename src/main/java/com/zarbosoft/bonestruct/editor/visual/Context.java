@@ -20,8 +20,10 @@ import com.zarbosoft.pidgoon.events.Grammar;
 import com.zarbosoft.pidgoon.nodes.Union;
 import javafx.animation.Interpolator;
 import javafx.animation.Transition;
+import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.scene.Group;
+import javafx.scene.Node;
 import javafx.scene.layout.Pane;
 
 import java.lang.ref.WeakReference;
@@ -55,6 +57,85 @@ public class Context {
 		selectionAdapter.addListener(this, listener);
 	}
 
+	public int sceneGetConverseSpan(final Node node) {
+		switch (syntax.converseDirection) {
+			case UP:
+			case DOWN:
+				return (int) node.getLayoutBounds().getHeight();
+			case LEFT:
+			case RIGHT:
+				return (int) node.getLayoutBounds().getWidth();
+		}
+		throw new AssertionError("DEAD CODE");
+	}
+
+	public int sceneGetTransverseSpan(final Node node) {
+		switch (syntax.transverseDirection) {
+			case UP:
+			case DOWN:
+				return (int) node.getLayoutBounds().getHeight();
+			case LEFT:
+			case RIGHT:
+				return (int) node.getLayoutBounds().getWidth();
+		}
+		throw new AssertionError("DEAD CODE");
+	}
+
+	public int sceneGetConverse(final Node node) {
+		switch (syntax.converseDirection) {
+			case UP:
+				return edge - (int) node.getLayoutY() + (int) node.getLayoutBounds().getWidth();
+			case DOWN:
+				return (int) node.getLayoutY();
+			case LEFT:
+				return edge - (int) node.getLayoutX() + (int) node.getLayoutBounds().getWidth();
+			case RIGHT:
+				return (int) node.getLayoutX();
+		}
+		throw new AssertionError("DEAD CODE");
+	}
+
+	public int sceneGetTransverse(final Node node) {
+		switch (syntax.transverseDirection) {
+			case UP:
+				return transverseEdge - (int) node.getLayoutY() + (int) node.getLayoutBounds().getWidth();
+			case DOWN:
+				return (int) node.getLayoutY();
+			case LEFT:
+				return transverseEdge - (int) node.getLayoutX() + (int) node.getLayoutBounds().getWidth();
+			case RIGHT:
+				return (int) node.getLayoutX();
+		}
+		throw new AssertionError("DEAD CODE");
+	}
+
+	public Vector sceneGet(final Node node) {
+		final Bounds bounds = node.getLayoutBounds();
+		int converse = 0;
+		int transverse = 0;
+		switch (syntax.converseDirection) {
+			case UP:
+				converse = edge - (int) node.getLayoutY() + (int) bounds.getWidth();
+			case DOWN:
+				converse = (int) node.getLayoutY();
+			case LEFT:
+				converse = edge - (int) node.getLayoutX() + (int) bounds.getWidth();
+			case RIGHT:
+				converse = (int) node.getLayoutX();
+		}
+		switch (syntax.transverseDirection) {
+			case UP:
+				transverse = transverseEdge - (int) node.getLayoutY() + (int) bounds.getWidth();
+			case DOWN:
+				transverse = (int) node.getLayoutY();
+			case LEFT:
+				transverse = transverseEdge - (int) node.getLayoutX() + (int) bounds.getWidth();
+			case RIGHT:
+				transverse = (int) node.getLayoutX();
+		}
+		return new Vector(converse, transverse);
+	}
+
 	public static class Banner {
 		private RawText text;
 		private final PriorityQueue<BannerMessage> queue =
@@ -65,6 +146,45 @@ public class Context {
 		private int targetTransverse;
 		private int targetBedding;
 		private Bedding bedding;
+		private IdlePlace idle;
+
+		private void idlePlace(final Context context) {
+			if (idle == null) {
+				idle = new IdlePlace(context, targetTransverse, targetBedding);
+				context.addIdle(idle);
+			} else {
+				if (targetTransverse == idle.startTargetTransverse && targetBedding == idle.startTargetBedding) {
+					idle.destroy();
+				}
+			}
+		}
+
+		private class IdlePlace extends IdleTask {
+			private final Context context;
+			private final int startTargetTransverse;
+			private final int startTargetBedding;
+
+			private IdlePlace(final Context context, final int startTargetTransverse, final int startTargetBedding) {
+				this.context = context;
+				this.startTargetTransverse = startTargetTransverse;
+				this.startTargetBedding = startTargetBedding;
+			}
+
+			@Override
+			protected void runImplementation() {
+				if (text != null)
+					text.setTransverse(
+							context,
+							targetTransverse + targetBedding - text.transverseSpan(context),
+							context.syntax.animateCoursePlacement
+					);
+			}
+
+			@Override
+			protected void destroyed() {
+				idle = null;
+			}
+		}
 
 		public Banner(final Context context) {
 			context.selectionExtentsAdapter.addListener(context, new TransverseExtentsAdapter.Listener() {
@@ -73,16 +193,7 @@ public class Context {
 				@Override
 				public void transverseChanged(final Context context, final int transverse) {
 					Banner.this.targetTransverse = transverse;
-					placeText(context);
-				}
-
-				private void placeText(final Context context) {
-					if (text == null)
-						return;
-					text.setTransverse(targetTransverse + targetBedding - text.transverseSpan(),
-							context.transverseEdge,
-							context.syntax.animateCoursePlacement
-					);
+					idlePlace(context);
 				}
 
 				@Override
@@ -98,7 +209,7 @@ public class Context {
 				@Override
 				public void beddingBeforeChanged(final Context context, final int beddingBefore) {
 					targetBedding = beddingBefore;
-					placeText(context);
+					idlePlace(context);
 				}
 			});
 			context.selectionAdapter.addListener(context, new VisualAttachmentAdapter.BoundsListener() {
@@ -121,13 +232,10 @@ public class Context {
 
 		public void addMessage(final Context context, final BannerMessage message) {
 			if (queue.isEmpty()) {
-				text = RawText.create(context, context.getStyle(ImmutableSet.of(new VisualNode.PartTag("banner"))));
+				text = new RawText(context, context.getStyle(ImmutableSet.of(new VisualNode.PartTag("banner"))));
 				context.background.getChildren().add(text.getVisual());
-				text.setTransverse(targetTransverse + targetBedding - text.transverseSpan(),
-						context.transverseEdge,
-						false
-				);
-				bedding = new Bedding(text.transverseSpan(), 0);
+				text.setTransverse(context, targetTransverse + targetBedding - text.transverseSpan(context), false);
+				bedding = new Bedding(text.transverseSpan(context), 0);
 				brick.addBedding(context, bedding);
 			}
 			queue.add(message);
@@ -144,7 +252,7 @@ public class Context {
 				}
 			} else if (queue.peek() != current) {
 				current = queue.peek();
-				text.setText(current.text);
+				text.setText(context, current.text);
 				timer.purge();
 				if (current.duration != null)
 					try {
@@ -602,6 +710,110 @@ public class Context {
 		translate(node, vector, false);
 	}
 
+	public void translateTransverse(final javafx.scene.Node node, final int transverse, final boolean animate) {
+		Integer x = null;
+		Integer y = null;
+		switch (syntax.transverseDirection) {
+			case UP:
+				y = (int) node.getLayoutBounds().getHeight() + transverse;
+				break;
+			case DOWN:
+				y = transverse;
+				break;
+			case LEFT:
+				x = (int) node.getLayoutBounds().getWidth() + transverse;
+				break;
+			case RIGHT:
+				x = transverse;
+				break;
+		}
+		if (x != null) {
+			if (animate) {
+				final double diffX = x - node.getLayoutX();
+				new Transition() {
+					{
+						setCycleDuration(javafx.util.Duration.millis(200));
+					}
+
+					@Override
+					protected void interpolate(final double frac) {
+						final double frac2 = Math.pow(1 - frac, 0.7);
+						node.setTranslateX(-frac2 * diffX);
+					}
+				}.play();
+			}
+			node.setLayoutX(x);
+		} else {
+			if (animate) {
+				final double diffY = y - node.getLayoutY();
+				new Transition() {
+					{
+						setCycleDuration(javafx.util.Duration.millis(200));
+					}
+
+					@Override
+					protected void interpolate(final double frac) {
+						final double frac2 = Math.pow(1 - frac, 0.7);
+						node.setTranslateY(-frac2 * diffY);
+					}
+				}.play();
+			}
+			node.setLayoutY(y);
+		}
+	}
+
+	public void translateConverse(final javafx.scene.Node node, final int converse, final boolean animate) {
+		Integer x = null;
+		Integer y = null;
+		switch (syntax.converseDirection) {
+			case UP:
+				y = (int) node.getLayoutBounds().getHeight() + converse;
+				break;
+			case DOWN:
+				y = converse;
+				break;
+			case LEFT:
+				x = (int) node.getLayoutBounds().getWidth() + converse;
+				break;
+			case RIGHT:
+				x = converse;
+				break;
+		}
+		if (x != null) {
+			if (animate) {
+				final double diffX = x - node.getLayoutX();
+				new Transition() {
+					{
+						setCycleDuration(javafx.util.Duration.millis(200));
+					}
+
+					@Override
+					protected void interpolate(final double frac) {
+						final double frac2 = Math.pow(1 - frac, 0.7);
+						node.setTranslateX(-frac2 * diffX);
+					}
+				}.play();
+			}
+			node.setLayoutX(x);
+		} else {
+			if (animate) {
+				final double diffY = y - node.getLayoutY();
+				new Transition() {
+					{
+						setCycleDuration(javafx.util.Duration.millis(200));
+					}
+
+					@Override
+					protected void interpolate(final double frac) {
+						final double frac2 = Math.pow(1 - frac, 0.7);
+						node.setTranslateY(-frac2 * diffY);
+					}
+				}.play();
+			}
+			node.setLayoutY(y);
+		}
+	}
+
 	public void translate(final javafx.scene.Node node, final Vector vector, final boolean animate) {
 		int x = 0;
 		int y = 0;
@@ -646,7 +858,6 @@ public class Context {
 					final double frac2 = Math.pow(1 - frac, 0.7);
 					node.setTranslateX(-frac2 * diffX);
 					node.setTranslateY(-frac2 * diffY);
-					System.out.format("interp x %s y %s\n", node.getTranslateX(), node.getTranslateY());
 				}
 			}.play();
 		}

@@ -24,37 +24,44 @@ public class HoverType extends Plugin {
 
 			@Override
 			public void hoverChanged(final Context context, final Context.Hoverable hoverable) {
-				if (message != null) {
-					context.banner.removeMessage(context, message); // TODO message callback on finish?
-					message = null;
+				Context.BannerMessage oldMessage = message;
+				message = null;
+				if (hoverable != null) {
+					message = new Context.BannerMessage();
+					message.priority = 100;
+					final StringBuilder text = new StringBuilder();
+					if (node) {
+						final NodeType.NodeTypeVisual nodeType = hoverable.node();
+						if (nodeType == null)
+							text.append("Root Element");
+						else
+							text.append((hoverable.node()).getType().name);
+					}
+					if (part) {
+						final String temp;
+						final Class<?> c = hoverable.part().getClass();
+						if (c == ArrayVisualNode.class) {
+							temp = "array";
+						} else if (c == FrontDataRecord.RecordVisual.class) {
+							temp = "record";
+						} else if (c == PrimitiveVisualNode.class) {
+							temp = "primitive";
+						} else if (c == NestedVisualNodePart.class) {
+							temp = "nested";
+						} else
+							temp = c.getTypeName();
+						if (text.length() > 0)
+							text.append("(" + temp + ")");
+						else
+							text.append(temp);
+					}
+					message.text = text.toString();
+					context.banner.addMessage(context, message);
 				}
-				if (hoverable == null)
-					return;
-				message = new Context.BannerMessage();
-				message.priority = 100;
-				final StringBuilder text = new StringBuilder();
-				if (node)
-					text.append(((NodeType.NodeTypeVisual) hoverable.node()).getType().name);
-				if (part) {
-					final String temp;
-					final Class<?> c = hoverable.part().getClass();
-					if (c == ArrayVisualNode.class) {
-						temp = "array";
-					} else if (c == FrontDataRecord.RecordVisual.class) {
-						temp = "record";
-					} else if (c == PrimitiveVisualNode.class) {
-						temp = "primitive";
-					} else if (c == NestedVisualNodePart.class) {
-						temp = "nested";
-					} else
-						temp = c.getTypeName();
-					if (text.length() > 0)
-						text.append("(" + temp + ")");
-					else
-						text.append(temp);
+				if (oldMessage != null) {
+					context.banner.removeMessage(context, oldMessage); // TODO oldMessage callback on finish?
+					oldMessage = null;
 				}
-				message.text = text.toString();
-				context.banner.addMessage(context, message);
 			}
 		});
 		return new State() {

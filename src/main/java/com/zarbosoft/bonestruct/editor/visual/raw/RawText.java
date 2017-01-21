@@ -2,15 +2,14 @@ package com.zarbosoft.bonestruct.editor.visual.raw;
 
 import com.zarbosoft.bonestruct.editor.model.Style;
 import com.zarbosoft.bonestruct.editor.visual.Context;
-import javafx.animation.Interpolator;
-import javafx.animation.TranslateTransition;
+import com.zarbosoft.bonestruct.editor.visual.Vector;
 import javafx.geometry.Point2D;
 import javafx.geometry.VPos;
 import javafx.scene.Node;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 
-public abstract class RawText {
+public class RawText {
 	protected final Text text = new Text();
 
 	public RawText(final Context context, final Style.Baked style) {
@@ -24,439 +23,63 @@ public abstract class RawText {
 		text.setFill(style.color);
 	}
 
-	public static RawText create(final Context context, final Style.Baked style) {
-		switch (context.syntax.converseDirection) {
-			case UP:
-				switch (context.syntax.transverseDirection) {
-					case UP:
-					case DOWN:
-						throw new AssertionError("dead code");
-					case LEFT:
-						return new RawText(context, style) {
-							@Override
-							public int getUnder(final int converse, final int edge) {
-								return text
-										.impl_hitTestChar(new Point2D(text.getX(), getConverse(edge) - converse))
-										.getInsertionIndex();
-							}
-
-							@Override
-							public int converseSpan() {
-								return (int) text.getLayoutBounds().getHeight();
-							}
-
-							@Override
-							public void setConverse(final int converse, final int edge) {
-								setLayoutY(text, edge - converse - converseSpan(), false);
-							}
-
-							@Override
-							public int getConverse(final int edge) {
-								return edge - converseSpan() - (int) text.getLayoutY();
-							}
-
-							public void setText(final String newText) {
-								final int oldSpan = converseSpan();
-								text.setText(newText);
-								setLayoutY(text, text.getLayoutY() + oldSpan - converseSpan(), false);
-							}
-
-							@Override
-							public int transverseSpan() {
-								return (int) text.getLayoutBounds().getWidth();
-							}
-
-							@Override
-							public void setTransverse(final int transverse, final int edge, final boolean animate) {
-								setLayoutX(text, edge - transverse, animate);
-							}
-
-							@Override
-							protected int getTransverse(final int edge) {
-								return edge - (int) text.getLayoutX();
-							}
-						};
-					case RIGHT:
-						return new RawText(context, style) {
-							@Override
-							public int getUnder(final int converse, final int edge) {
-								return text
-										.impl_hitTestChar(new Point2D(text.getX(), getConverse(edge) - converse))
-										.getInsertionIndex();
-							}
-
-							@Override
-							public int converseSpan() {
-								return (int) text.getLayoutBounds().getHeight();
-							}
-
-							@Override
-							public void setConverse(final int converse, final int edge) {
-								setLayoutY(text, edge - converse - converseSpan(), false);
-							}
-
-							@Override
-							public int getConverse(final int edge) {
-								return edge - converseSpan() - (int) text.getLayoutY();
-							}
-
-							public void setText(final String newText) {
-								final int oldSpan = converseSpan();
-								text.setText(newText);
-								setLayoutY(text, text.getLayoutY() + oldSpan - converseSpan(), false);
-							}
-
-							@Override
-							public int transverseSpan() {
-								return (int) text.getLayoutBounds().getWidth();
-							}
-
-							@Override
-							public void setTransverse(final int transverse, final int edge, final boolean animate) {
-								setLayoutX(text, transverse, animate);
-							}
-
-							@Override
-							protected int getTransverse(final int edge) {
-								return (int) text.getLayoutX();
-							}
-						};
-				}
-			case DOWN:
-				switch (context.syntax.transverseDirection) {
-					case UP:
-					case DOWN:
-						throw new AssertionError("dead code");
-					case LEFT:
-						return new RawText(context, style) {
-							@Override
-							public int getUnder(final int converse, final int edge) {
-								return text
-										.impl_hitTestChar(new Point2D(text.getX(), converse - getConverse(edge)))
-										.getInsertionIndex();
-							}
-
-							@Override
-							public int converseSpan() {
-								return (int) text.getLayoutBounds().getHeight();
-							}
-
-							@Override
-							public void setConverse(final int converse, final int edge) {
-								setLayoutY(text, converse, false);
-							}
-
-							@Override
-							public int getConverse(final int edge) {
-								return (int) text.getLayoutY();
-							}
-
-							public void setText(final String newText) {
-								text.setText(newText);
-							}
-
-							@Override
-							public int transverseSpan() {
-								return (int) text.getLayoutBounds().getWidth();
-							}
-
-							@Override
-							public void setTransverse(final int transverse, final int edge, final boolean animate) {
-								setLayoutX(text, edge - transverse, animate);
-							}
-
-							@Override
-							protected int getTransverse(final int edge) {
-								return edge - (int) text.getLayoutX();
-							}
-						};
-					case RIGHT:
-						return new RawText(context, style) {
-							@Override
-							public int getUnder(final int converse, final int edge) {
-								return text
-										.impl_hitTestChar(new Point2D(text.getX(), converse - getConverse(edge)))
-										.getInsertionIndex();
-							}
-
-							@Override
-							public int converseSpan() {
-								return (int) text.getLayoutBounds().getHeight();
-							}
-
-							@Override
-							public void setConverse(final int converse, final int edge) {
-								setLayoutY(text, converse, false);
-							}
-
-							@Override
-							public int getConverse(final int edge) {
-								return (int) text.getLayoutY();
-							}
-
-							public void setText(final String newText) {
-								text.setText(newText);
-							}
-
-							@Override
-							public int transverseSpan() {
-								return (int) text.getLayoutBounds().getWidth();
-							}
-
-							@Override
-							public void setTransverse(final int transverse, final int edge, final boolean animate) {
-								setLayoutX(text, transverse, animate);
-							}
-
-							@Override
-							protected int getTransverse(final int edge) {
-								return (int) text.getLayoutX();
-							}
-						};
-				}
-			case LEFT:
-				switch (context.syntax.transverseDirection) {
-					case UP:
-						return new RawText(context, style) {
-							@Override
-							public int getUnder(final int converse, final int edge) {
-								return text
-										.impl_hitTestChar(new Point2D(getConverse(edge) - converse, text.getY()))
-										.getInsertionIndex();
-							}
-
-							@Override
-							public int converseSpan() {
-								return (int) text.getLayoutBounds().getWidth();
-							}
-
-							@Override
-							public void setConverse(final int converse, final int edge) {
-								setLayoutX(text, edge - converse - converseSpan(), false);
-							}
-
-							@Override
-							public int getConverse(final int edge) {
-								return edge - converseSpan() - (int) text.getLayoutX();
-							}
-
-							public void setText(final String newText) {
-								final int oldSpan = converseSpan();
-								text.setText(newText);
-								setLayoutX(text, text.getLayoutX() + oldSpan - converseSpan(), false);
-							}
-
-							@Override
-							public int transverseSpan() {
-								return (int) text.getLayoutBounds().getHeight();
-							}
-
-							@Override
-							public void setTransverse(final int transverse, final int edge, final boolean animate) {
-								setLayoutY(text, edge - transverse, animate);
-							}
-
-							@Override
-							protected int getTransverse(final int edge) {
-								return edge - (int) text.getLayoutY();
-							}
-						};
-					case DOWN:
-						return new RawText(context, style) {
-							@Override
-							public int getUnder(final int converse, final int edge) {
-								return text
-										.impl_hitTestChar(new Point2D(getConverse(edge) - converse, text.getY()))
-										.getInsertionIndex();
-							}
-
-							@Override
-							public int converseSpan() {
-								return (int) text.getLayoutBounds().getWidth();
-							}
-
-							@Override
-							public void setConverse(final int converse, final int edge) {
-								setLayoutX(text, edge - converse - converseSpan(), false);
-							}
-
-							@Override
-							public int getConverse(final int edge) {
-								return edge - converseSpan() - (int) text.getLayoutX();
-							}
-
-							public void setText(final String newText) {
-								final int oldSpan = converseSpan();
-								text.setText(newText);
-								setLayoutX(text, text.getLayoutX() + oldSpan - converseSpan(), false);
-							}
-
-							@Override
-							public int transverseSpan() {
-								return (int) text.getLayoutBounds().getHeight();
-							}
-
-							@Override
-							public void setTransverse(final int transverse, final int edge, final boolean animate) {
-								setLayoutY(text, transverse, animate);
-							}
-
-							@Override
-							protected int getTransverse(final int edge) {
-								return (int) text.getLayoutY();
-							}
-						};
-					case LEFT:
-					case RIGHT:
-						throw new AssertionError("dead code");
-				}
-			case RIGHT:
-				switch (context.syntax.transverseDirection) {
-					case UP:
-						return new RawText(context, style) {
-							@Override
-							public int getUnder(final int converse, final int edge) {
-								return text
-										.impl_hitTestChar(new Point2D(converse - getConverse(edge), text.getY()))
-										.getInsertionIndex();
-							}
-
-							@Override
-							public int converseSpan() {
-								return (int) text.getLayoutBounds().getWidth();
-							}
-
-							@Override
-							public void setConverse(final int converse, final int edge) {
-								setLayoutX(text, converse, false);
-							}
-
-							@Override
-							public int getConverse(final int edge) {
-								return (int) text.getLayoutX();
-							}
-
-							public void setText(final String newText) {
-								text.setText(newText);
-							}
-
-							@Override
-							public int transverseSpan() {
-								return (int) text.getLayoutBounds().getHeight();
-							}
-
-							@Override
-							public void setTransverse(final int transverse, final int edge, final boolean animate) {
-								setLayoutY(text, edge - transverse, animate);
-							}
-
-							@Override
-							protected int getTransverse(final int edge) {
-								return edge - (int) text.getLayoutY();
-							}
-						};
-					case DOWN:
-						return new RawText(context, style) {
-							@Override
-							public int getUnder(final int converse, final int edge) {
-								return text
-										.impl_hitTestChar(new Point2D(converse - getConverse(edge), text.getY()))
-										.getInsertionIndex();
-							}
-
-							@Override
-							public int converseSpan() {
-								return (int) text.getLayoutBounds().getWidth();
-							}
-
-							@Override
-							public void setConverse(final int converse, final int edge) {
-								setLayoutX(text, converse, false);
-							}
-
-							public void setText(final String newText) {
-								text.setText(newText);
-							}
-
-							@Override
-							public int getConverse(final int edge) {
-								return (int) text.getLayoutX();
-							}
-
-							@Override
-							public int transverseSpan() {
-								return (int) text.getLayoutBounds().getHeight();
-							}
-
-							@Override
-							public void setTransverse(final int transverse, final int edge, final boolean animate) {
-								setLayoutY(text, transverse, animate);
-							}
-
-							@Override
-							protected int getTransverse(final int edge) {
-								return (int) text.getLayoutY();
-							}
-						};
-					case LEFT:
-					case RIGHT:
-						throw new AssertionError("dead code");
-				}
-		}
-		throw new AssertionError("dead code");
+	public void setText(final Context context, final String newText) {
+		final Vector at = context.sceneGet(text);
+		text.setText(newText);
+		context.translate(text, at, false);
 	}
-
-	private static void setLayoutY(final Text text, final double y, final boolean animate) {
-		if (animate) {
-			final TranslateTransition translation = new TranslateTransition(javafx.util.Duration.seconds(1), text);
-			//translation.setInterpolator(interpolator);
-			translation.setInterpolator(Interpolator.SPLINE(0, 0.5, 1, 1));
-			translation.setToY(y);
-			translation.play();
-		} else {
-			text.setLayoutY(y);
-		}
-	}
-
-	private static void setLayoutX(final Text text, final double x, final boolean animate) {
-		if (animate) {
-			final TranslateTransition translation = new TranslateTransition(javafx.util.Duration.seconds(1), text);
-			//translation.setInterpolator(interpolator);
-			translation.setInterpolator(Interpolator.SPLINE(0, 0.5, 1, 1));
-			translation.setToX(x);
-			translation.play();
-		} else {
-			text.setLayoutX(x);
-		}
-	}
-
-	public abstract void setText(final String newText);
 
 	public String getText() {
 		return text.getText();
 	}
 
-	public abstract int getUnder(int converse, int edge);
-
-	public abstract int converseSpan();
-
-	public abstract void setConverse(int converse, int edge);
-
-	public abstract int getConverse(int edge);
-
-	public int converseEdge(final int edge) {
-		return getConverse(edge) + converseSpan();
+	public int getUnder(final Context context, final int converse, final int edge) {
+		switch (context.syntax.converseDirection) {
+			case UP:
+			case DOWN:
+				return text
+						.impl_hitTestChar(new Point2D(text.getX(), converse - getConverse(context)))
+						.getInsertionIndex();
+			case LEFT:
+			case RIGHT:
+				return text
+						.impl_hitTestChar(new Point2D(converse - getConverse(context), text.getY()))
+						.getInsertionIndex();
+		}
+		throw new AssertionError("DEAD CODE");
 	}
 
-	public abstract int transverseSpan();
-
-	public void setTransverse(final int transverse, final int edge) {
-		setTransverse(transverse, edge, false);
+	public int converseSpan(final Context context) {
+		return context.sceneGetConverseSpan(text);
 	}
 
-	public abstract void setTransverse(int transverse, int edge, boolean animate);
+	public void setConverse(final Context context, final int converse) {
+		context.translateConverse(text, converse, false);
+	}
 
-	protected abstract int getTransverse(int edge);
+	public int getConverse(final Context context) {
+		return context.sceneGetConverse(text);
+	}
+
+	public int converseEdge(final Context context) {
+		return getConverse(context) + converseSpan(context);
+	}
+
+	public int transverseSpan(final Context context) {
+		return context.sceneGetTransverseSpan(text);
+	}
+
+	public void setTransverse(final Context context, final int transverse) {
+		setTransverse(context, transverse, false);
+	}
+
+	public void setTransverse(final Context context, final int transverse, final boolean animate) {
+		context.translateTransverse(text, transverse, animate);
+	}
+
+	protected int getTransverse(final Context context) {
+		return context.sceneGetTransverse(text);
+	}
 
 	public Node getVisual() {
 		return text;
