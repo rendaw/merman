@@ -1,14 +1,17 @@
 package com.zarbosoft.bonestruct.editor.visual;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import com.zarbosoft.bonestruct.ChainComparator;
 import com.zarbosoft.bonestruct.editor.changes.History;
-import com.zarbosoft.bonestruct.editor.model.Document;
-import com.zarbosoft.bonestruct.editor.model.Hotkeys;
-import com.zarbosoft.bonestruct.editor.model.Style;
-import com.zarbosoft.bonestruct.editor.model.Syntax;
+import com.zarbosoft.bonestruct.editor.model.*;
+import com.zarbosoft.bonestruct.editor.visual.attachments.TransverseExtentsAdapter;
+import com.zarbosoft.bonestruct.editor.visual.attachments.VisualAttachmentAdapter;
+import com.zarbosoft.bonestruct.editor.visual.raw.RawText;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
+import com.zarbosoft.bonestruct.editor.visual.wall.Bedding;
 import com.zarbosoft.bonestruct.editor.visual.wall.Brick;
 import com.zarbosoft.bonestruct.editor.visual.wall.Wall;
 import com.zarbosoft.pidgoon.events.BakedOperator;
@@ -16,11 +19,13 @@ import com.zarbosoft.pidgoon.events.EventStream;
 import com.zarbosoft.pidgoon.events.Grammar;
 import com.zarbosoft.pidgoon.nodes.Union;
 import javafx.animation.Interpolator;
+import javafx.animation.Transition;
 import javafx.geometry.Point2D;
 import javafx.scene.Group;
 import javafx.scene.layout.Pane;
 
 import java.lang.ref.WeakReference;
+import java.time.Duration;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -38,6 +43,177 @@ public class Context {
 	public Brick cornerstone;
 	public int cornerstoneTransverse;
 	public int scrollTransverse;
+	public Banner banner;
+	public Details details;
+	private final Set<SelectionListener> selectionListeners = new HashSet<>();
+	private final Set<HoverListener> hoverListeners = new HashSet<>();
+	public final VisualAttachmentAdapter selectionAdapter = new VisualAttachmentAdapter();
+	public final TransverseExtentsAdapter selectionExtentsAdapter = new TransverseExtentsAdapter();
+	public List<Plugin.State> plugins;
+
+	public void addSelectionBrickListener(final VisualAttachmentAdapter.BoundsListener listener) {
+		selectionAdapter.addListener(this, listener);
+	}
+
+	public static class Banner {
+		private RawText text;
+		private final PriorityQueue<BannerMessage> queue =
+				new PriorityQueue<>(11, new ChainComparator<BannerMessage>().greaterFirst(m -> m.priority).build());
+		private BannerMessage current;
+		private final Timer timer = new Timer();
+		private Brick brick;
+		private int targetTransverse;
+		private int targetBedding;
+		private Bedding bedding;
+
+		public Banner(final Context context) {
+			context.selectionExtentsAdapter.addListener(context, new TransverseExtentsAdapter.Listener() {
+				int brickBedding;
+
+				@Override
+				public void transverseChanged(final Context context, final int transverse) {
+					Banner.this.targetTransverse = transverse;
+					placeText(context);
+				}
+
+				private void placeText(final Context context) {
+					if (text == null)
+						return;
+					text.setTransverse(targetTransverse + targetBedding - text.transverseSpan(),
+							context.transverseEdge,
+							context.syntax.animateCoursePlacement
+					);
+				}
+
+				@Override
+				public void transverseEdgeChanged(final Context context, final int transverse) {
+
+				}
+
+				@Override
+				public void beddingAfterChanged(final Context context, final int beddingAfter) {
+
+				}
+
+				@Override
+				public void beddingBeforeChanged(final Context context, final int beddingBefore) {
+					targetBedding = beddingBefore;
+					placeText(context);
+				}
+			});
+			context.selectionAdapter.addListener(context, new VisualAttachmentAdapter.BoundsListener() {
+				@Override
+				public void firstChanged(final Context context, final Brick first) {
+					if (brick != null && bedding != null)
+						brick.removeBedding(context, bedding);
+					brick = first;
+					if (bedding != null) {
+						brick.addBedding(context, bedding);
+					}
+				}
+
+				@Override
+				public void lastChanged(final Context context, final Brick last) {
+
+				}
+			});
+		}
+
+		public void addMessage(final Context context, final BannerMessage message) {
+			if (queue.isEmpty()) {
+				text = RawText.create(context, context.getStyle(ImmutableSet.of(new VisualNode.PartTag("banner"))));
+				context.background.getChildren().add(text.getVisual());
+				text.setTransverse(targetTransverse + targetBedding - text.transverseSpan(),
+						context.transverseEdge,
+						false
+				);
+				bedding = new Bedding(text.transverseSpan(), 0);
+				brick.addBedding(context, bedding);
+			}
+			queue.add(message);
+			update(context);
+		}
+
+		private void update(final Context context) {
+			if (queue.isEmpty()) {
+				if (text != null) {
+					context.background.getChildren().remove(text.getVisual());
+					text = null;
+					brick.removeBedding(context, bedding);
+					bedding = null;
+				}
+			} else if (queue.peek() != current) {
+				current = queue.peek();
+				text.setText(current.text);
+				timer.purge();
+				if (current.duration != null)
+					try {
+						timer.schedule(new TimerTask() {
+							@Override
+							public void run() {
+								context.addIdle(new IdleTask() {
+									@Override
+									protected void runImplementation() {
+										queue.poll();
+										update(context);
+									}
+
+									@Override
+									protected void destroyed() {
+
+									}
+								});
+							}
+						}, current.duration.toMillis());
+					} catch (final IllegalStateException e) {
+						// While shutting down
+					}
+			}
+		}
+
+		public void destroy(final Context context) {
+			timer.cancel();
+		}
+
+		public void removeMessage(final Context context, final BannerMessage message) {
+			if (queue.isEmpty())
+				return; // TODO implement message destroy cb, extraneous removeMessages unnecessary
+			queue.remove(message);
+			if (queue.isEmpty())
+				timer.purge();
+			update(context);
+		}
+	}
+
+	public static class Details {
+
+	}
+
+	public abstract static class SelectionListener {
+
+		public abstract void selectionChanged(Context context, Selection selection);
+	}
+
+	public abstract static class HoverListener {
+
+		public abstract void hoverChanged(Context context, Hoverable selection);
+	}
+
+	public void addSelectionListener(final SelectionListener listener) {
+		this.selectionListeners.add(listener);
+	}
+
+	public void removeSelectionListener(final SelectionListener listener) {
+		this.selectionListeners.remove(listener);
+	}
+
+	public void addHoverListener(final HoverListener listener) {
+		this.hoverListeners.add(listener);
+	}
+
+	public void removeHoverListener(final HoverListener listener) {
+		this.hoverListeners.remove(listener);
+	}
 
 	public void fillFromEndBrick(final Brick end) {
 		if (idleFill == null) {
@@ -124,7 +300,11 @@ public class Context {
 			cornerstone = newCornerstone;
 			cornerstoneTransverse = newCornerstone.parent.transverseStart;
 		}
-		wall.setCornerstone(this, cornerstone);
+
+		ImmutableSet.copyOf(selectionListeners).forEach(l -> l.selectionChanged(this, selection));
+		selectionAdapter.setBase(this, visual);
+		selectionAdapter.addListener(this, selectionExtentsAdapter.boundsListener);
+
 		fillFromEndBrick(cornerstone);
 		fillFromStartBrick(cornerstone);
 
@@ -199,12 +379,29 @@ public class Context {
 		public abstract Iterable<Action> getActions(Context context);
 
 		public abstract VisualNodePart getVisual();
+
+		public abstract void addBrickListener(Context context, final VisualAttachmentAdapter.BoundsListener listener);
+
+		public abstract void removeBrickListener(
+				Context context, final VisualAttachmentAdapter.BoundsListener listener
+		);
 	}
 
 	public static abstract class Hoverable {
 		protected abstract void clear(Context context);
 
 		public abstract void click(Context context);
+
+		public abstract NodeType.NodeTypeVisual node();
+
+		public abstract VisualNodePart part();
+	}
+
+	public static class BannerMessage {
+
+		public Duration duration;
+		public int priority = 0;
+		public String text;
 	}
 
 	public class HoverIdle extends IdleTask {
@@ -258,6 +455,7 @@ public class Context {
 				if (hover != old) {
 					if (old != null)
 						old.clear(context);
+					ImmutableSet.copyOf(hoverListeners).forEach(l -> l.hoverChanged(context, hover));
 				}
 				hoverBrick = at;
 				hoverIdle = null;
@@ -314,7 +512,7 @@ public class Context {
 		}
 	}
 
-	TheInterpolator interpolator = new TheInterpolator();
+	public static TheInterpolator interpolator = new TheInterpolator();
 
 	public Vector sceneToVector(final Pane scene, final double x, final double y) {
 		int converse = 0;
@@ -401,6 +599,10 @@ public class Context {
 	}
 
 	public void translate(final javafx.scene.Node node, final Vector vector) {
+		translate(node, vector, false);
+	}
+
+	public void translate(final javafx.scene.Node node, final Vector vector, final boolean animate) {
 		int x = 0;
 		int y = 0;
 		switch (syntax.converseDirection) {
@@ -431,13 +633,23 @@ public class Context {
 				x = vector.transverse;
 				break;
 		}
-		/*
-		final TranslateTransition translation = new TranslateTransition(Duration.seconds(1), node);
-		translation.setInterpolator(interpolator);
-		translation.setToX(x);
-		translation.setToY(y);
-		translation.play();
-		*/
+		if (animate) {
+			final double diffX = x - node.getLayoutX();
+			final double diffY = y - node.getLayoutY();
+			new Transition() {
+				{
+					setCycleDuration(javafx.util.Duration.millis(200));
+				}
+
+				@Override
+				protected void interpolate(final double frac) {
+					final double frac2 = Math.pow(1 - frac, 0.7);
+					node.setTranslateX(-frac2 * diffX);
+					node.setTranslateY(-frac2 * diffY);
+					System.out.format("interp x %s y %s\n", node.getTranslateX(), node.getTranslateY());
+				}
+			}.play();
+		}
 		node.setLayoutX(x);
 		node.setLayoutY(y);
 	}

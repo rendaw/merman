@@ -54,7 +54,6 @@ public class Main extends Application {
 		editing, actions for everythinga
 		global context
 		save
-		modal editing
 		plugins
 		persistent history
 		selection history
@@ -63,12 +62,6 @@ public class Main extends Application {
 		if (getParameters().getUnnamed().isEmpty())
 			throw new IllegalArgumentException("Must specify a filename as first argument.");
 			*/
-		primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
-			@Override
-			public void handle(final WindowEvent t) {
-				worker.shutdown();
-			}
-		});
 		final History history = new History();
 		//final Editor editor = new Editor(this::addIdle, getParameters().getUnnamed().get(0));
 		final Editor editor = new Editor(this::addIdle, "todo", ImmutableList.of(new Context.Action() {
@@ -88,6 +81,13 @@ public class Main extends Application {
 		});
 		primaryStage.setScene(scene);
 		primaryStage.show();
+		primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+			@Override
+			public void handle(final WindowEvent t) {
+				editor.destroy();
+				worker.shutdown();
+			}
+		});
 	}
 
 	private void addIdle(final IdleTask task) {

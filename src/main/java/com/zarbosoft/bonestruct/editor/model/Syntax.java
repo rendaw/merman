@@ -57,7 +57,7 @@ public class Syntax {
 	public ObboxStyle selectStyle = new ObboxStyle();
 
 	@Luxem.Configuration(description = "The definitions of all distinct element types in a document.\n" +
-			"A type with the id __bud, and a single middle primitive element named 'value' must exist.  This will be " +
+			"A type with the id __gap, and a single middle primitive element named 'value' must exist.  This will be " +
 			"used as a placeholder when entering text before it is distinguishable as any other defined element.")
 	public List<NodeType> types;
 
@@ -65,6 +65,11 @@ public class Syntax {
 			"Pseudo-types representing a group of types.  Group ids can be used anywhere a type id " +
 					"is required.")
 	public Map<String, java.util.Set<String>> groups;
+
+	@Luxem.Configuration(optional = true, description =
+			"A list of plugins to activate.  Listed are plugins bundled with this distribution, but " +
+					"addional plugins may be installed and used.")
+	public List<Plugin> plugins;
 
 	@Luxem.Configuration(description = "The id of the type of root elements in a document.  This is not used when " +
 			"pasting code; in that case the context is used to determine the paste's root.")
@@ -84,7 +89,7 @@ public class Syntax {
 
 	@Luxem.Configuration(optional = true)
 	public List<Hotkeys> hotkeys;
-	public NodeType bud;
+	public NodeType gap;
 
 	@Luxem.Configuration(optional = true, name = "modal-primitive-editing", description =
 			"In modeless editing, a selected primitive is always in direct editing mode.  Non-hotkey keypresses " +
@@ -93,6 +98,9 @@ public class Syntax {
 					"primitive text.  In the indirect editing action names will more closely match the action names " +
 					"of other node types.")
 	public boolean modalPrimitiveEditing = false;
+
+	@Luxem.Configuration(optional = true, name = "animate-course-placement")
+	public boolean animateCoursePlacement = false;
 
 	@Luxem.Configuration
 	public enum Direction {
@@ -214,23 +222,23 @@ public class Syntax {
 				singleNodes.add(t.id);
 			if (reverseGroups.containsKey(t.id) && t.back.size() > 1)
 				reverseGroups.get(t.id).first = false;
-			if (t.id.equals("__bud")) {
-				if (out.bud != null)
-					throw new InvalidSyntax("Multiple definitions of [__bud].");
+			if (t.id.equals("__gap")) {
+				if (out.gap != null)
+					throw new InvalidSyntax("Multiple definitions of [__gap].");
 				if (t.middle.size() != 1)
-					throw new InvalidSyntax("__bud must have one middle element.");
+					throw new InvalidSyntax("__gap must have one middle element.");
 				if (!t.middle.containsKey("value"))
-					throw new InvalidSyntax("__bud must have one middle element named [value].");
+					throw new InvalidSyntax("__gap must have one middle element named [value].");
 				if (!(t.middle.get("value") instanceof DataPrimitive))
-					throw new InvalidSyntax("__bud middle element [value] must be primitive.");
-				out.bud = t;
+					throw new InvalidSyntax("__gap middle element [value] must be primitive.");
+				out.gap = t;
 			}
 			if (t.id.equals(out.root)) {
 				foundRoot = true;
 			}
 		}
-		if (out.bud == null)
-			throw new InvalidSyntax("__bud type definition missing.");
+		if (out.gap == null)
+			throw new InvalidSyntax("__gap type definition missing.");
 		boolean changing = true;
 		while (changing) {
 			changing = false;

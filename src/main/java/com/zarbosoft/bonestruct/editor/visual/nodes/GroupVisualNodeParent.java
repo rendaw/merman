@@ -1,5 +1,6 @@
 package com.zarbosoft.bonestruct.editor.visual.nodes;
 
+import com.zarbosoft.bonestruct.editor.model.NodeType;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.Context;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
@@ -47,7 +48,7 @@ public class GroupVisualNodeParent extends VisualNodeParent {
 	}
 
 	@Override
-	public VisualNode getNode() {
+	public NodeType.NodeTypeVisual getNode() {
 		if (target.parent == null)
 			return null;
 		return target.parent.getNode();

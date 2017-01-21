@@ -3,6 +3,7 @@ package com.zarbosoft.bonestruct.editor.luxem;
 import com.zarbosoft.luxemj.source.LArrayCloseEvent;
 import com.zarbosoft.luxemj.source.LArrayOpenEvent;
 import com.zarbosoft.luxemj.source.LPrimitiveEvent;
+import com.zarbosoft.pidgoon.AbortParse;
 import com.zarbosoft.pidgoon.bytes.Grammar;
 import com.zarbosoft.pidgoon.events.BakedOperator;
 import com.zarbosoft.pidgoon.events.Store;
@@ -13,7 +14,10 @@ import com.zarbosoft.pidgoon.nodes.Sequence;
 import javafx.scene.paint.Color;
 
 import java.lang.reflect.Type;
+import java.time.Duration;
 import java.util.HashSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Luxem extends com.zarbosoft.luxemj.Luxem {
 	static private Luxem instance = null;
@@ -46,6 +50,19 @@ public class Luxem extends com.zarbosoft.luxemj.Luxem {
 				final Double red = s.stackTop();
 				s = (Store) s.popStack();
 				return s.pushStack(new Color(red, green, blue, 1));
+			});
+		} else if (target.inner == Duration.class) {
+			return new BakedOperator(new Terminal(new LPrimitiveEvent(null)), s -> {
+				Matcher match;
+				match = Pattern.compile("(\\d+(.\\d+)?)\\s*[sS]").matcher(((LPrimitiveEvent) s.top()).value);
+				if (match.matches()) {
+					return s.pushStack(Duration.ofMillis((int) (Double.parseDouble(match.group()) * 1000)));
+				}
+				match = Pattern.compile("(\\d+(.\\d+)?)\\s*[mM]").matcher(((LPrimitiveEvent) s.top()).value);
+				if (match.matches()) {
+					return s.pushStack(Duration.ofMillis((int) (Double.parseDouble(match.group()) * 1000 * 60)));
+				}
+				throw new AbortParse("Duration must be a number suffixed with m (minutes) or s(seconds).");
 			});
 		}
 		return super.implementationNodeForType(seen, grammar, target);

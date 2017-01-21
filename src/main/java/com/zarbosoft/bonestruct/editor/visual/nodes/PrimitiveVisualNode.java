@@ -1,8 +1,10 @@
 package com.zarbosoft.bonestruct.editor.visual.nodes;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.zarbosoft.bonestruct.editor.model.Hotkeys;
+import com.zarbosoft.bonestruct.editor.model.NodeType;
 import com.zarbosoft.bonestruct.editor.model.ObboxStyle;
 import com.zarbosoft.bonestruct.editor.model.Style;
 import com.zarbosoft.bonestruct.editor.model.middle.DataPrimitive;
@@ -11,6 +13,7 @@ import com.zarbosoft.bonestruct.editor.visual.Context;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.editor.visual.attachments.CursorAttachment;
 import com.zarbosoft.bonestruct.editor.visual.attachments.TextBorderAttachment;
+import com.zarbosoft.bonestruct.editor.visual.attachments.VisualAttachmentAdapter;
 import com.zarbosoft.bonestruct.editor.visual.bricks.TextBrick;
 import com.zarbosoft.bonestruct.editor.visual.raw.Obbox;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodeParent;
@@ -111,6 +114,7 @@ public class PrimitiveVisualNode extends VisualNodePart {
 		int beginOffset;
 		int endOffset;
 		private final ObboxStyle.Baked style;
+		Set<VisualAttachmentAdapter.BoundsListener> listeners = new HashSet<>();
 
 		private RangeAttachment(final ObboxStyle.Baked style) {
 			this.style = style;
@@ -127,28 +131,41 @@ public class PrimitiveVisualNode extends VisualNodePart {
 				}
 				final int index = findContaining(beginOffset);
 				beginLine = endLine = lines.get(index);
-				if (beginLine.brick != null)
+				if (beginLine.brick != null) {
 					cursor.setPosition(context, beginLine.brick, beginOffset - beginLine.offset);
+					ImmutableSet.copyOf(listeners).forEach(l -> {
+						l.firstChanged(context, beginLine.brick);
+						l.lastChanged(context, beginLine.brick);
+					});
+				}
 			} else {
 				if (cursor != null)
 					cursor.destroy(context);
 				if (border == null) {
+					beginLine = null;
+					endLine = null;
 					border = new TextBorderAttachment(context, style);
-					border.setLast(context, beginLine.brick);
-					border.setLastIndex(context, beginOffset - beginLine.offset);
 				}
 				final int beginIndex = findContaining(beginOffset);
 				if (beginLine == null || beginLine.index != beginIndex) {
 					beginLine = lines.get(beginIndex);
-					if (beginLine.brick != null)
+					if (beginLine.brick != null) {
 						border.setFirst(context, beginLine.brick);
+						ImmutableSet.copyOf(listeners).forEach(l -> {
+							l.firstChanged(context, beginLine.brick);
+						});
+					}
 				}
 				border.setFirstIndex(context, beginIndex - beginLine.offset);
 				final int endIndex = findContaining(endOffset);
 				if (endLine == null || endLine.index != endIndex) {
 					endLine = lines.get(endIndex);
-					if (endLine.brick != null)
+					if (endLine.brick != null) {
 						border.setLast(context, endLine.brick);
+						ImmutableSet.copyOf(listeners).forEach(l -> {
+							l.firstChanged(context, beginLine.brick);
+						});
+					}
 				}
 				border.setLastIndex(context, endIndex - endLine.offset);
 			}
@@ -175,6 +192,18 @@ public class PrimitiveVisualNode extends VisualNodePart {
 
 		public void nudge(final Context context) {
 			setOffsets(context, beginOffset, endOffset);
+		}
+
+		public void addListener(final Context context, final VisualAttachmentAdapter.BoundsListener listener) {
+			listeners.add(listener);
+			if (beginLine != null && beginLine.brick != null)
+				listener.firstChanged(context, beginLine.brick);
+			if (endLine != null && endLine.brick != null)
+				listener.lastChanged(context, endLine.brick);
+		}
+
+		public void removeListener(final Context context, final VisualAttachmentAdapter.BoundsListener listener) {
+			listeners.remove(listener);
 		}
 	}
 
@@ -213,6 +242,16 @@ public class PrimitiveVisualNode extends VisualNodePart {
 
 		public PrimitiveSelection(final Context context, final int beginOffset, final int endOffset) {
 			this(context, beginOffset, endOffset, context.syntax.modalPrimitiveEditing ? false : true);
+		}
+
+		@Override
+		public void addBrickListener(final Context context, final VisualAttachmentAdapter.BoundsListener listener) {
+			range.addListener(context, listener);
+		}
+
+		@Override
+		public void removeBrickListener(final Context context, final VisualAttachmentAdapter.BoundsListener listener) {
+			range.removeListener(context, listener);
 		}
 
 		@Override
@@ -596,6 +635,18 @@ public class PrimitiveVisualNode extends VisualNodePart {
 		public void click(final Context context) {
 			selection = new PrimitiveSelection(context, range.beginOffset, range.endOffset);
 			context.setSelection(selection);
+		}
+
+		@Override
+		public NodeType.NodeTypeVisual node() {
+			if (PrimitiveVisualNode.this.parent == null)
+				return null;
+			return PrimitiveVisualNode.this.parent.getNode();
+		}
+
+		@Override
+		public VisualNodePart part() {
+			return PrimitiveVisualNode.this;
 		}
 	}
 

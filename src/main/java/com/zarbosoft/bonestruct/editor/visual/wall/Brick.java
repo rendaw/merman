@@ -1,6 +1,7 @@
 package com.zarbosoft.bonestruct.editor.visual.wall;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.Context;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
@@ -15,6 +16,8 @@ public abstract class Brick {
 	public Course parent;
 	public int index;
 	Set<Attachment> attachments = new HashSet<>();
+	Set<BeddingListener> beddingListeners = new HashSet<>();
+	Set<Bedding> bedding = new HashSet<>();
 
 	public abstract int converseEdge(final Context context);
 
@@ -39,6 +42,25 @@ public abstract class Brick {
 	 * @return A new brick or null (no elements before or brick already exists)
 	 */
 	public abstract Brick createPrevious(Context context);
+
+	public Set<BeddingListener> getBeddingListeners() {
+		return beddingListeners;
+	}
+
+	public void addBeddingListener(final Context context, final BeddingListener listener) {
+		beddingListeners.add(listener);
+		if (parent != null)
+			listener.beddingChanged(context, parent.beddingBefore, parent.beddingAfter);
+	}
+
+	public void removeBeddingListener(final BeddingListener listener) {
+		beddingListeners.remove(listener);
+	}
+
+	public static abstract class BeddingListener {
+
+		public abstract void beddingChanged(Context context, int beddingBefore, int beddingAfter);
+	}
 
 	public static class Properties {
 		public final boolean broken;
@@ -120,26 +142,39 @@ public abstract class Brick {
 		if (parent != null) {
 			attachment.setTransverse(context, parent.transverseStart);
 			attachment.setTransverseSpan(context, parent.ascent, parent.descent);
-			parent.attachmentsChanged(context, index);
 		}
 	}
 
 	public void removeAttachment(final Context context, final Attachment attachment) {
 		attachments.remove(attachment);
-		if (parent != null)
-			parent.attachmentsChanged(context, index);
 	}
 
 	public Set<Attachment> getAttachments(final Context context) {
 		return attachments;
 	}
 
+	public void addBedding(final Context context, final Bedding bedding) {
+		this.bedding.add(bedding);
+		if (parent != null) {
+			parent.beddingChanged(context);
+		}
+	}
+
+	public void removeBedding(final Context context, final Bedding bedding) {
+		this.bedding.remove(bedding);
+		if (parent != null)
+			parent.beddingChanged(context);
+	}
+
+	public Set<Bedding> getBeddings(final Context context) {
+		return bedding;
+	}
+
 	protected abstract void destroyed(Context context);
 
 	public void destroy(final Context context) {
-		for (final Attachment attachment : attachments)
-			attachment.destroy(context);
-		destroyed(context);
+		ImmutableSet.copyOf(attachments).forEach(a -> a.destroy(context));
 		parent.removeFromSystem(context, index);
+		destroyed(context);
 	}
 }

@@ -2,6 +2,8 @@ package com.zarbosoft.bonestruct.editor.visual.raw;
 
 import com.zarbosoft.bonestruct.editor.model.Style;
 import com.zarbosoft.bonestruct.editor.visual.Context;
+import javafx.animation.Interpolator;
+import javafx.animation.TranslateTransition;
 import javafx.geometry.Point2D;
 import javafx.geometry.VPos;
 import javafx.scene.Node;
@@ -45,7 +47,7 @@ public abstract class RawText {
 
 							@Override
 							public void setConverse(final int converse, final int edge) {
-								text.setLayoutY(edge - converse - converseSpan());
+								setLayoutY(text, edge - converse - converseSpan(), false);
 							}
 
 							@Override
@@ -56,7 +58,7 @@ public abstract class RawText {
 							public void setText(final String newText) {
 								final int oldSpan = converseSpan();
 								text.setText(newText);
-								text.setLayoutY(text.getLayoutY() + oldSpan - converseSpan());
+								setLayoutY(text, text.getLayoutY() + oldSpan - converseSpan(), false);
 							}
 
 							@Override
@@ -65,8 +67,8 @@ public abstract class RawText {
 							}
 
 							@Override
-							public void setTransverse(final int transverse, final int edge) {
-								text.setLayoutX(edge - transverse);
+							public void setTransverse(final int transverse, final int edge, final boolean animate) {
+								setLayoutX(text, edge - transverse, animate);
 							}
 
 							@Override
@@ -90,7 +92,7 @@ public abstract class RawText {
 
 							@Override
 							public void setConverse(final int converse, final int edge) {
-								text.setLayoutY(edge - converse - converseSpan());
+								setLayoutY(text, edge - converse - converseSpan(), false);
 							}
 
 							@Override
@@ -101,7 +103,7 @@ public abstract class RawText {
 							public void setText(final String newText) {
 								final int oldSpan = converseSpan();
 								text.setText(newText);
-								text.setLayoutY(text.getLayoutY() + oldSpan - converseSpan());
+								setLayoutY(text, text.getLayoutY() + oldSpan - converseSpan(), false);
 							}
 
 							@Override
@@ -110,8 +112,8 @@ public abstract class RawText {
 							}
 
 							@Override
-							public void setTransverse(final int transverse, final int edge) {
-								text.setLayoutX(transverse);
+							public void setTransverse(final int transverse, final int edge, final boolean animate) {
+								setLayoutX(text, transverse, animate);
 							}
 
 							@Override
@@ -141,7 +143,7 @@ public abstract class RawText {
 
 							@Override
 							public void setConverse(final int converse, final int edge) {
-								text.setLayoutY(converse);
+								setLayoutY(text, converse, false);
 							}
 
 							@Override
@@ -159,8 +161,8 @@ public abstract class RawText {
 							}
 
 							@Override
-							public void setTransverse(final int transverse, final int edge) {
-								text.setLayoutX(edge - transverse);
+							public void setTransverse(final int transverse, final int edge, final boolean animate) {
+								setLayoutX(text, edge - transverse, animate);
 							}
 
 							@Override
@@ -184,7 +186,7 @@ public abstract class RawText {
 
 							@Override
 							public void setConverse(final int converse, final int edge) {
-								text.setLayoutY(converse);
+								setLayoutY(text, converse, false);
 							}
 
 							@Override
@@ -202,8 +204,8 @@ public abstract class RawText {
 							}
 
 							@Override
-							public void setTransverse(final int transverse, final int edge) {
-								text.setLayoutX(transverse);
+							public void setTransverse(final int transverse, final int edge, final boolean animate) {
+								setLayoutX(text, transverse, animate);
 							}
 
 							@Override
@@ -230,7 +232,7 @@ public abstract class RawText {
 
 							@Override
 							public void setConverse(final int converse, final int edge) {
-								text.setLayoutX(edge - converse - converseSpan());
+								setLayoutX(text, edge - converse - converseSpan(), false);
 							}
 
 							@Override
@@ -241,7 +243,7 @@ public abstract class RawText {
 							public void setText(final String newText) {
 								final int oldSpan = converseSpan();
 								text.setText(newText);
-								text.setLayoutX(text.getLayoutX() + oldSpan - converseSpan());
+								setLayoutX(text, text.getLayoutX() + oldSpan - converseSpan(), false);
 							}
 
 							@Override
@@ -250,8 +252,8 @@ public abstract class RawText {
 							}
 
 							@Override
-							public void setTransverse(final int transverse, final int edge) {
-								text.setLayoutY(edge - transverse);
+							public void setTransverse(final int transverse, final int edge, final boolean animate) {
+								setLayoutY(text, edge - transverse, animate);
 							}
 
 							@Override
@@ -275,7 +277,7 @@ public abstract class RawText {
 
 							@Override
 							public void setConverse(final int converse, final int edge) {
-								text.setLayoutX(edge - converse - converseSpan());
+								setLayoutX(text, edge - converse - converseSpan(), false);
 							}
 
 							@Override
@@ -286,7 +288,7 @@ public abstract class RawText {
 							public void setText(final String newText) {
 								final int oldSpan = converseSpan();
 								text.setText(newText);
-								text.setLayoutX(text.getLayoutX() + oldSpan - converseSpan());
+								setLayoutX(text, text.getLayoutX() + oldSpan - converseSpan(), false);
 							}
 
 							@Override
@@ -295,8 +297,8 @@ public abstract class RawText {
 							}
 
 							@Override
-							public void setTransverse(final int transverse, final int edge) {
-								text.setLayoutY(transverse);
+							public void setTransverse(final int transverse, final int edge, final boolean animate) {
+								setLayoutY(text, transverse, animate);
 							}
 
 							@Override
@@ -326,7 +328,7 @@ public abstract class RawText {
 
 							@Override
 							public void setConverse(final int converse, final int edge) {
-								text.setLayoutX(converse);
+								setLayoutX(text, converse, false);
 							}
 
 							@Override
@@ -344,8 +346,8 @@ public abstract class RawText {
 							}
 
 							@Override
-							public void setTransverse(final int transverse, final int edge) {
-								text.setLayoutY(edge - transverse);
+							public void setTransverse(final int transverse, final int edge, final boolean animate) {
+								setLayoutY(text, edge - transverse, animate);
 							}
 
 							@Override
@@ -369,7 +371,7 @@ public abstract class RawText {
 
 							@Override
 							public void setConverse(final int converse, final int edge) {
-								text.setLayoutX(converse);
+								setLayoutX(text, converse, false);
 							}
 
 							public void setText(final String newText) {
@@ -387,8 +389,8 @@ public abstract class RawText {
 							}
 
 							@Override
-							public void setTransverse(final int transverse, final int edge) {
-								text.setLayoutY(transverse);
+							public void setTransverse(final int transverse, final int edge, final boolean animate) {
+								setLayoutY(text, transverse, animate);
 							}
 
 							@Override
@@ -402,6 +404,30 @@ public abstract class RawText {
 				}
 		}
 		throw new AssertionError("dead code");
+	}
+
+	private static void setLayoutY(final Text text, final double y, final boolean animate) {
+		if (animate) {
+			final TranslateTransition translation = new TranslateTransition(javafx.util.Duration.seconds(1), text);
+			//translation.setInterpolator(interpolator);
+			translation.setInterpolator(Interpolator.SPLINE(0, 0.5, 1, 1));
+			translation.setToY(y);
+			translation.play();
+		} else {
+			text.setLayoutY(y);
+		}
+	}
+
+	private static void setLayoutX(final Text text, final double x, final boolean animate) {
+		if (animate) {
+			final TranslateTransition translation = new TranslateTransition(javafx.util.Duration.seconds(1), text);
+			//translation.setInterpolator(interpolator);
+			translation.setInterpolator(Interpolator.SPLINE(0, 0.5, 1, 1));
+			translation.setToX(x);
+			translation.play();
+		} else {
+			text.setLayoutX(x);
+		}
 	}
 
 	public abstract void setText(final String newText);
@@ -424,7 +450,11 @@ public abstract class RawText {
 
 	public abstract int transverseSpan();
 
-	public abstract void setTransverse(int transverse, int edge);
+	public void setTransverse(final int transverse, final int edge) {
+		setTransverse(transverse, edge, false);
+	}
+
+	public abstract void setTransverse(int transverse, int edge, boolean animate);
 
 	protected abstract int getTransverse(int edge);
 

@@ -12,6 +12,7 @@ import com.zarbosoft.bonestruct.editor.model.middle.DataRecord;
 import com.zarbosoft.bonestruct.editor.visual.Context;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.editor.visual.attachments.BorderAttachment;
+import com.zarbosoft.bonestruct.editor.visual.attachments.VisualAttachmentAdapter;
 import com.zarbosoft.bonestruct.editor.visual.attachments.VisualBorderAttachment;
 import com.zarbosoft.bonestruct.editor.visual.nodes.GroupVisualNode;
 import com.zarbosoft.bonestruct.editor.visual.nodes.GroupVisualNodeParent;
@@ -49,7 +50,7 @@ public class FrontDataRecord extends FrontPart {
 	@Luxem.Configuration(name = "tag-last", optional = true)
 	public boolean tagLast = false;
 
-	private class RecordVisual extends GroupVisualNode {
+	public class RecordVisual extends GroupVisualNode {
 		private final DataRecord.Listener dataListener;
 		private final DataRecord.Value data;
 		private BorderAttachment borderAttachment;
@@ -165,7 +166,7 @@ public class FrontDataRecord extends FrontPart {
 				final Brick out = super.createFirstBrick(context);
 				if (selection != null && selection.key.equals(key)) {
 					selection.border.setFirst(context, out);
-					selection.border.notifySeedBrick(context, out);
+					selection.adapter.notifySeedBrick(context, out);
 				} else if (hoverable != null && hoverable.key.equals(key)) {
 					hoverable.border.setFirst(context, out);
 					hoverable.border.notifySeedBrick(context, out);
@@ -178,7 +179,7 @@ public class FrontDataRecord extends FrontPart {
 				final Brick out = super.createLastBrick(context);
 				if (selection != null && selection.key.equals(key)) {
 					selection.border.setLast(context, out);
-					selection.border.notifySeedBrick(context, out);
+					selection.adapter.notifySeedBrick(context, out);
 				} else if (hoverable != null && hoverable.key.equals(key)) {
 					hoverable.border.setLast(context, out);
 					hoverable.border.notifySeedBrick(context, out);
@@ -289,7 +290,7 @@ public class FrontDataRecord extends FrontPart {
 			public Brick createNextBrick(final Context context) {
 				final Brick out = super.createNextBrick(context);
 				if (selection != null && selection.key.equals(key))
-					selection.border.notifyNextBrickPastEdge(context, out);
+					selection.adapter.notifyNextBrickPastEdge(context, out);
 				else if (hoverable != null && hoverable.key.equals(key))
 					hoverable.border.notifyNextBrickPastEdge(context, out);
 				return out;
@@ -299,7 +300,7 @@ public class FrontDataRecord extends FrontPart {
 			public Brick createPreviousBrick(final Context context) {
 				final Brick out = super.createPreviousBrick(context);
 				if (selection != null && selection.key.equals(key))
-					selection.border.notifyPreviousBrickPastEdge(context, out);
+					selection.adapter.notifyPreviousBrickPastEdge(context, out);
 				else if (hoverable != null && hoverable.key.equals(key))
 					hoverable.border.notifyPreviousBrickPastEdge(context, out);
 				return out;
@@ -372,14 +373,51 @@ public class FrontDataRecord extends FrontPart {
 				this.key = key;
 				border.setFirst(context, getChildByKey(key));
 			}
+
+			@Override
+			public NodeType.NodeTypeVisual node() {
+				if (RecordVisual.this.parent == null)
+					return null;
+				return RecordVisual.this.parent.getNode();
+			}
+
+			@Override
+			public VisualNodePart part() {
+				return RecordVisual.this;
+			}
 		}
 
 		private class RecordSelection extends Context.Selection {
 			String key;
-			private final VisualBorderAttachment border;
+			private final VisualAttachmentAdapter adapter;
+			private final BorderAttachment border;
 
 			private RecordSelection(final Context context) {
-				border = new VisualBorderAttachment(context, context.syntax.hoverStyle);
+				border = new BorderAttachment(context, context.syntax.hoverStyle);
+				adapter = new VisualAttachmentAdapter();
+				adapter.addListener(context, new VisualAttachmentAdapter.BoundsListener() {
+					@Override
+					public void firstChanged(final Context context, final Brick brick) {
+						border.setFirst(context, brick);
+					}
+
+					@Override
+					public void lastChanged(final Context context, final Brick brick) {
+						border.setLast(context, brick);
+					}
+				});
+			}
+
+			@Override
+			public void addBrickListener(final Context context, final VisualAttachmentAdapter.BoundsListener listener) {
+				adapter.addListener(context, listener);
+			}
+
+			@Override
+			public void removeBrickListener(
+					final Context context, final VisualAttachmentAdapter.BoundsListener listener
+			) {
+				adapter.removeListener(context, listener);
 			}
 
 			@Override
@@ -389,6 +427,7 @@ public class FrontDataRecord extends FrontPart {
 
 			@Override
 			protected void clear(final Context context) {
+				adapter.destroy(context);
 				border.destroy(context);
 				selection = null;
 			}
@@ -397,7 +436,7 @@ public class FrontDataRecord extends FrontPart {
 				if (this.key == key)
 					return;
 				this.key = key;
-				border.setFirst(context, getChildByKey(key));
+				adapter.setBase(context, getChildByKey(key));
 			}
 
 			@Override

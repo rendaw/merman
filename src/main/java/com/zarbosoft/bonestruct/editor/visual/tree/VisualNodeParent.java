@@ -1,5 +1,6 @@
 package com.zarbosoft.bonestruct.editor.visual.tree;
 
+import com.zarbosoft.bonestruct.editor.model.NodeType;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.Context;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
@@ -10,7 +11,7 @@ public abstract class VisualNodeParent {
 
 	public abstract Brick createNextBrick(Context context);
 
-	public abstract VisualNode getNode();
+	public abstract NodeType.NodeTypeVisual getNode();
 
 	public abstract Alignment getAlignment(String alignment);
 

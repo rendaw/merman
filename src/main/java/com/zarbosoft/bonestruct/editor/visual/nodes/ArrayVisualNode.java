@@ -3,11 +3,15 @@ package com.zarbosoft.bonestruct.editor.visual.nodes;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.zarbosoft.bonestruct.editor.model.Hotkeys;
+import com.zarbosoft.bonestruct.editor.model.NodeType;
 import com.zarbosoft.bonestruct.editor.model.front.FrontConstantPart;
 import com.zarbosoft.bonestruct.editor.model.middle.DataArray;
 import com.zarbosoft.bonestruct.editor.model.middle.DataNode;
 import com.zarbosoft.bonestruct.editor.visual.Context;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
+import com.zarbosoft.bonestruct.editor.visual.attachments.BorderAttachment;
+import com.zarbosoft.bonestruct.editor.visual.attachments.MultiVisualAttachmentAdapter;
+import com.zarbosoft.bonestruct.editor.visual.attachments.VisualAttachmentAdapter;
 import com.zarbosoft.bonestruct.editor.visual.attachments.VisualBorderAttachment;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodeParent;
@@ -114,7 +118,7 @@ public abstract class ArrayVisualNode extends GroupVisualNode {
 				if (selection.beginIndex == ((ArrayVisualNodeParent) parent).index)
 					selection.border.setFirst(context, out);
 				if (selection.endIndex == ((ArrayVisualNodeParent) parent).index)
-					selection.border.notifySeedBrick(context, out);
+					selection.adapter.notifySeedBrick(context, out);
 			}
 			if (hoverable != null && hoverable.index == ((ArrayVisualNodeParent) parent).index) {
 				hoverable.border.setFirst(context, out);
@@ -128,7 +132,7 @@ public abstract class ArrayVisualNode extends GroupVisualNode {
 			final Brick out = super.createLastBrick(context);
 			if (selection != null) {
 				if (selection.beginIndex == ((ArrayVisualNodeParent) parent).index)
-					selection.border.notifySeedBrick(context, out);
+					selection.adapter.notifySeedBrick(context, out);
 				if (selection.endIndex == ((ArrayVisualNodeParent) parent).index)
 					selection.border.setLast(context, out);
 			}
@@ -166,8 +170,9 @@ public abstract class ArrayVisualNode extends GroupVisualNode {
 			final ChildGroup group = new ChildGroup(ImmutableSet.of(), true);
 			for (final FrontConstantPart fix : getPrefix())
 				group.add(context, fix.createVisual(context, tags.plus(new VisualNode.PartTag("prefix"))));
-			group.add(context,
-					new NestedVisualNodePart(context, p.second, tags.plus(new VisualNode.PartTag("nested")))
+			group.add(
+					context,
+					new EmbeddedNestedVisualNodePart(context, p.second, tags.plus(new VisualNode.PartTag("nested")))
 			);
 			for (final FrontConstantPart fix : getSuffix())
 				group.add(context, fix.createVisual(context, tags.plus(new VisualNode.PartTag("suffix"))));
@@ -221,7 +226,6 @@ public abstract class ArrayVisualNode extends GroupVisualNode {
 		@Override
 		public void clear(final Context context) {
 			border.destroy(context);
-			border = null;
 			hoverable = null;
 		}
 
@@ -229,29 +233,54 @@ public abstract class ArrayVisualNode extends GroupVisualNode {
 		public void click(final Context context) {
 			((ArrayVisualNodeParent) children.get(index).parent()).selectDown(context);
 		}
+
+		@Override
+		public NodeType.NodeTypeVisual node() {
+			if (ArrayVisualNode.this.parent == null)
+				return null;
+			return ArrayVisualNode.this.parent.getNode();
+		}
+
+		@Override
+		public VisualNodePart part() {
+			return ArrayVisualNode.this;
+		}
 	}
 
 	private ArraySelection selection;
 
 	private class ArraySelection extends Context.Selection {
-		VisualBorderAttachment border;
+		MultiVisualAttachmentAdapter adapter;
+		BorderAttachment border;
 		int beginIndex;
 		int endIndex;
 
 		public ArraySelection(final Context context, final int index) {
-			border = new VisualBorderAttachment(context, context.syntax.selectStyle);
+			border = new BorderAttachment(context, context.syntax.selectStyle);
+			adapter = new MultiVisualAttachmentAdapter(context);
+			adapter.addListener(context, new VisualAttachmentAdapter.BoundsListener() {
+				@Override
+				public void firstChanged(final Context context, final Brick brick) {
+					border.setFirst(context, brick);
+				}
+
+				@Override
+				public void lastChanged(final Context context, final Brick brick) {
+					border.setLast(context, brick);
+				}
+			});
 			setBegin(context, index);
 			setEnd(context, index);
 		}
 
 		private void setEnd(final Context context, final int index) {
 			endIndex = index;
-			border.setLast(context, children.get(index));
+			adapter.setLast(context, children.get(index));
 		}
 
 		private void setBegin(final Context context, final int index) {
 			beginIndex = index;
-			border.setFirst(context, children.get(index));
+			adapter.setFirst(context, children.get(index));
 		}
 
 		@Override
@@ -261,8 +290,19 @@ public abstract class ArrayVisualNode extends GroupVisualNode {
 
 		@Override
 		public void clear(final Context context) {
+			adapter.destroy(context);
 			border.destroy(context);
 			selection = null;
+		}
+
+		@Override
+		public void addBrickListener(final Context context, final VisualAttachmentAdapter.BoundsListener listener) {
+			adapter.addListener(context, listener);
+		}
+
+		@Override
+		public void removeBrickListener(final Context context, final VisualAttachmentAdapter.BoundsListener listener) {
+			adapter.removeListener(context, listener);
 		}
 
 		@Override
@@ -456,7 +496,7 @@ public abstract class ArrayVisualNode extends GroupVisualNode {
 		public Brick createPreviousBrick(final Context context) {
 			final Brick next = super.createNextBrick(context);
 			if (selection != null && index == selection.beginIndex)
-				selection.border.notifyPreviousBrickPastEdge(context, next);
+				selection.adapter.notifyPreviousBrickPastEdge(context, next);
 			if (hoverable != null && index == hoverable.index)
 				hoverable.border.notifyPreviousBrickPastEdge(context, next);
 			return next;
@@ -466,7 +506,7 @@ public abstract class ArrayVisualNode extends GroupVisualNode {
 		public Brick createNextBrick(final Context context) {
 			final Brick next = super.createNextBrick(context);
 			if (selection != null && index == selection.endIndex)
-				selection.border.notifyNextBrickPastEdge(context, next);
+				selection.adapter.notifyNextBrickPastEdge(context, next);
 			if (hoverable != null && index == hoverable.index)
 				hoverable.border.notifyNextBrickPastEdge(context, next);
 			return next;

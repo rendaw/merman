@@ -26,32 +26,32 @@ public class Course {
 	int ascent = 0;
 	int descent = 0;
 	public List<Brick> children = new ArrayList<>();
-	//Fixture fixtures[] = new Fixture[2];
-	private final Map<Brick, Set<Attachment>> attachments = new HashMap<>();
 	int lastExpandCheckConverse = 0;
+	public int beddingBefore = 0;
+	int beddingAfter = 0;
 
 	Course(final Context context) {
 		visual.getChildren().add(0, brickVisual);
 	}
 
 	public int transverseEdge(final Context context) {
-		final int out = transverseStart + ascent + descent;
-		/*
-		for (final Fixture f : fixtures) {
-			out += f.transverseSpan(context);
-		}
-		*/
+		final int out = transverseStart + ascent + descent + beddingAfter;
 		return out;
 	}
 
 	void setTransverse(final Context context, final int transverse) {
-		transverseStart = transverse;
-		context.translate(visual, new com.zarbosoft.bonestruct.editor.visual.Vector(0, transverseStart));
-		parent.adjust(context, index);
-		for (final Map.Entry<Brick, Set<Attachment>> pair : attachments.entrySet()) {
-			for (final Attachment attachment : pair.getValue())
-				attachment.setTransverse(context, transverseStart);
-		}
+		transverseStart = transverse + beddingBefore;
+		context.translate(visual,
+				new com.zarbosoft.bonestruct.editor.visual.Vector(0, transverseStart),
+				context.syntax.animateCoursePlacement
+		);
+		ImmutableList
+				.copyOf(children)
+				.stream()
+				.forEach(c -> ImmutableList
+						.copyOf(c.getAttachments(context))
+						.stream()
+						.forEach(a -> a.setTransverse(context, transverseStart)));
 	}
 
 	void changed(final Context context, final int at) {
@@ -67,11 +67,6 @@ public class Course {
 		getIdlePlace(context);
 		idlePlace.at(at);
 		idlePlace.changed.add(brick);
-	}
-
-	void attachmentsChanged(final Context context, final int at) {
-		final Brick brick = children.get(at);
-		attachments.put(brick, brick.getAttachments(context));
 	}
 
 	private void joinPreviousCourse(final Context context) {
@@ -93,7 +88,8 @@ public class Course {
 				idlePlace.removeMaxAscent = Math.max(idlePlace.removeMaxAscent, brick.properties().ascent);
 				idlePlace.removeMaxDescent = Math.max(idlePlace.removeMaxDescent, brick.properties().descent);
 				idlePlace.changed.remove(brick);
-				attachments.remove(brick);
+				if (!brick.getBeddings(context).isEmpty())
+					beddingChanged(context);
 			}
 			children.subList(index, children.size()).clear();
 			visual.getChildren().remove(index, visual.getChildren().size());
@@ -101,32 +97,6 @@ public class Course {
 		}
 		return next;
 	}
-
-	/*
-void fixtureChanged(final Context context, final int index) {
-		if (index != 0 && index != 1)
-			throw new AssertionError("Invalid fixture index");
-		getIdlePlace(context);
-		idlePlace.fixtures[index] = true;
-	}
-
-void setFixture(final Context context, final int index, final Fixture fixture) {
-		if (index != 0 && index != 1)
-			throw new AssertionError("Invalid fixture index");
-		if (fixtures[index] != null) {
-			visual.getChildren().remove(index == 0 ? 0 : fixtures[0] == null ? 1 : 2, 1);
-			fixtures[index].parent = null;
-		}
-		fixtures[index] = fixture;
-		if (fixture != null) {
-			fixtures[index].parent = this;
-			fixtures[index].index = index;
-			visual.getChildren().add(index == 0 ? 0 : fixtures[0] == null ? 1 : 2, fixture.visual(context));
-		}
-		getIdlePlace(context);
-		idlePlace.fixtures[index] = true;
-	}
-	*/
 
 	void add(final Context context, final int at, final List<Brick> bricks) {
 		if (bricks.size() == 0)
@@ -136,12 +106,6 @@ void setFixture(final Context context, final int index, final Fixture fixture) {
 			brick.parent = this;
 		renumber(at);
 		visual.getChildren().addAll(at, bricks.stream().map(c -> c.getRawVisual()).collect(Collectors.toList()));
-		for (int i = 0; i < bricks.size(); ++i) {
-			final Brick brick = bricks.get(i);
-			attachments.put(brick, ImmutableSet.copyOf(brick.getAttachments(context)));
-			for (final Attachment attachment : ImmutableSet.copyOf(brick.getAttachments(context)))
-				attachment.setTransverse(context, transverseStart);
-		}
 		getIdlePlace(context);
 		idlePlace.at(at);
 		idlePlace.changed.addAll(bricks);
@@ -156,8 +120,8 @@ void setFixture(final Context context, final int index, final Fixture fixture) {
 			if (at == 0) {
 				joinPreviousCourse(context);
 			} else {
-				brick.parent = null;
-				attachments.remove(brick);
+				if (!brick.getBeddings(context).isEmpty())
+					beddingChanged(context);
 				visual.getChildren().remove(at);
 				getIdlePlace(context);
 				idlePlace.at(at);
@@ -210,6 +174,30 @@ void setFixture(final Context context, final int index, final Fixture fixture) {
 		}
 	}
 
+	public void beddingChanged(final Context context) {
+		final Pair<Integer, Integer> pair = ImmutableList
+				.copyOf(children)
+				.stream()
+				.map(c -> ImmutableList
+						.copyOf(c.getBeddings(context))
+						.stream()
+						.map(b -> new Pair<>(b.before, b.after))
+						.reduce((a, b) -> new Pair<>(a.first + b.first, a.second + b.second))
+						.orElse(new Pair<>(0, 0)))
+				.reduce((a, b) -> new Pair<>(a.first + b.first, a.second + b.second))
+				.orElse(new Pair<>(0, 0));
+		beddingBefore = pair.first;
+		beddingAfter = pair.second;
+		ImmutableList
+				.copyOf(children)
+				.stream()
+				.forEach(c -> ImmutableList
+						.copyOf(c.getBeddingListeners())
+						.stream()
+						.forEach(a -> a.beddingChanged(context, beddingBefore, beddingAfter)));
+		parent.adjust(context, this.index);
+	}
+
 	class IdlePlaceTask extends com.zarbosoft.bonestruct.editor.visual.IdleTask {
 
 		private final Context context;
@@ -217,7 +205,6 @@ void setFixture(final Context context, final int index, final Fixture fixture) {
 		Set<Brick> changed = new HashSet<>();
 		int removeMaxAscent = 0;
 		int removeMaxDescent = 0;
-		//boolean fixtures[] = {false, false};
 
 		public IdlePlaceTask(final Context context) {
 			this.context = context;
@@ -230,9 +217,6 @@ void setFixture(final Context context, final int index, final Fixture fixture) {
 
 		@Override
 		public void runImplementation() {
-			// Update attachments
-			changed.stream().forEach(b -> attachments.put(b, ImmutableSet.copyOf(b.getAttachments(context))));
-
 			// Update transverse space
 			boolean newAscent = false, newDescent = false;
 			for (final Brick brick : changed) {
@@ -269,18 +253,6 @@ void setFixture(final Context context, final int index, final Fixture fixture) {
 					b.allocateTransverse(context, ascent, descent);
 					b.getAttachments(context).forEach(a -> a.setTransverseSpan(context, ascent, descent));
 				});
-
-			/*
-			if (fixtures[0]) {
-				final boolean noFirst = Course.this.fixtures[0] == null;
-				final int offset = noFirst ? 0 : Course.this.fixtures[0].transverseSpan(context);
-				context.translate(brickVisual, new Vector(0, offset));
-				if (Course.this.fixtures[1] != null)
-					context.translate(noFirst ? visual.getChildren().get(1) : visual.getChildren().get(2),
-							new Vector(0, offset + ascent + descent)
-					);
-			}
-			*/
 
 			// Do getConverse placement
 			final Set<Alignment> seenAlignments = new HashSet<>();

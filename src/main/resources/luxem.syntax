@@ -2,6 +2,7 @@
     name: luxem,
     *TODO complete color selection*
 	background: [0.21568, 0.21568, 0.21568],
+	animate-course-placement: true,
 	hover-style: {
 	    line-color: [0.21568, 0.05, 0.43],
 	},
@@ -33,7 +34,6 @@
 	],
 	groups: {
 	    value: [
-            __bud,
 	        luxem-object,
 	        luxem-array,
 	        luxem-primitive,
@@ -42,8 +42,8 @@
 	root: value,
 	types: [
 		{
-		    id: __bud,
-			name: "Bud",
+		    id: __gap,
+			name: "Gap",
 			back: [
 			    (type) __bud,
 			    (data-primitive) value,
@@ -139,5 +139,8 @@
                 text-delete-previous: [ (key) backspace ],
 	        }
 	    },
+	],
+	plugins: [
+	    (hover-type) {},
 	],
 }

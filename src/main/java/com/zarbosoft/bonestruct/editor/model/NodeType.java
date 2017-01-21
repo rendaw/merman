@@ -144,7 +144,7 @@ public class NodeType {
 		return id;
 	}
 
-	private class NodeTypeVisual extends VisualNode {
+	public class NodeTypeVisual extends VisualNode {
 		private final GroupVisualNode body;
 		private boolean compact;
 		private VisualNodeParent parent;
@@ -183,7 +183,7 @@ public class NodeType {
 				}
 
 				@Override
-				public VisualNode getNode() {
+				public NodeType.NodeTypeVisual getNode() {
 					return NodeTypeVisual.this;
 				}
 
@@ -303,6 +303,10 @@ public class NodeType {
 		@Override
 		public void destroyBricks(final Context context) {
 			body.destroyBricks(context);
+		}
+
+		public NodeType getType() {
+			return NodeType.this;
 		}
 	}
 }

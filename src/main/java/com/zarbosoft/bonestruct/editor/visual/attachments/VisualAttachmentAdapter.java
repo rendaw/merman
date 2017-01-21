@@ -97,12 +97,15 @@ public class VisualAttachmentAdapter {
 		public abstract void lastChanged(Context context, Brick brick);
 	}
 
-	public void addSelectionBoundsListener(final Context context, final BoundsListener listener) {
+	public void addListener(final Context context, final BoundsListener listener) {
 		boundsListeners.add(listener);
-		listener.firstChanged(context, first);
+		if (first != null)
+			listener.firstChanged(context, first);
+		if (last != null)
+			listener.lastChanged(context, last);
 	}
 
-	public void removeSelectionBoundsListener(final Context context, final BoundsListener listener) {
+	public void removeListener(final Context context, final BoundsListener listener) {
 		boundsListeners.remove(listener);
 	}
 

@@ -33,7 +33,7 @@ public class DataArray extends DataElement {
 		public Value(final Syntax syntax, final List<DataNode.Value> data) {
 			value.addAll(data);
 			if (data.isEmpty())
-				value.add(new DataNode.Value(syntax.bud.create()));
+				value.add(new DataNode.Value(syntax.gap.create()));
 		}
 
 		public Value() {

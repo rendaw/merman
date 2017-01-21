@@ -13,8 +13,11 @@ import com.zarbosoft.bonestruct.editor.visual.Context;
 import com.zarbosoft.bonestruct.editor.visual.IdleTask;
 import com.zarbosoft.bonestruct.editor.visual.Keyboard;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
+import com.zarbosoft.bonestruct.editor.visual.attachments.TransverseExtentsAdapter;
+import com.zarbosoft.bonestruct.editor.visual.attachments.VisualAttachmentAdapter;
 import com.zarbosoft.bonestruct.editor.visual.nodes.ArrayVisualNode;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
+import com.zarbosoft.bonestruct.editor.visual.wall.Brick;
 import com.zarbosoft.bonestruct.editor.visual.wall.Wall;
 import com.zarbosoft.luxemj.grammar.Node;
 import com.zarbosoft.pidgoon.InvalidStream;
@@ -33,10 +36,15 @@ import java.io.UncheckedIOException;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public class Editor {
 	private final Context context;
 	private final Pane visual;
+	int scrollStart;
+	int scrollEnd;
+	int scrollStartBeddingBefore;
+	int scrollStartBeddingAfter;
 
 	public Editor(
 			final Consumer<IdleTask> addIdle,
@@ -92,9 +100,11 @@ public class Editor {
 				return "redo";
 			}
 		}), globalActions), history);
+		context.background = new Group();
+		context.banner = new Context.Banner(context);
+		context.plugins = doc.syntax.plugins.stream().map(p -> p.initialize(context)).collect(Collectors.toList());
 		this.visual = new Pane();
 		visual.setBackground(new Background(new BackgroundFill(context.syntax.background, null, null)));
-		context.background = new Group();
 		visual.getChildren().add(context.background);
 		visual.getChildren().add(wall.visual);
 		final ArrayVisualNode root =
@@ -130,6 +140,42 @@ public class Editor {
 						return doc.syntax.rootSuffix;
 					}
 				};
+		context.selectionExtentsAdapter.addListener(context, new TransverseExtentsAdapter.Listener() {
+			@Override
+			public void transverseChanged(final Context context, final int transverse) {
+				scrollStart = transverse;
+				scrollVisible(context);
+			}
+
+			@Override
+			public void transverseEdgeChanged(final Context context, final int transverse) {
+				scrollEnd = transverse;
+				scrollVisible(context);
+			}
+
+			@Override
+			public void beddingAfterChanged(final Context context, final int beddingAfter) {
+				scrollStartBeddingAfter = beddingAfter;
+				scrollVisible(context);
+			}
+
+			@Override
+			public void beddingBeforeChanged(final Context context, final int beddingBefore) {
+				scrollStartBeddingBefore = beddingBefore;
+				scrollVisible(context);
+			}
+		});
+		context.addSelectionBrickListener(new VisualAttachmentAdapter.BoundsListener() {
+			@Override
+			public void firstChanged(final Context context, final Brick brick) {
+				wall.setCornerstone(context, brick);
+			}
+
+			@Override
+			public void lastChanged(final Context context, final Brick brick) {
+
+			}
+		});
 		root.select(context);
 		visual.setOnMouseExited(event -> {
 			if (context.hoverIdle != null) {
@@ -175,7 +221,6 @@ public class Editor {
 		final ChangeListener<Number> converseSizeListener = (observable, oldValue, newValue) -> {
 			final int newValue2 = (int) newValue.doubleValue();
 			final int oldValue2 = (int) oldValue.doubleValue();
-			//System.out.format("conv window size change: %d to %d\n", oldValue2, newValue2);
 			context.edge = Math.max(0, newValue2 - doc.syntax.padConverse * 2);
 			if (newValue2 < oldValue2) {
 				wall.idleCompact(context);
@@ -186,63 +231,45 @@ public class Editor {
 		final ChangeListener<Number> transverseSizeListener = (observable, oldValue, newValue) -> {
 			final int newValue2 = (int) newValue.doubleValue();
 			context.transverseEdge = Math.max(0, newValue2 - doc.syntax.padTransverse * 2);
+			scrollVisible(context);
 		};
 		switch (doc.syntax.converseDirection) {
 			case UP:
-				wall.visual.setLayoutY(-doc.syntax.padConverse);
-				context.background.setLayoutY(-doc.syntax.padConverse);
-				break;
 			case DOWN:
-				wall.visual.setLayoutY(doc.syntax.padConverse);
-				context.background.setLayoutY(doc.syntax.padConverse);
-				break;
-			case LEFT:
-				wall.visual.setLayoutX(-doc.syntax.padConverse);
-				context.background.setLayoutX(-doc.syntax.padConverse);
-				break;
-			case RIGHT:
-				wall.visual.setLayoutX(doc.syntax.padConverse);
-				context.background.setLayoutX(doc.syntax.padConverse);
-				break;
-		}
-		switch (doc.syntax.transverseDirection) {
-			case UP:
-				wall.visual.setLayoutY(-doc.syntax.padTransverse);
-				context.background.setLayoutY(-doc.syntax.padTransverse);
-				break;
-			case DOWN:
-				wall.visual.setLayoutY(doc.syntax.padTransverse);
-				context.background.setLayoutY(doc.syntax.padTransverse);
-				break;
-			case LEFT:
-				wall.visual.setLayoutX(-doc.syntax.padTransverse);
-				context.background.setLayoutX(-doc.syntax.padTransverse);
-				break;
-			case RIGHT:
-				wall.visual.setLayoutX(doc.syntax.padTransverse);
-				context.background.setLayoutX(doc.syntax.padTransverse);
-				break;
-		}
-		switch (doc.syntax.converseDirection) {
-			case UP:
-			case DOWN:
-				/*
-				scroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-				scroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
-				*/
 				visual.heightProperty().addListener(converseSizeListener);
-				//converseSizeListener.changed(null, Double.MAX_VALUE, scene.heightProperty().getValue());
 				visual.widthProperty().addListener(transverseSizeListener);
 				break;
 			case LEFT:
 			case RIGHT:
-				/*
-				scroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
-				scroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-				*/
 				visual.widthProperty().addListener(converseSizeListener);
 				visual.heightProperty().addListener(transverseSizeListener);
 				break;
+		}
+	}
+
+	private void scrollVisible(final Context context) {
+		final int scroll = context.sceneToVector(visual,
+				context.wall.visual.getLayoutX(),
+				-context.wall.visual.getLayoutY()
+		).transverse;
+		final int minimum = scrollStart - scrollStartBeddingBefore - context.syntax.padTransverse;
+		final int maximum = scrollEnd + scrollStartBeddingAfter + context.syntax.padTransverse;
+		final int maxDiff = scroll + context.transverseEdge - maximum;
+		Integer newScroll = null;
+		if (minimum < scroll) {
+			newScroll = minimum;
+		} else if (maxDiff > 0 && scroll + maxDiff < minimum) {
+			newScroll = scroll + maxDiff;
+		}
+		if (newScroll != null) {
+			context.translate(context.wall.visual,
+					new Vector(context.syntax.padConverse, -newScroll),
+					context.syntax.animateCoursePlacement
+			);
+			context.translate(context.background,
+					new Vector(context.syntax.padConverse, -newScroll),
+					context.syntax.animateCoursePlacement
+			);
 		}
 	}
 
@@ -289,13 +316,9 @@ public class Editor {
 		}
 	}
 
-	public void destroy(final Context context) {
-		if (context.hoverIdle != null)
-			context.hoverIdle.destroy();
-		if (context.idleFill != null)
-			context.idleFill.destroy();
-		if (context.idleClick != null)
-			context.idleClick.destroy();
+	public void destroy() {
+		context.plugins.forEach(p -> p.destroy(context));
+		context.banner.destroy(context);
 		context.wall.clear(context);
 	}
 }
