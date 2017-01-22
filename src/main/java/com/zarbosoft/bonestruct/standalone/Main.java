@@ -34,6 +34,8 @@ public class Main extends Application {
 	public void start(final Stage primaryStage) {
 		/*
 		TODO
+		banner background
+		add mouse scroll buttons to input patterns
 		details
 		windowing
 		editing, actions for everythinga

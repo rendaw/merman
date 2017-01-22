@@ -9,8 +9,10 @@ import com.zarbosoft.bonestruct.editor.model.*;
 import com.zarbosoft.bonestruct.editor.visual.attachments.TransverseExtentsAdapter;
 import com.zarbosoft.bonestruct.editor.visual.attachments.VisualAttachmentAdapter;
 import com.zarbosoft.bonestruct.editor.visual.raw.RawText;
+import com.zarbosoft.bonestruct.editor.visual.raw.RawTextUtils;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
+import com.zarbosoft.bonestruct.editor.visual.wall.Attachment;
 import com.zarbosoft.bonestruct.editor.visual.wall.Bedding;
 import com.zarbosoft.bonestruct.editor.visual.wall.Brick;
 import com.zarbosoft.bonestruct.editor.visual.wall.Wall;
@@ -49,13 +51,8 @@ public class Context {
 	public Details details;
 	private final Set<SelectionListener> selectionListeners = new HashSet<>();
 	private final Set<HoverListener> hoverListeners = new HashSet<>();
-	public final VisualAttachmentAdapter selectionAdapter = new VisualAttachmentAdapter();
 	public final TransverseExtentsAdapter selectionExtentsAdapter = new TransverseExtentsAdapter();
 	public List<Plugin.State> plugins;
-
-	public void addSelectionBrickListener(final VisualAttachmentAdapter.BoundsListener listener) {
-		selectionAdapter.addListener(this, listener);
-	}
 
 	public int sceneGetConverseSpan(final Node node) {
 		switch (syntax.converseDirection) {
@@ -116,68 +113,88 @@ public class Context {
 		switch (syntax.converseDirection) {
 			case UP:
 				converse = edge - (int) node.getLayoutY() + (int) bounds.getWidth();
+				break;
 			case DOWN:
 				converse = (int) node.getLayoutY();
+				break;
 			case LEFT:
 				converse = edge - (int) node.getLayoutX() + (int) bounds.getWidth();
+				break;
 			case RIGHT:
 				converse = (int) node.getLayoutX();
+				break;
 		}
 		switch (syntax.transverseDirection) {
 			case UP:
 				transverse = transverseEdge - (int) node.getLayoutY() + (int) bounds.getWidth();
+				break;
 			case DOWN:
 				transverse = (int) node.getLayoutY();
+				break;
 			case LEFT:
 				transverse = transverseEdge - (int) node.getLayoutX() + (int) bounds.getWidth();
+				break;
 			case RIGHT:
 				transverse = (int) node.getLayoutX();
+				break;
 		}
 		return new Vector(converse, transverse);
 	}
 
 	public static class Banner {
-		private RawText text;
+		public RawText text;
 		private final PriorityQueue<BannerMessage> queue =
 				new PriorityQueue<>(11, new ChainComparator<BannerMessage>().greaterFirst(m -> m.priority).build());
 		private BannerMessage current;
 		private final Timer timer = new Timer();
 		private Brick brick;
-		private int targetTransverse;
-		private int targetBedding;
+		private int transverse;
+		private int scroll;
 		private Bedding bedding;
 		private IdlePlace idle;
+		private final Attachment attachment = new Attachment() {
+			@Override
+			public void setTransverse(final Context context, final int transverse) {
+				Banner.this.transverse = transverse;
+				idlePlace(context);
+			}
+
+			@Override
+			public void destroy(final Context context) {
+				brick = null;
+			}
+		};
 
 		private void idlePlace(final Context context) {
+			if (text == null)
+				return;
 			if (idle == null) {
-				idle = new IdlePlace(context, targetTransverse, targetBedding);
+				idle = new IdlePlace(context);
 				context.addIdle(idle);
-			} else {
-				if (targetTransverse == idle.startTargetTransverse && targetBedding == idle.startTargetBedding) {
-					idle.destroy();
-				}
 			}
+		}
+
+		public void setScroll(final Context context, final int scroll) {
+			this.scroll = scroll;
+			idlePlace(context);
 		}
 
 		private class IdlePlace extends IdleTask {
 			private final Context context;
-			private final int startTargetTransverse;
-			private final int startTargetBedding;
 
-			private IdlePlace(final Context context, final int startTargetTransverse, final int startTargetBedding) {
+			private IdlePlace(final Context context) {
 				this.context = context;
-				this.startTargetTransverse = startTargetTransverse;
-				this.startTargetBedding = startTargetBedding;
 			}
 
 			@Override
 			protected void runImplementation() {
-				if (text != null)
-					text.setTransverse(
-							context,
-							targetTransverse + targetBedding - text.transverseSpan(context),
-							context.syntax.animateCoursePlacement
+				if (text != null) {
+					text.setTransverse(context,
+							Math.max(scroll, Banner.this.transverse - (int) RawTextUtils.getDescent(text.getFont())),
+							false
 					);
+				}
+				idle = null;
 			}
 
 			@Override
@@ -187,45 +204,29 @@ public class Context {
 		}
 
 		public Banner(final Context context) {
-			context.selectionExtentsAdapter.addListener(context, new TransverseExtentsAdapter.Listener() {
-				int brickBedding;
-
+			context.addSelectionListener(new SelectionListener() {
 				@Override
-				public void transverseChanged(final Context context, final int transverse) {
-					Banner.this.targetTransverse = transverse;
-					idlePlace(context);
-				}
+				public void selectionChanged(final Context context, final Selection selection) {
+					selection.addBrickListener(context, new VisualAttachmentAdapter.BoundsListener() {
+						@Override
+						public void firstChanged(final Context context, final Brick first) {
+							if (brick != null) {
+								if (bedding != null)
+									brick.removeBedding(context, bedding);
+								brick.removeAttachment(context, attachment);
+							}
+							brick = first;
+							if (bedding != null) {
+								brick.addBedding(context, bedding);
+							}
+							brick.addAttachment(context, attachment);
+						}
 
-				@Override
-				public void transverseEdgeChanged(final Context context, final int transverse) {
+						@Override
+						public void lastChanged(final Context context, final Brick last) {
 
-				}
-
-				@Override
-				public void beddingAfterChanged(final Context context, final int beddingAfter) {
-
-				}
-
-				@Override
-				public void beddingBeforeChanged(final Context context, final int beddingBefore) {
-					targetBedding = beddingBefore;
-					idlePlace(context);
-				}
-			});
-			context.selectionAdapter.addListener(context, new VisualAttachmentAdapter.BoundsListener() {
-				@Override
-				public void firstChanged(final Context context, final Brick first) {
-					if (brick != null && bedding != null)
-						brick.removeBedding(context, bedding);
-					brick = first;
-					if (bedding != null) {
-						brick.addBedding(context, bedding);
-					}
-				}
-
-				@Override
-				public void lastChanged(final Context context, final Brick last) {
-
+						}
+					});
 				}
 			});
 		}
@@ -234,7 +235,10 @@ public class Context {
 			if (queue.isEmpty()) {
 				text = new RawText(context, context.getStyle(ImmutableSet.of(new VisualNode.PartTag("banner"))));
 				context.background.getChildren().add(text.getVisual());
-				text.setTransverse(context, targetTransverse + targetBedding - text.transverseSpan(context), false);
+				text.setTransverse(context,
+						Math.max(scroll, transverse - (int) RawTextUtils.getDescent(text.getFont())),
+						false
+				);
 				bedding = new Bedding(text.transverseSpan(context), 0);
 				brick.addBedding(context, bedding);
 			}
@@ -408,10 +412,19 @@ public class Context {
 			cornerstone = newCornerstone;
 			cornerstoneTransverse = newCornerstone.parent.transverseStart;
 		}
+		selection.addBrickListener(this, new VisualAttachmentAdapter.BoundsListener() {
+			@Override
+			public void firstChanged(final Context context, final Brick brick) {
+				wall.setCornerstone(context, brick);
+			}
 
+			@Override
+			public void lastChanged(final Context context, final Brick brick) {
+
+			}
+		});
 		ImmutableSet.copyOf(selectionListeners).forEach(l -> l.selectionChanged(this, selection));
-		selectionAdapter.setBase(this, visual);
-		selectionAdapter.addListener(this, selectionExtentsAdapter.boundsListener);
+		selection.addBrickListener(this, selectionExtentsAdapter.boundsListener);
 
 		fillFromEndBrick(cornerstone);
 		fillFromStartBrick(cornerstone);
@@ -487,6 +500,10 @@ public class Context {
 		public abstract Iterable<Action> getActions(Context context);
 
 		public abstract VisualNodePart getVisual();
+
+		public abstract class VisualListener {
+
+		}
 
 		public abstract void addBrickListener(Context context, final VisualAttachmentAdapter.BoundsListener listener);
 
@@ -710,6 +727,31 @@ public class Context {
 		translate(node, vector, false);
 	}
 
+	private class TransitionSmoothOut extends Transition {
+		private final Node node;
+		private final Double diffX;
+		private final Double diffY;
+
+		{
+			setCycleDuration(javafx.util.Duration.millis(200));
+		}
+
+		private TransitionSmoothOut(final Node node, final Double diffX, final Double diffY) {
+			this.node = node;
+			this.diffX = diffX;
+			this.diffY = diffY;
+		}
+
+		@Override
+		protected void interpolate(final double frac) {
+			final double frac2 = Math.pow(1 - frac, 3);
+			if (diffX != null)
+				node.setTranslateX(-frac2 * diffX);
+			if (diffY != null)
+				node.setTranslateY(-frac2 * diffY);
+		}
+	}
+
 	public void translateTransverse(final javafx.scene.Node node, final int transverse, final boolean animate) {
 		Integer x = null;
 		Integer y = null;
@@ -728,36 +770,12 @@ public class Context {
 				break;
 		}
 		if (x != null) {
-			if (animate) {
-				final double diffX = x - node.getLayoutX();
-				new Transition() {
-					{
-						setCycleDuration(javafx.util.Duration.millis(200));
-					}
-
-					@Override
-					protected void interpolate(final double frac) {
-						final double frac2 = Math.pow(1 - frac, 0.7);
-						node.setTranslateX(-frac2 * diffX);
-					}
-				}.play();
-			}
+			if (animate)
+				new TransitionSmoothOut(node, x - node.getLayoutX(), null).play();
 			node.setLayoutX(x);
 		} else {
-			if (animate) {
-				final double diffY = y - node.getLayoutY();
-				new Transition() {
-					{
-						setCycleDuration(javafx.util.Duration.millis(200));
-					}
-
-					@Override
-					protected void interpolate(final double frac) {
-						final double frac2 = Math.pow(1 - frac, 0.7);
-						node.setTranslateY(-frac2 * diffY);
-					}
-				}.play();
-			}
+			if (animate)
+				new TransitionSmoothOut(node, null, y - node.getLayoutY()).play();
 			node.setLayoutY(y);
 		}
 	}
@@ -780,36 +798,12 @@ public class Context {
 				break;
 		}
 		if (x != null) {
-			if (animate) {
-				final double diffX = x - node.getLayoutX();
-				new Transition() {
-					{
-						setCycleDuration(javafx.util.Duration.millis(200));
-					}
-
-					@Override
-					protected void interpolate(final double frac) {
-						final double frac2 = Math.pow(1 - frac, 0.7);
-						node.setTranslateX(-frac2 * diffX);
-					}
-				}.play();
-			}
+			if (animate)
+				new TransitionSmoothOut(node, x - node.getLayoutX(), null).play();
 			node.setLayoutX(x);
 		} else {
-			if (animate) {
-				final double diffY = y - node.getLayoutY();
-				new Transition() {
-					{
-						setCycleDuration(javafx.util.Duration.millis(200));
-					}
-
-					@Override
-					protected void interpolate(final double frac) {
-						final double frac2 = Math.pow(1 - frac, 0.7);
-						node.setTranslateY(-frac2 * diffY);
-					}
-				}.play();
-			}
+			if (animate)
+				new TransitionSmoothOut(node, null, y - node.getLayoutY()).play();
 			node.setLayoutY(y);
 		}
 	}
@@ -845,22 +839,8 @@ public class Context {
 				x = vector.transverse;
 				break;
 		}
-		if (animate) {
-			final double diffX = x - node.getLayoutX();
-			final double diffY = y - node.getLayoutY();
-			new Transition() {
-				{
-					setCycleDuration(javafx.util.Duration.millis(200));
-				}
-
-				@Override
-				protected void interpolate(final double frac) {
-					final double frac2 = Math.pow(1 - frac, 0.7);
-					node.setTranslateX(-frac2 * diffX);
-					node.setTranslateY(-frac2 * diffY);
-				}
-			}.play();
-		}
+		if (animate)
+			new TransitionSmoothOut(node, x - node.getLayoutX(), y - node.getLayoutY()).play();
 		node.setLayoutX(x);
 		node.setLayoutY(y);
 	}

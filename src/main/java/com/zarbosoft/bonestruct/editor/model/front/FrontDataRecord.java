@@ -566,7 +566,7 @@ public class FrontDataRecord extends FrontPart {
 
 			@Override
 			public VisualNodePart getVisual() {
-				return RecordVisual.this;
+				return getChildByKey(key);
 			}
 		}
 

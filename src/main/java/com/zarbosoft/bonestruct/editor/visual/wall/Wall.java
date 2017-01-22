@@ -180,18 +180,17 @@ public class Wall {
 		@Override
 		public void runImplementation() {
 			boolean modified = false;
-			if (cornerstoneCourse.index <= backward) {
-				if (cornerstoneCourse.index < backward)
-					forward = backward;
+			if (cornerstoneCourse.index <= backward || cornerstoneCourse.index >= forward) {
 				backward = cornerstoneCourse.index - 1;
-			} else if (cornerstoneCourse.index >= forward) {
-				if (cornerstoneCourse.index > forward)
-					backward = forward;
 				forward = cornerstoneCourse.index + 1;
 			}
 			if (backward >= 0) {
 				// Always < children size because of cornerstone
-				children.get(backward).setTransverse(context, children.get(backward + 1).transverseEdge(context));
+				final Course child = children.get(backward);
+				final Course preceding = children.get(backward + 1);
+				child.setTransverse(context,
+						preceding.transverseStart - preceding.beddingBefore - child.transverseSpan()
+				);
 				backward -= 1;
 				modified = true;
 			}
@@ -214,10 +213,10 @@ public class Wall {
 		}
 
 		public void at(final int at) {
-			if (at < cornerstoneCourse.index && at > backward)
-				backward = at;
-			else if (at > cornerstoneCourse.index && at < forward)
-				forward = at;
+			if (at <= cornerstoneCourse.index && at > backward)
+				backward = Math.min(cornerstoneCourse.index - 1, at);
+			if (at >= cornerstoneCourse.index && at < forward)
+				forward = Math.max(cornerstoneCourse.index + 1, at);
 		}
 	}
 

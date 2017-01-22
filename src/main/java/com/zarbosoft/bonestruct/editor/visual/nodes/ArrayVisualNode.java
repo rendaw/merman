@@ -298,6 +298,12 @@ public abstract class ArrayVisualNode extends GroupVisualNode {
 		@Override
 		public void addBrickListener(final Context context, final VisualAttachmentAdapter.BoundsListener listener) {
 			adapter.addListener(context, listener);
+			final Brick first = getVisual().getFirstBrick(context);
+			final Brick last = getVisual().getLastBrick(context);
+			if (first != null)
+				listener.firstChanged(context, first);
+			if (last != null)
+				listener.lastChanged(context, last);
 		}
 
 		@Override
@@ -452,7 +458,7 @@ public abstract class ArrayVisualNode extends GroupVisualNode {
 
 		@Override
 		public VisualNodePart getVisual() {
-			return ArrayVisualNode.this;
+			return children.get(beginIndex);
 		}
 	}
 

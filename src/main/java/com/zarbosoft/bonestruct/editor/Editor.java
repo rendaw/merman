@@ -14,10 +14,8 @@ import com.zarbosoft.bonestruct.editor.visual.IdleTask;
 import com.zarbosoft.bonestruct.editor.visual.Keyboard;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.editor.visual.attachments.TransverseExtentsAdapter;
-import com.zarbosoft.bonestruct.editor.visual.attachments.VisualAttachmentAdapter;
 import com.zarbosoft.bonestruct.editor.visual.nodes.ArrayVisualNode;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
-import com.zarbosoft.bonestruct.editor.visual.wall.Brick;
 import com.zarbosoft.bonestruct.editor.visual.wall.Wall;
 import com.zarbosoft.luxemj.grammar.Node;
 import com.zarbosoft.pidgoon.InvalidStream;
@@ -166,17 +164,6 @@ public class Editor {
 				scrollVisible(context);
 			}
 		});
-		context.addSelectionBrickListener(new VisualAttachmentAdapter.BoundsListener() {
-			@Override
-			public void firstChanged(final Context context, final Brick brick) {
-				wall.setCornerstone(context, brick);
-			}
-
-			@Override
-			public void lastChanged(final Context context, final Brick brick) {
-
-			}
-		});
 		root.select(context);
 		visual.setOnMouseExited(event -> {
 			if (context.hoverIdle != null) {
@@ -268,6 +255,7 @@ public class Editor {
 					context.syntax.animateCoursePlacement
 			);
 			scroll = newScroll;
+			context.banner.setScroll(context, newScroll);
 		}
 	}
 

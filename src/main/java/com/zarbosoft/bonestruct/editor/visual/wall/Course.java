@@ -207,6 +207,10 @@ public class Course {
 		parent.adjust(context, this.index);
 	}
 
+	public int transverseSpan() {
+		return beddingBefore + ascent + descent + beddingAfter;
+	}
+
 	class IdlePlaceTask extends com.zarbosoft.bonestruct.editor.visual.IdleTask {
 
 		private final Context context;
@@ -290,7 +294,7 @@ public class Course {
 
 			// Propagate changes up
 			if (newAscent || newDescent/* || fixtures[0] || fixtures[1]*/)
-				parent.adjust(context, at);
+				parent.adjust(context, index);
 
 			idlePlace = null;
 		}
