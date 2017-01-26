@@ -35,12 +35,12 @@ public class Syntax {
 	public Color background = Color.WHITE;
 
 	@Luxem.Configuration(optional = true, name = "pad-converse",
-			description = "Pad the converse edge of the editor by this many pixels.")
+			description = "Pad the converse edge of the document by this many pixels.")
 	public int padConverse = 5;
 
 	@Luxem.Configuration(optional = true, name = "pad-transverse",
-			description = "Pad the transverse edge of the editor by this many pixels.")
-	public int padTransverse = 5;
+			description = "Pad the transverse edge of the document by this many pixels.")
+	public int padTransverse = 60;
 
 	@Luxem.Configuration(optional = true, description =
 			"If the path to a writable document does not yet exist, a new document will be created " +
@@ -57,12 +57,12 @@ public class Syntax {
 	public ObboxStyle selectStyle = new ObboxStyle();
 
 	@Luxem.Configuration(description = "The definitions of all distinct element types in a document.\n" +
-			"A type with the id __gap, and a single middle primitive element named 'value' must exist.  This will be " +
-			"used as a placeholder when entering text before it is distinguishable as any other defined element.")
+			"A type with the id '__gap' and a single middle primitive element named 'value' must exist.  This will " +
+			"be used as a placeholder when entering text before it is distinguishable as any other defined element.")
 	public List<NodeType> types;
 
 	@Luxem.Configuration(optional = true, description =
-			"Pseudo-types representing a group of types.  Group ids can be used anywhere a type id " +
+			"Pseudo-types representing groups of types.  Group ids can be used anywhere a type id " +
 					"is required.")
 	public Map<String, java.util.Set<String>> groups;
 
@@ -72,10 +72,8 @@ public class Syntax {
 	public List<Plugin> plugins;
 
 	@Luxem.Configuration(description = "The id of the type of root elements in a document.  This is not used when " +
-			"pasting code; in that case the context is used to determine the paste's root.")
+			"pasting code; in that case the context is used to determine the paste's potential root type.")
 	public String root;
-	// Root applies to whole document parsing
-	// For parsing text pastes, use the current location to find the correct rule
 
 	@Luxem.Configuration(name = "root-prefix", optional = true)
 	public List<FrontConstantPart> rootPrefix;
@@ -101,10 +99,12 @@ public class Syntax {
 
 	@Luxem.Configuration(optional = true, name = "animate-course-placement")
 	public boolean animateCoursePlacement = false;
+	public String id; // Fake final - don't modify (set in loadSyntax)
 
 	@Luxem.Configuration
 	public enum Direction {
-		@Luxem.Configuration(name = "up")UP, @Luxem.Configuration(name = "down")
+		@Luxem.Configuration(name = "up")
+		UP, @Luxem.Configuration(name = "down")
 		DOWN, @Luxem.Configuration(name = "left")
 		LEFT, @Luxem.Configuration(name = "right")
 		RIGHT;
@@ -138,31 +138,16 @@ public class Syntax {
 	}
 
 	@Luxem.Configuration(name = "converse-direction", optional = true,
-			description = "The direction of text flow in a line.  In English, this will be RIGHT.")
+			description = "The direction of text flow in a line.  For English, this will be RIGHT.")
 	public Direction converseDirection = Direction.RIGHT;
 
 	@Luxem.Configuration(name = "transverse-direction", optional = true,
-			description = "The direction of successive lines.  In English, this will be DOWN.")
+			description = "The direction of successive lines.  For English, this will be DOWN.")
 	public Direction transverseDirection = Direction.DOWN;
-
-	@Luxem.Configuration
-	public enum CompactionMode {
-		@Luxem.Configuration(name = "bottom-up")
-		BOTTOM_UP,
-		/*
-		@Luxem.Configuration(name = "greatest-gain")
-		GREATEST_GAIN,
-		@Luxem.Configuration(name = "priority")
-		PRIORITY,
-		*/
-	}
-
-	@Luxem.Configuration(name = "compaction-mode", optional = true)
-	public CompactionMode compactionMode = CompactionMode.BOTTOM_UP;
 
 	Grammar grammar;
 
-	public static Syntax loadSyntax(final InputStream stream) {
+	public static Syntax loadSyntax(final String id, final InputStream stream) {
 		final Syntax out = new com.zarbosoft.luxemj.Parse<Syntax>()
 				.grammar(com.zarbosoft.bonestruct.editor.luxem.Luxem.grammarForType(Syntax.class))
 				.errorHistory(5)
@@ -171,6 +156,7 @@ public class Syntax {
 				.eventUncertainty(256)
 				.node("root")
 				.parse(stream);
+		out.id = id;
 		// jfx, qt, and swing don't support vertical languages
 		if (!ImmutableSet.of(Direction.LEFT, Direction.RIGHT).contains(out.converseDirection) ||
 				(out.transverseDirection != Direction.DOWN))

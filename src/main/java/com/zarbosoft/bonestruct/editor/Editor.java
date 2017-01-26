@@ -28,9 +28,6 @@ import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.Pane;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UncheckedIOException;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -46,32 +43,14 @@ public class Editor {
 	private int scroll;
 
 	public Editor(
+			final EditorGlobal global,
 			final Consumer<IdleTask> addIdle,
 			final String path,
 			final Iterable<Context.Action> globalActions,
 			final History history
 	) {
 		Luxem.grammar(); // Make sure the luxem grammar is loaded beforehand so the new resource stream doesn't get closed by that resource stream
-		final Syntax luxemSyntax;
-		try (
-				InputStream stream = Thread.currentThread().getContextClassLoader().getResourceAsStream("luxem.syntax")
-		) {
-			luxemSyntax = Syntax.loadSyntax(stream);
-		} catch (final IOException e) {
-			throw new UncheckedIOException(e);
-		}/* catch (final GrammarTooUncertain e) {
-			final PrintWriter out = Helper.uncheck(() -> new PrintWriter("syntax-ambiguous.csv", "UTF-8"));
-			List<ParseContext.AmbiguitySample> samples = new ArrayList<>();
-			BranchingStack<ParseContext.AmbiguitySample> stack = e.context.ambiguityHistory;
-			while (stack != null) {
-				samples.add(stack.top());
-				stack = stack.pop();
-			}
-			samples = Lists.reverse(samples);
-			samples.forEach(s -> out.format("%d,%s,%d,%d\n", s.step, s.position, s.ambiguity, s.duplicates));
-			out.close();
-			throw e;
-		}*/
+		final Syntax luxemSyntax = global.getSyntax("luxem");
 		//final Document doc = luxemSyntax.load("[[dog, dog, dog, dog, dog, dogdogdog, dog, dog, dog]],");
 		final Document doc = luxemSyntax.load("[dog, dog, dog, dog, dog, dogdogdog, dog,],");
 		//final Document doc = luxemSyntax.load("[{getConverse: 47,transverse:{ar:[2,9,13]},},[atler]]");

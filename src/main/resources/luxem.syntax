@@ -45,7 +45,7 @@
 		    id: __gap,
 			name: "Gap",
 			back: [
-			    (type) __bud,
+			    (type) __gap,
 			    (data-primitive) value,
 			],
 			middle: {value: (primitive) {}},

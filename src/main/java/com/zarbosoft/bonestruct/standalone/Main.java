@@ -2,6 +2,7 @@ package com.zarbosoft.bonestruct.standalone;
 
 import com.google.common.collect.ImmutableList;
 import com.zarbosoft.bonestruct.editor.Editor;
+import com.zarbosoft.bonestruct.editor.EditorGlobal;
 import com.zarbosoft.bonestruct.editor.changes.History;
 import com.zarbosoft.bonestruct.editor.visual.Context;
 import com.zarbosoft.bonestruct.editor.visual.IdleTask;
@@ -50,14 +51,16 @@ public class Main extends Application {
 		syntaxes from dir && install reference syntaxes automatically
 		document distributing plugins
 		document distributions
+		order of operations, conditional front elements
 		 */
 		/*
 		if (getParameters().getUnnamed().isEmpty())
 			throw new IllegalArgumentException("Must specify a filename as first argument.");
 			*/
+		final EditorGlobal global = new EditorGlobal();
 		final History history = new History();
 		//final Editor editor = new Editor(this::addIdle, getParameters().getUnnamed().get(0));
-		final Editor editor = new Editor(this::addIdle, "todo", ImmutableList.of(new Context.Action() {
+		final Editor editor = new Editor(global, this::addIdle, "todo", ImmutableList.of(new Context.Action() {
 			@Override
 			public void run(final Context context) {
 				Platform.exit();
