@@ -2,7 +2,6 @@ package com.zarbosoft.bonestruct.plugins;
 
 import com.zarbosoft.bonestruct.editor.model.NodeType;
 import com.zarbosoft.bonestruct.editor.model.Plugin;
-import com.zarbosoft.bonestruct.editor.model.front.FrontDataRecord;
 import com.zarbosoft.bonestruct.editor.visual.Context;
 import com.zarbosoft.bonestruct.editor.visual.nodes.ArrayVisualNode;
 import com.zarbosoft.bonestruct.editor.visual.nodes.NestedVisualNodePart;
@@ -35,15 +34,13 @@ public class HoverType extends Plugin {
 						if (nodeType == null)
 							text.append("Root Element");
 						else
-							text.append((hoverable.node()).getType().name);
+							text.append((hoverable.node()).getType().name());
 					}
 					if (part) {
 						final String temp;
 						final Class<?> c = hoverable.part().getClass();
 						if (c == ArrayVisualNode.class) {
 							temp = "array";
-						} else if (c == FrontDataRecord.RecordVisual.class) {
-							temp = "record";
 						} else if (c == PrimitiveVisualNode.class) {
 							temp = "primitive";
 						} else if (c == NestedVisualNodePart.class) {

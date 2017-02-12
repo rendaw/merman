@@ -1,11 +1,19 @@
 package com.zarbosoft.bonestruct.editor.visual;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.zarbosoft.bonestruct.ChainComparator;
+import com.zarbosoft.bonestruct.Path;
+import com.zarbosoft.bonestruct.editor.InvalidPath;
 import com.zarbosoft.bonestruct.editor.changes.History;
 import com.zarbosoft.bonestruct.editor.model.*;
+import com.zarbosoft.bonestruct.editor.model.back.*;
+import com.zarbosoft.bonestruct.editor.model.middle.DataArray;
+import com.zarbosoft.bonestruct.editor.model.middle.DataElement;
+import com.zarbosoft.bonestruct.editor.model.middle.DataNode;
+import com.zarbosoft.bonestruct.editor.model.middle.DataPrimitive;
 import com.zarbosoft.bonestruct.editor.visual.attachments.TransverseExtentsAdapter;
 import com.zarbosoft.bonestruct.editor.visual.attachments.VisualAttachmentAdapter;
 import com.zarbosoft.bonestruct.editor.visual.raw.RawText;
@@ -27,6 +35,7 @@ import javafx.geometry.Point2D;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.layout.Pane;
+import org.pcollections.TreePVector;
 
 import java.lang.ref.WeakReference;
 import java.time.Duration;
@@ -139,6 +148,115 @@ public class Context {
 				break;
 		}
 		return new Vector(converse, transverse);
+	}
+
+	/**
+	 * Locate a Node or DataElement.Value from a path.  If the path ends between those two, the last valid value
+	 * is returned.  If the path references an invalid location InvalidPath is thrown.
+	 *
+	 * @param path
+	 * @return
+	 */
+	public Object locate(final Path path) {
+		int pathIndex = 0;
+		final List<String> segments = ImmutableList.copyOf(path.sections);
+		DataElement.Value value = document.top;
+		com.zarbosoft.bonestruct.editor.model.Node node = null;
+		BackPart part = null;
+		while (true) {
+			if (part != null) {
+				// Process from either the root or a sublevel of a node
+				String middle = null;
+				while (true) {
+					final String segment = segments.get(++pathIndex);
+					final int tempPathIndex = pathIndex;
+					if (segment == null)
+						return node;
+					if (part instanceof BackArray) {
+						final int subIndex;
+						try {
+							subIndex = Integer.parseInt(segment);
+						} catch (final NumberFormatException e) {
+							throw new InvalidPath(String.format("Segment [%s] at [%s] is not an integer.",
+									segment,
+									new Path(TreePVector.from(segments.subList(0, tempPathIndex)))
+							));
+						}
+						final BackArray arrayPart = ((BackArray) part);
+						if (subIndex >= arrayPart.elements.size())
+							throw new InvalidPath(String.format("Invalid index %d at [%s].",
+									subIndex,
+									new Path(TreePVector.from(segments.subList(0, tempPathIndex)))
+							));
+						part = arrayPart.elements.get(subIndex);
+					} else if (part instanceof BackRecord) {
+						final BackRecord recordPart = ((BackRecord) part);
+						if (!recordPart.pairs.containsKey(segment))
+							throw new InvalidPath(String.format("Invalid key [%s] at [%s].",
+									segment,
+									new Path(TreePVector.from(segments.subList(0, pathIndex)))
+							));
+						part = recordPart.pairs.get(segment);
+					} else if (part instanceof BackDataArray) {
+						middle = ((BackDataArray) part).middle;
+						break;
+					} else if (part instanceof BackDataKey) {
+						middle = ((BackDataKey) part).middle;
+						break;
+					} else if (part instanceof BackDataNode) {
+						middle = ((BackDataNode) part).middle;
+						break;
+					} else if (part instanceof BackDataPrimitive) {
+						middle = ((BackDataPrimitive) part).middle;
+						break;
+					} else if (part instanceof BackDataRecord) {
+						middle = ((BackDataRecord) part).middle;
+						break;
+					} else
+						return node;
+				}
+				value = node.data.get(middle);
+				part = null;
+				node = null;
+			} else {
+				// Start from a value
+				if (value instanceof DataArray.Value) {
+					final String segment = segments.get(pathIndex);
+					if (segment == null)
+						return null;
+					final int index;
+					try {
+						index = Integer.parseInt(segment);
+					} catch (final NumberFormatException e) {
+						throw new InvalidPath(String.format("Segment [%s] at [%s] is not an integer.",
+								segment,
+								new Path(TreePVector.from(segments.subList(0, pathIndex)))
+						));
+					}
+					final int tempPathIndex = pathIndex;
+					node = ((DataArray.Value) value)
+							.get()
+							.stream()
+							.filter(child -> (((DataArray.Value.ArrayParent) child.parent).actualIndex <= index))
+							.findFirst()
+							.orElseThrow(() -> new InvalidPath(String.format("Invalid index %d at [%s].",
+									index,
+									new Path(TreePVector.from(segments.subList(0, tempPathIndex)))
+							)));
+					part = node.type.back().get(((DataArray.Value.ArrayParent) node.parent).actualIndex - index);
+				} else if (value instanceof DataNode.Value) {
+					node = ((DataNode.Value) value).get();
+					part = node.type.back().get(0);
+				} else if (value instanceof DataPrimitive.Value) {
+					if (!segments.isEmpty())
+						throw new InvalidPath(String.format("Path continues but data ends at primitive [%s].",
+								new Path(TreePVector.from(segments.subList(0, pathIndex)))
+						));
+					return value;
+				}
+				value = null;
+			}
+		}
 	}
 
 	public static class Banner {

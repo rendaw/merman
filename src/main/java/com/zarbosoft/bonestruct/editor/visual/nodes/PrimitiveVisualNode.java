@@ -73,7 +73,7 @@ public class PrimitiveVisualNode extends VisualNodePart {
 	public boolean select(final Context context) {
 		if (lines.get(0).brick == null)
 			return false;
-		selection = new PrimitiveSelection(context, 0, 0);
+		selection = createSelection(context, 0, 0);
 		context.setSelection(selection);
 		return true;
 	}
@@ -207,7 +207,7 @@ public class PrimitiveVisualNode extends VisualNodePart {
 		}
 	}
 
-	private class PrimitiveSelection extends Context.Selection {
+	protected class PrimitiveSelection extends Context.Selection {
 		final RangeAttachment range;
 		final boolean direct;
 		final BreakIterator clusterIterator = BreakIterator.getCharacterInstance();
@@ -566,11 +566,7 @@ public class PrimitiveVisualNode extends VisualNodePart {
 					return Iterables.concat(out, ImmutableList.of(new Context.Action() {
 						@Override
 						public void run(final Context context) {
-							context.setSelection(new PrimitiveSelection(context,
-									range.beginOffset,
-									range.endOffset,
-									false
-							));
+							context.setSelection(createSelection(context, range.beginOffset, range.endOffset, false));
 						}
 
 						@Override
@@ -582,11 +578,7 @@ public class PrimitiveVisualNode extends VisualNodePart {
 					return Iterables.concat(out, ImmutableList.of(new Context.Action() {
 						@Override
 						public void run(final Context context) {
-							context.setSelection(new PrimitiveSelection(context,
-									range.beginOffset,
-									range.endOffset,
-									true
-							));
+							context.setSelection(createSelection(context, range.beginOffset, range.endOffset, true));
 						}
 
 						@Override
@@ -633,7 +625,7 @@ public class PrimitiveVisualNode extends VisualNodePart {
 
 		@Override
 		public void click(final Context context) {
-			selection = new PrimitiveSelection(context, range.beginOffset, range.endOffset);
+			selection = createSelection(context, range.beginOffset, range.endOffset);
 			context.setSelection(selection);
 		}
 
@@ -648,6 +640,16 @@ public class PrimitiveVisualNode extends VisualNodePart {
 		public VisualNodePart part() {
 			return PrimitiveVisualNode.this;
 		}
+	}
+
+	private PrimitiveSelection createSelection(final Context context, final int beginOffset, final int endOffset) {
+		return createSelection(context, beginOffset, endOffset, context.syntax.modalPrimitiveEditing ? false : true);
+	}
+
+	public PrimitiveSelection createSelection(
+			final Context context, final int beginOffset, final int endOffset, final boolean direct
+	) {
+		return new PrimitiveSelection(context, beginOffset, endOffset, direct);
 	}
 
 	private class Line {

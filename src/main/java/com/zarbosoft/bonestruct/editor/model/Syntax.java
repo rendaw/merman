@@ -5,7 +5,6 @@ import com.zarbosoft.bonestruct.editor.InvalidSyntax;
 import com.zarbosoft.bonestruct.editor.model.front.FrontConstantPart;
 import com.zarbosoft.bonestruct.editor.model.middle.DataArray;
 import com.zarbosoft.bonestruct.editor.model.middle.DataNode;
-import com.zarbosoft.bonestruct.editor.model.middle.DataPrimitive;
 import com.zarbosoft.luxemj.Luxem;
 import com.zarbosoft.luxemj.LuxemEvent;
 import com.zarbosoft.luxemj.path.LuxemArrayPath;
@@ -20,6 +19,8 @@ import com.zarbosoft.pidgoon.nodes.Union;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.scene.paint.Color;
+import org.pcollections.HashTreePSet;
+import org.pcollections.PSet;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -59,7 +60,19 @@ public class Syntax {
 	@Luxem.Configuration(description = "The definitions of all distinct element types in a document.\n" +
 			"A type with the id '__gap' and a single middle primitive element named 'value' must exist.  This will " +
 			"be used as a placeholder when entering text before it is distinguishable as any other defined element.")
-	public List<NodeType> types;
+	public List<FreeNodeType> types;
+
+	@Luxem.Configuration(optional = true, description = "The gap type is used when editing the document, for " +
+			"new data whose type is not yet known.")
+	public GapNodeType gap = new GapNodeType();
+	@Luxem.Configuration(name = "prefix-gap", optional = true, description =
+			"The prefix gap type is similar to the gap type, but is used when enclosing an " +
+					"existing node in a new node, where the new node visually precedes the existing node.")
+	public PrefixGapNodeType prefixGap = new PrefixGapNodeType();
+	@Luxem.Configuration(name = "suffix-gap", optional = true, description =
+			"The suffix gap type is similar to the gap type, but is used when enclosing an " +
+					"existing node in a new node, where the new node visually succeeds the existing node.")
+	public SuffixGapNodeType suffixGap = new SuffixGapNodeType();
 
 	@Luxem.Configuration(optional = true, description =
 			"Pseudo-types representing groups of types.  Group ids can be used anywhere a type id " +
@@ -87,7 +100,6 @@ public class Syntax {
 
 	@Luxem.Configuration(optional = true)
 	public List<Hotkeys> hotkeys;
-	public NodeType gap;
 
 	@Luxem.Configuration(optional = true, name = "modal-primitive-editing", description =
 			"In modeless editing, a selected primitive is always in direct editing mode.  Non-hotkey keypresses " +
@@ -104,9 +116,12 @@ public class Syntax {
 	@Luxem.Configuration
 	public enum Direction {
 		@Luxem.Configuration(name = "up")
-		UP, @Luxem.Configuration(name = "down")
-		DOWN, @Luxem.Configuration(name = "left")
-		LEFT, @Luxem.Configuration(name = "right")
+		UP,
+		@Luxem.Configuration(name = "down")
+		DOWN,
+		@Luxem.Configuration(name = "left")
+		LEFT,
+		@Luxem.Configuration(name = "right")
 		RIGHT;
 		// TODO boustrophedon
 
@@ -157,6 +172,9 @@ public class Syntax {
 				.node("root")
 				.parse(stream);
 		out.id = id;
+
+		// Check data
+
 		// jfx, qt, and swing don't support vertical languages
 		if (!ImmutableSet.of(Direction.LEFT, Direction.RIGHT).contains(out.converseDirection) ||
 				(out.transverseDirection != Direction.DOWN))
@@ -179,89 +197,75 @@ public class Syntax {
 				}
 				break;
 		}
-		boolean foundRoot = false;
-		final Set<String> singleNodes = new HashSet<>();
-		final Set<String> arrayNodes = new HashSet<>();
-		final Map<String, Pair<Boolean, Set<String>>> reverseGroups = new HashMap<>();
-		for (final Map.Entry<String, Set<String>> pair : out.groups.entrySet()) {
-			final String group = pair.getKey();
-			final Set<String> children = pair.getValue();
-			{
-				final Pair<Boolean, Set<String>> set =
-						reverseGroups.getOrDefault(group, new Pair<>(true, new HashSet<>()));
-				reverseGroups.put(group, set);
+
+		{
+			final Deque<Pair<PSet<String>, Iterator<String>>> stack = new ArrayDeque<>();
+			stack.addLast(new Pair<>(HashTreePSet.empty(), out.groups.keySet().iterator()));
+			while (!stack.isEmpty()) {
+				final Pair<PSet<String>, Iterator<String>> top = stack.pollLast();
+				if (!top.second.hasNext())
+					continue;
+				final String childKey = top.second.next();
+				final Set<String> child = out.groups.get(childKey);
+				if (child == null)
+					continue;
+				if (top.first.contains(childKey))
+					throw new InvalidSyntax(String.format("Circular reference in group [%s].", childKey));
+				stack.addLast(top);
+				stack.addLast(new Pair<>(top.first.plus(childKey), child.iterator()));
 			}
-			children.forEach(child -> {
-				final Pair<Boolean, Set<String>> set =
-						reverseGroups.getOrDefault(child, new Pair<>(true, new HashSet<>()));
-				set.second.add(group);
-				reverseGroups.put(child, set);
-			});
 		}
-		for (final NodeType t : out.types) {
+
+		boolean foundRoot = false;
+		final Set<String> allTypeIds = new HashSet<>();
+		for (final FreeNodeType t : out.types) {
 			if (t.back.isEmpty())
 				throw new InvalidSyntax(String.format("Type [%s] has no back parts.", t.id));
-			if (arrayNodes.contains(t.id))
+			if (allTypeIds.contains(t.id))
 				throw new InvalidSyntax(String.format("Multiple types with id [%s].", t.id));
-			arrayNodes.add(t.id);
-			if (t.back.size() == 1)
-				singleNodes.add(t.id);
-			if (reverseGroups.containsKey(t.id) && t.back.size() > 1)
-				reverseGroups.get(t.id).first = false;
-			if (t.id.equals("__gap")) {
-				if (out.gap != null)
-					throw new InvalidSyntax("Multiple definitions of [__gap].");
-				if (t.middle.size() != 1)
-					throw new InvalidSyntax("__gap must have one middle element.");
-				if (!t.middle.containsKey("value"))
-					throw new InvalidSyntax("__gap must have one middle element named [value].");
-				if (!(t.middle.get("value") instanceof DataPrimitive))
-					throw new InvalidSyntax("__gap middle element [value] must be primitive.");
-				out.gap = t;
-			}
+			allTypeIds.add(t.id);
 			if (t.id.equals(out.root)) {
 				foundRoot = true;
 			}
 		}
 		if (out.gap == null)
-			throw new InvalidSyntax("__gap type definition missing.");
-		boolean changing = true;
-		while (changing) {
-			changing = false;
-			for (final Map.Entry<String, Pair<Boolean, Set<String>>> pair : reverseGroups.entrySet())
-				if (!pair.getValue().first)
-					for (final String next : pair.getValue().second)
-						if (reverseGroups.containsKey(next)) {
-							final Pair<Boolean, Set<String>> reverseGroup = reverseGroups.get(next);
-							if (reverseGroup.first) {
-								reverseGroups.get(next).first = false;
-								changing = true;
-							}
-						}
-		}
+			throw new InvalidSyntax("Gap definition missing.");
+		if (out.prefixGap == null)
+			throw new InvalidSyntax("Prefix gap definition missing.");
+		if (out.suffixGap == null)
+			throw new InvalidSyntax("Suffix gap definition missing.");
 		for (final Map.Entry<String, Set<String>> pair : out.groups.entrySet()) {
 			final String group = pair.getKey();
-			final Set<String> children = pair.getValue();
-			if (arrayNodes.contains(group))
+			for (final String child : pair.getValue())
+				if (!allTypeIds.contains(child) && !out.groups.containsKey(child))
+					throw new InvalidSyntax(String.format("Group [%s] refers to non-existant member [%s].",
+							group,
+							child
+					));
+			if (allTypeIds.contains(group))
 				throw new InvalidSyntax(String.format("Group id [%s] already used.", group));
-			arrayNodes.add(group);
-			if (reverseGroups.containsKey(group) && reverseGroups.get(group).first)
-				singleNodes.add(group);
+			allTypeIds.add(group);
 			if (group.equals(out.root))
 				foundRoot = true;
 		}
 		if (!foundRoot)
 			throw new InvalidSyntax(String.format("No type or tag id matches root id [%s]", out.root));
-		for (final NodeType t : out.types) {
-			t.finish(singleNodes, arrayNodes);
+		for (final FreeNodeType t : out.types) {
+			t.finish(out);
 		}
+		out.gap.finish(out);
+		out.prefixGap.finish(out);
+		out.suffixGap.finish(out);
 		return out;
 	}
 
 	private Grammar getGrammar() {
 		if (grammar == null) {
 			grammar = new Grammar();
-			types.forEach(t -> grammar.add(t.id, t.buildLoadRule(this)));
+			types.forEach(t -> grammar.add(t.id, t.buildBackRule(this)));
+			grammar.add(gap.id, gap.buildBackRule(this));
+			grammar.add(prefixGap.id, prefixGap.buildBackRule(this));
+			grammar.add(suffixGap.id, suffixGap.buildBackRule(this));
 			groups.forEach((k, v) -> {
 				final Union group = new Union();
 				v.forEach(n -> group.add(new Reference(n)));
@@ -279,14 +283,14 @@ public class Syntax {
 	}
 
 	public Document create() {
-		final EventStream<List<DataNode.Value>> stream =
-				new Parse<List<DataNode.Value>>().stack(() -> 0).grammar(getGrammar()).node("root").parse();
+		final EventStream<List<Node>> stream =
+				new Parse<List<Node>>().stack(() -> 0).grammar(getGrammar()).node("root").parse();
 		final Mutable<LuxemPath> path = new Mutable<>(new LuxemArrayPath(null));
 		template.forEach(e -> {
 			path.value = path.value.push(e);
 			stream.push(e, path.value.toString());
 		});
-		return new Document(this, new DataArray.Value(this, stream.finish()));
+		return new Document(this, new DataArray.Value(null, stream.finish()));
 	}
 
 	public Document load(final File file) throws FileNotFoundException, IOException {
@@ -302,13 +306,40 @@ public class Syntax {
 	}
 
 	public Document load(final InputStream data) {
-		return new Document(this, new DataArray.Value(
-				this,
-				new com.zarbosoft.luxemj.Parse<List<DataNode.Value>>()
+		return new Document(this, new DataArray.Value(null,
+				new com.zarbosoft.luxemj.Parse<List<Node>>()
 						.stack(() -> 0)
 						.grammar(getGrammar())
 						.node("root")
 						.parse(data)
 		));
 	}
+
+	public FreeNodeType getType(final String type) {
+		return types.stream().filter(t -> t.id.equals(type)).findFirst().get();
+	}
+
+	public Set<FreeNodeType> getLeafTypes(final String type) {
+		final Set<String> group = groups.get(type);
+		if (group == null)
+			return ImmutableSet.of(getType(type));
+		final Set<FreeNodeType> out = new HashSet<>();
+		final Deque<Iterator<String>> stack = new ArrayDeque<>();
+		stack.addLast(groups.keySet().iterator());
+		while (!stack.isEmpty()) {
+			final Iterator<String> top = stack.pollLast();
+			if (!top.hasNext())
+				continue;
+			final String childKey = top.next();
+			final Set<String> child = groups.get(childKey);
+			if (child == null) {
+				out.add(getType(childKey));
+			} else {
+				stack.addLast(top);
+				stack.addLast(child.iterator());
+			}
+		}
+		return out;
+	}
+
 }

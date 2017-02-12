@@ -1,17 +1,23 @@
 package com.zarbosoft.bonestruct.editor.model;
 
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
+import com.zarbosoft.bonestruct.DeadCode;
 import com.zarbosoft.bonestruct.editor.InvalidSyntax;
-import com.zarbosoft.bonestruct.editor.model.back.BackPart;
+import com.zarbosoft.bonestruct.editor.model.back.*;
+import com.zarbosoft.bonestruct.editor.model.front.FrontDataArray;
+import com.zarbosoft.bonestruct.editor.model.front.FrontDataNode;
 import com.zarbosoft.bonestruct.editor.model.front.FrontPart;
-import com.zarbosoft.bonestruct.editor.model.middle.*;
+import com.zarbosoft.bonestruct.editor.model.middle.DataArray;
+import com.zarbosoft.bonestruct.editor.model.middle.DataElement;
+import com.zarbosoft.bonestruct.editor.model.middle.DataNode;
+import com.zarbosoft.bonestruct.editor.model.middle.DataPrimitive;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.AlignmentDefinition;
 import com.zarbosoft.bonestruct.editor.visual.Context;
 import com.zarbosoft.bonestruct.editor.visual.nodes.GroupVisualNode;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodeParent;
+import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
 import com.zarbosoft.bonestruct.editor.visual.wall.Brick;
 import com.zarbosoft.luxemj.Luxem;
 import com.zarbosoft.pidgoon.events.BakedOperator;
@@ -25,140 +31,105 @@ import org.pcollections.PSet;
 import java.util.*;
 
 @Luxem.Configuration
-public class NodeType {
+public abstract class NodeType {
 	@Luxem.Configuration
 	public String id;
 
-	@Luxem.Configuration
-	public String name;
+	public abstract List<FrontPart> front();
 
-	@Luxem.Configuration
-	public List<FrontPart> front;
+	public abstract Map<String, DataElement> middle();
 
-	@Luxem.Configuration
-	public List<BackPart> back;
+	public abstract List<BackPart> back();
 
-	@Luxem.Configuration
-	public Map<String, DataElement> middle;
+	protected abstract Map<String, AlignmentDefinition> alignments();
 
-	@Luxem.Configuration
-	public Map<String, AlignmentDefinition> alignments;
+	public abstract int precedence();
 
-	@Luxem.Configuration(name = "space-priority", optional = true, description =
-			"When wrapping a line that's too long, the node in the line with the highest " +
-					"space priority will be wrapped first.  When unwrapping the line, the lowest node will be " +
-					"unwrapped first.  Positive and negative numbers are allowed.")
-	public int spacePriority = 0;
+	public abstract boolean frontAssociative();
 
-	public Node create() {
-		final Node node = new Node();
-		node.data = new HashMap<>();
-		middle.forEach((k, v) -> node.data.put(k, v.create()));
-		node.type = this;
-		return node;
-	}
+	public abstract void finish(Syntax syntax);
 
-	public com.zarbosoft.pidgoon.internal.Node buildLoadRule(final Syntax syntax) {
+	public com.zarbosoft.pidgoon.internal.Node buildBackRule(final Syntax syntax) {
 		final Sequence seq = new Sequence();
 		seq.add(new BakedOperator((store) -> store.pushStack(0)));
-		back.forEach(p -> seq.add(p.buildLoadRule(syntax)));
+		back().forEach(p -> seq.add(p.buildBackRule(syntax, this)));
 		return new BakedOperator(seq, store -> {
-			final Map<String, Object> data = new HashMap<>();
-			store = (Store) Helper.<Pair<String, Object>>stackPopSingleList(store,
+			final Map<String, DataElement.Value> data = new HashMap<>();
+			store = (Store) Helper.<Pair<String, DataElement.Value>>stackPopSingleList(store,
 					pair -> data.put(pair.first, pair.second)
 			);
-			final Node node = new Node();
-			node.data = data;
-			node.type = this;
-			return store.pushStack(new DataNode.Value(node));
+			final Node node = new Node(this, data);
+			return store.pushStack(node);
 		});
 	}
 
-	public void finish(final Set<String> singleNodes, final Set<String> arrayNodes) {
-		middle.forEach((k, v) -> v.id = k);
-		{
-			final Set<String> middleUsedBack = new HashSet<>();
-			back.forEach(p -> p.finish(this, middleUsedBack));
-			final Set<String> missing = Sets.difference(middle.keySet(), middleUsedBack);
-			if (!missing.isEmpty())
-				throw new InvalidSyntax(String.format("Data elements %s in %s are unused by back parts.",
-						this,
-						missing
-				));
-		}
-		{
-			final Set<String> middleUsedFront = new HashSet<>();
-			front.forEach(p -> p.finish(this, middleUsedFront));
-			final Set<String> missing = Sets.difference(middle.keySet(), middleUsedFront);
-			if (!missing.isEmpty())
-				throw new InvalidSyntax(String.format("Data elements %s in %s are unused by front parts.",
-						this,
-						missing
-				));
-		}
-	}
-
-	private <D extends DataElement> D getData(final Class<? extends DataElement> type, final String id) {
-		final DataElement found = middle.get(id);
-		if (found == null) {
-			throw new InvalidSyntax(String.format("No data field named [%s] in %s", id, this));
-			/*
-			found = Helper.uncheck(type::newInstance);
-			found.id = id;
-			middle.add(found);
-			*/
-		} else {
-			if (!type.isAssignableFrom(found.getClass()))
-				throw new InvalidSyntax(String.format("Conflicting types for data field %s in %s: %s, %s",
-						id,
-						this,
-						found.getClass(),
-						type
-				));
-		}
-		return (D) found;
-	}
-
-	public DataPrimitive getDataPrimitive(final String key) {
-		return getData(DataPrimitive.class, key);
-	}
-
-	public DataNode getDataNode(final String key) {
-		return getData(DataNode.class, key);
-	}
-
-	public DataArray getDataArray(final String key) {
-		return getData(DataArray.class, key);
-	}
-
-	public DataRecord getDataRecord(final String key) {
-		return getData(DataRecord.class, key);
-	}
-
-	public VisualNode createVisual(final Context context, final Map<String, Object> data) {
+	public NodeTypeVisual createVisual(final Context context, final Map<String, DataElement.Value> data) {
 		return new NodeTypeVisual(context, data);
 	}
 
-	@Override
-	public String toString() {
-		return id;
+	public abstract String name();
+
+	public BackPart getBackPart(final String id) {
+		final Deque<Iterator<BackPart>> stack = new ArrayDeque<>();
+		stack.addLast(back().iterator());
+		while (!stack.isEmpty()) {
+			final Iterator<BackPart> iterator = stack.peekLast();
+			if (!iterator.hasNext())
+				continue;
+			stack.addLast(iterator);
+			final BackPart next = iterator.next();
+			if (next instanceof BackArray) {
+				stack.addLast(((BackArray) next).elements.iterator());
+			} else if (next instanceof BackRecord) {
+				stack.addLast(((BackRecord) next).pairs.values().iterator());
+			} else if (next instanceof BackDataArray) {
+				if (((BackDataArray) next).middle.equals(id))
+					return next;
+			} else if (next instanceof BackDataKey) {
+				if (((BackDataKey) next).middle.equals(id))
+					return next;
+			} else if (next instanceof BackDataNode) {
+				if (((BackDataNode) next).middle.equals(id))
+					return next;
+			} else if (next instanceof BackDataPrimitive) {
+				if (((BackDataPrimitive) next).middle.equals(id))
+					return next;
+			} else if (next instanceof BackDataRecord) {
+				if (((BackDataRecord) next).middle.equals(id))
+					return next;
+			}
+		}
+		throw new DeadCode();
 	}
 
 	public class NodeTypeVisual extends VisualNode {
 		private final GroupVisualNode body;
 		private boolean compact;
 		private VisualNodeParent parent;
+		public Map<String, VisualNodePart> frontToData = new HashMap<>();
 
-		public NodeTypeVisual(final Context context, final Map<String, Object> data) {
+		public NodeTypeVisual(final Context context, final Map<String, DataElement.Value> data) {
 			super(HashTreePSet.<Tag>empty().plus(new TypeTag(id)).plus(new PartTag("node")));
 			final PSet<Tag> tags = HashTreePSet.singleton(new TypeTag(id));
 			compact = false;
 			body = new GroupVisualNode(ImmutableSet.of());
-			for (final Map.Entry<String, AlignmentDefinition> entry : alignments.entrySet()) {
+			for (final Map.Entry<String, AlignmentDefinition> entry : alignments().entrySet()) {
 				body.alignments.put(entry.getKey(), entry.getValue().create());
 			}
-			Helper.enumerate(front.stream()).forEach(pair -> {
-				body.add(context, pair.second.createVisual(context, data, tags));
+			Helper.enumerate(Helper.stream(front())).forEach(pair -> {
+				final VisualNodePart visual = pair.second.createVisual(context, data, tags);
+				pair.second.dispatch(new FrontPart.NodeDispatchHandler() {
+					@Override
+					public void handle(final FrontDataArray front) {
+						frontToData.put(front.middle, visual);
+					}
+
+					@Override
+					public void handle(final FrontDataNode front) {
+						frontToData.put(front.middle, visual);
+					}
+				});
+				body.add(context, visual);
 			});
 			body.setParent(new VisualNodeParent() {
 
@@ -227,13 +198,6 @@ public class NodeType {
 			return body.parent();
 		}
 
-			/*
-			@Override
-			public Context.Hoverable hover(final Context context, final Vector point) {
-				return body.hover(context, point);
-			}
-			*/
-
 		@Override
 		public boolean select(final Context context) {
 			return body.select(context);
@@ -261,7 +225,7 @@ public class NodeType {
 
 		@Override
 		public int spacePriority() {
-			return spacePriority;
+			return -precedence();
 		}
 
 		@Override
@@ -309,4 +273,38 @@ public class NodeType {
 			return NodeType.this;
 		}
 	}
+
+	private <D extends DataElement> D getData(final Class<? extends DataElement> type, final String id) {
+		final DataElement found = middle().get(id);
+		if (found == null) {
+			throw new InvalidSyntax(String.format("No data field named [%s] in %s", id, this));
+			/*
+			found = Helper.uncheck(type::newInstance);
+			found.id = id;
+			middle.add(found);
+			*/
+		} else {
+			if (!type.isAssignableFrom(found.getClass()))
+				throw new InvalidSyntax(String.format("Conflicting types for data field %s in %s: %s, %s",
+						id,
+						this,
+						found.getClass(),
+						type
+				));
+		}
+		return (D) found;
+	}
+
+	public DataPrimitive getDataPrimitive(final String key) {
+		return getData(DataPrimitive.class, key);
+	}
+
+	public DataNode getDataNode(final String key) {
+		return getData(DataNode.class, key);
+	}
+
+	public DataArray getDataArray(final String key) {
+		return getData(DataArray.class, key);
+	}
+
 }

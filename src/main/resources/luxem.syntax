@@ -51,7 +51,7 @@
 			middle: {value: (primitive) {}},
 			front: [
 			    (mark) "*",
-				(primitive) value,
+				(gap) value,
 			],
 		},
 		{

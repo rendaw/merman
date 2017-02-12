@@ -23,6 +23,11 @@ import java.util.stream.Collectors;
 
 @Luxem.Configuration(name = "space")
 public class FrontSpace extends FrontConstantPart {
+	@Override
+	public void dispatch(final DispatchHandler handler) {
+		handler.handle(this);
+	}
+
 	private class SpaceVisual extends VisualNodePart {
 		public VisualNodeParent parent;
 		SpaceBrick brick;

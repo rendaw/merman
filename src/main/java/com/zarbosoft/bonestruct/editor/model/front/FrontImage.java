@@ -23,6 +23,15 @@ import java.util.stream.Collectors;
 @Luxem.Configuration(name = "image")
 public class FrontImage extends FrontConstantPart {
 
+	@Luxem.Configuration(name = "gap-key", optional = true,
+			description = "Use this string as a key for matching the node when filling a gap.")
+	public String gapKey = "";
+
+	@Override
+	public void dispatch(final DispatchHandler handler) {
+		handler.handle(this);
+	}
+
 	private class ImageVisual extends VisualNodePart {
 		public VisualNodeParent parent;
 		private ImageBrick brick = null;

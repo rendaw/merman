@@ -5,6 +5,7 @@ import com.zarbosoft.bonestruct.editor.model.NodeType;
 import com.zarbosoft.bonestruct.editor.model.Syntax;
 import com.zarbosoft.bonestruct.editor.model.middle.DataPrimitive;
 import com.zarbosoft.luxemj.Luxem;
+import com.zarbosoft.luxemj.source.LKeyEvent;
 import com.zarbosoft.luxemj.source.LPrimitiveEvent;
 import com.zarbosoft.pidgoon.events.BakedOperator;
 import com.zarbosoft.pidgoon.events.Store;
@@ -15,14 +16,14 @@ import com.zarbosoft.pidgoon.internal.Pair;
 
 import java.util.Set;
 
-@Luxem.Configuration(name = "data-primitive")
-public class BackDataPrimitive extends BackPart {
+@Luxem.Configuration(name = "data-key")
+public class BackDataKey extends BackPart {
 	@Luxem.Configuration
 	public String middle;
 
 	@Override
 	public Node buildBackRule(final Syntax syntax, final NodeType nodeType) {
-		return new BakedOperator(new Terminal(new LPrimitiveEvent(null)), store -> {
+		return new BakedOperator(new Terminal(new LKeyEvent(null)), store -> {
 			store = (Store) store.pushStack(new Pair<>(
 					middle,
 					new DataPrimitive.Value(nodeType.getDataPrimitive(middle), ((LPrimitiveEvent) store.top()).value)

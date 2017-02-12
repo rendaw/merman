@@ -1,9 +1,9 @@
 package com.zarbosoft.bonestruct.editor.model.middle;
 
+import com.zarbosoft.bonestruct.Path;
 import com.zarbosoft.bonestruct.editor.changes.Change;
 import com.zarbosoft.bonestruct.editor.luxem.Luxem;
 import com.zarbosoft.bonestruct.editor.visual.Context;
-import javafx.beans.property.SimpleStringProperty;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -19,16 +19,15 @@ public class DataPrimitive extends DataElement {
 		public abstract void removed(Context context, int index, int count);
 	}
 
-	public static class Value {
+	public static class Value extends DataElement.Value {
+		public final DataPrimitive data;
+		public Parent parent = null;
 		private StringBuilder value = new StringBuilder();
 		private final Set<Listener> listeners = new HashSet<>();
 
-		public Value(final String data) {
-			value = new StringBuilder(data);
-		}
-
-		public Value() {
-
+		public Value(final DataPrimitive data, final String value) {
+			this.data = data;
+			this.value = new StringBuilder(value);
 		}
 
 		public void addListener(final Listener listener) {
@@ -46,9 +45,24 @@ public class DataPrimitive extends DataElement {
 		public int length() {
 			return value.length();
 		}
+
+		@Override
+		public void setParent(final Parent parent) {
+			this.parent = parent;
+		}
+
+		@Override
+		public Parent parent() {
+			return parent;
+		}
+
+		@Override
+		public Path getPath() {
+			return parent.node().type.getBackPart(data.id).getPath(parent.node().parent.getPath());
+		}
 	}
 
-	public Value get(final Map<String, Object> data) {
+	public Value get(final Map<String, DataElement.Value> data) {
 		return (Value) data.get(id);
 	}
 
@@ -58,8 +72,8 @@ public class DataPrimitive extends DataElement {
 	}
 
 	@Override
-	public Object create() {
-		return new SimpleStringProperty();
+	public DataElement.Value create() {
+		return new Value(this, "");
 	}
 
 	public static class ChangeSet extends Change {
@@ -92,6 +106,11 @@ public class DataPrimitive extends DataElement {
 			for (final Listener listener : data.listeners)
 				listener.set(context, value);
 			return reverse;
+		}
+
+		@Override
+		public DataElement.Value getValue() {
+			return data;
 		}
 	}
 
@@ -130,6 +149,11 @@ public class DataPrimitive extends DataElement {
 			for (final Listener listener : data.listeners)
 				listener.added(context, index, value.toString());
 			return new ChangeRemove(data, index, value.length());
+		}
+
+		@Override
+		public DataElement.Value getValue() {
+			return data;
 		}
 	}
 
@@ -175,6 +199,11 @@ public class DataPrimitive extends DataElement {
 			final ChangeAdd reverse = new ChangeAdd(data, index, data.value.substring(index, index + size));
 			data.value.delete(index, index + size);
 			return reverse;
+		}
+
+		@Override
+		public DataElement.Value getValue() {
+			return data;
 		}
 	}
 }

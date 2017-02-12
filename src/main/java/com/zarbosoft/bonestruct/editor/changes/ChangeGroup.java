@@ -7,7 +7,7 @@ import com.zarbosoft.pidgoon.internal.Helper;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ChangeGroup extends Change {
+public class ChangeGroup {
 	private final List<Change> subchanges = new ArrayList<>();
 
 	public void add(final Change change) {
@@ -15,13 +15,7 @@ public class ChangeGroup extends Change {
 			subchanges.add(change);
 	}
 
-	@Override
-	public boolean merge(final Change other) {
-		return false;
-	}
-
-	@Override
-	public Change apply(final Context context) {
+	public ChangeGroup apply(final Context context) {
 		final ChangeGroup out = new ChangeGroup();
 		for (final Change change : Lists.reverse(subchanges))
 			out.subchanges.add(change.apply(context));

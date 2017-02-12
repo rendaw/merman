@@ -2,6 +2,7 @@ package com.zarbosoft.bonestruct.editor.model.front;
 
 import com.zarbosoft.bonestruct.editor.model.NodeType;
 import com.zarbosoft.bonestruct.editor.model.middle.DataArray;
+import com.zarbosoft.bonestruct.editor.model.middle.DataElement;
 import com.zarbosoft.bonestruct.editor.visual.Context;
 import com.zarbosoft.bonestruct.editor.visual.nodes.ArrayVisualNode;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
@@ -42,8 +43,13 @@ public class FrontDataArray extends FrontPart {
 	}
 
 	@Override
+	public void dispatch(final DispatchHandler handler) {
+		handler.handle(this);
+	}
+
+	@Override
 	public VisualNodePart createVisual(
-			final Context context, final Map<String, Object> data, final Set<VisualNode.Tag> tags
+			final Context context, final Map<String, DataElement.Value> data, final Set<VisualNode.Tag> tags
 	) {
 		return new ArrayVisualNode(
 				context,

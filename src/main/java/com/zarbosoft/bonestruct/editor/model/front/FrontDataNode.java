@@ -1,6 +1,7 @@
 package com.zarbosoft.bonestruct.editor.model.front;
 
 import com.zarbosoft.bonestruct.editor.model.NodeType;
+import com.zarbosoft.bonestruct.editor.model.middle.DataElement;
 import com.zarbosoft.bonestruct.editor.model.middle.DataNode;
 import com.zarbosoft.bonestruct.editor.visual.Context;
 import com.zarbosoft.bonestruct.editor.visual.nodes.NestedVisualNodePart;
@@ -27,7 +28,7 @@ public class FrontDataNode extends FrontPart {
 
 	@Override
 	public VisualNodePart createVisual(
-			final Context context, final Map<String, Object> data, final Set<VisualNode.Tag> tags
+			final Context context, final Map<String, DataElement.Value> data, final Set<VisualNode.Tag> tags
 	) {
 		return new NestedVisualNodePart(
 				context,
@@ -43,5 +44,10 @@ public class FrontDataNode extends FrontPart {
 	public void finish(final NodeType nodeType, final Set<String> middleUsed) {
 		middleUsed.add(middle);
 		dataType = nodeType.getDataNode(middle);
+	}
+
+	@Override
+	public void dispatch(final DispatchHandler handler) {
+		handler.handle(this);
 	}
 }

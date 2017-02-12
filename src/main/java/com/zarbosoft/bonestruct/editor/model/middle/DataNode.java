@@ -1,5 +1,6 @@
 package com.zarbosoft.bonestruct.editor.model.middle;
 
+import com.zarbosoft.bonestruct.Path;
 import com.zarbosoft.bonestruct.editor.InvalidSyntax;
 import com.zarbosoft.bonestruct.editor.changes.Change;
 import com.zarbosoft.bonestruct.editor.luxem.Luxem;
@@ -16,16 +17,44 @@ public class DataNode extends DataElement {
 		public abstract void set(Context context, Node node);
 	}
 
-	public static class Value {
+	public static class Value extends DataElement.Value {
+		private final DataNode data;
+		public Parent parent = null;
 		private Node value = null;
 		private final Set<Listener> listeners = new HashSet<>();
 
-		public Value(final Node data) {
-			value = data;
+		private class NodeParent extends Node.Parent {
+
+			@Override
+			public void replace(final Context context, final Node node) {
+				context.history.apply(context, new ChangeSet(Value.this, node));
+			}
+
+			@Override
+			public String childType() {
+				return data.type;
+			}
+
+			@Override
+			public DataElement.Value data() {
+				return Value.this;
+			}
+
+			@Override
+			public String id() {
+				return data.id;
+			}
+
+			@Override
+			public Path getPath() {
+				return Value.this.getPath();
+			}
 		}
 
-		public Value() {
-
+		public Value(final DataNode data, final Node value) {
+			this.data = data;
+			this.value = value;
+			value.setParent(new NodeParent());
 		}
 
 		public void addListener(final Listener listener) {
@@ -39,15 +68,29 @@ public class DataNode extends DataElement {
 		public Node get() {
 			return value;
 		}
+
+		public void setParent(final Parent parent) {
+			this.parent = parent;
+		}
+
+		@Override
+		public Parent parent() {
+			return parent;
+		}
+
+		@Override
+		public Path getPath() {
+			return parent.node().type.getBackPart(data.id).getPath(parent.node().parent.getPath());
+		}
 	}
 
 	public static class ChangeSet extends Change {
-		private final Value data;
-		private Node value;
+		private final Value value;
+		private Node node;
 
-		public ChangeSet(final Value data, final Node newValue) {
-			this.data = data;
-			value = newValue;
+		public ChangeSet(final Value value, final Node newValue) {
+			this.value = value;
+			node = newValue;
 		}
 
 		@Override
@@ -58,36 +101,42 @@ public class DataNode extends DataElement {
 			} catch (final ClassCastException e) {
 				return false;
 			}
-			if (other2.data != data)
+			if (other2.value != value)
 				return false;
-			value = other2.value;
+			node = other2.node;
 			return true;
 		}
 
 		public Change apply(final Context context) {
-			final Change reverse = new ChangeSet(data, data.value);
-			data.value = value;
-			for (final Listener listener : data.listeners)
-				listener.set(context, value);
+			final Change reverse = new ChangeSet(value, value.value);
+			value.value = node;
+			node.setParent(value.new NodeParent());
+			for (final Listener listener : value.listeners)
+				listener.set(context, node);
 			return reverse;
+		}
+
+		@Override
+		public DataElement.Value getValue() {
+			return value;
 		}
 	}
 
 	@Luxem.Configuration
-	public String tag;
+	public String type;
 
-	public Value get(final Map<String, Object> data) {
+	public Value get(final Map<String, DataElement.Value> data) {
 		return (Value) data.get(id);
 	}
 
 	@Override
 	public void finish(final Set<String> singleNodes, final Set<String> arrayNodes) {
-		if (!singleNodes.contains(tag))
-			throw new InvalidSyntax(String.format("Unknown unit node or tag id [%s].", tag));
+		if (!singleNodes.contains(type))
+			throw new InvalidSyntax(String.format("Unknown type [%s].", type));
 	}
 
 	@Override
-	public Object create() {
-		return new Value();
+	public DataElement.Value create() {
+		return new Value(this, null);
 	}
 }

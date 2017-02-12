@@ -3,10 +3,10 @@ package com.zarbosoft.bonestruct.editor.visual.nodes;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.zarbosoft.bonestruct.editor.model.Hotkeys;
+import com.zarbosoft.bonestruct.editor.model.Node;
 import com.zarbosoft.bonestruct.editor.model.NodeType;
 import com.zarbosoft.bonestruct.editor.model.front.FrontConstantPart;
 import com.zarbosoft.bonestruct.editor.model.middle.DataArray;
-import com.zarbosoft.bonestruct.editor.model.middle.DataNode;
 import com.zarbosoft.bonestruct.editor.visual.Context;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.editor.visual.attachments.BorderAttachment;
@@ -18,6 +18,7 @@ import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodeParent;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
 import com.zarbosoft.bonestruct.editor.visual.wall.Brick;
 import com.zarbosoft.pidgoon.internal.Helper;
+import com.zarbosoft.pidgoon.internal.Pair;
 import org.pcollections.HashTreePSet;
 import org.pcollections.PSet;
 
@@ -37,7 +38,7 @@ public abstract class ArrayVisualNode extends GroupVisualNode {
 		this.data = data;
 		dataListener = new DataArray.Listener() {
 			@Override
-			public void added(final Context context, final int index, final List<DataNode.Value> nodes) {
+			public void added(final Context context, final int index, final List<Node> nodes) {
 				ArrayVisualNode.this.add(context, index, nodes);
 			}
 
@@ -144,7 +145,7 @@ public abstract class ArrayVisualNode extends GroupVisualNode {
 		}
 	}
 
-	public void add(final Context context, final int start, final List<DataNode.Value> nodes) {
+	public void add(final Context context, final int start, final List<Node> nodes) {
 		final boolean retagFirst = tagFirst() && start == 0;
 		final boolean retagLast = tagLast() && start == children.size();
 		if (!children.isEmpty()) {
@@ -170,10 +171,55 @@ public abstract class ArrayVisualNode extends GroupVisualNode {
 			final ChildGroup group = new ChildGroup(ImmutableSet.of(), true);
 			for (final FrontConstantPart fix : getPrefix())
 				group.add(context, fix.createVisual(context, tags.plus(new VisualNode.PartTag("prefix"))));
-			group.add(
-					context,
-					new EmbeddedNestedVisualNodePart(context, p.second, tags.plus(new VisualNode.PartTag("nested")))
-			);
+			final VisualNode nodeVisual = p.second.createVisual(context);
+			group.add(context, new VisualNodePart(tags.plus(new VisualNode.PartTag("nested"))) {
+				@Override
+				public void setParent(final VisualNodeParent parent) {
+					nodeVisual.setParent(parent);
+				}
+
+				@Override
+				public VisualNodeParent parent() {
+					return nodeVisual.parent();
+				}
+
+				@Override
+				public boolean select(final Context context) {
+					return nodeVisual.select(context);
+				}
+
+				@Override
+				public Brick createFirstBrick(final Context context) {
+					return nodeVisual.createFirstBrick(context);
+				}
+
+				@Override
+				public Brick createLastBrick(final Context context) {
+					return nodeVisual.createLastBrick(context);
+				}
+
+				@Override
+				public Brick getFirstBrick(final Context context) {
+					return nodeVisual.getFirstBrick(context);
+				}
+
+				@Override
+				public Brick getLastBrick(final Context context) {
+					return nodeVisual.getLastBrick(context);
+				}
+
+				@Override
+				public Iterable<Pair<Brick, Brick.Properties>> getPropertiesForTagsChange(
+						final Context context, final TagsChange change
+				) {
+					return nodeVisual.getPropertiesForTagsChange(context, change);
+				}
+
+				@Override
+				public void destroyBricks(final Context context) {
+					nodeVisual.destroyBricks(context);
+				}
+			});
 			for (final FrontConstantPart fix : getSuffix())
 				group.add(context, fix.createVisual(context, tags.plus(new VisualNode.PartTag("suffix"))));
 			super.add(context, group, index);

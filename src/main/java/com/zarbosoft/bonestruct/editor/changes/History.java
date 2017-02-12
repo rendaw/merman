@@ -14,7 +14,7 @@ public class History {
 	private final Deque<ChangeGroup> future = new ArrayDeque<>();
 
 	public static abstract class Listener {
-		public abstract void applied(Context context, Change change);
+		public abstract void applied(Context context, ChangeGroup change);
 	}
 
 	private final Set<Listener> listeners = new HashSet<>();
@@ -22,19 +22,19 @@ public class History {
 	public void undo(final Context context) {
 		if (past.isEmpty())
 			return;
-		final Change change = past.pollLast();
+		final ChangeGroup change = past.pollLast();
 		for (final Listener listener : listeners)
 			listener.applied(context, change);
-		future.addLast((ChangeGroup) change.apply(context));
+		future.addLast(change.apply(context));
 	}
 
 	public void redo(final Context context) {
 		if (future.isEmpty())
 			return;
-		final Change change = future.pollLast();
+		final ChangeGroup change = future.pollLast();
 		for (final Listener listener : listeners)
 			listener.applied(context, change);
-		past.addLast((ChangeGroup) change.apply(context));
+		past.addLast(change.apply(context));
 	}
 
 	public void finishChange() {

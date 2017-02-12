@@ -1,6 +1,8 @@
 package com.zarbosoft.bonestruct.editor.model.back;
 
+import com.zarbosoft.bonestruct.Path;
 import com.zarbosoft.bonestruct.editor.luxem.Luxem;
+import com.zarbosoft.bonestruct.editor.model.FreeNodeType;
 import com.zarbosoft.bonestruct.editor.model.NodeType;
 import com.zarbosoft.bonestruct.editor.model.Syntax;
 import com.zarbosoft.pidgoon.internal.Node;
@@ -8,9 +10,23 @@ import com.zarbosoft.pidgoon.internal.Node;
 import java.util.Set;
 
 @Luxem.Configuration
-public interface BackPart {
-	Node buildLoadRule(Syntax syntax);
+public abstract class BackPart {
+	public abstract Node buildBackRule(Syntax syntax, NodeType nodeType);
 
-	default void finish(final NodeType nodeType, final Set<String> middleUsed) {
+	protected Parent parent = null;
+
+	public void finish(final Syntax syntax, final FreeNodeType nodeType, final Set<String> middleUsed) {
+	}
+
+	final public Path getPath(final Path basis) {
+		if (parent.part() == null)
+			return basis.add(parent.pathSection());
+		return parent.part().getPath(basis).add(parent.pathSection());
+	}
+
+	abstract class Parent {
+		public abstract BackPart part();
+
+		public abstract String pathSection();
 	}
 }

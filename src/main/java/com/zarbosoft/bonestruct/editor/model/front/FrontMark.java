@@ -24,6 +24,11 @@ public class FrontMark extends FrontConstantPart {
 	@Luxem.Configuration
 	public String value;
 
+	@Override
+	public void dispatch(final DispatchHandler handler) {
+		handler.handle(this);
+	}
+
 	private class MarkVisual extends VisualNodePart {
 		public VisualNodeParent parent;
 		private MarkBrick brick = null;
