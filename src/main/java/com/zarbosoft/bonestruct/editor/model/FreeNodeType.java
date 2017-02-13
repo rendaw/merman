@@ -80,8 +80,11 @@ public class FreeNodeType extends NodeType {
 		return frontAssociative;
 	}
 
-	public void finish(final Syntax syntax) {
-		middle.forEach((k, v) -> v.id = k);
+	public void finish(final Syntax syntax, final Set<String> allTypes, final Set<String> scalarTypes) {
+		middle.forEach((k, v) -> {
+			v.id = k;
+			v.finish(allTypes, scalarTypes);
+		});
 		{
 			final Set<String> middleUsedBack = new HashSet<>();
 			back.forEach(p -> p.finish(syntax, this, middleUsedBack));

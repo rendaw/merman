@@ -3,7 +3,7 @@ package com.zarbosoft.bonestruct.editor.model;
 import com.google.common.collect.ImmutableSet;
 import com.zarbosoft.bonestruct.editor.InvalidSyntax;
 import com.zarbosoft.bonestruct.editor.model.front.FrontConstantPart;
-import com.zarbosoft.bonestruct.editor.model.middle.DataArray;
+import com.zarbosoft.bonestruct.editor.model.middle.DataArrayBase;
 import com.zarbosoft.bonestruct.editor.model.middle.DataNode;
 import com.zarbosoft.luxemj.Luxem;
 import com.zarbosoft.luxemj.LuxemEvent;
@@ -217,13 +217,16 @@ public class Syntax {
 		}
 
 		boolean foundRoot = false;
-		final Set<String> allTypeIds = new HashSet<>();
+		final Set<String> scalarTypes = new HashSet<>(); // Types that only have one back element
+		final Set<String> allTypes = new HashSet<>();
 		for (final FreeNodeType t : out.types) {
 			if (t.back.isEmpty())
 				throw new InvalidSyntax(String.format("Type [%s] has no back parts.", t.id));
-			if (allTypeIds.contains(t.id))
+			if (allTypes.contains(t.id))
 				throw new InvalidSyntax(String.format("Multiple types with id [%s].", t.id));
-			allTypeIds.add(t.id);
+			allTypes.add(t.id);
+			if (t.back.size() == 1)
+				scalarTypes.add(t.id);
 			if (t.id.equals(out.root)) {
 				foundRoot = true;
 			}
@@ -234,28 +237,52 @@ public class Syntax {
 			throw new InvalidSyntax("Prefix gap definition missing.");
 		if (out.suffixGap == null)
 			throw new InvalidSyntax("Suffix gap definition missing.");
+		final Map<String, Set<String>> groupsThatContainType = new HashMap<>();
+		final Set<String> potentiallyScalarGroups = new HashSet<>();
 		for (final Map.Entry<String, Set<String>> pair : out.groups.entrySet()) {
 			final String group = pair.getKey();
-			for (final String child : pair.getValue())
-				if (!allTypeIds.contains(child) && !out.groups.containsKey(child))
+			for (final String child : pair.getValue()) {
+				if (!allTypes.contains(child) && !out.groups.containsKey(child))
 					throw new InvalidSyntax(String.format("Group [%s] refers to non-existant member [%s].",
 							group,
 							child
 					));
-			if (allTypeIds.contains(group))
+				groupsThatContainType.putIfAbsent(child, new HashSet<>());
+				groupsThatContainType.get(child).add(pair.getKey());
+			}
+			if (allTypes.contains(group))
 				throw new InvalidSyntax(String.format("Group id [%s] already used.", group));
-			allTypeIds.add(group);
+			allTypes.add(group);
 			if (group.equals(out.root))
 				foundRoot = true;
+			potentiallyScalarGroups.add(group);
 		}
 		if (!foundRoot)
 			throw new InvalidSyntax(String.format("No type or tag id matches root id [%s]", out.root));
 		for (final FreeNodeType t : out.types) {
-			t.finish(out);
+			if (t.back.size() == 1)
+				continue;
+			final Deque<Iterator<String>> stack = new ArrayDeque<>();
+			stack.add(groupsThatContainType.getOrDefault(t.id, ImmutableSet.of()).iterator());
+			while (!stack.isEmpty()) {
+				final Iterator<String> top = stack.pollLast();
+				if (top.hasNext()) {
+					stack.addLast(top);
+					final String notScalarGroup = top.next();
+					if (potentiallyScalarGroups.contains(notScalarGroup)) {
+						stack.add(groupsThatContainType.getOrDefault(notScalarGroup, ImmutableSet.of()).iterator());
+						potentiallyScalarGroups.remove(notScalarGroup);
+					}
+				}
+			}
 		}
-		out.gap.finish(out);
-		out.prefixGap.finish(out);
-		out.suffixGap.finish(out);
+		scalarTypes.addAll(potentiallyScalarGroups);
+		for (final FreeNodeType t : out.types) {
+			t.finish(out, allTypes, scalarTypes);
+		}
+		out.gap.finish(out, allTypes, scalarTypes);
+		out.prefixGap.finish(out, allTypes, scalarTypes);
+		out.suffixGap.finish(out, allTypes, scalarTypes);
 		return out;
 	}
 
@@ -290,7 +317,7 @@ public class Syntax {
 			path.value = path.value.push(e);
 			stream.push(e, path.value.toString());
 		});
-		return new Document(this, new DataArray.Value(null, stream.finish()));
+		return new Document(this, new DataArrayBase.Value(null, stream.finish()));
 	}
 
 	public Document load(final File file) throws FileNotFoundException, IOException {
@@ -306,7 +333,7 @@ public class Syntax {
 	}
 
 	public Document load(final InputStream data) {
-		return new Document(this, new DataArray.Value(null,
+		return new Document(this, new DataArrayBase.Value(null,
 				new com.zarbosoft.luxemj.Parse<List<Node>>()
 						.stack(() -> 0)
 						.grammar(getGrammar())

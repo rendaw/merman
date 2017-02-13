@@ -130,8 +130,8 @@ public class DataNode extends DataElement {
 	}
 
 	@Override
-	public void finish(final Set<String> singleNodes, final Set<String> arrayNodes) {
-		if (!singleNodes.contains(type))
+	public void finish(final Set<String> allTypes, final Set<String> scalarTypes) {
+		if (!scalarTypes.contains(type))
 			throw new InvalidSyntax(String.format("Unknown type [%s].", type));
 	}
 

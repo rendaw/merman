@@ -6,7 +6,7 @@ import com.zarbosoft.bonestruct.editor.model.Hotkeys;
 import com.zarbosoft.bonestruct.editor.model.Node;
 import com.zarbosoft.bonestruct.editor.model.NodeType;
 import com.zarbosoft.bonestruct.editor.model.front.FrontConstantPart;
-import com.zarbosoft.bonestruct.editor.model.middle.DataArray;
+import com.zarbosoft.bonestruct.editor.model.middle.DataArrayBase;
 import com.zarbosoft.bonestruct.editor.visual.Context;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.editor.visual.attachments.BorderAttachment;
@@ -30,13 +30,13 @@ import static java.io.File.separator;
 
 public abstract class ArrayVisualNode extends GroupVisualNode {
 
-	private final DataArray.Listener dataListener;
-	private final DataArray.Value data;
+	private final DataArrayBase.Listener dataListener;
+	private final DataArrayBase.Value data;
 
-	public ArrayVisualNode(final Context context, final DataArray.Value data, final Set<VisualNode.Tag> tags) {
+	public ArrayVisualNode(final Context context, final DataArrayBase.Value data, final Set<VisualNode.Tag> tags) {
 		super(tags);
 		this.data = data;
-		dataListener = new DataArray.Listener() {
+		dataListener = new DataArrayBase.Listener() {
 			@Override
 			public void added(final Context context, final int index, final List<Node> nodes) {
 				ArrayVisualNode.this.add(context, index, nodes);

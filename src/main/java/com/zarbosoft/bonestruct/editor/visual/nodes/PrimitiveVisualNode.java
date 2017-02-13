@@ -271,9 +271,9 @@ public class PrimitiveVisualNode extends VisualNodePart {
 		public void receiveText(final Context context, final String text) {
 			if (range.beginOffset != range.endOffset)
 				context.history.apply(context,
-						new DataPrimitive.ChangeRemove(data, range.beginOffset, range.endOffset - range.beginOffset)
+						data.changeRemove(range.beginOffset, range.endOffset - range.beginOffset)
 				);
-			context.history.apply(context, new DataPrimitive.ChangeAdd(data, range.beginOffset, text));
+			context.history.apply(context, data.changeAdd(range.beginOffset, text));
 		}
 
 		@Override
@@ -389,16 +389,11 @@ public class PrimitiveVisualNode extends VisualNodePart {
 					if (range.beginOffset == range.endOffset) {
 						if (range.beginOffset > 0) {
 							final int preceding = clusterIterator.preceding(range.beginOffset);
-							context.history.apply(context,
-									new DataPrimitive.ChangeRemove(data, preceding, range.beginOffset - preceding)
-							);
+							context.history.apply(context, data.changeRemove(preceding, range.beginOffset - preceding));
 						}
 					} else
 						context.history.apply(context,
-								new DataPrimitive.ChangeRemove(data,
-										range.beginOffset,
-										range.endOffset - range.beginOffset
-								)
+								data.changeRemove(range.beginOffset, range.endOffset - range.beginOffset)
 						);
 				}
 
@@ -413,19 +408,13 @@ public class PrimitiveVisualNode extends VisualNodePart {
 						if (range.endOffset < data.length()) {
 							final int following = clusterIterator.following(range.beginOffset);
 							context.history.apply(context,
-									new DataPrimitive.ChangeRemove(data,
-											range.beginOffset,
-											following - range.beginOffset
-									)
+									data.changeRemove(range.beginOffset, following - range.beginOffset)
 							);
 						}
 
 					} else
 						context.history.apply(context,
-								new DataPrimitive.ChangeRemove(data,
-										range.beginOffset,
-										range.endOffset - range.beginOffset
-								)
+								data.changeRemove(range.beginOffset, range.endOffset - range.beginOffset)
 						);
 				}
 
@@ -439,12 +428,9 @@ public class PrimitiveVisualNode extends VisualNodePart {
 					context.history.finishChange();
 					if (range.beginOffset != range.endOffset)
 						context.history.apply(context,
-								new DataPrimitive.ChangeRemove(data,
-										range.beginOffset,
-										range.endOffset - range.beginOffset
-								)
+								data.changeRemove(range.beginOffset, range.endOffset - range.beginOffset)
 						);
-					context.history.apply(context, new DataPrimitive.ChangeAdd(data, range.beginOffset, "\n"));
+					context.history.apply(context, data.changeAdd(range.beginOffset, "\n"));
 					context.history.finishChange();
 				}
 
@@ -459,19 +445,14 @@ public class PrimitiveVisualNode extends VisualNodePart {
 						if (range.beginLine.index + 1 < lines.size()) {
 							context.history.finishChange();
 							context.history.apply(context,
-									new DataPrimitive.ChangeRemove(data,
-											lines.get(range.beginLine.index + 1).offset - 1,
-											1
-									)
+									data.changeRemove(lines.get(range.beginLine.index + 1).offset - 1, 1)
 							);
 						}
 						context.history.finishChange();
 					} else {
 						context.history.finishChange();
 						for (int index = range.beginLine.index + 1; index <= range.endLine.index; ++index) {
-							context.history.apply(context,
-									new DataPrimitive.ChangeRemove(data, lines.get(index).offset - 1, 1)
-							);
+							context.history.apply(context, data.changeRemove(lines.get(index).offset - 1, 1));
 						}
 						context.history.finishChange();
 					}
@@ -500,9 +481,7 @@ public class PrimitiveVisualNode extends VisualNodePart {
 					content.putString(data.get().substring(range.beginOffset, range.endOffset));
 					Clipboard.getSystemClipboard().setContent(content);
 					context.history.finishChange();
-					context.history.apply(context,
-							new DataPrimitive.ChangeRemove(data, range.beginOffset, range.endOffset)
-					);
+					context.history.apply(context, data.changeRemove(range.beginOffset, range.endOffset));
 				}
 
 				@Override
@@ -517,12 +496,9 @@ public class PrimitiveVisualNode extends VisualNodePart {
 						context.history.finishChange();
 						if (range.beginOffset != range.endOffset)
 							context.history.apply(context,
-									new DataPrimitive.ChangeRemove(data,
-											range.beginOffset,
-											range.endOffset - range.beginOffset
-									)
+									data.changeRemove(range.beginOffset, range.endOffset - range.beginOffset)
 							);
-						context.history.apply(context, new DataPrimitive.ChangeAdd(data, range.beginOffset, value));
+						context.history.apply(context, data.changeAdd(range.beginOffset, value));
 					}
 				}
 

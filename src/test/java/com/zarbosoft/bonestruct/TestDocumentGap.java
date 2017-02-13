@@ -6,6 +6,6 @@ public class TestDocumentGap {
 
 	@Test
 	public void nullary() {
-		
+
 	}
 }

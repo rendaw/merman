@@ -7,10 +7,7 @@ import com.zarbosoft.bonestruct.editor.model.back.*;
 import com.zarbosoft.bonestruct.editor.model.front.FrontDataArray;
 import com.zarbosoft.bonestruct.editor.model.front.FrontDataNode;
 import com.zarbosoft.bonestruct.editor.model.front.FrontPart;
-import com.zarbosoft.bonestruct.editor.model.middle.DataArray;
-import com.zarbosoft.bonestruct.editor.model.middle.DataElement;
-import com.zarbosoft.bonestruct.editor.model.middle.DataNode;
-import com.zarbosoft.bonestruct.editor.model.middle.DataPrimitive;
+import com.zarbosoft.bonestruct.editor.model.middle.*;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.AlignmentDefinition;
 import com.zarbosoft.bonestruct.editor.visual.Context;
@@ -47,7 +44,7 @@ public abstract class NodeType {
 
 	public abstract boolean frontAssociative();
 
-	public abstract void finish(Syntax syntax);
+	public abstract void finish(Syntax syntax, Set<String> allTypes, Set<String> scalarTypes);
 
 	public com.zarbosoft.pidgoon.internal.Node buildBackRule(final Syntax syntax) {
 		final Sequence seq = new Sequence();
@@ -100,6 +97,10 @@ public abstract class NodeType {
 			}
 		}
 		throw new DeadCode();
+	}
+
+	public DataRecord getDataRecord(final String middle) {
+		return getData(DataRecord.class, middle);
 	}
 
 	public class NodeTypeVisual extends VisualNode {

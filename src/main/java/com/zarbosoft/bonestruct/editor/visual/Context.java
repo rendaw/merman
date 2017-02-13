@@ -10,10 +10,7 @@ import com.zarbosoft.bonestruct.editor.InvalidPath;
 import com.zarbosoft.bonestruct.editor.changes.History;
 import com.zarbosoft.bonestruct.editor.model.*;
 import com.zarbosoft.bonestruct.editor.model.back.*;
-import com.zarbosoft.bonestruct.editor.model.middle.DataArray;
-import com.zarbosoft.bonestruct.editor.model.middle.DataElement;
-import com.zarbosoft.bonestruct.editor.model.middle.DataNode;
-import com.zarbosoft.bonestruct.editor.model.middle.DataPrimitive;
+import com.zarbosoft.bonestruct.editor.model.middle.*;
 import com.zarbosoft.bonestruct.editor.visual.attachments.TransverseExtentsAdapter;
 import com.zarbosoft.bonestruct.editor.visual.attachments.VisualAttachmentAdapter;
 import com.zarbosoft.bonestruct.editor.visual.raw.RawText;
@@ -158,7 +155,7 @@ public class Context {
 	 * @return
 	 */
 	public Object locate(final Path path) {
-		int pathIndex = 0;
+		int pathIndex = -1;
 		final List<String> segments = ImmutableList.copyOf(path.sections);
 		DataElement.Value value = document.top;
 		com.zarbosoft.bonestruct.editor.model.Node node = null;
@@ -220,30 +217,47 @@ public class Context {
 				node = null;
 			} else {
 				// Start from a value
-				if (value instanceof DataArray.Value) {
-					final String segment = segments.get(pathIndex);
-					if (segment == null)
-						return null;
-					final int index;
-					try {
-						index = Integer.parseInt(segment);
-					} catch (final NumberFormatException e) {
-						throw new InvalidPath(String.format("Segment [%s] at [%s] is not an integer.",
+				if (value instanceof DataArrayBase.Value) {
+					if (((DataArrayBase.Value) value).data() instanceof DataRecord) {
+						final String segment = segments.get(++pathIndex);
+						if (segment == null)
+							return null;
+						final int tempPathIndex = pathIndex;
+						node = ((DataArrayBase.Value) value).get().stream().filter(child -> (
+								(DataRecordKey.Value) child.data.get((
+										(BackDataKey) child.type.back().get(0)
+								).middle)
+						).get().equals(segment)).findFirst().orElseThrow(() -> new InvalidPath(String.format(
+								"Invalid key %s at [%s].",
 								segment,
-								new Path(TreePVector.from(segments.subList(0, pathIndex)))
-						));
+								new Path(TreePVector.from(segments.subList(0, tempPathIndex)))
+						)));
+						part = (BackDataNode) node.type.back().get(1);
+					} else if (((DataArrayBase.Value) value).data() instanceof DataArray) {
+
+						final String segment = segments.get(++pathIndex);
+						if (segment == null)
+							return null;
+						final int index;
+						try {
+							index = Integer.parseInt(segment);
+						} catch (final NumberFormatException e) {
+							throw new InvalidPath(String.format("Segment [%s] at [%s] is not an integer.",
+									segment,
+									new Path(TreePVector.from(segments.subList(0, pathIndex)))
+							));
+						}
+						final int tempPathIndex = pathIndex;
+						node = ((DataArrayBase.Value) value).get().stream().filter(child -> (
+								((DataArrayBase.Value.ArrayParent) child.parent).actualIndex <= index
+						)).findFirst().orElseThrow(() -> new InvalidPath(String.format("Invalid index %d at [%s].",
+								index,
+								new Path(TreePVector.from(segments.subList(0, tempPathIndex)))
+						)));
+						part = node.type
+								.back()
+								.get(((DataArrayBase.Value.ArrayParent) node.parent).actualIndex - index);
 					}
-					final int tempPathIndex = pathIndex;
-					node = ((DataArray.Value) value)
-							.get()
-							.stream()
-							.filter(child -> (((DataArray.Value.ArrayParent) child.parent).actualIndex <= index))
-							.findFirst()
-							.orElseThrow(() -> new InvalidPath(String.format("Invalid index %d at [%s].",
-									index,
-									new Path(TreePVector.from(segments.subList(0, tempPathIndex)))
-							)));
-					part = node.type.back().get(((DataArray.Value.ArrayParent) node.parent).actualIndex - index);
 				} else if (value instanceof DataNode.Value) {
 					node = ((DataNode.Value) value).get();
 					part = node.type.back().get(0);

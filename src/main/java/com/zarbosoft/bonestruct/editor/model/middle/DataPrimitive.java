@@ -60,6 +60,22 @@ public class DataPrimitive extends DataElement {
 		public Path getPath() {
 			return parent.node().type.getBackPart(data.id).getPath(parent.node().parent.getPath());
 		}
+
+		public Change changeRemove(final int begin, final int length) {
+			return data.changeRemove(this, begin, length);
+		}
+
+		public Change changeAdd(final int begin, final String text) {
+			return data.changeAdd(this, begin, text);
+		}
+	}
+
+	protected Change changeAdd(final Value value, final int begin, final String text) {
+		return new DataPrimitive.ChangeAdd(value, begin, text);
+	}
+
+	protected Change changeRemove(final Value value, final int begin, final int length) {
+		return new ChangeRemove(value, begin, length);
 	}
 
 	public Value get(final Map<String, DataElement.Value> data) {
@@ -67,7 +83,7 @@ public class DataPrimitive extends DataElement {
 	}
 
 	@Override
-	public void finish(final Set<String> singleNodes, final Set<String> arrayNodes) {
+	public void finish(final Set<String> allTypes, final Set<String> scalarTypes) {
 
 	}
 

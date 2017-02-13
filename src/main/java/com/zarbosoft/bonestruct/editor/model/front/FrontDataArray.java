@@ -1,7 +1,7 @@
 package com.zarbosoft.bonestruct.editor.model.front;
 
 import com.zarbosoft.bonestruct.editor.model.NodeType;
-import com.zarbosoft.bonestruct.editor.model.middle.DataArray;
+import com.zarbosoft.bonestruct.editor.model.middle.DataArrayBase;
 import com.zarbosoft.bonestruct.editor.model.middle.DataElement;
 import com.zarbosoft.bonestruct.editor.visual.Context;
 import com.zarbosoft.bonestruct.editor.visual.nodes.ArrayVisualNode;
@@ -28,7 +28,7 @@ public class FrontDataArray extends FrontPart {
 	public List<FrontConstantPart> suffix;
 	@Luxem.Configuration
 	public List<FrontConstantPart> separator;
-	private DataArray dataType;
+	private DataArrayBase dataType;
 	@Luxem.Configuration(optional = true)
 	public Map<String, Node> hotkeys = new HashMap<>();
 	@Luxem.Configuration(name = "tag-first", optional = true)

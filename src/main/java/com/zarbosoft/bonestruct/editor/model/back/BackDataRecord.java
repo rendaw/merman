@@ -5,7 +5,7 @@ import com.zarbosoft.bonestruct.editor.InvalidSyntax;
 import com.zarbosoft.bonestruct.editor.model.FreeNodeType;
 import com.zarbosoft.bonestruct.editor.model.NodeType;
 import com.zarbosoft.bonestruct.editor.model.Syntax;
-import com.zarbosoft.bonestruct.editor.model.middle.DataArray;
+import com.zarbosoft.bonestruct.editor.model.middle.DataRecord;
 import com.zarbosoft.luxemj.Luxem;
 import com.zarbosoft.luxemj.source.LObjectCloseEvent;
 import com.zarbosoft.luxemj.source.LObjectOpenEvent;
@@ -45,7 +45,7 @@ public class BackDataRecord extends BackPart {
 							temp::add
 					);
 			Collections.reverse(temp);
-			final DataArray.Value value = new DataArray.Value(nodeType.getDataArray(middle), temp);
+			final DataRecord.Value value = new DataRecord.Value(nodeType.getDataArray(middle), temp);
 			store = (Store) store.pushStack(new Pair<>(middle, value));
 			return Helper.stackSingleElement(store);
 		});
@@ -54,7 +54,7 @@ public class BackDataRecord extends BackPart {
 	@Override
 	public void finish(final Syntax syntax, final FreeNodeType nodeType, final Set<String> middleUsed) {
 		middleUsed.add(middle);
-		final DataArray dataType = nodeType.getDataArray(middle);
+		final DataRecord dataType = nodeType.getDataRecord(middle);
 		for (final FreeNodeType element : syntax.getLeafTypes(dataType.type)) {
 			if (element.back.size() != 2 ||
 					!(element.back.get(0) instanceof BackDataKey) ||

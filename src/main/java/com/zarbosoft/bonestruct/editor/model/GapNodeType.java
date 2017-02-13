@@ -18,6 +18,7 @@ import com.zarbosoft.bonestruct.editor.visual.Context;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Luxem.Configuration
 public class GapNodeType extends NodeType {
@@ -115,7 +116,7 @@ public class GapNodeType extends NodeType {
 	}
 
 	@Override
-	public void finish(final Syntax syntax) {
+	public void finish(final Syntax syntax, final Set<String> allTypes, final Set<String> scalarTypes) {
 
 	}
 

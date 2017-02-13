@@ -6,7 +6,7 @@ import com.google.common.collect.Iterables;
 import com.zarbosoft.bonestruct.editor.luxem.Luxem;
 import com.zarbosoft.bonestruct.editor.model.back.*;
 import com.zarbosoft.bonestruct.editor.model.front.*;
-import com.zarbosoft.bonestruct.editor.model.middle.DataArray;
+import com.zarbosoft.bonestruct.editor.model.middle.DataArrayBase;
 import com.zarbosoft.bonestruct.editor.model.middle.DataElement;
 import com.zarbosoft.bonestruct.editor.model.middle.DataNode;
 import com.zarbosoft.bonestruct.editor.model.middle.DataPrimitive;
@@ -17,6 +17,7 @@ import com.zarbosoft.pidgoon.internal.Helper;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Luxem.Configuration
 public class SuffixGapNodeType extends NodeType {
@@ -81,7 +82,7 @@ public class SuffixGapNodeType extends NodeType {
 						@Override
 						public void handle(final FrontDataArray front) {
 							context.history.apply(context,
-									new DataArray.ChangeAdd((DataArray.Value) node.data.get(front.middle),
+									new DataArrayBase.ChangeAdd((DataArrayBase.Value) node.data.get(front.middle),
 											0,
 											ImmutableList.of(node)
 									)
@@ -212,7 +213,7 @@ public class SuffixGapNodeType extends NodeType {
 	}
 
 	@Override
-	public void finish(final Syntax syntax) {
+	public void finish(final Syntax syntax, final Set<String> allTypes, final Set<String> scalarTypes) {
 
 	}
 

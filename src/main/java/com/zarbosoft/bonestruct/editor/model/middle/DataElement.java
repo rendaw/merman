@@ -10,7 +10,7 @@ import java.util.Set;
 public abstract class DataElement {
 	public String id;
 
-	public abstract void finish(Set<String> singleNodes, Set<String> arrayNodes);
+	public abstract void finish(Set<String> allTypes, Set<String> scalarTypes);
 
 	public abstract Value create();
 

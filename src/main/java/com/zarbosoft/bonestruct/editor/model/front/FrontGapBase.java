@@ -2,7 +2,7 @@ package com.zarbosoft.bonestruct.editor.model.front;
 
 import com.zarbosoft.bonestruct.editor.model.FreeNodeType;
 import com.zarbosoft.bonestruct.editor.model.Node;
-import com.zarbosoft.bonestruct.editor.model.middle.DataArray;
+import com.zarbosoft.bonestruct.editor.model.middle.DataArrayBase;
 import com.zarbosoft.bonestruct.editor.model.middle.DataElement;
 import com.zarbosoft.bonestruct.editor.model.middle.DataNode;
 import com.zarbosoft.bonestruct.editor.model.middle.DataPrimitive;
@@ -175,7 +175,8 @@ public abstract class FrontGapBase extends FrontPart {
 							return found;
 					}
 				} else if (front instanceof FrontDataArray) {
-					final DataArray.Value array = (DataArray.Value) node.data.get(((FrontDataArray) front).middle);
+					final DataArrayBase.Value array =
+							(DataArrayBase.Value) node.data.get(((FrontDataArray) front).middle);
 					for (final Node element : array.get()) {
 						if (skipFirstNode && !skipped) {
 							skipped = true;
