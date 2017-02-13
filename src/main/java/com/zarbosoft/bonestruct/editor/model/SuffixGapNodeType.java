@@ -17,24 +17,24 @@ import com.zarbosoft.pidgoon.internal.Helper;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 @Luxem.Configuration
 public class SuffixGapNodeType extends NodeType {
 	private final DataNode dataValue;
 	private final DataPrimitive dataGap;
 	@Luxem.Configuration(name = "prefix", optional = true)
-	public List<FrontConstantPart> frontPrefix;
+	public List<FrontConstantPart> frontPrefix = new ArrayList<>();
 	@Luxem.Configuration(name = "infix", optional = true)
-	public List<FrontConstantPart> frontInfix;
+	public List<FrontConstantPart> frontInfix = new ArrayList<>();
 	@Luxem.Configuration(name = "suffix", optional = true)
-	public List<FrontConstantPart> frontSuffix;
+	public List<FrontConstantPart> frontSuffix = new ArrayList<>();
 
 	private final List<FrontPart> front;
 	private final List<BackPart> back;
 	private final Map<String, DataElement> middle;
 
 	public SuffixGapNodeType() {
+		id = "__suffix-gap";
 		{
 			final FrontDataNode value = new FrontDataNode();
 			value.middle = "value";
@@ -65,11 +65,11 @@ public class SuffixGapNodeType extends NodeType {
 				) {
 					final SuffixGapNode suffixSelf = (SuffixGapNode) self;
 					final Node node = choice.type.create();
-					DataPrimitive.Value selectNext = new FindSelectNext().find(node, true);
+					DataPrimitive.Value selectNext = findSelectNext(node, true);
 					final com.zarbosoft.bonestruct.editor.model.Node replacement;
 					if (selectNext == null) {
-						replacement = context.syntax.suffixGap.create(true);
-						selectNext = new FindSelectNext().find(replacement, false);
+						replacement = context.syntax.suffixGap.create(true, node);
+						selectNext = findSelectNext(replacement, false);
 					} else {
 						replacement = node;
 					}
@@ -78,11 +78,11 @@ public class SuffixGapNodeType extends NodeType {
 					if (suffixSelf.raise)
 						parent = findReplacementPoint(context, parent, (FreeNodeType) node.type);
 					parent.replace(context, node);
-					node.type.front().get(choice.node).dispatch(new NodeDispatchHandler() {
+					node.type.front().get(choice.node).dispatch(new NodeOnlyDispatchHandler() {
 						@Override
-						public void handle(final FrontDataArray front) {
+						public void handle(final FrontDataArrayBase front) {
 							context.history.apply(context,
-									new DataArrayBase.ChangeAdd((DataArrayBase.Value) node.data.get(front.middle),
+									new DataArrayBase.ChangeAdd((DataArrayBase.Value) node.data.get(front.middle()),
 											0,
 											ImmutableList.of(node)
 									)
@@ -115,6 +115,8 @@ public class SuffixGapNodeType extends NodeType {
 							allowed = true;
 						}
 
+						if (test.data().parent() == null)
+							break;
 						testNode = test.data().parent().node();
 
 						// Can't move up if current level is bounded by any other front parts
@@ -213,11 +215,6 @@ public class SuffixGapNodeType extends NodeType {
 	}
 
 	@Override
-	public void finish(final Syntax syntax, final Set<String> allTypes, final Set<String> scalarTypes) {
-
-	}
-
-	@Override
 	public String name() {
 		return "Gap (suffix)";
 	}
@@ -233,10 +230,10 @@ public class SuffixGapNodeType extends NodeType {
 		}
 	}
 
-	public Node create(final boolean raise) {
+	public Node create(final boolean raise, final Node value) {
 		return new SuffixGapNode(this,
 				ImmutableMap.of("value",
-						new DataNode.Value(dataValue, null),
+						new DataNode.Value(dataValue, value),
 						"gap",
 						new DataPrimitive.Value(dataGap, "")
 				),

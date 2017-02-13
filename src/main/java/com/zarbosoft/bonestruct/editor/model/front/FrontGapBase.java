@@ -2,6 +2,7 @@ package com.zarbosoft.bonestruct.editor.model.front;
 
 import com.zarbosoft.bonestruct.editor.model.FreeNodeType;
 import com.zarbosoft.bonestruct.editor.model.Node;
+import com.zarbosoft.bonestruct.editor.model.NodeType;
 import com.zarbosoft.bonestruct.editor.model.middle.DataArrayBase;
 import com.zarbosoft.bonestruct.editor.model.middle.DataElement;
 import com.zarbosoft.bonestruct.editor.model.middle.DataNode;
@@ -35,6 +36,12 @@ public abstract class FrontGapBase extends FrontPart {
 			this.node = node;
 			this.remainder = remainder;
 		}
+	}
+
+	@Override
+	public void finish(final NodeType nodeType, final Set<String> middleUsed) {
+		middleUsed.add(middle());
+		this.dataType = nodeType.getDataPrimitive(middle());
 	}
 
 	protected abstract void buildChoices(Context context, Node self, Map<String, List<Choice>> types);
@@ -71,9 +78,7 @@ public abstract class FrontGapBase extends FrontPart {
 
 		public class GapSelection extends PrimitiveSelection {
 
-			private final DataNode.Value dataValue;
 			private final DataPrimitive.Value dataGap;
-			private final DataPrimitive.Listener listener;
 
 			private final NavigableMap<String, List<Choice>> types = new TreeMap<>();
 
@@ -81,35 +86,15 @@ public abstract class FrontGapBase extends FrontPart {
 					final Context context, final int beginOffset, final int endOffset, final boolean direct
 			) {
 				super(context, beginOffset, endOffset, direct);
-				dataValue = (DataNode.Value) data.get("value");
 				dataGap = dataType.get(data);
-				final DataPrimitive.Listener listener = new DataPrimitive.Listener() {
-					@Override
-					public void set(final Context context, final String value) {
-						process(context);
-					}
-
-					@Override
-					public void added(final Context context, final int index, final String value) {
-						process(context);
-					}
-
-					@Override
-					public void removed(final Context context, final int index, final int count) {
-						process(context);
-					}
-
-				};
-				dataGap.addListener(listener);
-				this.listener = listener;
 				final com.zarbosoft.pidgoon.nodes.Union union = new com.zarbosoft.pidgoon.nodes.Union();
 				buildChoices(context, dataGap.parent.node(), types);
 			}
 
 			@Override
-			public void clear(final Context context) {
-				dataGap.removeListener(listener);
-				super.clear(context);
+			public void receiveText(final Context context, final String text) {
+				super.receiveText(context, text);
+				process(context);
 			}
 
 			private void process(final Context context) {
@@ -151,45 +136,44 @@ public abstract class FrontGapBase extends FrontPart {
 	protected void setRemainder(
 			final Context context, final DataElement.Value selectNext, final String remainder
 	) {
+		if (remainder == null || remainder.isEmpty())
+			return;
 		context.history.apply(context, new DataPrimitive.ChangeAdd((DataPrimitive.Value) selectNext, 0, remainder));
 	}
 
-	public class FindSelectNext {
-		boolean skipped = false;
-
-		public DataPrimitive.Value find(
-				final com.zarbosoft.bonestruct.editor.model.Node node, final boolean skipFirstNode
-		) {
-			for (final FrontPart front : node.type.front()) {
-				if (front instanceof FrontDataPrimitive) {
-					return (DataPrimitive.Value) node.data.get(((FrontDataPrimitive) front).middle);
-				} else if (front instanceof FrontDataNode) {
-					if (skipFirstNode && !skipped) {
-						skipped = true;
+	public DataPrimitive.Value findSelectNext(
+			final com.zarbosoft.bonestruct.editor.model.Node node, boolean skipFirstNode
+	) {
+		for (final FrontPart front : node.type.front()) {
+			if (front instanceof FrontDataPrimitive) {
+				return (DataPrimitive.Value) node.data.get(((FrontDataPrimitive) front).middle);
+			} else if (front instanceof FrontGapBase) {
+				return (DataPrimitive.Value) node.data.get(middle());
+			} else if (front instanceof FrontDataNode) {
+				if (skipFirstNode) {
+					skipFirstNode = false;
+				} else {
+					final DataPrimitive.Value found =
+							findSelectNext(((DataNode.Value) node.data.get(((FrontDataNode) front).middle)).get(),
+									skipFirstNode
+							);
+					if (found != null)
+						return found;
+				}
+			} else if (front instanceof FrontDataArray) {
+				final DataArrayBase.Value array = (DataArrayBase.Value) node.data.get(((FrontDataArray) front).middle);
+				for (final Node element : array.get()) {
+					if (skipFirstNode) {
+						skipFirstNode = false;
 					} else {
-						final DataPrimitive.Value found =
-								find(((DataNode.Value) node.data.get(((FrontDataNode) front).middle)).get(),
-										skipFirstNode
-								);
+						final DataPrimitive.Value found = findSelectNext(element, skipFirstNode);
 						if (found != null)
 							return found;
 					}
-				} else if (front instanceof FrontDataArray) {
-					final DataArrayBase.Value array =
-							(DataArrayBase.Value) node.data.get(((FrontDataArray) front).middle);
-					for (final Node element : array.get()) {
-						if (skipFirstNode && !skipped) {
-							skipped = true;
-						} else {
-							final DataPrimitive.Value found = find(element, skipFirstNode);
-							if (found != null)
-								return found;
-						}
-					}
 				}
 			}
-			return null;
 		}
+		return null;
 	}
 
 	protected void select(final Context context, final DataPrimitive.Value value) {
@@ -198,6 +182,11 @@ public abstract class FrontGapBase extends FrontPart {
 
 	@Override
 	public void dispatch(final DispatchHandler handler) {
+		handler.handle(this);
+	}
 
+	@Override
+	public String middle() {
+		return "gap";
 	}
 }

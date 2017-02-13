@@ -1,6 +1,5 @@
 package com.zarbosoft.bonestruct.editor.model.back;
 
-import com.zarbosoft.bonestruct.editor.model.FreeNodeType;
 import com.zarbosoft.bonestruct.editor.model.NodeType;
 import com.zarbosoft.bonestruct.editor.model.Syntax;
 import com.zarbosoft.luxemj.Luxem;
@@ -12,12 +11,13 @@ import com.zarbosoft.pidgoon.internal.Node;
 import com.zarbosoft.pidgoon.nodes.Sequence;
 import com.zarbosoft.pidgoon.nodes.Set;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @Luxem.Configuration(name = "record")
 public class BackRecord extends BackPart {
 	@Luxem.Configuration
-	public Map<String, BackPart> pairs;
+	public Map<String, BackPart> pairs = new HashMap<>();
 
 	@Override
 	public Node buildBackRule(final Syntax syntax, final NodeType nodeType) {
@@ -34,7 +34,7 @@ public class BackRecord extends BackPart {
 	}
 
 	@Override
-	public void finish(final Syntax syntax, final FreeNodeType nodeType, final java.util.Set<String> middleUsed) {
+	public void finish(final Syntax syntax, final NodeType nodeType, final java.util.Set<String> middleUsed) {
 		pairs.forEach((k, v) -> {
 			v.finish(syntax, nodeType, middleUsed);
 			v.parent = new Parent() {

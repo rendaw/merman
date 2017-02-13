@@ -210,10 +210,10 @@ public class DataPrimitive extends DataElement {
 
 		@Override
 		public Change apply(final Context context) {
-			for (final Listener listener : data.listeners)
-				listener.removed(context, index, size);
 			final ChangeAdd reverse = new ChangeAdd(data, index, data.value.substring(index, index + size));
 			data.value.delete(index, index + size);
+			for (final Listener listener : data.listeners)
+				listener.removed(context, index, size);
 			return reverse;
 		}
 

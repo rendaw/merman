@@ -1,23 +1,21 @@
 package com.zarbosoft.bonestruct.editor;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.zarbosoft.bonestruct.editor.changes.History;
 import com.zarbosoft.bonestruct.editor.luxem.Luxem;
 import com.zarbosoft.bonestruct.editor.model.Document;
 import com.zarbosoft.bonestruct.editor.model.Syntax;
-import com.zarbosoft.bonestruct.editor.model.front.FrontConstantPart;
 import com.zarbosoft.bonestruct.editor.model.hid.Key;
 import com.zarbosoft.bonestruct.editor.visual.Context;
 import com.zarbosoft.bonestruct.editor.visual.IdleTask;
 import com.zarbosoft.bonestruct.editor.visual.Keyboard;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.editor.visual.attachments.TransverseExtentsAdapter;
-import com.zarbosoft.bonestruct.editor.visual.nodes.ArrayVisualNode;
-import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
+import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
 import com.zarbosoft.bonestruct.editor.visual.wall.Wall;
-import com.zarbosoft.luxemj.grammar.Node;
 import com.zarbosoft.pidgoon.InvalidStream;
 import com.zarbosoft.pidgoon.events.Parse;
 import javafx.beans.value.ChangeListener;
@@ -28,8 +26,6 @@ import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.Pane;
 
-import java.util.List;
-import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -78,46 +74,15 @@ public class Editor {
 				return "redo";
 			}
 		}), globalActions), history);
-		context.background = new Group();
-		context.banner = new Context.Banner(context);
+		context.display.background = new Group();
+		context.display.banner = new Context.Banner(context);
 		context.plugins = doc.syntax.plugins.stream().map(p -> p.initialize(context)).collect(Collectors.toList());
 		this.visual = new Pane();
 		visual.setBackground(new Background(new BackgroundFill(context.syntax.background, null, null)));
-		visual.getChildren().add(context.background);
+		visual.getChildren().add(context.display.background);
 		visual.getChildren().add(wall.visual);
-		final ArrayVisualNode root =
-				new ArrayVisualNode(context, doc.top, ImmutableSet.of(new VisualNode.PartTag("root"))) {
-
-					@Override
-					protected boolean tagLast() {
-						return false;
-					}
-
-					@Override
-					protected boolean tagFirst() {
-						return false;
-					}
-
-					@Override
-					protected Map<String, Node> getHotkeys() {
-						return doc.syntax.rootHotkeys;
-					}
-
-					@Override
-					protected List<FrontConstantPart> getPrefix() {
-						return doc.syntax.rootPrefix;
-					}
-
-					@Override
-					protected List<FrontConstantPart> getSeparator() {
-						return doc.syntax.rootSeparator;
-					}
-
-					@Override
-					protected List<FrontConstantPart> getSuffix() {
-						return doc.syntax.rootSuffix;
-					}
-				};
+		final VisualNodePart root =
+				context.syntax.rootFront.createVisual(context, ImmutableMap.of("value", doc.top), ImmutableSet.of());
 		context.selectionExtentsAdapter.addListener(context, new TransverseExtentsAdapter.Listener() {
 			@Override
 			public void transverseChanged(final Context context, final int transverse) {
@@ -225,16 +190,16 @@ public class Editor {
 			newScroll = scroll + maxDiff;
 		}
 		if (newScroll != null) {
-			context.translate(context.wall.visual,
+			context.translate(context.display.wall.visual,
 					new Vector(context.syntax.padConverse, -newScroll),
 					context.syntax.animateCoursePlacement
 			);
-			context.translate(context.background,
+			context.translate(context.display.background,
 					new Vector(context.syntax.padConverse, -newScroll),
 					context.syntax.animateCoursePlacement
 			);
 			scroll = newScroll;
-			context.banner.setScroll(context, newScroll);
+			context.display.banner.setScroll(context, newScroll);
 		}
 	}
 
@@ -283,7 +248,7 @@ public class Editor {
 
 	public void destroy() {
 		context.plugins.forEach(p -> p.destroy(context));
-		context.banner.destroy(context);
-		context.wall.clear(context);
+		context.display.banner.destroy(context);
+		context.display.wall.clear(context);
 	}
 }

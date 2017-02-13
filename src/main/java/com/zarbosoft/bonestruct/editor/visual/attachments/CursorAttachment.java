@@ -57,7 +57,7 @@ public class CursorAttachment extends Canvas {
 
 	public CursorAttachment(final Context context, final ObboxStyle.Baked style) {
 		this.style = style;
-		context.background.getChildren().add(this);
+		context.display.background.getChildren().add(this);
 	}
 
 	public void setPosition(final Context context, final TextBrick brick, final int index) {
@@ -127,6 +127,6 @@ public class CursorAttachment extends Canvas {
 	public void destroy(final Context context) {
 		if (brick != null)
 			brick.removeAttachment(context, this.attachment);
-		context.background.getChildren().remove(this);
+		context.display.background.getChildren().remove(this);
 	}
 }

@@ -51,4 +51,9 @@ public class FrontDataPrimitive extends FrontPart {
 	public void dispatch(final DispatchHandler handler) {
 		handler.handle(this);
 	}
+
+	@Override
+	public String middle() {
+		return middle;
+	}
 }

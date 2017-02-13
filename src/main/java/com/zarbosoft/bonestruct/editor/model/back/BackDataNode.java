@@ -33,7 +33,7 @@ public class BackDataNode extends BackPart {
 		});
 	}
 
-	public void finish(final Syntax syntax, final FreeNodeType nodeType, final Set<String> middleUsed) {
+	public void finish(final Syntax syntax, final NodeType nodeType, final Set<String> middleUsed) {
 		middleUsed.add(middle);
 		final DataNode data = nodeType.getDataNode(middle);
 		for (final FreeNodeType child : syntax.getLeafTypes(data.type)) {

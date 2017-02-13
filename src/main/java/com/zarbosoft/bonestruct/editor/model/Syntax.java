@@ -2,9 +2,9 @@ package com.zarbosoft.bonestruct.editor.model;
 
 import com.google.common.collect.ImmutableSet;
 import com.zarbosoft.bonestruct.editor.InvalidSyntax;
-import com.zarbosoft.bonestruct.editor.model.front.FrontConstantPart;
+import com.zarbosoft.bonestruct.editor.model.front.RootFrontDataArray;
+import com.zarbosoft.bonestruct.editor.model.middle.DataArray;
 import com.zarbosoft.bonestruct.editor.model.middle.DataArrayBase;
-import com.zarbosoft.bonestruct.editor.model.middle.DataNode;
 import com.zarbosoft.luxemj.Luxem;
 import com.zarbosoft.luxemj.LuxemEvent;
 import com.zarbosoft.luxemj.path.LuxemArrayPath;
@@ -46,10 +46,10 @@ public class Syntax {
 	@Luxem.Configuration(optional = true, description =
 			"If the path to a writable document does not yet exist, a new document will be created " +
 					"with this contents.")
-	public List<LuxemEvent> template;
+	public List<LuxemEvent> template = new ArrayList<>();
 
 	@Luxem.Configuration(optional = true)
-	public List<Style> styles;
+	public List<Style> styles = new ArrayList<>();
 
 	@Luxem.Configuration(optional = true, name = "hover-style")
 	public ObboxStyle hoverStyle = new ObboxStyle();
@@ -60,7 +60,7 @@ public class Syntax {
 	@Luxem.Configuration(description = "The definitions of all distinct element types in a document.\n" +
 			"A type with the id '__gap' and a single middle primitive element named 'value' must exist.  This will " +
 			"be used as a placeholder when entering text before it is distinguishable as any other defined element.")
-	public List<FreeNodeType> types;
+	public List<FreeNodeType> types = new ArrayList<>();
 
 	@Luxem.Configuration(optional = true, description = "The gap type is used when editing the document, for " +
 			"new data whose type is not yet known.")
@@ -77,29 +77,22 @@ public class Syntax {
 	@Luxem.Configuration(optional = true, description =
 			"Pseudo-types representing groups of types.  Group ids can be used anywhere a type id " +
 					"is required.")
-	public Map<String, java.util.Set<String>> groups;
+	public Map<String, java.util.Set<String>> groups = new HashMap<>();
 
 	@Luxem.Configuration(optional = true, description =
 			"A list of plugins to activate.  Listed are plugins bundled with this distribution, but " +
 					"addional plugins may be installed and used.")
-	public List<Plugin> plugins;
+	public List<Plugin> plugins = new ArrayList<>();
 
-	@Luxem.Configuration(description = "The id of the type of root elements in a document.  This is not used when " +
+	@Luxem.Configuration(description = "The type of the root array in a document.  This is not used when " +
 			"pasting code; in that case the context is used to determine the paste's potential root type.")
-	public String root;
+	public DataArray root;
 
-	@Luxem.Configuration(name = "root-prefix", optional = true)
-	public List<FrontConstantPart> rootPrefix;
-	@Luxem.Configuration(name = "root-separator", optional = true)
-	public List<FrontConstantPart> rootSeparator = new ArrayList<>();
-	@Luxem.Configuration(name = "root-suffix", optional = true)
-	public List<FrontConstantPart> rootSuffix;
-
-	@Luxem.Configuration(optional = true, name = "root-hotkeys")
-	public Map<String, com.zarbosoft.luxemj.grammar.Node> rootHotkeys = new HashMap<>();
+	@Luxem.Configuration(optional = true, description = "Root front-end configuration.")
+	public RootFrontDataArray rootFront = new RootFrontDataArray();
 
 	@Luxem.Configuration(optional = true)
-	public List<Hotkeys> hotkeys;
+	public List<Hotkeys> hotkeys = new ArrayList<>();
 
 	@Luxem.Configuration(optional = true, name = "modal-primitive-editing", description =
 			"In modeless editing, a selected primitive is always in direct editing mode.  Non-hotkey keypresses " +
@@ -172,17 +165,21 @@ public class Syntax {
 				.node("root")
 				.parse(stream);
 		out.id = id;
+		out.finish();
+		return out;
+	}
 
-		// Check data
+	public void finish() {
+		root.id = "value";
 
 		// jfx, qt, and swing don't support vertical languages
-		if (!ImmutableSet.of(Direction.LEFT, Direction.RIGHT).contains(out.converseDirection) ||
-				(out.transverseDirection != Direction.DOWN))
+		if (!ImmutableSet.of(Direction.LEFT, Direction.RIGHT).contains(converseDirection) ||
+				(transverseDirection != Direction.DOWN))
 			throw new InvalidSyntax("Currently only converse directions left/right and transverse down are supported.");
-		switch (out.converseDirection) {
+		switch (converseDirection) {
 			case LEFT:
 			case RIGHT:
-				switch (out.transverseDirection) {
+				switch (transverseDirection) {
 					case LEFT:
 					case RIGHT:
 						throw new InvalidSyntax("Secondary direction must cross converse direction axis.");
@@ -190,7 +187,7 @@ public class Syntax {
 				break;
 			case UP:
 			case DOWN:
-				switch (out.transverseDirection) {
+				switch (transverseDirection) {
 					case UP:
 					case DOWN:
 						throw new InvalidSyntax("Secondary direction must cross converse direction axis.");
@@ -200,13 +197,13 @@ public class Syntax {
 
 		{
 			final Deque<Pair<PSet<String>, Iterator<String>>> stack = new ArrayDeque<>();
-			stack.addLast(new Pair<>(HashTreePSet.empty(), out.groups.keySet().iterator()));
+			stack.addLast(new Pair<>(HashTreePSet.empty(), groups.keySet().iterator()));
 			while (!stack.isEmpty()) {
 				final Pair<PSet<String>, Iterator<String>> top = stack.pollLast();
 				if (!top.second.hasNext())
 					continue;
 				final String childKey = top.second.next();
-				final Set<String> child = out.groups.get(childKey);
+				final Set<String> child = groups.get(childKey);
 				if (child == null)
 					continue;
 				if (top.first.contains(childKey))
@@ -219,7 +216,7 @@ public class Syntax {
 		boolean foundRoot = false;
 		final Set<String> scalarTypes = new HashSet<>(); // Types that only have one back element
 		final Set<String> allTypes = new HashSet<>();
-		for (final FreeNodeType t : out.types) {
+		for (final FreeNodeType t : types) {
 			if (t.back.isEmpty())
 				throw new InvalidSyntax(String.format("Type [%s] has no back parts.", t.id));
 			if (allTypes.contains(t.id))
@@ -227,22 +224,22 @@ public class Syntax {
 			allTypes.add(t.id);
 			if (t.back.size() == 1)
 				scalarTypes.add(t.id);
-			if (t.id.equals(out.root)) {
+			if (t.id.equals(root.type)) {
 				foundRoot = true;
 			}
 		}
-		if (out.gap == null)
+		if (gap == null)
 			throw new InvalidSyntax("Gap definition missing.");
-		if (out.prefixGap == null)
+		if (prefixGap == null)
 			throw new InvalidSyntax("Prefix gap definition missing.");
-		if (out.suffixGap == null)
+		if (suffixGap == null)
 			throw new InvalidSyntax("Suffix gap definition missing.");
 		final Map<String, Set<String>> groupsThatContainType = new HashMap<>();
 		final Set<String> potentiallyScalarGroups = new HashSet<>();
-		for (final Map.Entry<String, Set<String>> pair : out.groups.entrySet()) {
+		for (final Map.Entry<String, Set<String>> pair : groups.entrySet()) {
 			final String group = pair.getKey();
 			for (final String child : pair.getValue()) {
-				if (!allTypes.contains(child) && !out.groups.containsKey(child))
+				if (!allTypes.contains(child) && !groups.containsKey(child))
 					throw new InvalidSyntax(String.format("Group [%s] refers to non-existant member [%s].",
 							group,
 							child
@@ -253,13 +250,13 @@ public class Syntax {
 			if (allTypes.contains(group))
 				throw new InvalidSyntax(String.format("Group id [%s] already used.", group));
 			allTypes.add(group);
-			if (group.equals(out.root))
+			if (group.equals(root.type))
 				foundRoot = true;
 			potentiallyScalarGroups.add(group);
 		}
 		if (!foundRoot)
-			throw new InvalidSyntax(String.format("No type or tag id matches root id [%s]", out.root));
-		for (final FreeNodeType t : out.types) {
+			throw new InvalidSyntax(String.format("No type or tag id matches root id [%s]", root.type));
+		for (final FreeNodeType t : types) {
 			if (t.back.size() == 1)
 				continue;
 			final Deque<Iterator<String>> stack = new ArrayDeque<>();
@@ -277,13 +274,14 @@ public class Syntax {
 			}
 		}
 		scalarTypes.addAll(potentiallyScalarGroups);
-		for (final FreeNodeType t : out.types) {
-			t.finish(out, allTypes, scalarTypes);
+		for (final FreeNodeType t : types) {
+			t.finish(this, allTypes, scalarTypes);
 		}
-		out.gap.finish(out, allTypes, scalarTypes);
-		out.prefixGap.finish(out, allTypes, scalarTypes);
-		out.suffixGap.finish(out, allTypes, scalarTypes);
-		return out;
+		root.finish(allTypes, scalarTypes);
+		rootFront.finish(root);
+		gap.finish(this, allTypes, scalarTypes);
+		prefixGap.finish(this, allTypes, scalarTypes);
+		suffixGap.finish(this, allTypes, scalarTypes);
 	}
 
 	private Grammar getGrammar() {
@@ -298,11 +296,11 @@ public class Syntax {
 				v.forEach(n -> group.add(new Reference(n)));
 				grammar.add(k, group);
 			});
-			grammar.add("root", new BakedOperator(new Repeat(new BakedOperator(new Reference(root), store -> {
+			grammar.add("root", new BakedOperator(new Repeat(new BakedOperator(new Reference(root.type), store -> {
 				return Helper.stackSingleElement(store);
 			})), store -> {
-				final List<DataNode.Value> out = new ArrayList<>();
-				store = (Store) Helper.<DataNode.Value>stackPopSingleList(store, out::add);
+				final List<Node> out = new ArrayList<>();
+				store = (Store) Helper.<Node>stackPopSingleList(store, out::add);
 				return store.pushStack(out);
 			}));
 		}
@@ -317,7 +315,7 @@ public class Syntax {
 			path.value = path.value.push(e);
 			stream.push(e, path.value.toString());
 		});
-		return new Document(this, new DataArrayBase.Value(null, stream.finish()));
+		return new Document(this, new DataArrayBase.Value(root, stream.finish()));
 	}
 
 	public Document load(final File file) throws FileNotFoundException, IOException {
@@ -333,7 +331,7 @@ public class Syntax {
 	}
 
 	public Document load(final InputStream data) {
-		return new Document(this, new DataArrayBase.Value(null,
+		return new Document(this, new DataArrayBase.Value(root,
 				new com.zarbosoft.luxemj.Parse<List<Node>>()
 						.stack(() -> 0)
 						.grammar(getGrammar())
@@ -347,6 +345,8 @@ public class Syntax {
 	}
 
 	public Set<FreeNodeType> getLeafTypes(final String type) {
+		if (type == null)
+			return ImmutableSet.copyOf(types); // Gap types
 		final Set<String> group = groups.get(type);
 		if (group == null)
 			return ImmutableSet.of(getType(type));

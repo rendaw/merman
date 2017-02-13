@@ -46,19 +46,29 @@ public class Context {
 	public String hotkeySequence = "";
 	public WeakHashMap<Set<VisualNode.Tag>, WeakReference<Style.Baked>> styleCache = new WeakHashMap<>();
 	public WeakHashMap<Set<VisualNode.Tag>, WeakReference<Hotkeys>> hotkeysCache = new WeakHashMap<>();
-	public final Wall wall;
-	public Group background;
 	private final Iterable<Action> globalActions;
 	public VisualNodePart window;
-	public Brick cornerstone;
-	public int cornerstoneTransverse;
-	public int scrollTransverse;
-	public Banner banner;
-	public Details details;
 	private final Set<SelectionListener> selectionListeners = new HashSet<>();
 	private final Set<HoverListener> hoverListeners = new HashSet<>();
 	public final TransverseExtentsAdapter selectionExtentsAdapter = new TransverseExtentsAdapter();
 	public List<Plugin.State> plugins;
+
+	public static class Display {
+
+		public final Wall wall;
+		public Group background;
+		public Brick cornerstone;
+		public int cornerstoneTransverse;
+		public int scrollTransverse;
+		public Banner banner;
+		public Details details;
+
+		public Display(final Wall wall) {
+			this.wall = wall;
+		}
+	}
+
+	public Display display = null;
 
 	public int sceneGetConverseSpan(final Node node) {
 		switch (syntax.converseDirection) {
@@ -156,7 +166,7 @@ public class Context {
 	 */
 	public Object locate(final Path path) {
 		int pathIndex = -1;
-		final List<String> segments = ImmutableList.copyOf(path.sections);
+		final List<String> segments = ImmutableList.copyOf(path.segments);
 		DataElement.Value value = document.top;
 		com.zarbosoft.bonestruct.editor.model.Node node = null;
 		BackPart part = null;
@@ -366,7 +376,7 @@ public class Context {
 		public void addMessage(final Context context, final BannerMessage message) {
 			if (queue.isEmpty()) {
 				text = new RawText(context, context.getStyle(ImmutableSet.of(new VisualNode.PartTag("banner"))));
-				context.background.getChildren().add(text.getVisual());
+				context.display.background.getChildren().add(text.getVisual());
 				text.setTransverse(context,
 						Math.max(scroll, transverse - (int) RawTextUtils.getDescent(text.getFont())),
 						false
@@ -381,7 +391,7 @@ public class Context {
 		private void update(final Context context) {
 			if (queue.isEmpty()) {
 				if (text != null) {
-					context.background.getChildren().remove(text.getVisual());
+					context.display.background.getChildren().remove(text.getVisual());
 					text = null;
 					brick.removeBedding(context, bedding);
 					bedding = null;
@@ -536,43 +546,46 @@ public class Context {
 			window.rootAlignments(this, ImmutableMap.of());
 			// TODO set depth indicator
 		}
-		final Brick newCornerstone = visual.getFirstBrick(this);
-		if (newCornerstone == null) {
-			cornerstone = visual.createFirstBrick(this);
-			cornerstoneTransverse = 0;
-		} else {
-			cornerstone = newCornerstone;
-			cornerstoneTransverse = newCornerstone.parent.transverseStart;
+
+		if (display != null) {
+			final Brick newCornerstone = visual.getFirstBrick(this);
+			if (newCornerstone == null) {
+				display.cornerstone = visual.createFirstBrick(this);
+				display.cornerstoneTransverse = 0;
+			} else {
+				display.cornerstone = newCornerstone;
+				display.cornerstoneTransverse = newCornerstone.parent.transverseStart;
+			}
+			selection.addBrickListener(this, new VisualAttachmentAdapter.BoundsListener() {
+				@Override
+				public void firstChanged(final Context context, final Brick brick) {
+					display.wall.setCornerstone(context, brick);
+				}
+
+				@Override
+				public void lastChanged(final Context context, final Brick brick) {
+
+				}
+			});
+			ImmutableSet.copyOf(selectionListeners).forEach(l -> l.selectionChanged(this, selection));
+			selection.addBrickListener(this, selectionExtentsAdapter.boundsListener);
+
+			fillFromEndBrick(display.cornerstone);
+			fillFromStartBrick(display.cornerstone);
+
+			hotkeyGrammar = new Grammar();
+			final Union union = new Union();
+			for (final Action action : Iterables.concat(selection.getActions(this), globalActions)) {
+				final List<com.zarbosoft.luxemj.grammar.Node> hotkeyEntries =
+						selection.getHotkeys(this).hotkeys.get(action.getName());
+				if (hotkeyEntries == null)
+					continue;
+				for (final com.zarbosoft.luxemj.grammar.Node hotkey : hotkeyEntries) {
+					union.add(new BakedOperator(hotkey.build(), store -> store.pushStack(action)));
+				}
+			}
+			hotkeyGrammar.add("root", union);
 		}
-		selection.addBrickListener(this, new VisualAttachmentAdapter.BoundsListener() {
-			@Override
-			public void firstChanged(final Context context, final Brick brick) {
-				wall.setCornerstone(context, brick);
-			}
-
-			@Override
-			public void lastChanged(final Context context, final Brick brick) {
-
-			}
-		});
-		ImmutableSet.copyOf(selectionListeners).forEach(l -> l.selectionChanged(this, selection));
-		selection.addBrickListener(this, selectionExtentsAdapter.boundsListener);
-
-		fillFromEndBrick(cornerstone);
-		fillFromStartBrick(cornerstone);
-
-		hotkeyGrammar = new Grammar();
-		final Union union = new Union();
-		for (final Action action : Iterables.concat(selection.getActions(this), globalActions)) {
-			final List<com.zarbosoft.luxemj.grammar.Node> hotkeyEntries =
-					selection.getHotkeys(this).hotkeys.get(action.getName());
-			if (hotkeyEntries == null)
-				continue;
-			for (final com.zarbosoft.luxemj.grammar.Node hotkey : hotkeyEntries) {
-				union.add(new BakedOperator(hotkey.build(), store -> store.pushStack(action)));
-			}
-		}
-		hotkeyGrammar.add("root", union);
 	}
 
 	public Style.Baked getStyle(final Set<VisualNode.Tag> tags) {
@@ -674,9 +687,9 @@ public class Context {
 		public HoverIdle(final Context context) {
 			this.context = context;
 			at = hoverBrick == null ? (
-					context.wall.children.get(0).children.isEmpty() ?
+					context.display.wall.children.get(0).children.isEmpty() ?
 							null :
-							context.wall.children.get(0).children.get(0)
+							context.display.wall.children.get(0).children.get(0)
 			) : hoverBrick;
 		}
 
@@ -696,10 +709,10 @@ public class Context {
 				return;
 			}
 			if (point.transverse < at.parent.transverseStart && at.parent.index > 0) {
-				at = context.wall.children.get(at.parent.index - 1).children.get(0);
+				at = context.display.wall.children.get(at.parent.index - 1).children.get(0);
 			} else if (point.transverse > at.parent.transverseEdge(context) &&
-					at.parent.index < wall.children.size() - 1) {
-				at = context.wall.children.get(at.parent.index + 1).children.get(0);
+					at.parent.index < display.wall.children.size() - 1) {
+				at = context.display.wall.children.get(at.parent.index + 1).children.get(0);
 			} else {
 				while (point.converse < at.getConverse(context) && at.index > 0) {
 					at = at.parent.children.get(at.index - 1);
@@ -747,7 +760,9 @@ public class Context {
 		this.syntax = syntax;
 		this.document = document;
 		this.addIdle = addIdle;
-		this.wall = wall;
+		if (wall != null) {
+			display = new Display(wall);
+		}
 		this.globalActions = globalActions;
 		this.history = history;
 	}

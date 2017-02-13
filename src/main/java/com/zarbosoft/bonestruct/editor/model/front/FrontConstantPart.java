@@ -20,4 +20,9 @@ public abstract class FrontConstantPart extends FrontPart {
 	) {
 		return createVisual(context, tags);
 	}
+
+	@Override
+	final public String middle() {
+		return null;
+	}
 }

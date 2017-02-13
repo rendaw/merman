@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ChangeGroup {
-	private final List<Change> subchanges = new ArrayList<>();
+	public final List<Change> subchanges = new ArrayList<>();
 
 	public void add(final Change change) {
 		if (subchanges.isEmpty() || !Helper.last(subchanges).merge(change))

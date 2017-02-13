@@ -302,31 +302,37 @@ public abstract class ArrayVisualNode extends GroupVisualNode {
 		int endIndex;
 
 		public ArraySelection(final Context context, final int index) {
-			border = new BorderAttachment(context, context.syntax.selectStyle);
-			adapter = new MultiVisualAttachmentAdapter(context);
-			adapter.addListener(context, new VisualAttachmentAdapter.BoundsListener() {
-				@Override
-				public void firstChanged(final Context context, final Brick brick) {
-					border.setFirst(context, brick);
-				}
+			if (context.display != null) {
+				border = new BorderAttachment(context, context.syntax.selectStyle);
+				adapter = new MultiVisualAttachmentAdapter(context);
+				adapter.addListener(context, new VisualAttachmentAdapter.BoundsListener() {
+					@Override
+					public void firstChanged(final Context context, final Brick brick) {
+						border.setFirst(context, brick);
+					}
 
-				@Override
-				public void lastChanged(final Context context, final Brick brick) {
-					border.setLast(context, brick);
-				}
-			});
+					@Override
+					public void lastChanged(final Context context, final Brick brick) {
+						border.setLast(context, brick);
+					}
+				});
+			}
 			setBegin(context, index);
 			setEnd(context, index);
 		}
 
 		private void setEnd(final Context context, final int index) {
 			endIndex = index;
-			adapter.setLast(context, children.get(index));
+			if (context.display != null) {
+				adapter.setLast(context, children.get(index));
+			}
 		}
 
 		private void setBegin(final Context context, final int index) {
 			beginIndex = index;
-			adapter.setFirst(context, children.get(index));
+			if (context.display != null) {
+				adapter.setFirst(context, children.get(index));
+			}
 		}
 
 		@Override
@@ -336,8 +342,10 @@ public abstract class ArrayVisualNode extends GroupVisualNode {
 
 		@Override
 		public void clear(final Context context) {
-			adapter.destroy(context);
-			border.destroy(context);
+			if (context.display != null) {
+				adapter.destroy(context);
+				border.destroy(context);
+			}
 			selection = null;
 		}
 

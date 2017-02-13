@@ -1,11 +1,10 @@
 package com.zarbosoft.bonestruct.editor.model;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import com.zarbosoft.bonestruct.DeadCode;
 import com.zarbosoft.bonestruct.editor.InvalidSyntax;
 import com.zarbosoft.bonestruct.editor.model.back.*;
-import com.zarbosoft.bonestruct.editor.model.front.FrontDataArray;
-import com.zarbosoft.bonestruct.editor.model.front.FrontDataNode;
 import com.zarbosoft.bonestruct.editor.model.front.FrontPart;
 import com.zarbosoft.bonestruct.editor.model.middle.*;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
@@ -44,7 +43,32 @@ public abstract class NodeType {
 
 	public abstract boolean frontAssociative();
 
-	public abstract void finish(Syntax syntax, Set<String> allTypes, Set<String> scalarTypes);
+	public void finish(final Syntax syntax, final Set<String> allTypes, final Set<String> scalarTypes) {
+		middle().forEach((k, v) -> {
+			v.id = k;
+			v.finish(allTypes, scalarTypes);
+		});
+		{
+			final Set<String> middleUsedBack = new HashSet<>();
+			back().forEach(p -> p.finish(syntax, this, middleUsedBack));
+			final Set<String> missing = Sets.difference(middle().keySet(), middleUsedBack);
+			if (!missing.isEmpty())
+				throw new InvalidSyntax(String.format("Data elements %s in %s are unused by back parts.",
+						this,
+						missing
+				));
+		}
+		{
+			final Set<String> middleUsedFront = new HashSet<>();
+			front().forEach(p -> p.finish(this, middleUsedFront));
+			final Set<String> missing = Sets.difference(middle().keySet(), middleUsedFront);
+			if (!missing.isEmpty())
+				throw new InvalidSyntax(String.format("Data elements %s in %s are unused by front parts.",
+						this,
+						missing
+				));
+		}
+	}
 
 	public com.zarbosoft.pidgoon.internal.Node buildBackRule(final Syntax syntax) {
 		final Sequence seq = new Sequence();
@@ -119,17 +143,7 @@ public abstract class NodeType {
 			}
 			Helper.enumerate(Helper.stream(front())).forEach(pair -> {
 				final VisualNodePart visual = pair.second.createVisual(context, data, tags);
-				pair.second.dispatch(new FrontPart.NodeDispatchHandler() {
-					@Override
-					public void handle(final FrontDataArray front) {
-						frontToData.put(front.middle, visual);
-					}
-
-					@Override
-					public void handle(final FrontDataNode front) {
-						frontToData.put(front.middle, visual);
-					}
-				});
+				frontToData.put(pair.second.middle(), visual);
 				body.add(context, visual);
 			});
 			body.setParent(new VisualNodeParent() {
@@ -279,11 +293,6 @@ public abstract class NodeType {
 		final DataElement found = middle().get(id);
 		if (found == null) {
 			throw new InvalidSyntax(String.format("No data field named [%s] in %s", id, this));
-			/*
-			found = Helper.uncheck(type::newInstance);
-			found.id = id;
-			middle.add(found);
-			*/
 		} else {
 			if (!type.isAssignableFrom(found.getClass()))
 				throw new InvalidSyntax(String.format("Conflicting types for data field %s in %s: %s, %s",

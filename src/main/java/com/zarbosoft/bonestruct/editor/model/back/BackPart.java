@@ -2,7 +2,6 @@ package com.zarbosoft.bonestruct.editor.model.back;
 
 import com.zarbosoft.bonestruct.Path;
 import com.zarbosoft.bonestruct.editor.luxem.Luxem;
-import com.zarbosoft.bonestruct.editor.model.FreeNodeType;
 import com.zarbosoft.bonestruct.editor.model.NodeType;
 import com.zarbosoft.bonestruct.editor.model.Syntax;
 import com.zarbosoft.pidgoon.internal.Node;
@@ -15,7 +14,7 @@ public abstract class BackPart {
 
 	protected Parent parent = null;
 
-	public void finish(final Syntax syntax, final FreeNodeType nodeType, final Set<String> middleUsed) {
+	public void finish(final Syntax syntax, final NodeType nodeType, final Set<String> middleUsed) {
 	}
 
 	final public Path getPath(final Path basis) {

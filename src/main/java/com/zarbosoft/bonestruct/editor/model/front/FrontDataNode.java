@@ -19,6 +19,11 @@ import java.util.stream.Collectors;
 @Luxem.Configuration(name = "node")
 public class FrontDataNode extends FrontPart {
 
+	@Override
+	public String middle() {
+		return middle;
+	}
+
 	@Luxem.Configuration
 	public String middle;
 	private DataNode dataType;

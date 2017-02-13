@@ -53,10 +53,10 @@ public class HoverType extends Plugin {
 							text.append(temp);
 					}
 					message.text = text.toString();
-					context.banner.addMessage(context, message);
+					context.display.banner.addMessage(context, message);
 				}
 				if (oldMessage != null) {
-					context.banner.removeMessage(context, oldMessage); // TODO oldMessage callback on finish?
+					context.display.banner.removeMessage(context, oldMessage); // TODO oldMessage callback on finish?
 					oldMessage = null;
 				}
 			}

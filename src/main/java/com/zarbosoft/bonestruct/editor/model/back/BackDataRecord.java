@@ -52,7 +52,7 @@ public class BackDataRecord extends BackPart {
 	}
 
 	@Override
-	public void finish(final Syntax syntax, final FreeNodeType nodeType, final Set<String> middleUsed) {
+	public void finish(final Syntax syntax, final NodeType nodeType, final Set<String> middleUsed) {
 		middleUsed.add(middle);
 		final DataRecord dataType = nodeType.getDataRecord(middle);
 		for (final FreeNodeType element : syntax.getLeafTypes(dataType.type)) {

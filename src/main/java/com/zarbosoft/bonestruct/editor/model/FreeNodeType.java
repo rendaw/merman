@@ -1,7 +1,6 @@
 package com.zarbosoft.bonestruct.editor.model;
 
-import com.google.common.collect.Sets;
-import com.zarbosoft.bonestruct.editor.InvalidSyntax;
+import com.zarbosoft.bonestruct.DeadCode;
 import com.zarbosoft.bonestruct.editor.luxem.Luxem;
 import com.zarbosoft.bonestruct.editor.model.back.BackPart;
 import com.zarbosoft.bonestruct.editor.model.front.*;
@@ -10,7 +9,10 @@ import com.zarbosoft.bonestruct.editor.visual.AlignmentDefinition;
 import com.zarbosoft.pidgoon.internal.Helper;
 import com.zarbosoft.pidgoon.internal.Mutable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Luxem.Configuration
 public class FreeNodeType extends NodeType {
@@ -18,16 +20,16 @@ public class FreeNodeType extends NodeType {
 	public String name;
 
 	@Luxem.Configuration
-	public List<FrontPart> front;
+	public List<FrontPart> front = new ArrayList<>();
 
 	@Luxem.Configuration
-	public List<BackPart> back;
+	public List<BackPart> back = new ArrayList<>();
 
 	@Luxem.Configuration
-	public Map<String, DataElement> middle;
+	public Map<String, DataElement> middle = new HashMap<>();
 
 	@Luxem.Configuration
-	public Map<String, AlignmentDefinition> alignments;
+	public Map<String, AlignmentDefinition> alignments = new HashMap<>();
 
 	@Luxem.Configuration(optional = true, description = "If this is an operator, the operator precedence.  This is " +
 			"used when filling in a suffix gap to raise the new node to the appropriate level.  This is also used " +
@@ -78,33 +80,6 @@ public class FreeNodeType extends NodeType {
 	@Override
 	public boolean frontAssociative() {
 		return frontAssociative;
-	}
-
-	public void finish(final Syntax syntax, final Set<String> allTypes, final Set<String> scalarTypes) {
-		middle.forEach((k, v) -> {
-			v.id = k;
-			v.finish(allTypes, scalarTypes);
-		});
-		{
-			final Set<String> middleUsedBack = new HashSet<>();
-			back.forEach(p -> p.finish(syntax, this, middleUsedBack));
-			final Set<String> missing = Sets.difference(middle.keySet(), middleUsedBack);
-			if (!missing.isEmpty())
-				throw new InvalidSyntax(String.format("Data elements %s in %s are unused by back parts.",
-						this,
-						missing
-				));
-		}
-		{
-			final Set<String> middleUsedFront = new HashSet<>();
-			front.forEach(p -> p.finish(this, middleUsedFront));
-			final Set<String> missing = Sets.difference(middle.keySet(), middleUsedFront);
-			if (!missing.isEmpty())
-				throw new InvalidSyntax(String.format("Data elements %s in %s are unused by front parts.",
-						this,
-						missing
-				));
-		}
 	}
 
 	@Override
@@ -173,7 +148,7 @@ public class FreeNodeType extends NodeType {
 				}
 
 				@Override
-				public void handle(final FrontDataArray front) {
+				public void handle(final FrontDataArrayBase front) {
 					front.prefix.forEach(front2 -> front2.dispatch(this));
 					flush(false, true);
 					front.suffix.forEach(front2 -> front2.dispatch(this));
@@ -187,6 +162,11 @@ public class FreeNodeType extends NodeType {
 				@Override
 				public void handle(final FrontDataPrimitive front) {
 					flush(false, false);
+				}
+
+				@Override
+				public void handle(final FrontGapBase front) {
+					throw new DeadCode();
 				}
 			});
 		});

@@ -54,7 +54,8 @@ public class DataNode extends DataElement {
 		public Value(final DataNode data, final Node value) {
 			this.data = data;
 			this.value = value;
-			value.setParent(new NodeParent());
+			if (value != null)
+				value.setParent(new NodeParent());
 		}
 
 		public void addListener(final Listener listener) {
@@ -131,6 +132,8 @@ public class DataNode extends DataElement {
 
 	@Override
 	public void finish(final Set<String> allTypes, final Set<String> scalarTypes) {
+		if (type == null)
+			return; // Gaps have null type, take anything
 		if (!scalarTypes.contains(type))
 			throw new InvalidSyntax(String.format("Unknown type [%s].", type));
 	}

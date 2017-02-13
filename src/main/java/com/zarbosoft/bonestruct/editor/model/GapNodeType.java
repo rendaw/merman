@@ -18,21 +18,21 @@ import com.zarbosoft.bonestruct.editor.visual.Context;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 @Luxem.Configuration
 public class GapNodeType extends NodeType {
 	private final DataPrimitive dataGap;
 	@Luxem.Configuration
-	public List<FrontConstantPart> frontPrefix;
+	public List<FrontConstantPart> frontPrefix = new ArrayList<>();
 	@Luxem.Configuration
-	public List<FrontConstantPart> frontSuffix;
+	public List<FrontConstantPart> frontSuffix = new ArrayList<>();
 
 	private final List<FrontPart> front;
 	private final List<BackPart> back;
 	private final Map<String, DataElement> middle;
 
 	public GapNodeType() {
+		id = "__gap";
 		{
 			final FrontGapBase gap = new FrontGapBase() {
 				@Override
@@ -41,7 +41,7 @@ public class GapNodeType extends NodeType {
 				) {
 					for (final FreeNodeType type : (
 							self.parent == null ?
-									context.syntax.getLeafTypes(context.syntax.root) :
+									context.syntax.getLeafTypes(context.syntax.root.type) :
 									context.syntax.getLeafTypes(self.parent.childType())
 					)) {
 						for (final FreeNodeType.GapKey key : type.gapKeys()) {
@@ -56,15 +56,15 @@ public class GapNodeType extends NodeType {
 						final Context context, final Node self, final Choice choice, final String remainder
 				) {
 					final Node node = choice.type.create();
-					DataPrimitive.Value selectNext = new FindSelectNext().find(node, false);
+					DataPrimitive.Value selectNext = findSelectNext(node, false);
 					final com.zarbosoft.bonestruct.editor.model.Node replacement;
 					if (selectNext == null) {
-						replacement = context.syntax.suffixGap.create(true);
-						selectNext = new FindSelectNext().find(replacement, false);
+						replacement = context.syntax.suffixGap.create(true, node);
+						selectNext = findSelectNext(replacement, false);
 					} else {
 						replacement = node;
 					}
-					self.parent.replace(context, node);
+					self.parent.replace(context, replacement);
 					select(context, selectNext);
 					setRemainder(context, selectNext, remainder);
 				}
@@ -113,11 +113,6 @@ public class GapNodeType extends NodeType {
 	@Override
 	public boolean frontAssociative() {
 		return false;
-	}
-
-	@Override
-	public void finish(final Syntax syntax, final Set<String> allTypes, final Set<String> scalarTypes) {
-
 	}
 
 	@Override

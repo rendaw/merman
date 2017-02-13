@@ -16,22 +16,22 @@ import com.zarbosoft.bonestruct.editor.visual.Context;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 @Luxem.Configuration
 public class PrefixGapNodeType extends NodeType {
 	@Luxem.Configuration(name = "prefix", optional = true)
-	public List<FrontConstantPart> frontPrefix;
+	public List<FrontConstantPart> frontPrefix = new ArrayList<>();
 	@Luxem.Configuration(name = "infix", optional = true)
-	public List<FrontConstantPart> frontInfix;
+	public List<FrontConstantPart> frontInfix = new ArrayList<>();
 	@Luxem.Configuration(name = "suffix", optional = true)
-	public List<FrontConstantPart> frontSuffix;
+	public List<FrontConstantPart> frontSuffix = new ArrayList<>();
 
 	private final List<FrontPart> front;
 	private final List<BackPart> back;
 	private final Map<String, DataElement> middle;
 
 	public PrefixGapNodeType() {
+		id = "__prefix-gap";
 		{
 			final FrontGapBase gap = new FrontGapBase() {
 
@@ -41,7 +41,7 @@ public class PrefixGapNodeType extends NodeType {
 				) {
 					for (final FreeNodeType type : (
 							self.parent == null ?
-									context.syntax.getLeafTypes(context.syntax.root) :
+									context.syntax.getLeafTypes(context.syntax.root.type) :
 									context.syntax.getLeafTypes(self.parent.childType())
 					)) {
 						for (final FreeNodeType.GapKey key : type.gapKeys()) {
@@ -62,11 +62,11 @@ public class PrefixGapNodeType extends NodeType {
 					final Node replacement = choice.type.create();
 					final DataNode.Value value = (DataNode.Value) self.data.get("value");
 					self.parent.replace(context, replacement);
-					self.type.front().get(choice.node).dispatch(new NodeDispatchHandler() {
+					self.type.front().get(choice.node).dispatch(new NodeOnlyDispatchHandler() {
 						@Override
-						public void handle(final FrontDataArray front) {
+						public void handle(final FrontDataArrayBase front) {
 							context.history.apply(context,
-									new DataArrayBase.ChangeAdd((DataArrayBase.Value) self.data.get(front.middle),
+									new DataArrayBase.ChangeAdd((DataArrayBase.Value) self.data.get(front.middle()),
 											0,
 											ImmutableList.of(value.get())
 									)
@@ -141,11 +141,6 @@ public class PrefixGapNodeType extends NodeType {
 	@Override
 	public boolean frontAssociative() {
 		return false;
-	}
-
-	@Override
-	public void finish(final Syntax syntax, final Set<String> allTypes, final Set<String> scalarTypes) {
-
 	}
 
 	@Override

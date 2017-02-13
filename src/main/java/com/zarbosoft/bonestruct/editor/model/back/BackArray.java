@@ -1,6 +1,5 @@
 package com.zarbosoft.bonestruct.editor.model.back;
 
-import com.zarbosoft.bonestruct.editor.model.FreeNodeType;
 import com.zarbosoft.bonestruct.editor.model.NodeType;
 import com.zarbosoft.bonestruct.editor.model.Syntax;
 import com.zarbosoft.luxemj.Luxem;
@@ -35,7 +34,7 @@ public class BackArray extends BackPart {
 	}
 
 	@Override
-	public void finish(final Syntax syntax, final FreeNodeType nodeType, final Set<String> middleUsed) {
+	public void finish(final Syntax syntax, final NodeType nodeType, final Set<String> middleUsed) {
 		Helper.enumerate(elements.stream()).forEach(pair -> {
 			pair.second.finish(syntax, nodeType, middleUsed);
 			pair.second.parent = new Parent() {

@@ -90,10 +90,6 @@ public abstract class DataArrayBase extends DataElement {
 			listeners.remove(listener);
 		}
 
-		public Value(final List<Node> data) {
-			this(null, data);
-		}
-
 		public Value(final DataArrayBase data, final List<Node> value) {
 			this.data = data;
 			this.value.addAll(value);
@@ -104,7 +100,7 @@ public abstract class DataArrayBase extends DataElement {
 		}
 
 		private void renumber(final int from) {
-			final Mutable<Integer> sum = new Mutable<>();
+			final Mutable<Integer> sum = new Mutable<>(0);
 			Helper.enumerate(value.stream().skip(from), from).forEach(p -> {
 				final ArrayParent parent = ((ArrayParent) p.second.parent);
 				parent.index = p.first;
@@ -128,12 +124,12 @@ public abstract class DataArrayBase extends DataElement {
 	public static class ChangeAdd extends Change {
 		private final Value data;
 		private final int index;
-		private final List<Node> value;
+		private final List<Node> value = new ArrayList<>();
 
 		public ChangeAdd(final Value data, final int index, final List<Node> value) {
 			this.data = data;
 			this.index = index;
-			this.value = value;
+			this.value.addAll(value);
 		}
 
 		@Override
@@ -209,11 +205,12 @@ public abstract class DataArrayBase extends DataElement {
 
 		@Override
 		public Change apply(final Context context) {
-			for (final Listener listener : data.listeners)
-				listener.removed(context, index, size);
-			final ChangeAdd reverse = new ChangeAdd(data, index, data.value.subList(index, index + size));
+			final ChangeAdd reverse =
+					new ChangeAdd(data, index, ImmutableList.copyOf(data.value.subList(index, index + size)));
 			data.value.subList(index, index + size).clear();
 			data.renumber(index);
+			for (final Listener listener : data.listeners)
+				listener.removed(context, index, size);
 			return reverse;
 		}
 

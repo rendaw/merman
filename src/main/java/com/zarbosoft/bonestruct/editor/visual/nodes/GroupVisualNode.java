@@ -81,7 +81,7 @@ public class GroupVisualNode extends VisualNodePart {
 		if (preindex < 0)
 			preindex = this.children.size() + preindex + 1;
 		if (preindex >= this.children.size() + 1)
-			throw new RuntimeException("Inserting visual node after group end.");
+			throw new AssertionError("Inserting visual node after group end.");
 		final int index = preindex;
 		this.children.stream().skip(index).forEach(n -> ((GroupVisualNodeParent) n.parent()).index += 1);
 		this.children.add(index, node);
@@ -107,8 +107,8 @@ public class GroupVisualNode extends VisualNodePart {
 	public void remove(final Context context, int preindex) {
 		if (preindex < 0)
 			preindex = this.children.size() + preindex;
-		if (preindex >= this.children.size() - 1)
-			throw new RuntimeException("Removing visual node after group end.");
+		if (preindex >= this.children.size())
+			throw new AssertionError("Removing visual node after group end.");
 		final Integer index = preindex;
 		final VisualNodePart node = children.get(index);
 		node.destroyBricks(context);

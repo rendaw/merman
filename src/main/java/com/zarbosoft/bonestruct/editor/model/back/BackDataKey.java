@@ -1,6 +1,5 @@
 package com.zarbosoft.bonestruct.editor.model.back;
 
-import com.zarbosoft.bonestruct.editor.model.FreeNodeType;
 import com.zarbosoft.bonestruct.editor.model.NodeType;
 import com.zarbosoft.bonestruct.editor.model.Syntax;
 import com.zarbosoft.bonestruct.editor.model.middle.DataPrimitive;
@@ -32,7 +31,7 @@ public class BackDataKey extends BackPart {
 		});
 	}
 
-	public void finish(final Syntax syntax, final FreeNodeType nodeType, final Set<String> middleUsed) {
+	public void finish(final Syntax syntax, final NodeType nodeType, final Set<String> middleUsed) {
 		middleUsed.add(middle);
 		nodeType.getDataPrimitive(middle);
 	}

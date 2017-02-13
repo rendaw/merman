@@ -50,7 +50,7 @@ public class Node {
 		return visual;
 	}
 
-	public void setParent(final Parent nodeParent) {
+	public void setParent(final Parent parent) {
 		this.parent = parent;
 	}
 

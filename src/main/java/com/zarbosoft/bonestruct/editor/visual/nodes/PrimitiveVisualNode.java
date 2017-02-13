@@ -71,8 +71,6 @@ public class PrimitiveVisualNode extends VisualNodePart {
 
 	@Override
 	public boolean select(final Context context) {
-		if (lines.get(0).brick == null)
-			return false;
 		selection = createSelection(context, 0, 0);
 		context.setSelection(selection);
 		return true;
@@ -121,13 +119,16 @@ public class PrimitiveVisualNode extends VisualNodePart {
 		}
 
 		private void setOffsets(final Context context, final int beginOffset, final int endOffset) {
+			final boolean wasPoint = this.beginOffset == this.endOffset;
 			this.beginOffset = Math.max(0, Math.min(data.length(), beginOffset));
 			this.endOffset = Math.max(beginOffset, Math.min(data.length(), endOffset));
 			if (beginOffset == endOffset) {
-				if (border != null)
-					border.destroy(context);
-				if (cursor == null) {
-					cursor = new CursorAttachment(context, style);
+				if (context.display != null) {
+					if (border != null)
+						border.destroy(context);
+					if (cursor == null) {
+						cursor = new CursorAttachment(context, style);
+					}
 				}
 				final int index = findContaining(beginOffset);
 				beginLine = endLine = lines.get(index);
@@ -139,12 +140,16 @@ public class PrimitiveVisualNode extends VisualNodePart {
 					});
 				}
 			} else {
-				if (cursor != null)
-					cursor.destroy(context);
-				if (border == null) {
+				if (wasPoint) {
 					beginLine = null;
 					endLine = null;
-					border = new TextBorderAttachment(context, style);
+				}
+				if (context.display != null) {
+					if (cursor != null)
+						cursor.destroy(context);
+					if (border == null) {
+						border = new TextBorderAttachment(context, style);
+					}
 				}
 				final int beginIndex = findContaining(beginOffset);
 				if (beginLine == null || beginLine.index != beginIndex) {
@@ -167,7 +172,8 @@ public class PrimitiveVisualNode extends VisualNodePart {
 						});
 					}
 				}
-				border.setLastIndex(context, endIndex - endLine.offset);
+				if (context.display != null)
+					border.setLastIndex(context, endIndex - endLine.offset);
 			}
 		}
 
