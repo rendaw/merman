@@ -10,7 +10,7 @@ import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodeParent;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
 import com.zarbosoft.bonestruct.editor.visual.wall.Brick;
 import com.zarbosoft.luxemj.Luxem;
-import com.zarbosoft.pidgoon.internal.Pair;
+import com.zarbosoft.rendaw.common.Pair;
 import org.pcollections.HashTreePSet;
 
 import java.util.Arrays;

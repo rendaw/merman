@@ -10,7 +10,7 @@ import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodeParent;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
 import com.zarbosoft.bonestruct.editor.visual.wall.Brick;
-import com.zarbosoft.pidgoon.internal.Pair;
+import com.zarbosoft.rendaw.common.Pair;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.Map;

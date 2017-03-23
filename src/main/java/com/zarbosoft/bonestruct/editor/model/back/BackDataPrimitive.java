@@ -10,7 +10,7 @@ import com.zarbosoft.pidgoon.events.Store;
 import com.zarbosoft.pidgoon.events.Terminal;
 import com.zarbosoft.pidgoon.internal.Helper;
 import com.zarbosoft.pidgoon.internal.Node;
-import com.zarbosoft.pidgoon.internal.Pair;
+import com.zarbosoft.rendaw.common.Pair;
 
 import java.util.Set;
 

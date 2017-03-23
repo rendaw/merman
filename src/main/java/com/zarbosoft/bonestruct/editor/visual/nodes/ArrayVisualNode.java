@@ -17,8 +17,7 @@ import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodeParent;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
 import com.zarbosoft.bonestruct.editor.visual.wall.Brick;
-import com.zarbosoft.pidgoon.internal.Helper;
-import com.zarbosoft.pidgoon.internal.Pair;
+import com.zarbosoft.rendaw.common.Pair;
 import org.pcollections.HashTreePSet;
 import org.pcollections.PSet;
 
@@ -26,6 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static com.zarbosoft.rendaw.common.Common.enumerate;
+import static com.zarbosoft.rendaw.common.Common.last;
 import static java.io.File.separator;
 
 public abstract class ArrayVisualNode extends GroupVisualNode {
@@ -78,9 +79,7 @@ public abstract class ArrayVisualNode extends GroupVisualNode {
 			if (retagFirst)
 				children.get(0).changeTags(context, new VisualNode.TagsChange().add(new VisualNode.PartTag("first")));
 			if (retagLast)
-				Helper
-						.last(children)
-						.changeTags(context, new VisualNode.TagsChange().add(new VisualNode.PartTag("last")));
+				last(children).changeTags(context, new VisualNode.TagsChange().add(new VisualNode.PartTag("last")));
 		}
 		if (hoverable != null) {
 			if (hoverable.index > start + size) {
@@ -154,12 +153,10 @@ public abstract class ArrayVisualNode extends GroupVisualNode {
 						.get(0)
 						.changeTags(context, new VisualNode.TagsChange().remove(new VisualNode.PartTag("first")));
 			if (retagLast)
-				Helper
-						.last(children)
-						.changeTags(context, new VisualNode.TagsChange().remove(new VisualNode.PartTag("last")));
+				last(children).changeTags(context, new VisualNode.TagsChange().remove(new VisualNode.PartTag("last")));
 		}
 		final PSet<VisualNode.Tag> tags = HashTreePSet.from(tags());
-		Helper.enumerate(nodes.stream(), start).forEach(p -> {
+		enumerate(nodes.stream(), start).forEach(p -> {
 			int index = p.first;
 			if (p.first > 0 && !separator.isEmpty()) {
 				index = index * 2 - 1;
@@ -228,9 +225,7 @@ public abstract class ArrayVisualNode extends GroupVisualNode {
 			if (retagFirst)
 				children.get(0).changeTags(context, new VisualNode.TagsChange().add(new VisualNode.PartTag("first")));
 			if (retagLast)
-				Helper
-						.last(children)
-						.changeTags(context, new VisualNode.TagsChange().add(new VisualNode.PartTag("last")));
+				last(children).changeTags(context, new VisualNode.TagsChange().add(new VisualNode.PartTag("last")));
 		}
 		if (hoverable != null && hoverable.index >= start) {
 			hoverable.setIndex(context, hoverable.index + nodes.size());

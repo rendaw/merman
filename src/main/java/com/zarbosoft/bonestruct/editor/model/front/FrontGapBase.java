@@ -101,10 +101,13 @@ public abstract class FrontGapBase extends FrontPart {
 				final String string = dataGap.get();
 				if (string.isEmpty())
 					return;
+				System.out.format("str %s\n", string);
 				for (final Map.Entry<String, List<Choice>> pair : types.entrySet()) {
+					System.out.format("pair %s\n", pair.getKey());
 					if (string.length() > pair.getKey().length()) {
 						if (string.startsWith(pair.getKey())) {
 							for (final Choice choice : pair.getValue()) {
+								System.out.format("choice %s %s\n", pair.getKey(), choice.type.id);
 								if (choice.type.immediateMatch) {
 									choose(context, choice, string.substring(pair.getKey().length()));
 									return;
@@ -114,6 +117,7 @@ public abstract class FrontGapBase extends FrontPart {
 						}
 					} else if (pair.getKey().startsWith(string)) {
 						for (final Choice choice : pair.getValue()) {
+							System.out.format("choice %s %s\n", pair.getKey(), choice.type.id);
 							if (choice.type.immediateMatch) {
 								choose(context, choice, null);
 								return;

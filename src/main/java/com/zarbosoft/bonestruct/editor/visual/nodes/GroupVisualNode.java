@@ -9,13 +9,14 @@ import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodeParent;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
 import com.zarbosoft.bonestruct.editor.visual.wall.Brick;
-import com.zarbosoft.pidgoon.internal.Helper;
-import com.zarbosoft.pidgoon.internal.Pair;
+import com.zarbosoft.rendaw.common.Pair;
 import org.pcollections.HashTreePMap;
 import org.pcollections.PMap;
 
 import java.util.*;
 import java.util.function.IntFunction;
+
+import static com.zarbosoft.rendaw.common.Common.last;
 
 public class GroupVisualNode extends VisualNodePart {
 	public GroupVisualNode(final Set<Tag> tags) {
@@ -33,7 +34,7 @@ public class GroupVisualNode extends VisualNodePart {
 	public Brick getLastBrick(final Context context) {
 		if (children.isEmpty())
 			return null;
-		return Helper.last(children).getLastBrick(context);
+		return last(children).getLastBrick(context);
 	}
 
 	@Override
@@ -56,7 +57,7 @@ public class GroupVisualNode extends VisualNodePart {
 	public Brick createLastBrick(final Context context) {
 		if (children.isEmpty())
 			return null;
-		return Helper.last(children).createFirstBrick(context);
+		return last(children).createFirstBrick(context);
 	}
 
 	public Map<String, Alignment> alignments = new HashMap<>();

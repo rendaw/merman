@@ -3,12 +3,13 @@ package com.zarbosoft.bonestruct.editor.visual.wall;
 import com.google.common.collect.ImmutableList;
 import com.zarbosoft.bonestruct.editor.visual.Context;
 import com.zarbosoft.bonestruct.editor.visual.IdleTask;
-import com.zarbosoft.pidgoon.internal.Helper;
 import javafx.scene.Group;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static com.zarbosoft.rendaw.common.Common.last;
 
 public class Wall {
 	public Group visual = new Group();
@@ -20,7 +21,7 @@ public class Wall {
 
 	public void clear(final Context context) {
 		while (!children.isEmpty())
-			Helper.last(children).destroy(context);
+			last(children).destroy(context);
 		if (idleCompact != null)
 			idleCompact.destroy();
 		if (idleExpand != null)

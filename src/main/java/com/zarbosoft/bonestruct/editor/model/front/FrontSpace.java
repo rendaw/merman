@@ -11,7 +11,7 @@ import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodeParent;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
 import com.zarbosoft.bonestruct.editor.visual.wall.Brick;
-import com.zarbosoft.pidgoon.internal.Pair;
+import com.zarbosoft.rendaw.common.Pair;
 import javafx.scene.Node;
 import javafx.scene.layout.Region;
 import org.pcollections.HashTreePSet;

@@ -2,9 +2,10 @@ package com.zarbosoft.bonestruct.editor.visual;
 
 import com.zarbosoft.bonestruct.editor.model.hid.Key;
 import com.zarbosoft.luxemj.Luxem;
-import com.zarbosoft.pidgoon.internal.Helper;
 import com.zarbosoft.pidgoon.internal.Node;
 import com.zarbosoft.pidgoon.nodes.Sequence;
+
+import static com.zarbosoft.rendaw.common.Common.uncheck;
 
 public class Keyboard {
 
@@ -61,7 +62,7 @@ public class Keyboard {
 			if (shift)
 				out.append("ctrl+");
 			final Luxem.Configuration annotation =
-					Helper.uncheck(() -> Key.class.getField(key.name()).getAnnotation(Luxem.Configuration.class));
+					uncheck(() -> Key.class.getField(key.name()).getAnnotation(Luxem.Configuration.class));
 			out.append(annotation.name());
 			return out.toString();
 		}

@@ -3,12 +3,13 @@ package com.zarbosoft.bonestruct.editor.changes;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.zarbosoft.bonestruct.editor.visual.Context;
-import com.zarbosoft.pidgoon.internal.Helper;
 
 import java.io.Closeable;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.*;
+
+import static com.zarbosoft.rendaw.common.Common.last;
 
 public class History {
 	boolean locked = false;
@@ -78,7 +79,7 @@ public class History {
 				past.addLast(new ArrayList<>());
 			final Change reverse = change.apply(context);
 			final List<Change> subchanges = past.peekLast();
-			if (subchanges.isEmpty() || !Helper.last(subchanges).merge(change))
+			if (subchanges.isEmpty() || !last(subchanges).merge(change))
 				subchanges.add(reverse);
 			for (final Listener listener : ImmutableList.copyOf(listeners))
 				listener.applied(context, change);

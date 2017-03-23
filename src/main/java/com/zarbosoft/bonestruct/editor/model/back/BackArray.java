@@ -6,12 +6,13 @@ import com.zarbosoft.luxemj.Luxem;
 import com.zarbosoft.luxemj.source.LArrayCloseEvent;
 import com.zarbosoft.luxemj.source.LArrayOpenEvent;
 import com.zarbosoft.pidgoon.events.Terminal;
-import com.zarbosoft.pidgoon.internal.Helper;
 import com.zarbosoft.pidgoon.internal.Node;
 import com.zarbosoft.pidgoon.nodes.Sequence;
 
 import java.util.List;
 import java.util.Set;
+
+import static com.zarbosoft.rendaw.common.Common.enumerate;
 
 @Luxem.Configuration(name = "array")
 public class BackArray extends BackPart {
@@ -35,7 +36,7 @@ public class BackArray extends BackPart {
 
 	@Override
 	public void finish(final Syntax syntax, final NodeType nodeType, final Set<String> middleUsed) {
-		Helper.enumerate(elements.stream()).forEach(pair -> {
+		enumerate(elements.stream()).forEach(pair -> {
 			pair.second.finish(syntax, nodeType, middleUsed);
 			pair.second.parent = new Parent() {
 				@Override

@@ -12,7 +12,7 @@ import com.zarbosoft.bonestruct.editor.model.middle.DataNode;
 import com.zarbosoft.bonestruct.editor.model.middle.DataPrimitive;
 import com.zarbosoft.bonestruct.editor.visual.AlignmentDefinition;
 import com.zarbosoft.bonestruct.editor.visual.Context;
-import com.zarbosoft.pidgoon.internal.Helper;
+import com.zarbosoft.rendaw.common.Common;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -144,7 +144,7 @@ public class SuffixGapNodeType extends NodeType {
 				}
 
 				private int getIndexOfData(final Node.Parent parent, final Node node) {
-					return Helper.enumerate(node.type.front().stream()).filter(pair -> {
+					return Common.enumerate(node.type.front().stream()).filter(pair -> {
 						FrontPart front = pair.second;
 						String id = null;
 						if (front instanceof FrontDataNode)

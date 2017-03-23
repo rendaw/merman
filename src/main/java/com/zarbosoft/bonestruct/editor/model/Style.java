@@ -2,13 +2,14 @@ package com.zarbosoft.bonestruct.editor.model;
 
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
 import com.zarbosoft.luxemj.Luxem;
-import com.zarbosoft.pidgoon.internal.Helper;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 
 import java.lang.reflect.Field;
 import java.util.HashSet;
 import java.util.Set;
+
+import static com.zarbosoft.rendaw.common.Common.uncheck;
 
 @Luxem.Configuration
 public class Style {
@@ -102,9 +103,9 @@ public class Style {
 						field.getType() != String.class &&
 						field.getType() != Color.class)
 					continue;
-				final Object value = Helper.uncheck(() -> field.get(style));
+				final Object value = uncheck(() -> field.get(style));
 				if (value != null)
-					Helper.uncheck(() -> getClass().getField(field.getName()).set(this, value));
+					uncheck(() -> getClass().getField(field.getName()).set(this, value));
 			}
 		}
 

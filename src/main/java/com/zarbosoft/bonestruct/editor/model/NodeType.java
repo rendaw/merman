@@ -19,12 +19,15 @@ import com.zarbosoft.luxemj.Luxem;
 import com.zarbosoft.pidgoon.events.BakedOperator;
 import com.zarbosoft.pidgoon.events.Store;
 import com.zarbosoft.pidgoon.internal.Helper;
-import com.zarbosoft.pidgoon.internal.Pair;
 import com.zarbosoft.pidgoon.nodes.Sequence;
+import com.zarbosoft.rendaw.common.Pair;
 import org.pcollections.HashTreePSet;
 import org.pcollections.PSet;
 
 import java.util.*;
+
+import static com.zarbosoft.rendaw.common.Common.enumerate;
+import static com.zarbosoft.rendaw.common.Common.stream;
 
 @Luxem.Configuration
 public abstract class NodeType {
@@ -141,7 +144,7 @@ public abstract class NodeType {
 			for (final Map.Entry<String, AlignmentDefinition> entry : alignments().entrySet()) {
 				body.alignments.put(entry.getKey(), entry.getValue().create());
 			}
-			Helper.enumerate(Helper.stream(front())).forEach(pair -> {
+			enumerate(stream(front())).forEach(pair -> {
 				final VisualNodePart visual = pair.second.createVisual(context, data, tags);
 				frontToData.put(pair.second.middle(), visual);
 				body.add(context, visual);

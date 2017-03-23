@@ -2,16 +2,17 @@ package com.zarbosoft.bonestruct.editor.changes;
 
 import com.google.common.collect.Lists;
 import com.zarbosoft.bonestruct.editor.visual.Context;
-import com.zarbosoft.pidgoon.internal.Helper;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.zarbosoft.rendaw.common.Common.last;
 
 public class ChangeGroup {
 	public final List<Change> subchanges = new ArrayList<>();
 
 	public void add(final Change change) {
-		if (subchanges.isEmpty() || !Helper.last(subchanges).merge(change))
+		if (subchanges.isEmpty() || !last(subchanges).merge(change))
 			subchanges.add(change);
 	}
 

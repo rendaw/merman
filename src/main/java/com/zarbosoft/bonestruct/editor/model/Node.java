@@ -26,6 +26,13 @@ public class Node {
 		});
 	}
 
+	public Path getPath() {
+		if (parent == null)
+			return new Path();
+		else
+			return parent.getPath();
+	}
+
 	public abstract static class Parent {
 
 		/**

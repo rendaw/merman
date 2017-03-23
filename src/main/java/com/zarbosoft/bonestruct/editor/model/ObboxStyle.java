@@ -1,10 +1,11 @@
 package com.zarbosoft.bonestruct.editor.model;
 
 import com.zarbosoft.luxemj.Luxem;
-import com.zarbosoft.pidgoon.internal.Helper;
 import javafx.scene.paint.Color;
 
 import java.lang.reflect.Field;
+
+import static com.zarbosoft.rendaw.common.Common.uncheck;
 
 @Luxem.Configuration
 public class ObboxStyle {
@@ -43,9 +44,9 @@ public class ObboxStyle {
 					field.getType() != String.class &&
 					field.getType() != Color.class)
 				continue;
-			final Object value = Helper.uncheck(() -> field.get(settings));
+			final Object value = uncheck(() -> field.get(settings));
 			if (value != null)
-				Helper.uncheck(() -> field.set(this, value));
+				uncheck(() -> field.set(this, value));
 		}
 	}
 
@@ -73,9 +74,9 @@ public class ObboxStyle {
 						field.getType() != String.class &&
 						field.getType() != Color.class)
 					continue;
-				final Object value = Helper.uncheck(() -> field.get(settings));
+				final Object value = uncheck(() -> field.get(settings));
 				if (value != null)
-					Helper.uncheck(() -> getClass().getField(field.getName()).set(this, value));
+					uncheck(() -> getClass().getField(field.getName()).set(this, value));
 			}
 		}
 	}

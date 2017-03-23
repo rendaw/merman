@@ -8,6 +8,7 @@ import org.junit.Test;
 
 import java.util.List;
 
+import static com.zarbosoft.bonestruct.Builders.buildBackPrimitive;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.IsNot.not;
 import static org.junit.Assert.assertThat;
@@ -17,7 +18,7 @@ public class TestDocumentLoad {
 	static Syntax syntax;
 
 	static {
-		type1 = new Builders.TypeBuilder("1").back(new Builders.BackPrimitiveBuilder().value("#1").build()).build();
+		type1 = new Builders.TypeBuilder("1").back(buildBackPrimitive("#1")).build();
 		syntax = new Builders.SyntaxBuilder("any")
 				.type(type1)
 				.group("any", new Builders.GroupBuilder().type(type1).build())

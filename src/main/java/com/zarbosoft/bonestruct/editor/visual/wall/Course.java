@@ -6,12 +6,14 @@ import com.zarbosoft.bonestruct.ChainComparator;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.Context;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
-import com.zarbosoft.pidgoon.internal.Helper;
-import com.zarbosoft.pidgoon.internal.Pair;
+import com.zarbosoft.rendaw.common.Pair;
 import javafx.scene.Group;
 
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static com.zarbosoft.rendaw.common.Common.last;
+import static com.zarbosoft.rendaw.common.Common.stream;
 
 public class Course {
 
@@ -153,7 +155,7 @@ public class Course {
 
 	void destroy(final Context context) {
 		while (!children.isEmpty())
-			Helper.last(children).destroy(context);
+			last(children).destroy(context);
 	}
 
 	private void renumber(final int at) {
@@ -270,9 +272,8 @@ public class Course {
 			// Do getConverse placement
 			final Set<Alignment> seenAlignments = new HashSet<>();
 			final int at = first;
-			int converse = at == 0 ?
-					0 :
-					(at >= children.size() ? Helper.last(children) : children.get(at - 1)).converseEdge(context);
+			int converse =
+					at == 0 ? 0 : (at >= children.size() ? last(children) : children.get(at - 1)).converseEdge(context);
 			for (int index = at; index < children.size(); ++index) {
 				final Brick brick = children.get(index);
 				final Brick.Properties properties = brick.properties();
@@ -381,7 +382,7 @@ public class Course {
 				)
 		);
 		final Map<Brick, Brick.Properties> lookup =
-				Helper.stream(brickProperties.iterator()).collect(Collectors.toMap(p -> p.first, p -> p.second));
+				stream(brickProperties.iterator()).collect(Collectors.toMap(p -> p.first, p -> p.second));
 		final Set<Brick> seen = new HashSet<>();
 		int converse = 0;
 		Course course = null;

@@ -11,11 +11,11 @@ import com.zarbosoft.luxemj.path.LuxemArrayPath;
 import com.zarbosoft.luxemj.path.LuxemPath;
 import com.zarbosoft.pidgoon.events.*;
 import com.zarbosoft.pidgoon.internal.Helper;
-import com.zarbosoft.pidgoon.internal.Mutable;
-import com.zarbosoft.pidgoon.internal.Pair;
 import com.zarbosoft.pidgoon.nodes.Reference;
 import com.zarbosoft.pidgoon.nodes.Repeat;
 import com.zarbosoft.pidgoon.nodes.Union;
+import com.zarbosoft.rendaw.common.Common;
+import com.zarbosoft.rendaw.common.Pair;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.scene.paint.Color;
@@ -310,7 +310,7 @@ public class Syntax {
 	public Document create() {
 		final EventStream<List<Node>> stream =
 				new Parse<List<Node>>().stack(() -> 0).grammar(getGrammar()).node("root").parse();
-		final Mutable<LuxemPath> path = new Mutable<>(new LuxemArrayPath(null));
+		final Common.Mutable<LuxemPath> path = new Common.Mutable<>(new LuxemArrayPath(null));
 		template.forEach(e -> {
 			path.value = path.value.push(e);
 			stream.push(e, path.value.toString());
@@ -352,17 +352,18 @@ public class Syntax {
 			return ImmutableSet.of(getType(type));
 		final Set<FreeNodeType> out = new HashSet<>();
 		final Deque<Iterator<String>> stack = new ArrayDeque<>();
-		stack.addLast(groups.keySet().iterator());
+		stack.addLast(group.iterator());
 		while (!stack.isEmpty()) {
 			final Iterator<String> top = stack.pollLast();
 			if (!top.hasNext())
 				continue;
 			final String childKey = top.next();
+			if (top.hasNext())
+				stack.addLast(top);
 			final Set<String> child = groups.get(childKey);
 			if (child == null) {
 				out.add(getType(childKey));
 			} else {
-				stack.addLast(top);
 				stack.addLast(child.iterator());
 			}
 		}

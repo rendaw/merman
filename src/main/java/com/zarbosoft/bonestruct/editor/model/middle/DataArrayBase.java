@@ -7,12 +7,12 @@ import com.zarbosoft.bonestruct.editor.changes.Change;
 import com.zarbosoft.bonestruct.editor.model.Node;
 import com.zarbosoft.bonestruct.editor.visual.Context;
 import com.zarbosoft.luxemj.Luxem;
-import com.zarbosoft.pidgoon.internal.Helper;
-import com.zarbosoft.pidgoon.internal.Mutable;
+import com.zarbosoft.rendaw.common.Common;
 import org.pcollections.TreePVector;
 
 import java.util.*;
 
+import static com.zarbosoft.rendaw.common.Common.enumerate;
 import static java.util.Collections.unmodifiableList;
 
 @Luxem.Configuration
@@ -100,8 +100,8 @@ public abstract class DataArrayBase extends DataElement {
 		}
 
 		private void renumber(final int from) {
-			final Mutable<Integer> sum = new Mutable<>(0);
-			Helper.enumerate(value.stream().skip(from), from).forEach(p -> {
+			final Common.Mutable<Integer> sum = new Common.Mutable<>(0);
+			enumerate(value.stream().skip(from), from).forEach(p -> {
 				final ArrayParent parent = ((ArrayParent) p.second.parent);
 				parent.index = p.first;
 				parent.actualIndex = sum.value;

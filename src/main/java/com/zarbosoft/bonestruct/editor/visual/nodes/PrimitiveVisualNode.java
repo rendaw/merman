@@ -19,9 +19,8 @@ import com.zarbosoft.bonestruct.editor.visual.raw.Obbox;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodeParent;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
 import com.zarbosoft.bonestruct.editor.visual.wall.Brick;
-import com.zarbosoft.pidgoon.internal.Helper;
-import com.zarbosoft.pidgoon.internal.Mutable;
-import com.zarbosoft.pidgoon.internal.Pair;
+import com.zarbosoft.rendaw.common.Common;
+import com.zarbosoft.rendaw.common.Pair;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import org.pcollections.HashTreePSet;
@@ -30,6 +29,9 @@ import org.pcollections.PSet;
 import java.text.BreakIterator;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static com.zarbosoft.rendaw.common.Common.enumerate;
+import static com.zarbosoft.rendaw.common.Common.last;
 
 public class PrimitiveVisualNode extends VisualNodePart {
 	// INVARIANT: Leaf nodes must always create at least one brick
@@ -87,7 +89,7 @@ public class PrimitiveVisualNode extends VisualNodePart {
 	public Brick getLastBrick(final Context context) {
 		if (lines.isEmpty())
 			return null;
-		return Helper.last(lines).brick;
+		return last(lines).brick;
 	}
 
 	@Override
@@ -776,8 +778,8 @@ public class PrimitiveVisualNode extends VisualNodePart {
 			@Override
 			public void set(final Context context, final String newValue) {
 				destroy(context);
-				final Mutable<Integer> offset = new Mutable<>(0);
-				Helper.enumerate(Helper.stream(newValue.split("\n", -1))).forEach(pair -> {
+				final Common.Mutable<Integer> offset = new Common.Mutable<>(0);
+				enumerate(Arrays.stream(newValue.split("\n", -1))).forEach(pair -> {
 					final Line line = new Line(true);
 					line.setText(context, pair.second);
 					line.setIndex(context, pair.first);
@@ -895,7 +897,7 @@ public class PrimitiveVisualNode extends VisualNodePart {
 					remaining -= exciseEnd - exciseStart;
 					index += 1;
 				}
-				Helper.enumerate(lines.stream().skip(base.index + 1)).forEach(pair -> {
+				enumerate(lines.stream().skip(base.index + 1)).forEach(pair -> {
 					pair.second.index = base.index + 1 + pair.first;
 					pair.second.offset -= count;
 				});
@@ -941,7 +943,7 @@ public class PrimitiveVisualNode extends VisualNodePart {
 
 	@Override
 	public Brick createLastBrick(final Context context) {
-		return Helper.last(lines).createBrick(context);
+		return last(lines).createBrick(context);
 	}
 
 	@Override

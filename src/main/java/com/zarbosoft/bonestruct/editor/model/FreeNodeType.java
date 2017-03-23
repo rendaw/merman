@@ -6,13 +6,14 @@ import com.zarbosoft.bonestruct.editor.model.back.BackPart;
 import com.zarbosoft.bonestruct.editor.model.front.*;
 import com.zarbosoft.bonestruct.editor.model.middle.DataElement;
 import com.zarbosoft.bonestruct.editor.visual.AlignmentDefinition;
-import com.zarbosoft.pidgoon.internal.Helper;
-import com.zarbosoft.pidgoon.internal.Mutable;
+import com.zarbosoft.rendaw.common.Common;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static com.zarbosoft.rendaw.common.Common.enumerate;
 
 @Luxem.Configuration
 public class FreeNodeType extends NodeType {
@@ -97,10 +98,10 @@ public class FreeNodeType extends NodeType {
 
 	public List<GapKey> gapKeys() {
 		final List<GapKey> out = new ArrayList<>();
-		final Mutable<GapKey> top = new Mutable<>(new GapKey());
+		final Common.Mutable<GapKey> top = new Common.Mutable<>(new GapKey());
 		top.value.indexBefore = -1;
 		final StringBuilder key = new StringBuilder();
-		Helper.enumerate(front().stream()).forEach(p -> {
+		enumerate(front().stream()).forEach(p -> {
 			p.second.dispatch(new FrontPart.DispatchHandler() {
 				private void flush(final boolean skip, final boolean node) {
 					// Skip = record node

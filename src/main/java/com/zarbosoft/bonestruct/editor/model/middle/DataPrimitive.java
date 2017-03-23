@@ -11,6 +11,7 @@ import java.util.Set;
 
 @Luxem.Configuration(name = "primitive")
 public class DataPrimitive extends DataElement {
+
 	public abstract static class Listener {
 		public abstract void set(Context context, String value);
 

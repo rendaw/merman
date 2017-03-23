@@ -5,7 +5,7 @@ import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.Context;
 import com.zarbosoft.bonestruct.editor.visual.wall.Brick;
 import com.zarbosoft.luxemj.Luxem;
-import com.zarbosoft.pidgoon.internal.Pair;
+import com.zarbosoft.rendaw.common.Pair;
 import org.pcollections.HashTreePSet;
 import org.pcollections.PSet;
 

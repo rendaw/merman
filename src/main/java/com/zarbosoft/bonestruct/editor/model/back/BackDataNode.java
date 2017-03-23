@@ -11,8 +11,8 @@ import com.zarbosoft.pidgoon.events.BakedOperator;
 import com.zarbosoft.pidgoon.events.Store;
 import com.zarbosoft.pidgoon.internal.Helper;
 import com.zarbosoft.pidgoon.internal.Node;
-import com.zarbosoft.pidgoon.internal.Pair;
 import com.zarbosoft.pidgoon.nodes.Reference;
+import com.zarbosoft.rendaw.common.Pair;
 import org.pcollections.TreePVector;
 
 import java.util.Set;

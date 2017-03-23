@@ -3,13 +3,15 @@ package com.zarbosoft.bonestruct.editor;
 import com.zarbosoft.appdirsj.AppDirs;
 import com.zarbosoft.bonestruct.editor.luxem.Luxem;
 import com.zarbosoft.bonestruct.editor.model.Syntax;
-import com.zarbosoft.pidgoon.internal.Helper;
+import com.zarbosoft.rendaw.common.Common;
 
 import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
+
+import static com.zarbosoft.rendaw.common.Common.uncheck;
 
 public class EditorGlobal {
 	public AppDirs appDirs = new AppDirs().set_appname("androcos").set_roaming(true);
@@ -21,9 +23,9 @@ public class EditorGlobal {
 
 	public void initializeFilesystem() {
 		final Path config = appDirs.user_config_dir();
-		Helper.uncheck(() -> Files.createDirectories(config));
+		uncheck(() -> Files.createDirectories(config));
 		Collections
-				.list(Helper.uncheck(() -> Thread.currentThread().getContextClassLoader().getResources("")))
+				.list(uncheck(() -> Thread.currentThread().getContextClassLoader().getResources("")))
 				.stream()
 				.filter(u -> u.getFile().endsWith(".syntax"))
 				.forEach(syntax -> {
@@ -31,7 +33,7 @@ public class EditorGlobal {
 						Files.copy(syntax.openStream(), config.resolve(syntax.getFile() + ".template"));
 					} catch (final FileAlreadyExistsException e) {
 					} catch (final IOException e) {
-						throw new Helper.UncheckedException(e);
+						throw new Common.UncheckedException(e);
 					}
 				});
 	}
