@@ -2,14 +2,14 @@ package com.zarbosoft.bonestruct.editor.model.middle;
 
 import com.zarbosoft.bonestruct.Path;
 import com.zarbosoft.bonestruct.editor.changes.Change;
-import com.zarbosoft.bonestruct.editor.luxem.Luxem;
 import com.zarbosoft.bonestruct.editor.visual.Context;
+import com.zarbosoft.interface1.Configuration;
 
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-@Luxem.Configuration(name = "primitive")
+@Configuration(name = "primitive")
 public class DataPrimitive extends DataElement {
 
 	public abstract static class Listener {

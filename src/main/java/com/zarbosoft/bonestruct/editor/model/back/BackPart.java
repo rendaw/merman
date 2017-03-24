@@ -1,14 +1,14 @@
 package com.zarbosoft.bonestruct.editor.model.back;
 
 import com.zarbosoft.bonestruct.Path;
-import com.zarbosoft.bonestruct.editor.luxem.Luxem;
 import com.zarbosoft.bonestruct.editor.model.NodeType;
 import com.zarbosoft.bonestruct.editor.model.Syntax;
+import com.zarbosoft.interface1.Configuration;
 import com.zarbosoft.pidgoon.internal.Node;
 
 import java.util.Set;
 
-@Luxem.Configuration
+@Configuration
 public abstract class BackPart {
 	public abstract Node buildBackRule(Syntax syntax, NodeType nodeType);
 

@@ -9,7 +9,7 @@ import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodeParent;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
 import com.zarbosoft.bonestruct.editor.visual.wall.Brick;
-import com.zarbosoft.luxemj.Luxem;
+import com.zarbosoft.interface1.Configuration;
 import com.zarbosoft.rendaw.common.Pair;
 import org.pcollections.HashTreePSet;
 
@@ -18,10 +18,10 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@Luxem.Configuration(name = "mark")
+@Configuration(name = "mark")
 public class FrontMark extends FrontConstantPart {
 
-	@Luxem.Configuration
+	@Configuration
 	public String value;
 
 	@Override

@@ -2,9 +2,9 @@ package com.zarbosoft.bonestruct.editor.changes;
 
 import com.zarbosoft.bonestruct.editor.model.middle.DataElement;
 import com.zarbosoft.bonestruct.editor.visual.Context;
-import com.zarbosoft.luxemj.Luxem;
+import com.zarbosoft.interface1.Configuration;
 
-@Luxem.Configuration
+@Configuration
 public abstract class Change {
 	public abstract boolean merge(Change other);
 

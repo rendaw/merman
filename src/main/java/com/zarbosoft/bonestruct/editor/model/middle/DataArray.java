@@ -1,9 +1,9 @@
 package com.zarbosoft.bonestruct.editor.model.middle;
 
 import com.zarbosoft.bonestruct.Path;
-import com.zarbosoft.luxemj.Luxem;
+import com.zarbosoft.interface1.Configuration;
 
-@Luxem.Configuration(name = "array")
+@Configuration(name = "array")
 public class DataArray extends DataArrayBase {
 	@Override
 	public Path getPath(final Value value, final int actualIndex) {

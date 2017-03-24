@@ -1,7 +1,7 @@
 package com.zarbosoft.bonestruct.editor.model;
 
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
-import com.zarbosoft.luxemj.Luxem;
+import com.zarbosoft.interface1.Configuration;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 
@@ -11,65 +11,65 @@ import java.util.Set;
 
 import static com.zarbosoft.rendaw.common.Common.uncheck;
 
-@Luxem.Configuration
+@Configuration
 public class Style {
 
-	@Luxem.Configuration
+	@Configuration
 	public Set<VisualNode.Tag> tags;
 
-	@Luxem.Configuration(optional = true)
+	@Configuration(optional = true)
 	public ObboxStyle border = new ObboxStyle();
 
-	@Luxem.Configuration(name = "break", optional = true)
+	@Configuration(name = "break", optional = true)
 	public Boolean broken = null;
 
-	@Luxem.Configuration(name = "align", optional = true)
+	@Configuration(name = "align", optional = true)
 	public String alignment = null;
 
-	@Luxem.Configuration(name = "space-before", optional = true)
+	@Configuration(name = "space-before", optional = true)
 	public Integer spaceBefore = null;
 
-	@Luxem.Configuration(name = "space-after", optional = true)
+	@Configuration(name = "space-after", optional = true)
 	public Integer spaceAfter = null;
 
-	@Luxem.Configuration(name = "space-transverse-before", optional = true)
+	@Configuration(name = "space-transverse-before", optional = true)
 	public Integer spaceTransverseBefore = null;
 
-	@Luxem.Configuration(name = "space-transverse-after", optional = true)
+	@Configuration(name = "space-transverse-after", optional = true)
 	public Integer spaceTransverseAfter = null;
 
 	// Text/image/shape only
 
-	@Luxem.Configuration(optional = true)
+	@Configuration(optional = true)
 	public Color color = null;
 
 	// Text only
 
-	@Luxem.Configuration(optional = true)
+	@Configuration(optional = true)
 	public String font = null;
 
-	@Luxem.Configuration(name = "font-size", optional = true)
+	@Configuration(name = "font-size", optional = true)
 	public Integer fontSize = null;
 
 	// Image only
 
-	@Luxem.Configuration(optional = true)
+	@Configuration(optional = true)
 	public String image = null;
 
-	@Luxem.Configuration(optional = true)
+	@Configuration(optional = true)
 	public Integer rotate = null;
 
 	// Shape only
 
-	@Luxem.Configuration(optional = true)
+	@Configuration(optional = true)
 	public Integer converse = null;
 
-	@Luxem.Configuration(optional = true)
+	@Configuration(optional = true)
 	public Integer transverse = null;
 
 	// Space only
 
-	@Luxem.Configuration(optional = true)
+	@Configuration(optional = true)
 	public Integer space = null;
 
 	public static class Baked {
@@ -95,7 +95,7 @@ public class Style {
 
 		public void merge(final Style style) {
 			for (final Field field : Style.class.getFields()) {
-				if (field.getAnnotation(Luxem.Configuration.class) == null)
+				if (field.getAnnotation(Configuration.class) == null)
 					continue;
 				if (field.getType() != Integer.class &&
 						field.getType() != Double.class &&

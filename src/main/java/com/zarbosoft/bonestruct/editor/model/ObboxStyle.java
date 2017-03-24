@@ -1,42 +1,42 @@
 package com.zarbosoft.bonestruct.editor.model;
 
-import com.zarbosoft.luxemj.Luxem;
+import com.zarbosoft.interface1.Configuration;
 import javafx.scene.paint.Color;
 
 import java.lang.reflect.Field;
 
 import static com.zarbosoft.rendaw.common.Common.uncheck;
 
-@Luxem.Configuration
+@Configuration
 public class ObboxStyle {
-	@Luxem.Configuration(optional = true, name = "pad")
+	@Configuration(optional = true, name = "pad")
 	public Integer padding = null;
-	@Luxem.Configuration(optional = true, name = "round-start")
+	@Configuration(optional = true, name = "round-start")
 	public Boolean roundStart = null;
-	@Luxem.Configuration(optional = true, name = "round-end")
+	@Configuration(optional = true, name = "round-end")
 	public Boolean roundEnd = null;
-	@Luxem.Configuration(optional = true, name = "round-outer-edges")
+	@Configuration(optional = true, name = "round-outer-edges")
 	public Boolean roundOuterEdges = null;
-	@Luxem.Configuration(optional = true, name = "round-inner-edges")
+	@Configuration(optional = true, name = "round-inner-edges")
 	public Boolean roundInnerEdges = null;
-	@Luxem.Configuration(optional = true, name = "round-concave")
+	@Configuration(optional = true, name = "round-concave")
 	public Boolean roundConcave = null;
-	@Luxem.Configuration(optional = true, name = "round-radius")
+	@Configuration(optional = true, name = "round-radius")
 	public Integer roundRadius = null;
-	@Luxem.Configuration(optional = true, name = "line")
+	@Configuration(optional = true, name = "line")
 	public Boolean line = null;
-	@Luxem.Configuration(optional = true, name = "line-color")
+	@Configuration(optional = true, name = "line-color")
 	public Color lineColor = null;
-	@Luxem.Configuration(optional = true, name = "line-thickness")
+	@Configuration(optional = true, name = "line-thickness")
 	public Double lineThickness = null;
-	@Luxem.Configuration(optional = true, name = "fill")
+	@Configuration(optional = true, name = "fill")
 	public Boolean fill = null;
-	@Luxem.Configuration(optional = true, name = "fill-color")
+	@Configuration(optional = true, name = "fill-color")
 	public Color fillColor = null;
 
 	public void merge(final ObboxStyle settings) {
 		for (final Field field : getClass().getFields()) {
-			if (field.getAnnotation(Luxem.Configuration.class) == null)
+			if (field.getAnnotation(Configuration.class) == null)
 				continue;
 			if (field.getType() != Integer.class &&
 					field.getType() != Double.class &&
@@ -66,7 +66,7 @@ public class ObboxStyle {
 
 		public void merge(final ObboxStyle settings) {
 			for (final Field field : ObboxStyle.class.getFields()) {
-				if (field.getAnnotation(Luxem.Configuration.class) == null)
+				if (field.getAnnotation(Configuration.class) == null)
 					continue;
 				if (field.getType() != Integer.class &&
 						field.getType() != Double.class &&

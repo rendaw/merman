@@ -3,15 +3,15 @@ package com.zarbosoft.bonestruct.editor.model.middle;
 import com.zarbosoft.bonestruct.Path;
 import com.zarbosoft.bonestruct.editor.InvalidSyntax;
 import com.zarbosoft.bonestruct.editor.changes.Change;
-import com.zarbosoft.bonestruct.editor.luxem.Luxem;
 import com.zarbosoft.bonestruct.editor.model.Node;
 import com.zarbosoft.bonestruct.editor.visual.Context;
+import com.zarbosoft.interface1.Configuration;
 
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-@Luxem.Configuration(name = "node")
+@Configuration(name = "node")
 public class DataNode extends DataElement {
 	public abstract static class Listener {
 		public abstract void set(Context context, Node node);
@@ -123,7 +123,7 @@ public class DataNode extends DataElement {
 		}
 	}
 
-	@Luxem.Configuration
+	@Configuration
 	public String type;
 
 	public Value get(final Map<String, DataElement.Value> data) {

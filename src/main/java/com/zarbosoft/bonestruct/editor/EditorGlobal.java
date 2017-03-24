@@ -1,7 +1,6 @@
 package com.zarbosoft.bonestruct.editor;
 
 import com.zarbosoft.appdirsj.AppDirs;
-import com.zarbosoft.bonestruct.editor.luxem.Luxem;
 import com.zarbosoft.bonestruct.editor.model.Syntax;
 import com.zarbosoft.rendaw.common.Common;
 
@@ -16,10 +15,6 @@ import static com.zarbosoft.rendaw.common.Common.uncheck;
 public class EditorGlobal {
 	public AppDirs appDirs = new AppDirs().set_appname("androcos").set_roaming(true);
 	private final SyntaxManager syntaxManager = new SyntaxManager();
-
-	public EditorGlobal() {
-		Luxem.grammar(); // Make sure the luxem grammar is loaded beforehand so any new resource stream doesn't get closed by that resource stream
-	}
 
 	public void initializeFilesystem() {
 		final Path config = appDirs.user_config_dir();

@@ -6,13 +6,13 @@ import com.zarbosoft.bonestruct.editor.visual.Context;
 import com.zarbosoft.bonestruct.editor.visual.nodes.ArrayVisualNode;
 import com.zarbosoft.bonestruct.editor.visual.nodes.NestedVisualNodePart;
 import com.zarbosoft.bonestruct.editor.visual.nodes.PrimitiveVisualNode;
-import com.zarbosoft.luxemj.Luxem;
+import com.zarbosoft.interface1.Configuration;
 
-@Luxem.Configuration(name = "hover-type", description = "Shows the type of the element being hovered in the banner.")
+@Configuration(name = "hover-type", description = "Shows the type of the element being hovered in the banner.")
 public class HoverType extends Plugin {
-	@Luxem.Configuration(optional = true, description = "Include the type of the node.")
+	@Configuration(optional = true, description = "Include the type of the node.")
 	public boolean node = true;
-	@Luxem.Configuration(optional = true, description = "Include the type of the node part.")
+	@Configuration(optional = true, description = "Include the type of the node part.")
 	public boolean part = true;
 
 	private Context.BannerMessage message;

@@ -6,7 +6,7 @@ import com.zarbosoft.bonestruct.editor.InvalidSyntax;
 import com.zarbosoft.bonestruct.editor.changes.Change;
 import com.zarbosoft.bonestruct.editor.model.Node;
 import com.zarbosoft.bonestruct.editor.visual.Context;
-import com.zarbosoft.luxemj.Luxem;
+import com.zarbosoft.interface1.Configuration;
 import com.zarbosoft.rendaw.common.Common;
 import org.pcollections.TreePVector;
 
@@ -15,7 +15,7 @@ import java.util.*;
 import static com.zarbosoft.rendaw.common.Common.enumerate;
 import static java.util.Collections.unmodifiableList;
 
-@Luxem.Configuration
+@Configuration
 public abstract class DataArrayBase extends DataElement {
 	public static abstract class Listener {
 		public abstract void added(Context context, int index, List<Node> nodes);
@@ -220,7 +220,7 @@ public abstract class DataArrayBase extends DataElement {
 		}
 	}
 
-	@Luxem.Configuration
+	@Configuration
 	public String type;
 
 	@Override

@@ -3,9 +3,9 @@ package com.zarbosoft.bonestruct.editor.model.middle;
 import com.zarbosoft.bonestruct.Path;
 import com.zarbosoft.bonestruct.editor.model.Node;
 import com.zarbosoft.bonestruct.editor.model.back.BackDataKey;
-import com.zarbosoft.luxemj.Luxem;
+import com.zarbosoft.interface1.Configuration;
 
-@Luxem.Configuration(name = "record")
+@Configuration(name = "record")
 public class DataRecord extends DataArrayBase {
 	@Override
 	public Path getPath(final DataArrayBase.Value value, final int actualIndex) {

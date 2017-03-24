@@ -6,7 +6,7 @@ import com.zarbosoft.bonestruct.editor.model.FreeNodeType;
 import com.zarbosoft.bonestruct.editor.model.NodeType;
 import com.zarbosoft.bonestruct.editor.model.Syntax;
 import com.zarbosoft.bonestruct.editor.model.middle.DataNode;
-import com.zarbosoft.luxemj.Luxem;
+import com.zarbosoft.interface1.Configuration;
 import com.zarbosoft.pidgoon.events.BakedOperator;
 import com.zarbosoft.pidgoon.events.Store;
 import com.zarbosoft.pidgoon.internal.Helper;
@@ -17,9 +17,9 @@ import org.pcollections.TreePVector;
 
 import java.util.Set;
 
-@Luxem.Configuration(name = "data-node")
+@Configuration(name = "data-node")
 public class BackDataNode extends BackPart {
-	@Luxem.Configuration
+	@Configuration
 	public String middle;
 
 	public Node buildBackRule(final Syntax syntax, final NodeType nodeType) {

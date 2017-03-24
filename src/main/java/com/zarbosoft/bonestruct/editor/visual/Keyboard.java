@@ -1,7 +1,7 @@
 package com.zarbosoft.bonestruct.editor.visual;
 
 import com.zarbosoft.bonestruct.editor.model.hid.Key;
-import com.zarbosoft.luxemj.Luxem;
+import com.zarbosoft.interface1.Configuration;
 import com.zarbosoft.pidgoon.internal.Node;
 import com.zarbosoft.pidgoon.nodes.Sequence;
 
@@ -61,8 +61,8 @@ public class Keyboard {
 				out.append("alt+");
 			if (shift)
 				out.append("ctrl+");
-			final Luxem.Configuration annotation =
-					uncheck(() -> Key.class.getField(key.name()).getAnnotation(Luxem.Configuration.class));
+			final Configuration annotation =
+					uncheck(() -> Key.class.getField(key.name()).getAnnotation(Configuration.class));
 			out.append(annotation.name());
 			return out.toString();
 		}

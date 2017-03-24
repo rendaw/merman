@@ -4,7 +4,7 @@ import com.google.common.collect.Iterators;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.Context;
 import com.zarbosoft.bonestruct.editor.visual.wall.Brick;
-import com.zarbosoft.luxemj.Luxem;
+import com.zarbosoft.interface1.Configuration;
 import com.zarbosoft.rendaw.common.Pair;
 import org.pcollections.HashTreePSet;
 import org.pcollections.PSet;
@@ -66,7 +66,7 @@ public abstract class VisualNode {
 
 	public abstract void destroyBricks(Context context);
 
-	@Luxem.Configuration
+	@Configuration
 	public interface Tag {
 	}
 
@@ -102,9 +102,9 @@ public abstract class VisualNode {
 		tags.addAll(tagsChange.add);
 	}
 
-	@Luxem.Configuration(name = "type")
+	@Configuration(name = "type")
 	public static class TypeTag implements Tag {
-		@Luxem.Configuration
+		@Configuration
 		public String value;
 
 		public TypeTag() {
@@ -129,9 +129,9 @@ public abstract class VisualNode {
 		}
 	}
 
-	@Luxem.Configuration(name = "part")
+	@Configuration(name = "part")
 	public static class PartTag implements Tag {
-		@Luxem.Configuration
+		@Configuration
 		public String value;
 
 		public PartTag() {
@@ -156,9 +156,9 @@ public abstract class VisualNode {
 		}
 	}
 
-	@Luxem.Configuration(name = "state")
+	@Configuration(name = "state")
 	public static class StateTag implements Tag {
-		@Luxem.Configuration
+		@Configuration
 		public String value;
 
 		public StateTag() {
@@ -183,9 +183,9 @@ public abstract class VisualNode {
 		}
 	}
 
-	@Luxem.Configuration(name = "free")
+	@Configuration(name = "free")
 	public static class FreeTag implements Tag {
-		@Luxem.Configuration
+		@Configuration
 		public String value;
 
 		public FreeTag() {

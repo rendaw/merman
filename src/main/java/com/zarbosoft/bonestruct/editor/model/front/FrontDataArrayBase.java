@@ -3,12 +3,12 @@ package com.zarbosoft.bonestruct.editor.model.front;
 import com.zarbosoft.bonestruct.editor.model.NodeType;
 import com.zarbosoft.bonestruct.editor.model.middle.DataArrayBase;
 import com.zarbosoft.bonestruct.editor.model.middle.DataElement;
+import com.zarbosoft.bonestruct.editor.model.pidgoon.Node;
 import com.zarbosoft.bonestruct.editor.visual.Context;
 import com.zarbosoft.bonestruct.editor.visual.nodes.ArrayVisualNode;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
-import com.zarbosoft.luxemj.Luxem;
-import com.zarbosoft.luxemj.grammar.Node;
+import com.zarbosoft.interface1.Configuration;
 import org.pcollections.HashTreePSet;
 
 import java.util.*;
@@ -16,18 +16,18 @@ import java.util.stream.Collectors;
 
 public abstract class FrontDataArrayBase extends FrontPart {
 
-	@Luxem.Configuration
+	@Configuration
 	public List<FrontConstantPart> prefix = new ArrayList<>();
-	@Luxem.Configuration
+	@Configuration
 	public List<FrontConstantPart> suffix = new ArrayList<>();
-	@Luxem.Configuration
+	@Configuration
 	public List<FrontConstantPart> separator = new ArrayList<>();
 	protected DataArrayBase dataType;
-	@Luxem.Configuration(optional = true)
+	@Configuration(optional = true)
 	public Map<String, Node> hotkeys = new HashMap<>();
-	@Luxem.Configuration(name = "tag-first", optional = true)
+	@Configuration(name = "tag-first", optional = true)
 	public boolean tagFirst = false;
-	@Luxem.Configuration(name = "tag-last", optional = true)
+	@Configuration(name = "tag-last", optional = true)
 	public boolean tagLast = false;
 
 	@Override

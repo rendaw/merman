@@ -2,11 +2,11 @@ package com.zarbosoft.bonestruct.editor.model.middle;
 
 import com.zarbosoft.bonestruct.Path;
 import com.zarbosoft.bonestruct.editor.model.Node;
-import com.zarbosoft.luxemj.Luxem;
+import com.zarbosoft.interface1.Configuration;
 
 import java.util.Set;
 
-@Luxem.Configuration
+@Configuration
 public abstract class DataElement {
 	public String id;
 
@@ -28,7 +28,7 @@ public abstract class DataElement {
 
 	// TODO
 	/*
-	@Luxem.Configuration(optional = true)
+	@Configuration(optional = true)
 	boolean optional = false;
 	 */
 }

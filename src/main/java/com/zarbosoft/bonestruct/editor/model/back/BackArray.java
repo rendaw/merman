@@ -2,9 +2,9 @@ package com.zarbosoft.bonestruct.editor.model.back;
 
 import com.zarbosoft.bonestruct.editor.model.NodeType;
 import com.zarbosoft.bonestruct.editor.model.Syntax;
-import com.zarbosoft.luxemj.Luxem;
-import com.zarbosoft.luxemj.source.LArrayCloseEvent;
-import com.zarbosoft.luxemj.source.LArrayOpenEvent;
+import com.zarbosoft.interface1.Configuration;
+import com.zarbosoft.luxem.read.source.LArrayCloseEvent;
+import com.zarbosoft.luxem.read.source.LArrayOpenEvent;
 import com.zarbosoft.pidgoon.events.Terminal;
 import com.zarbosoft.pidgoon.internal.Node;
 import com.zarbosoft.pidgoon.nodes.Sequence;
@@ -14,11 +14,11 @@ import java.util.Set;
 
 import static com.zarbosoft.rendaw.common.Common.enumerate;
 
-@Luxem.Configuration(name = "array")
+@Configuration(name = "array")
 public class BackArray extends BackPart {
-	@Luxem.Configuration
+	@Configuration
 	public String name;
-	@Luxem.Configuration
+	@Configuration
 	public List<BackPart> elements;
 	private Parent parent;
 

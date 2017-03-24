@@ -1,17 +1,17 @@
 package com.zarbosoft.bonestruct.editor.model;
 
+import com.zarbosoft.bonestruct.editor.model.pidgoon.Node;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
-import com.zarbosoft.luxemj.Luxem;
-import com.zarbosoft.luxemj.grammar.Node;
+import com.zarbosoft.interface1.Configuration;
 
 import java.util.*;
 
-@Luxem.Configuration
+@Configuration
 public class Hotkeys {
-	@Luxem.Configuration
+	@Configuration
 	public Set<VisualNode.Tag> tags = new HashSet<>();
 
-	@Luxem.Configuration
+	@Configuration
 	public Map<String, List<Node>> hotkeys = new HashMap<>();
 
 	public Hotkeys() {

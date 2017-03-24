@@ -240,7 +240,7 @@ public abstract class ArrayVisualNode extends GroupVisualNode {
 		}
 	}
 
-	protected abstract Map<String, com.zarbosoft.luxemj.grammar.Node> getHotkeys();
+	protected abstract Map<String, com.zarbosoft.bonestruct.editor.model.pidgoon.Node> getHotkeys();
 
 	protected abstract List<FrontConstantPart> getPrefix();
 

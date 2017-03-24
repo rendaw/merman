@@ -6,9 +6,9 @@ import com.zarbosoft.bonestruct.editor.model.FreeNodeType;
 import com.zarbosoft.bonestruct.editor.model.NodeType;
 import com.zarbosoft.bonestruct.editor.model.Syntax;
 import com.zarbosoft.bonestruct.editor.model.middle.DataRecord;
-import com.zarbosoft.luxemj.Luxem;
-import com.zarbosoft.luxemj.source.LObjectCloseEvent;
-import com.zarbosoft.luxemj.source.LObjectOpenEvent;
+import com.zarbosoft.interface1.Configuration;
+import com.zarbosoft.luxem.read.source.LObjectCloseEvent;
+import com.zarbosoft.luxem.read.source.LObjectOpenEvent;
 import com.zarbosoft.pidgoon.events.BakedOperator;
 import com.zarbosoft.pidgoon.events.Store;
 import com.zarbosoft.pidgoon.events.Terminal;
@@ -24,7 +24,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-@Luxem.Configuration(name = "data-record")
+@Configuration(name = "data-record")
 public class BackDataRecord extends BackPart {
 	public String middle;
 

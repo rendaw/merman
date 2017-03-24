@@ -1,11 +1,11 @@
 package com.zarbosoft.bonestruct.editor.model;
 
 import com.zarbosoft.bonestruct.DeadCode;
-import com.zarbosoft.bonestruct.editor.luxem.Luxem;
 import com.zarbosoft.bonestruct.editor.model.back.BackPart;
 import com.zarbosoft.bonestruct.editor.model.front.*;
 import com.zarbosoft.bonestruct.editor.model.middle.DataElement;
 import com.zarbosoft.bonestruct.editor.visual.AlignmentDefinition;
+import com.zarbosoft.interface1.Configuration;
 import com.zarbosoft.rendaw.common.Common;
 
 import java.util.ArrayList;
@@ -15,35 +15,35 @@ import java.util.Map;
 
 import static com.zarbosoft.rendaw.common.Common.enumerate;
 
-@Luxem.Configuration
+@Configuration
 public class FreeNodeType extends NodeType {
-	@Luxem.Configuration
+	@Configuration
 	public String name;
 
-	@Luxem.Configuration
+	@Configuration
 	public List<FrontPart> front = new ArrayList<>();
 
-	@Luxem.Configuration
+	@Configuration
 	public List<BackPart> back = new ArrayList<>();
 
-	@Luxem.Configuration
+	@Configuration
 	public Map<String, DataElement> middle = new HashMap<>();
 
-	@Luxem.Configuration
+	@Configuration
 	public Map<String, AlignmentDefinition> alignments = new HashMap<>();
 
-	@Luxem.Configuration(optional = true, description = "If this is an operator, the operator precedence.  This is " +
+	@Configuration(optional = true, description = "If this is an operator, the operator precedence.  This is " +
 			"used when filling in a suffix gap to raise the new node to the appropriate level.  This is also used " +
 			"when wrapping lines - lower precedence nodes will be compacted first, expanded last.")
 	public int precedence = 0;
 
-	@Luxem.Configuration(name = "associate-forward", optional = true, description =
+	@Configuration(name = "associate-forward", optional = true, description =
 			"If this is an operator, the operator associativity.  This is used when filling in a " +
 					"suffix gap to raise the new node to the appropriate level.  If two operators have the same " +
 					"precedence, if the higher operator is back associative the lower operator will not be raised.")
 	public boolean frontAssociative = false;
 
-	@Luxem.Configuration(name = "immediate-fill", optional = true,
+	@Configuration(name = "immediate-fill", optional = true,
 			description = "When typed in a gap, immediately fill the gap with this type.")
 	public boolean immediateMatch = false;
 

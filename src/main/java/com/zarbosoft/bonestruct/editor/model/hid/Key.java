@@ -1,680 +1,680 @@
 package com.zarbosoft.bonestruct.editor.model.hid;
 
-import com.zarbosoft.luxemj.Luxem;
+import com.zarbosoft.interface1.Configuration;
 import javafx.scene.input.KeyCode;
 
-@Luxem.Configuration
+@Configuration
 public enum Key {
-	@Luxem.Configuration(name = "enter")
+	@Configuration(name = "enter")
 	ENTER,
 
-	@Luxem.Configuration(name = "backspace")
+	@Configuration(name = "backspace")
 	BACK_SPACE,
 
-	@Luxem.Configuration(name = "tab")
+	@Configuration(name = "tab")
 	TAB,
 
-	@Luxem.Configuration(name = "cancel")
+	@Configuration(name = "cancel")
 	CANCEL,
 
-	@Luxem.Configuration(name = "clear")
+	@Configuration(name = "clear")
 	CLEAR,
 
-	@Luxem.Configuration(name = "shift")
+	@Configuration(name = "shift")
 	SHIFT,
 
-	@Luxem.Configuration(name = "control")
+	@Configuration(name = "control")
 	CONTROL,
 
-	@Luxem.Configuration(name = "alt")
+	@Configuration(name = "alt")
 	ALT,
 
-	@Luxem.Configuration(name = "pause")
+	@Configuration(name = "pause")
 	PAUSE,
 
-	@Luxem.Configuration(name = "caps")
+	@Configuration(name = "caps")
 	CAPS,
 
-	@Luxem.Configuration(name = "escape")
+	@Configuration(name = "escape")
 	ESCAPE,
 
-	@Luxem.Configuration(name = "space")
+	@Configuration(name = "space")
 	SPACE,
 
-	@Luxem.Configuration(name = "page-up")
+	@Configuration(name = "page-up")
 	PAGE_UP,
 
-	@Luxem.Configuration(name = "page-down")
+	@Configuration(name = "page-down")
 	PAGE_DOWN,
 
-	@Luxem.Configuration(name = "end")
+	@Configuration(name = "end")
 	END,
 
-	@Luxem.Configuration(name = "home")
+	@Configuration(name = "home")
 	HOME,
 
-	@Luxem.Configuration(name = "left")
+	@Configuration(name = "left")
 	LEFT,
 
-	@Luxem.Configuration(name = "up")
+	@Configuration(name = "up")
 	UP,
 
-	@Luxem.Configuration(name = "right")
+	@Configuration(name = "right")
 	RIGHT,
 
-	@Luxem.Configuration(name = "down")
+	@Configuration(name = "down")
 	DOWN,
 
-	@Luxem.Configuration(name = "comma")
+	@Configuration(name = "comma")
 	COMMA,
 
-	@Luxem.Configuration(name = "minus")
+	@Configuration(name = "minus")
 	MINUS,
 
-	@Luxem.Configuration(name = "period")
+	@Configuration(name = "period")
 	PERIOD,
 
-	@Luxem.Configuration(name = "slash")
+	@Configuration(name = "slash")
 	SLASH,
 
-	@Luxem.Configuration(name = "digit0")
+	@Configuration(name = "digit0")
 	DIGIT0,
 
-	@Luxem.Configuration(name = "digit1")
+	@Configuration(name = "digit1")
 	DIGIT1,
 
-	@Luxem.Configuration(name = "digit2")
+	@Configuration(name = "digit2")
 	DIGIT2,
 
-	@Luxem.Configuration(name = "digit3")
+	@Configuration(name = "digit3")
 	DIGIT3,
 
-	@Luxem.Configuration(name = "digit4")
+	@Configuration(name = "digit4")
 	DIGIT4,
 
-	@Luxem.Configuration(name = "digit5")
+	@Configuration(name = "digit5")
 	DIGIT5,
 
-	@Luxem.Configuration(name = "digit6")
+	@Configuration(name = "digit6")
 	DIGIT6,
 
-	@Luxem.Configuration(name = "digit7")
+	@Configuration(name = "digit7")
 	DIGIT7,
 
-	@Luxem.Configuration(name = "digit8")
+	@Configuration(name = "digit8")
 	DIGIT8,
 
-	@Luxem.Configuration(name = "digit9")
+	@Configuration(name = "digit9")
 	DIGIT9,
 
-	@Luxem.Configuration(name = "semicolon")
+	@Configuration(name = "semicolon")
 	SEMICOLON,
 
-	@Luxem.Configuration(name = "equals")
+	@Configuration(name = "equals")
 	EQUALS,
 
-	@Luxem.Configuration(name = "a")
+	@Configuration(name = "a")
 	A,
 
-	@Luxem.Configuration(name = "b")
+	@Configuration(name = "b")
 	B,
 
-	@Luxem.Configuration(name = "c")
+	@Configuration(name = "c")
 	C,
 
-	@Luxem.Configuration(name = "d")
+	@Configuration(name = "d")
 	D,
 
-	@Luxem.Configuration(name = "e")
+	@Configuration(name = "e")
 	E,
 
-	@Luxem.Configuration(name = "f")
+	@Configuration(name = "f")
 	F,
 
-	@Luxem.Configuration(name = "g")
+	@Configuration(name = "g")
 	G,
 
-	@Luxem.Configuration(name = "h")
+	@Configuration(name = "h")
 	H,
 
-	@Luxem.Configuration(name = "i")
+	@Configuration(name = "i")
 	I,
 
-	@Luxem.Configuration(name = "j")
+	@Configuration(name = "j")
 	J,
 
-	@Luxem.Configuration(name = "k")
+	@Configuration(name = "k")
 	K,
 
-	@Luxem.Configuration(name = "l")
+	@Configuration(name = "l")
 	L,
 
-	@Luxem.Configuration(name = "m")
+	@Configuration(name = "m")
 	M,
 
-	@Luxem.Configuration(name = "n")
+	@Configuration(name = "n")
 	N,
 
-	@Luxem.Configuration(name = "o")
+	@Configuration(name = "o")
 	O,
 
-	@Luxem.Configuration(name = "p")
+	@Configuration(name = "p")
 	P,
 
-	@Luxem.Configuration(name = "q")
+	@Configuration(name = "q")
 	Q,
 
-	@Luxem.Configuration(name = "r")
+	@Configuration(name = "r")
 	R,
 
-	@Luxem.Configuration(name = "s")
+	@Configuration(name = "s")
 	S,
 
-	@Luxem.Configuration(name = "t")
+	@Configuration(name = "t")
 	T,
 
-	@Luxem.Configuration(name = "u")
+	@Configuration(name = "u")
 	U,
 
-	@Luxem.Configuration(name = "v")
+	@Configuration(name = "v")
 	V,
 
-	@Luxem.Configuration(name = "w")
+	@Configuration(name = "w")
 	W,
 
-	@Luxem.Configuration(name = "x")
+	@Configuration(name = "x")
 	X,
 
-	@Luxem.Configuration(name = "y")
+	@Configuration(name = "y")
 	Y,
 
-	@Luxem.Configuration(name = "z")
+	@Configuration(name = "z")
 	Z,
 
-	@Luxem.Configuration(name = "open-bracket")
+	@Configuration(name = "open-bracket")
 	OPEN_BRACKET,
 
-	@Luxem.Configuration(name = "back-slash")
+	@Configuration(name = "back-slash")
 	BACK_SLASH,
 
-	@Luxem.Configuration(name = "close-bracket")
+	@Configuration(name = "close-bracket")
 	CLOSE_BRACKET,
 
-	@Luxem.Configuration(name = "numpad0")
+	@Configuration(name = "numpad0")
 	NUMPAD0,
 
-	@Luxem.Configuration(name = "numpad1")
+	@Configuration(name = "numpad1")
 	NUMPAD1,
 
-	@Luxem.Configuration(name = "numpad2")
+	@Configuration(name = "numpad2")
 	NUMPAD2,
 
-	@Luxem.Configuration(name = "numpad3")
+	@Configuration(name = "numpad3")
 	NUMPAD3,
 
-	@Luxem.Configuration(name = "numpad4")
+	@Configuration(name = "numpad4")
 	NUMPAD4,
 
-	@Luxem.Configuration(name = "numpad5")
+	@Configuration(name = "numpad5")
 	NUMPAD5,
 
-	@Luxem.Configuration(name = "numpad6")
+	@Configuration(name = "numpad6")
 	NUMPAD6,
 
-	@Luxem.Configuration(name = "numpad7")
+	@Configuration(name = "numpad7")
 	NUMPAD7,
 
-	@Luxem.Configuration(name = "numpad8")
+	@Configuration(name = "numpad8")
 	NUMPAD8,
 
-	@Luxem.Configuration(name = "numpad9")
+	@Configuration(name = "numpad9")
 	NUMPAD9,
 
-	@Luxem.Configuration(name = "multiply")
+	@Configuration(name = "multiply")
 	MULTIPLY,
 
-	@Luxem.Configuration(name = "add")
+	@Configuration(name = "add")
 	ADD,
 
-	@Luxem.Configuration(name = "separator")
+	@Configuration(name = "separator")
 	SEPARATOR,
 
-	@Luxem.Configuration(name = "subtract")
+	@Configuration(name = "subtract")
 	SUBTRACT,
 
-	@Luxem.Configuration(name = "decimal")
+	@Configuration(name = "decimal")
 	DECIMAL,
 
-	@Luxem.Configuration(name = "divide")
+	@Configuration(name = "divide")
 	DIVIDE,
 
-	@Luxem.Configuration(name = "delete")
+	@Configuration(name = "delete")
 	DELETE,
 
-	@Luxem.Configuration(name = "num-lock")
+	@Configuration(name = "num-lock")
 	NUM_LOCK,
 
-	@Luxem.Configuration(name = "scroll-lock")
+	@Configuration(name = "scroll-lock")
 	SCROLL_LOCK,
 
-	@Luxem.Configuration(name = "f1")
+	@Configuration(name = "f1")
 	F1,
 
-	@Luxem.Configuration(name = "f2")
+	@Configuration(name = "f2")
 	F2,
 
-	@Luxem.Configuration(name = "f3")
+	@Configuration(name = "f3")
 	F3,
 
-	@Luxem.Configuration(name = "f4")
+	@Configuration(name = "f4")
 	F4,
 
-	@Luxem.Configuration(name = "f5")
+	@Configuration(name = "f5")
 	F5,
 
-	@Luxem.Configuration(name = "f6")
+	@Configuration(name = "f6")
 	F6,
 
-	@Luxem.Configuration(name = "f7")
+	@Configuration(name = "f7")
 	F7,
 
-	@Luxem.Configuration(name = "f8")
+	@Configuration(name = "f8")
 	F8,
 
-	@Luxem.Configuration(name = "f9")
+	@Configuration(name = "f9")
 	F9,
 
-	@Luxem.Configuration(name = "f10")
+	@Configuration(name = "f10")
 	F10,
 
-	@Luxem.Configuration(name = "f11")
+	@Configuration(name = "f11")
 	F11,
 
-	@Luxem.Configuration(name = "f12")
+	@Configuration(name = "f12")
 	F12,
 
-	@Luxem.Configuration(name = "f13")
+	@Configuration(name = "f13")
 	F13,
 
-	@Luxem.Configuration(name = "f14")
+	@Configuration(name = "f14")
 	F14,
 
-	@Luxem.Configuration(name = "f15")
+	@Configuration(name = "f15")
 	F15,
 
-	@Luxem.Configuration(name = "f16")
+	@Configuration(name = "f16")
 	F16,
 
-	@Luxem.Configuration(name = "f17")
+	@Configuration(name = "f17")
 	F17,
 
-	@Luxem.Configuration(name = "f18")
+	@Configuration(name = "f18")
 	F18,
 
-	@Luxem.Configuration(name = "f19")
+	@Configuration(name = "f19")
 	F19,
 
-	@Luxem.Configuration(name = "f20")
+	@Configuration(name = "f20")
 	F20,
 
-	@Luxem.Configuration(name = "f21")
+	@Configuration(name = "f21")
 	F21,
 
-	@Luxem.Configuration(name = "f22")
+	@Configuration(name = "f22")
 	F22,
 
-	@Luxem.Configuration(name = "f23")
+	@Configuration(name = "f23")
 	F23,
 
-	@Luxem.Configuration(name = "f24")
+	@Configuration(name = "f24")
 	F24,
 
-	@Luxem.Configuration(name = "printscreen")
+	@Configuration(name = "printscreen")
 	PRINTSCREEN,
 
-	@Luxem.Configuration(name = "insert")
+	@Configuration(name = "insert")
 	INSERT,
 
-	@Luxem.Configuration(name = "help")
+	@Configuration(name = "help")
 	HELP,
 
-	@Luxem.Configuration(name = "meta")
+	@Configuration(name = "meta")
 	META,
 
-	@Luxem.Configuration(name = "back-quote")
+	@Configuration(name = "back-quote")
 	BACK_QUOTE,
 
-	@Luxem.Configuration(name = "quote")
+	@Configuration(name = "quote")
 	QUOTE,
 
-	@Luxem.Configuration(name = "kp-up")
+	@Configuration(name = "kp-up")
 	KP_UP,
 
-	@Luxem.Configuration(name = "kp-down")
+	@Configuration(name = "kp-down")
 	KP_DOWN,
 
-	@Luxem.Configuration(name = "kp-left")
+	@Configuration(name = "kp-left")
 	KP_LEFT,
 
-	@Luxem.Configuration(name = "kp-right")
+	@Configuration(name = "kp-right")
 	KP_RIGHT,
 
-	@Luxem.Configuration(name = "dead-grave")
+	@Configuration(name = "dead-grave")
 	DEAD_GRAVE,
 
-	@Luxem.Configuration(name = "dead-acute")
+	@Configuration(name = "dead-acute")
 	DEAD_ACUTE,
 
-	@Luxem.Configuration(name = "dead-circumflex")
+	@Configuration(name = "dead-circumflex")
 	DEAD_CIRCUMFLEX,
 
-	@Luxem.Configuration(name = "dead-tilde")
+	@Configuration(name = "dead-tilde")
 	DEAD_TILDE,
 
-	@Luxem.Configuration(name = "dead-macron")
+	@Configuration(name = "dead-macron")
 	DEAD_MACRON,
 
-	@Luxem.Configuration(name = "dead-breve")
+	@Configuration(name = "dead-breve")
 	DEAD_BREVE,
 
-	@Luxem.Configuration(name = "dead-abovedot")
+	@Configuration(name = "dead-abovedot")
 	DEAD_ABOVEDOT,
 
-	@Luxem.Configuration(name = "dead-diaeresis")
+	@Configuration(name = "dead-diaeresis")
 	DEAD_DIAERESIS,
 
-	@Luxem.Configuration(name = "dead-abovering")
+	@Configuration(name = "dead-abovering")
 	DEAD_ABOVERING,
 
-	@Luxem.Configuration(name = "dead-doubleacute")
+	@Configuration(name = "dead-doubleacute")
 	DEAD_DOUBLEACUTE,
 
-	@Luxem.Configuration(name = "dead-caron")
+	@Configuration(name = "dead-caron")
 	DEAD_CARON,
 
-	@Luxem.Configuration(name = "dead-cedilla")
+	@Configuration(name = "dead-cedilla")
 	DEAD_CEDILLA,
 
-	@Luxem.Configuration(name = "dead-ogonek")
+	@Configuration(name = "dead-ogonek")
 	DEAD_OGONEK,
 
-	@Luxem.Configuration(name = "dead-iota")
+	@Configuration(name = "dead-iota")
 	DEAD_IOTA,
 
-	@Luxem.Configuration(name = "dead_voiced-sound")
+	@Configuration(name = "dead_voiced-sound")
 	DEAD_VOICED_SOUND,
 
-	@Luxem.Configuration(name = "dead_semivoiced-sound")
+	@Configuration(name = "dead_semivoiced-sound")
 	DEAD_SEMIVOICED_SOUND,
 
-	@Luxem.Configuration(name = "ampersand")
+	@Configuration(name = "ampersand")
 	AMPERSAND,
 
-	@Luxem.Configuration(name = "asterisk")
+	@Configuration(name = "asterisk")
 	ASTERISK,
 
-	@Luxem.Configuration(name = "quotedbl")
+	@Configuration(name = "quotedbl")
 	QUOTEDBL,
 
-	@Luxem.Configuration(name = "less")
+	@Configuration(name = "less")
 	LESS,
 
-	@Luxem.Configuration(name = "greater")
+	@Configuration(name = "greater")
 	GREATER,
 
-	@Luxem.Configuration(name = "braceleft")
+	@Configuration(name = "braceleft")
 	BRACELEFT,
 
-	@Luxem.Configuration(name = "braceright")
+	@Configuration(name = "braceright")
 	BRACERIGHT,
 
-	@Luxem.Configuration(name = "at")
+	@Configuration(name = "at")
 	AT,
 
-	@Luxem.Configuration(name = "colon")
+	@Configuration(name = "colon")
 	COLON,
 
-	@Luxem.Configuration(name = "circumflex")
+	@Configuration(name = "circumflex")
 	CIRCUMFLEX,
 
-	@Luxem.Configuration(name = "dollar")
+	@Configuration(name = "dollar")
 	DOLLAR,
 
-	@Luxem.Configuration(name = "euro-sign")
+	@Configuration(name = "euro-sign")
 	EURO_SIGN,
 
-	@Luxem.Configuration(name = "exclamation-mark")
+	@Configuration(name = "exclamation-mark")
 	EXCLAMATION_MARK,
 
-	@Luxem.Configuration(name = "inverted_exclamation-mark")
+	@Configuration(name = "inverted_exclamation-mark")
 	INVERTED_EXCLAMATION_MARK,
 
-	@Luxem.Configuration(name = "left-parenthesis")
+	@Configuration(name = "left-parenthesis")
 	LEFT_PARENTHESIS,
 
-	@Luxem.Configuration(name = "number-sign")
+	@Configuration(name = "number-sign")
 	NUMBER_SIGN,
 
-	@Luxem.Configuration(name = "plus")
+	@Configuration(name = "plus")
 	PLUS,
 
-	@Luxem.Configuration(name = "right-parenthesis")
+	@Configuration(name = "right-parenthesis")
 	RIGHT_PARENTHESIS,
 
-	@Luxem.Configuration(name = "underscore")
+	@Configuration(name = "underscore")
 	UNDERSCORE,
 
-	@Luxem.Configuration(name = "windows")
+	@Configuration(name = "windows")
 	WINDOWS,
 
-	@Luxem.Configuration(name = "context-menu")
+	@Configuration(name = "context-menu")
 	CONTEXT_MENU,
 
-	@Luxem.Configuration(name = "final")
+	@Configuration(name = "final")
 	FINAL,
 
-	@Luxem.Configuration(name = "convert")
+	@Configuration(name = "convert")
 	CONVERT,
 
-	@Luxem.Configuration(name = "nonconvert")
+	@Configuration(name = "nonconvert")
 	NONCONVERT,
 
-	@Luxem.Configuration(name = "accept")
+	@Configuration(name = "accept")
 	ACCEPT,
 
-	@Luxem.Configuration(name = "modechange")
+	@Configuration(name = "modechange")
 	MODECHANGE,
 
-	@Luxem.Configuration(name = "kana")
+	@Configuration(name = "kana")
 	KANA,
 
-	@Luxem.Configuration(name = "kanji")
+	@Configuration(name = "kanji")
 	KANJI,
 
-	@Luxem.Configuration(name = "alphanumeric")
+	@Configuration(name = "alphanumeric")
 	ALPHANUMERIC,
 
-	@Luxem.Configuration(name = "katakana")
+	@Configuration(name = "katakana")
 	KATAKANA,
 
-	@Luxem.Configuration(name = "hiragana")
+	@Configuration(name = "hiragana")
 	HIRAGANA,
 
-	@Luxem.Configuration(name = "full-width")
+	@Configuration(name = "full-width")
 	FULL_WIDTH,
 
-	@Luxem.Configuration(name = "half-width")
+	@Configuration(name = "half-width")
 	HALF_WIDTH,
 
-	@Luxem.Configuration(name = "roman-characters")
+	@Configuration(name = "roman-characters")
 	ROMAN_CHARACTERS,
 
-	@Luxem.Configuration(name = "all-candidates")
+	@Configuration(name = "all-candidates")
 	ALL_CANDIDATES,
 
-	@Luxem.Configuration(name = "previous-candidate")
+	@Configuration(name = "previous-candidate")
 	PREVIOUS_CANDIDATE,
 
-	@Luxem.Configuration(name = "code-input")
+	@Configuration(name = "code-input")
 	CODE_INPUT,
 
-	@Luxem.Configuration(name = "japanese-katakana")
+	@Configuration(name = "japanese-katakana")
 	JAPANESE_KATAKANA,
 
-	@Luxem.Configuration(name = "japanese-hiragana")
+	@Configuration(name = "japanese-hiragana")
 	JAPANESE_HIRAGANA,
 
-	@Luxem.Configuration(name = "japanese-roman")
+	@Configuration(name = "japanese-roman")
 	JAPANESE_ROMAN,
 
-	@Luxem.Configuration(name = "kana-lock")
+	@Configuration(name = "kana-lock")
 	KANA_LOCK,
 
-	@Luxem.Configuration(name = "input_method_on-off")
+	@Configuration(name = "input_method_on-off")
 	INPUT_METHOD_ON_OFF,
 
-	@Luxem.Configuration(name = "cut")
+	@Configuration(name = "cut")
 	CUT,
 
-	@Luxem.Configuration(name = "copy")
+	@Configuration(name = "copy")
 	COPY,
 
-	@Luxem.Configuration(name = "paste")
+	@Configuration(name = "paste")
 	PASTE,
 
-	@Luxem.Configuration(name = "undo")
+	@Configuration(name = "undo")
 	UNDO,
 
-	@Luxem.Configuration(name = "again")
+	@Configuration(name = "again")
 	AGAIN,
 
-	@Luxem.Configuration(name = "find")
+	@Configuration(name = "find")
 	FIND,
 
-	@Luxem.Configuration(name = "props")
+	@Configuration(name = "props")
 	PROPS,
 
-	@Luxem.Configuration(name = "stop")
+	@Configuration(name = "stop")
 	STOP,
 
-	@Luxem.Configuration(name = "compose")
+	@Configuration(name = "compose")
 	COMPOSE,
 
-	@Luxem.Configuration(name = "alt-graph")
+	@Configuration(name = "alt-graph")
 	ALT_GRAPH,
 
-	@Luxem.Configuration(name = "begin")
+	@Configuration(name = "begin")
 	BEGIN,
 
-	@Luxem.Configuration(name = "undefined")
+	@Configuration(name = "undefined")
 	UNDEFINED,
 
-	@Luxem.Configuration(name = "softkey-0")
+	@Configuration(name = "softkey-0")
 	SOFTKEY_0,
 
-	@Luxem.Configuration(name = "softkey-1")
+	@Configuration(name = "softkey-1")
 	SOFTKEY_1,
 
-	@Luxem.Configuration(name = "softkey-2")
+	@Configuration(name = "softkey-2")
 	SOFTKEY_2,
 
-	@Luxem.Configuration(name = "softkey-3")
+	@Configuration(name = "softkey-3")
 	SOFTKEY_3,
 
-	@Luxem.Configuration(name = "softkey-4")
+	@Configuration(name = "softkey-4")
 	SOFTKEY_4,
 
-	@Luxem.Configuration(name = "softkey-5")
+	@Configuration(name = "softkey-5")
 	SOFTKEY_5,
 
-	@Luxem.Configuration(name = "softkey-6")
+	@Configuration(name = "softkey-6")
 	SOFTKEY_6,
 
-	@Luxem.Configuration(name = "softkey-7")
+	@Configuration(name = "softkey-7")
 	SOFTKEY_7,
 
-	@Luxem.Configuration(name = "softkey-8")
+	@Configuration(name = "softkey-8")
 	SOFTKEY_8,
 
-	@Luxem.Configuration(name = "softkey-9")
+	@Configuration(name = "softkey-9")
 	SOFTKEY_9,
 
-	@Luxem.Configuration(name = "game-a")
+	@Configuration(name = "game-a")
 	GAME_A,
 
-	@Luxem.Configuration(name = "game-b")
+	@Configuration(name = "game-b")
 	GAME_B,
 
-	@Luxem.Configuration(name = "game-c")
+	@Configuration(name = "game-c")
 	GAME_C,
 
-	@Luxem.Configuration(name = "game-d")
+	@Configuration(name = "game-d")
 	GAME_D,
 
-	@Luxem.Configuration(name = "star")
+	@Configuration(name = "star")
 	STAR,
 
-	@Luxem.Configuration(name = "pound")
+	@Configuration(name = "pound")
 	POUND,
 
-	@Luxem.Configuration(name = "power")
+	@Configuration(name = "power")
 	POWER,
 
-	@Luxem.Configuration(name = "info")
+	@Configuration(name = "info")
 	INFO,
 
-	@Luxem.Configuration(name = "colored_key-0")
+	@Configuration(name = "colored_key-0")
 	COLORED_KEY_0,
 
-	@Luxem.Configuration(name = "colored_key-1")
+	@Configuration(name = "colored_key-1")
 	COLORED_KEY_1,
 
-	@Luxem.Configuration(name = "colored_key-2")
+	@Configuration(name = "colored_key-2")
 	COLORED_KEY_2,
 
-	@Luxem.Configuration(name = "colored_key-3")
+	@Configuration(name = "colored_key-3")
 	COLORED_KEY_3,
 
-	@Luxem.Configuration(name = "eject-toggle")
+	@Configuration(name = "eject-toggle")
 	EJECT_TOGGLE,
 
-	@Luxem.Configuration(name = "play")
+	@Configuration(name = "play")
 	PLAY,
 
-	@Luxem.Configuration(name = "record")
+	@Configuration(name = "record")
 	RECORD,
 
-	@Luxem.Configuration(name = "fast-fwd")
+	@Configuration(name = "fast-fwd")
 	FAST_FWD,
 
-	@Luxem.Configuration(name = "rewind")
+	@Configuration(name = "rewind")
 	REWIND,
 
-	@Luxem.Configuration(name = "track-prev")
+	@Configuration(name = "track-prev")
 	TRACK_PREV,
 
-	@Luxem.Configuration(name = "track-next")
+	@Configuration(name = "track-next")
 	TRACK_NEXT,
 
-	@Luxem.Configuration(name = "channel-up")
+	@Configuration(name = "channel-up")
 	CHANNEL_UP,
 
-	@Luxem.Configuration(name = "channel-down")
+	@Configuration(name = "channel-down")
 	CHANNEL_DOWN,
 
-	@Luxem.Configuration(name = "volume-up")
+	@Configuration(name = "volume-up")
 	VOLUME_UP,
 
-	@Luxem.Configuration(name = "volume-down")
+	@Configuration(name = "volume-down")
 	VOLUME_DOWN,
 
-	@Luxem.Configuration(name = "mute")
+	@Configuration(name = "mute")
 	MUTE,
 
-	@Luxem.Configuration(name = "command")
+	@Configuration(name = "command")
 	COMMAND,
 
-	@Luxem.Configuration(name = "shortcut")
+	@Configuration(name = "shortcut")
 	SHORTCUT,;
 
 	public static Key fromJFX(final KeyCode code) {

@@ -1,11 +1,11 @@
 package com.zarbosoft.bonestruct.editor.model.front;
 
-import com.zarbosoft.luxemj.Luxem;
+import com.zarbosoft.interface1.Configuration;
 
-@Luxem.Configuration(name = "array")
+@Configuration(name = "array")
 public class FrontDataArray extends FrontDataArrayBase {
 
-	@Luxem.Configuration
+	@Configuration
 	public String middle;
 
 	@Override

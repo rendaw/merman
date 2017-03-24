@@ -1,16 +1,16 @@
 package com.zarbosoft.bonestruct.editor.model;
 
-import com.zarbosoft.bonestruct.editor.luxem.Luxem;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.AlignmentDefinition;
 import com.zarbosoft.bonestruct.editor.visual.alignment.RelativeAlignmentImplementation;
+import com.zarbosoft.interface1.Configuration;
 
-@Luxem.Configuration(name = "relative")
+@Configuration(name = "relative")
 public class RelativeAlignment implements AlignmentDefinition {
-	@Luxem.Configuration
+	@Configuration
 	public String base;
 
-	@Luxem.Configuration
+	@Configuration
 	public int offset;
 
 	@Override

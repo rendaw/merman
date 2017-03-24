@@ -3,7 +3,6 @@ package com.zarbosoft.bonestruct.editor.model;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
-import com.zarbosoft.bonestruct.editor.luxem.Luxem;
 import com.zarbosoft.bonestruct.editor.model.back.BackDataPrimitive;
 import com.zarbosoft.bonestruct.editor.model.back.BackPart;
 import com.zarbosoft.bonestruct.editor.model.back.BackType;
@@ -14,17 +13,18 @@ import com.zarbosoft.bonestruct.editor.model.middle.DataElement;
 import com.zarbosoft.bonestruct.editor.model.middle.DataPrimitive;
 import com.zarbosoft.bonestruct.editor.visual.AlignmentDefinition;
 import com.zarbosoft.bonestruct.editor.visual.Context;
+import com.zarbosoft.interface1.Configuration;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-@Luxem.Configuration
+@Configuration
 public class GapNodeType extends NodeType {
 	private final DataPrimitive dataGap;
-	@Luxem.Configuration
+	@Configuration
 	public List<FrontConstantPart> frontPrefix = new ArrayList<>();
-	@Luxem.Configuration
+	@Configuration
 	public List<FrontConstantPart> frontSuffix = new ArrayList<>();
 
 	private final List<FrontPart> front;

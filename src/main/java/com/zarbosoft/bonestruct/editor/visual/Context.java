@@ -576,11 +576,11 @@ public class Context {
 			hotkeyGrammar = new Grammar();
 			final Union union = new Union();
 			for (final Action action : Iterables.concat(selection.getActions(this), globalActions)) {
-				final List<com.zarbosoft.luxemj.grammar.Node> hotkeyEntries =
+				final List<com.zarbosoft.bonestruct.editor.model.pidgoon.Node> hotkeyEntries =
 						selection.getHotkeys(this).hotkeys.get(action.getName());
 				if (hotkeyEntries == null)
 					continue;
-				for (final com.zarbosoft.luxemj.grammar.Node hotkey : hotkeyEntries) {
+				for (final com.zarbosoft.bonestruct.editor.model.pidgoon.Node hotkey : hotkeyEntries) {
 					union.add(new BakedOperator(hotkey.build(), store -> store.pushStack(action)));
 				}
 			}

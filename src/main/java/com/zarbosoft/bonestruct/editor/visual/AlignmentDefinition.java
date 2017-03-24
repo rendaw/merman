@@ -1,8 +1,8 @@
 package com.zarbosoft.bonestruct.editor.visual;
 
-import com.zarbosoft.bonestruct.editor.luxem.Luxem;
+import com.zarbosoft.interface1.Configuration;
 
-@Luxem.Configuration
+@Configuration
 public interface AlignmentDefinition {
 	Alignment create();
 }

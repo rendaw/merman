@@ -3,7 +3,6 @@ package com.zarbosoft.bonestruct.editor.model;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
-import com.zarbosoft.bonestruct.editor.luxem.Luxem;
 import com.zarbosoft.bonestruct.editor.model.back.*;
 import com.zarbosoft.bonestruct.editor.model.front.*;
 import com.zarbosoft.bonestruct.editor.model.middle.DataArrayBase;
@@ -12,21 +11,22 @@ import com.zarbosoft.bonestruct.editor.model.middle.DataNode;
 import com.zarbosoft.bonestruct.editor.model.middle.DataPrimitive;
 import com.zarbosoft.bonestruct.editor.visual.AlignmentDefinition;
 import com.zarbosoft.bonestruct.editor.visual.Context;
+import com.zarbosoft.interface1.Configuration;
 import com.zarbosoft.rendaw.common.Common;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-@Luxem.Configuration
+@Configuration
 public class SuffixGapNodeType extends NodeType {
 	private final DataNode dataValue;
 	private final DataPrimitive dataGap;
-	@Luxem.Configuration(name = "prefix", optional = true)
+	@Configuration(name = "prefix", optional = true)
 	public List<FrontConstantPart> frontPrefix = new ArrayList<>();
-	@Luxem.Configuration(name = "infix", optional = true)
+	@Configuration(name = "infix", optional = true)
 	public List<FrontConstantPart> frontInfix = new ArrayList<>();
-	@Luxem.Configuration(name = "suffix", optional = true)
+	@Configuration(name = "suffix", optional = true)
 	public List<FrontConstantPart> frontSuffix = new ArrayList<>();
 
 	private final List<FrontPart> front;

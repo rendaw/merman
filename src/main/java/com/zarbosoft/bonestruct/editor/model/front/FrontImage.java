@@ -10,7 +10,7 @@ import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodeParent;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
 import com.zarbosoft.bonestruct.editor.visual.wall.Brick;
-import com.zarbosoft.luxemj.Luxem;
+import com.zarbosoft.interface1.Configuration;
 import com.zarbosoft.rendaw.common.Pair;
 import javafx.scene.Node;
 import org.pcollections.HashTreePSet;
@@ -20,10 +20,10 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@Luxem.Configuration(name = "image")
+@Configuration(name = "image")
 public class FrontImage extends FrontConstantPart {
 
-	@Luxem.Configuration(name = "gap-key", optional = true,
+	@Configuration(name = "gap-key", optional = true,
 			description = "Use this string as a key for matching the node when filling a gap.")
 	public String gapKey = "";
 

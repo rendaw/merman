@@ -5,7 +5,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.zarbosoft.bonestruct.editor.changes.History;
-import com.zarbosoft.bonestruct.editor.luxem.Luxem;
 import com.zarbosoft.bonestruct.editor.model.Document;
 import com.zarbosoft.bonestruct.editor.model.Syntax;
 import com.zarbosoft.bonestruct.editor.model.hid.Key;
@@ -45,7 +44,6 @@ public class Editor {
 			final Iterable<Context.Action> globalActions,
 			final History history
 	) {
-		Luxem.grammar(); // Make sure the luxem grammar is loaded beforehand so the new resource stream doesn't get closed by that resource stream
 		final Syntax luxemSyntax = global.getSyntax("luxem");
 		//final Document doc = luxemSyntax.load("[[dog, dog, dog, dog, dog, dogdogdog, dog, dog, dog]],");
 		final Document doc = luxemSyntax.load("[dog, dog, dog, dog, dog, dogdogdog, dog,],");

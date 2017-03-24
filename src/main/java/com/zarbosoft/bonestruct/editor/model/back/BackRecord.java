@@ -2,10 +2,10 @@ package com.zarbosoft.bonestruct.editor.model.back;
 
 import com.zarbosoft.bonestruct.editor.model.NodeType;
 import com.zarbosoft.bonestruct.editor.model.Syntax;
-import com.zarbosoft.luxemj.Luxem;
-import com.zarbosoft.luxemj.source.LKeyEvent;
-import com.zarbosoft.luxemj.source.LObjectCloseEvent;
-import com.zarbosoft.luxemj.source.LObjectOpenEvent;
+import com.zarbosoft.interface1.Configuration;
+import com.zarbosoft.luxem.read.source.LKeyEvent;
+import com.zarbosoft.luxem.read.source.LObjectCloseEvent;
+import com.zarbosoft.luxem.read.source.LObjectOpenEvent;
 import com.zarbosoft.pidgoon.events.Terminal;
 import com.zarbosoft.pidgoon.internal.Node;
 import com.zarbosoft.pidgoon.nodes.Sequence;
@@ -14,9 +14,9 @@ import com.zarbosoft.pidgoon.nodes.Set;
 import java.util.HashMap;
 import java.util.Map;
 
-@Luxem.Configuration(name = "record")
+@Configuration(name = "record")
 public class BackRecord extends BackPart {
-	@Luxem.Configuration
+	@Configuration
 	public Map<String, BackPart> pairs = new HashMap<>();
 
 	@Override

@@ -1,9 +1,9 @@
 package com.zarbosoft.bonestruct.editor.model;
 
 import com.zarbosoft.bonestruct.editor.visual.Context;
-import com.zarbosoft.luxemj.Luxem;
+import com.zarbosoft.interface1.Configuration;
 
-@Luxem.Configuration
+@Configuration
 public abstract class Plugin {
 
 	public abstract static class State {

@@ -1,21 +1,21 @@
 package com.zarbosoft.bonestruct.editor.model.front;
 
 import com.zarbosoft.bonestruct.DeadCode;
-import com.zarbosoft.bonestruct.editor.luxem.Luxem;
 import com.zarbosoft.bonestruct.editor.model.NodeType;
 import com.zarbosoft.bonestruct.editor.model.middle.DataElement;
 import com.zarbosoft.bonestruct.editor.visual.Context;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
+import com.zarbosoft.interface1.Configuration;
 
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-@Luxem.Configuration
+@Configuration
 public abstract class FrontPart {
 
-	@Luxem.Configuration
+	@Configuration
 	public Set<String> tags = new HashSet<>();
 
 	public abstract VisualNodePart createVisual(

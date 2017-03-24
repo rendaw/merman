@@ -3,12 +3,12 @@ package com.zarbosoft.bonestruct.editor.model.front;
 import com.zarbosoft.bonestruct.editor.model.NodeType;
 import com.zarbosoft.bonestruct.editor.model.middle.DataElement;
 import com.zarbosoft.bonestruct.editor.model.middle.DataNode;
+import com.zarbosoft.bonestruct.editor.model.pidgoon.Node;
 import com.zarbosoft.bonestruct.editor.visual.Context;
 import com.zarbosoft.bonestruct.editor.visual.nodes.NestedVisualNodePart;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
-import com.zarbosoft.luxemj.Luxem;
-import com.zarbosoft.luxemj.grammar.Node;
+import com.zarbosoft.interface1.Configuration;
 import org.pcollections.HashTreePSet;
 
 import java.util.HashMap;
@@ -16,7 +16,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@Luxem.Configuration(name = "node")
+@Configuration(name = "node")
 public class FrontDataNode extends FrontPart {
 
 	@Override
@@ -24,11 +24,11 @@ public class FrontDataNode extends FrontPart {
 		return middle;
 	}
 
-	@Luxem.Configuration
+	@Configuration
 	public String middle;
 	private DataNode dataType;
 
-	@Luxem.Configuration(optional = true)
+	@Configuration(optional = true)
 	public Map<String, Node> hotkeys = new HashMap<>();
 
 	@Override

@@ -1,7 +1,6 @@
 package com.zarbosoft.bonestruct.editor.model.front;
 
 import com.google.common.collect.Iterables;
-import com.zarbosoft.bonestruct.editor.luxem.Luxem;
 import com.zarbosoft.bonestruct.editor.model.Style;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.AlignmentListener;
@@ -11,6 +10,7 @@ import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodeParent;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
 import com.zarbosoft.bonestruct.editor.visual.wall.Brick;
+import com.zarbosoft.interface1.Configuration;
 import com.zarbosoft.rendaw.common.Pair;
 import javafx.scene.Node;
 import javafx.scene.layout.Region;
@@ -21,7 +21,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@Luxem.Configuration(name = "space")
+@Configuration(name = "space")
 public class FrontSpace extends FrontConstantPart {
 	@Override
 	public void dispatch(final DispatchHandler handler) {

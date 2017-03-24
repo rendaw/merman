@@ -3,8 +3,8 @@ package com.zarbosoft.bonestruct.editor.model.back;
 import com.zarbosoft.bonestruct.editor.model.NodeType;
 import com.zarbosoft.bonestruct.editor.model.Syntax;
 import com.zarbosoft.bonestruct.editor.model.middle.DataPrimitive;
-import com.zarbosoft.luxemj.Luxem;
-import com.zarbosoft.luxemj.source.LPrimitiveEvent;
+import com.zarbosoft.interface1.Configuration;
+import com.zarbosoft.luxem.read.source.LPrimitiveEvent;
 import com.zarbosoft.pidgoon.events.BakedOperator;
 import com.zarbosoft.pidgoon.events.Store;
 import com.zarbosoft.pidgoon.events.Terminal;
@@ -14,9 +14,9 @@ import com.zarbosoft.rendaw.common.Pair;
 
 import java.util.Set;
 
-@Luxem.Configuration(name = "data-primitive")
+@Configuration(name = "data-primitive")
 public class BackDataPrimitive extends BackPart {
-	@Luxem.Configuration
+	@Configuration
 	public String middle;
 
 	@Override
