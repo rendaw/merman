@@ -101,7 +101,7 @@ public class FrontMark extends FrontConstantPart {
 		}
 
 		@Override
-		public void destroyBricks(final Context context) {
+		public void destroy(final Context context) {
 			if (brick != null)
 				brick.destroy(context);
 		}

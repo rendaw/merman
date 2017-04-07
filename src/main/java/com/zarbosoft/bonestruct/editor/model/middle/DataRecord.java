@@ -11,7 +11,7 @@ public class DataRecord extends DataArrayBase {
 	public Path getPath(final DataArrayBase.Value value, final int actualIndex) {
 		final Node element = value.get().get(actualIndex / 2);
 		final String segment =
-				((DataRecordKey.Value) element.data.get(((BackDataKey) element.type.back().get(0)).middle)).get();
+				((DataRecordKey.Value) element.data(((BackDataKey) element.type.back().get(0)).middle)).get();
 		return value.getPath().add(segment);
 	}
 }

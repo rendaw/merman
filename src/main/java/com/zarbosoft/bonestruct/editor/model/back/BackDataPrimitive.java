@@ -5,11 +5,11 @@ import com.zarbosoft.bonestruct.editor.model.Syntax;
 import com.zarbosoft.bonestruct.editor.model.middle.DataPrimitive;
 import com.zarbosoft.interface1.Configuration;
 import com.zarbosoft.luxem.read.source.LPrimitiveEvent;
-import com.zarbosoft.pidgoon.events.BakedOperator;
+import com.zarbosoft.pidgoon.Node;
+import com.zarbosoft.pidgoon.events.Operator;
 import com.zarbosoft.pidgoon.events.Store;
 import com.zarbosoft.pidgoon.events.Terminal;
 import com.zarbosoft.pidgoon.internal.Helper;
-import com.zarbosoft.pidgoon.internal.Node;
 import com.zarbosoft.rendaw.common.Pair;
 
 import java.util.Set;
@@ -21,7 +21,7 @@ public class BackDataPrimitive extends BackPart {
 
 	@Override
 	public Node buildBackRule(final Syntax syntax, final NodeType nodeType) {
-		return new BakedOperator(new Terminal(new LPrimitiveEvent(null)), store -> {
+		return new Operator(new Terminal(new LPrimitiveEvent(null)), store -> {
 			store = (Store) store.pushStack(new Pair<>(
 					middle,
 					new DataPrimitive.Value(nodeType.getDataPrimitive(middle), ((LPrimitiveEvent) store.top()).value)

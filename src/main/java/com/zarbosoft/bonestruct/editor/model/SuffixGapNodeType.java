@@ -5,22 +5,34 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.zarbosoft.bonestruct.editor.model.back.*;
 import com.zarbosoft.bonestruct.editor.model.front.*;
-import com.zarbosoft.bonestruct.editor.model.middle.DataArrayBase;
-import com.zarbosoft.bonestruct.editor.model.middle.DataElement;
-import com.zarbosoft.bonestruct.editor.model.middle.DataNode;
-import com.zarbosoft.bonestruct.editor.model.middle.DataPrimitive;
+import com.zarbosoft.bonestruct.editor.model.middle.*;
 import com.zarbosoft.bonestruct.editor.visual.AlignmentDefinition;
 import com.zarbosoft.bonestruct.editor.visual.Context;
 import com.zarbosoft.interface1.Configuration;
+import com.zarbosoft.pidgoon.ParseContext;
+import com.zarbosoft.pidgoon.bytes.Grammar;
+import com.zarbosoft.pidgoon.bytes.Operator;
+import com.zarbosoft.pidgoon.bytes.Parse;
+import com.zarbosoft.pidgoon.bytes.Position;
+import com.zarbosoft.pidgoon.nodes.Color;
+import com.zarbosoft.pidgoon.nodes.Union;
 import com.zarbosoft.rendaw.common.Common;
+import com.zarbosoft.rendaw.common.DeadCode;
+import com.zarbosoft.rendaw.common.Pair;
 
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static com.zarbosoft.rendaw.common.Common.iterable;
 
 @Configuration
 public class SuffixGapNodeType extends NodeType {
-	private final DataNode dataValue;
+	private final DataArray dataValue;
 	private final DataPrimitive dataGap;
 	@Configuration(name = "prefix", optional = true)
 	public List<FrontConstantPart> frontPrefix = new ArrayList<>();
@@ -36,82 +48,27 @@ public class SuffixGapNodeType extends NodeType {
 	public SuffixGapNodeType() {
 		id = "__suffix-gap";
 		{
-			final FrontDataNode value = new FrontDataNode();
+			final FrontDataArrayAsNode value = new FrontDataArrayAsNode();
 			value.middle = "value";
 			final FrontGapBase gap = new FrontGapBase() {
-
-				@Override
-				protected void buildChoices(
-						final Context context, final Node self, final Map<String, List<Choice>> types
-				) {
-					for (final FreeNodeType type : context.syntax.types) {
-						final Node.Parent replacementPoint = findReplacementPoint(context, self.parent, type);
-						if (replacementPoint == null)
-							continue;
-						for (final FreeNodeType.GapKey key : type.gapKeys()) {
-							if (key.indexBefore == -1)
-								continue;
-							if (!key.nodeBefore)
-								continue;
-							types.putIfAbsent(key.key, new ArrayList<>());
-							types.get(key.key).add(new Choice(type, key.indexBefore, key.indexAfter));
-						}
-					}
-				}
-
-				@Override
-				protected void choose(
-						final Context context, final Node self, final Choice choice, final String remainder
-				) {
-					final SuffixGapNode suffixSelf = (SuffixGapNode) self;
-					final Node node = choice.type.create();
-					DataPrimitive.Value selectNext = findSelectNext(node, true);
-					final com.zarbosoft.bonestruct.editor.model.Node replacement;
-					if (selectNext == null) {
-						replacement = context.syntax.suffixGap.create(true, node);
-						selectNext = findSelectNext(replacement, false);
-					} else {
-						replacement = node;
-					}
-					final DataElement.Value value = suffixSelf.data.get("value");
-					Node.Parent parent = suffixSelf.parent;
-					if (suffixSelf.raise)
-						parent = findReplacementPoint(context, parent, (FreeNodeType) node.type);
-					parent.replace(context, node);
-					node.type.front().get(choice.node).dispatch(new NodeOnlyDispatchHandler() {
-						@Override
-						public void handle(final FrontDataArrayBase front) {
-							context.history.apply(context,
-									new DataArrayBase.ChangeAdd((DataArrayBase.Value) node.data.get(front.middle()),
-											0,
-											ImmutableList.of(node)
-									)
-							);
-						}
-
-						@Override
-						public void handle(final FrontDataNode front) {
-							context.history.apply(context,
-									new DataNode.ChangeSet((DataNode.Value) node.data.get(front.middle), node)
-							);
-						}
-					});
-					select(context, selectNext);
-					setRemainder(context, selectNext, remainder);
-				}
-
-				private Node.Parent findReplacementPoint(
+				private Pair<Node.Parent, Node> findReplacementPoint(
 						final Context context, final Node.Parent start, final FreeNodeType type
 				) {
 					Node.Parent parent = null;
+					Node child = null;
 					Node.Parent test = start;
 					//Node testNode = test.data().parent().node();
-					Node testNode;
+					Node testNode = null;
 					while (test != null) {
 						boolean allowed = false;
 
-						if (context.syntax.getLeafTypes(test.childType()).contains(type.id)) {
+						if (context.syntax
+								.getLeafTypes(test.childType())
+								.map(t -> t.id)
+								.collect(Collectors.toSet())
+								.contains(type.id)) {
 							parent = test;
+							child = testNode;
 							allowed = true;
 						}
 
@@ -134,13 +91,13 @@ public class SuffixGapNodeType extends NodeType {
 								break;
 
 							// Can't move up if next level has same precedence and parent is forward-associative
-							if (testNode.type.precedence() == type.precedence && testNode.type.frontAssociative())
+							if (testNode.type.precedence() == type.precedence && !testNode.type.frontAssociative())
 								break;
 						}
 
 						test = testNode.parent;
 					}
-					return parent;
+					return new Pair<>(parent, child);
 				}
 
 				private int getIndexOfData(final Node.Parent parent, final Node node) {
@@ -155,6 +112,171 @@ public class SuffixGapNodeType extends NodeType {
 					}).map(pair -> pair.first).findFirst().get();
 				}
 
+				@Override
+				protected void process(
+						final Context context, final Node self, final String string, final Common.UserData store
+				) {
+					class Choice {
+						private final FreeNodeType type;
+						private final GapKey key;
+
+						public Choice(final FreeNodeType type, final GapKey key) {
+							this.type = type;
+							this.key = key;
+						}
+
+						public int ambiguity() {
+							return type.autoChooseAmbiguity;
+						}
+
+						public void choose(final Context context, final String string) {
+							final SuffixGapNode suffixSelf = (SuffixGapNode) self;
+
+							Node root;
+							Node.Parent rootPlacement;
+							Node child;
+							final DataElement.Value childPlacement;
+							Node child2 = null;
+							Node.Parent child2Placement = null;
+
+							// Parse text into node as possible
+							final GapKey.ParseResult parsed = key.parse(context, type, string);
+							final Node node = parsed.node;
+							final String remainder = parsed.remainder;
+							root = node;
+							child = ((DataArrayBase.Value) suffixSelf.data("value")).get().get(0);
+							childPlacement = node.data(node.type.front().get(key.indexBefore).middle());
+							final Node.Parent valuePlacementPoint2 = null;
+
+							// Find the new node placement point
+							rootPlacement = suffixSelf.parent;
+							if (suffixSelf.raise) {
+								final Pair<Node.Parent, Node> found =
+										findReplacementPoint(context, rootPlacement, (FreeNodeType) parsed.node.type);
+								if (found.first != rootPlacement) {
+									// Raising new node up; the value will be placed at the original parent
+									child2 = child;
+									child = found.second;
+									child2Placement = suffixSelf.parent;
+									rootPlacement = found.first;
+								}
+							}
+
+							// Find the selection/remainder entry point
+							final DataPrimitive.Value selectNext;
+							if (parsed.nextInput == null) {
+								if (key.indexAfter == -1) {
+									// No such place exists - wrap the placement node in a suffix gap
+									root = context.syntax.suffixGap.create(true, node);
+									selectNext = (DataPrimitive.Value) root.data("gap");
+								} else {
+									final Node gap = context.syntax.gap.create();
+									final DataElement.Value nextNode =
+											node.data(type.front.get(key.indexAfter).middle());
+									if (nextNode instanceof DataNode.Value)
+										context.history.apply(context,
+												new DataNode.ChangeSet((DataNode.Value) nextNode, gap)
+										);
+									else if (nextNode instanceof DataArrayBase.Value)
+										context.history.apply(context,
+												new DataArrayBase.ChangeAdd((DataArrayBase.Value) nextNode,
+														0,
+														ImmutableList.of(gap)
+												)
+										);
+									else
+										throw new DeadCode();
+									selectNext = (DataPrimitive.Value) gap.data("gap");
+								}
+							} else if (parsed.nextInput instanceof FrontDataPrimitive) {
+								selectNext = (DataPrimitive.Value) node.data(parsed.nextInput.middle());
+							} else if (parsed.nextInput instanceof FrontDataNode) {
+								final DataNode.Value value1 = (DataNode.Value) node.data(parsed.nextInput.middle());
+								final Node newGap = context.syntax.gap.create();
+								context.history.apply(context, new DataNode.ChangeSet(value1, newGap));
+								selectNext = (DataPrimitive.Value) newGap.data("gap");
+							} else if (parsed.nextInput instanceof FrontDataArrayBase) {
+								final DataArrayBase.Value value1 =
+										(DataArrayBase.Value) node.data(parsed.nextInput.middle());
+								final Node newGap = context.syntax.gap.create();
+								context.history.apply(context,
+										new DataArrayBase.ChangeAdd(value1, 0, ImmutableList.of(newGap))
+								);
+								selectNext = (DataPrimitive.Value) newGap.data("gap");
+							} else
+								throw new DeadCode();
+
+							// Place everything starting from the bottom
+							rootPlacement.replace(context, root);
+							if (childPlacement instanceof DataNode.Value)
+								context.history.apply(context,
+										new DataNode.ChangeSet((DataNode.Value) childPlacement, child)
+								);
+							else if (childPlacement instanceof DataArrayBase.Value)
+								context.history.apply(context,
+										new DataArrayBase.ChangeAdd((DataArrayBase.Value) childPlacement,
+												0,
+												ImmutableList.of(child)
+										)
+								);
+							else
+								throw new DeadCode();
+							if (child2Placement != null)
+								child2Placement.replace(context, child2);
+
+							// Select and dump remainder
+							select(context, selectNext);
+							if (!remainder.isEmpty())
+								context.selection.receiveText(context, remainder);
+						}
+					}
+
+					// Get or build gap grammar
+					final Grammar grammar = store.get(() -> {
+						final Union union = new Union();
+						for (final FreeNodeType type : context.syntax.types) {
+							final Pair<Node.Parent, Node> replacementPoint =
+									findReplacementPoint(context, self.parent, type);
+							if (replacementPoint.first == null)
+								continue;
+							for (final GapKey key : gapKeys(type)) {
+								if (key.indexBefore == -1)
+									continue;
+								final Choice choice = new Choice(type, key);
+								union.add(new Color(choice, new Operator(key.matchGrammar(type), store1 -> {
+									return store1.pushStack(choice);
+								})));
+							}
+						}
+						final Grammar out = new Grammar();
+						out.add("root", union);
+						return out;
+					});
+
+					// If the whole text matches, try to auto complete
+					// Display info on matches and not-yet-mismatches
+					final Pair<ParseContext, Position> longest = new Parse<>()
+							.grammar(grammar)
+							.longestMatchFromStart(new ByteArrayInputStream(string.getBytes(StandardCharsets.UTF_8)));
+					final Iterable<Choice> choices =
+							iterable(Stream.concat(longest.first.results.stream().map(result -> (Choice) result),
+									longest.first.leaves.stream().map(leaf -> (Choice) leaf.color())
+							));
+					if (longest.second.distance() == string.length()) {
+						for (final Choice choice : choices) {
+							if (longest.first.leaves.size() <= choice.ambiguity()) {
+								choice.choose(context, string);
+								return;
+							}
+							// TODO add to details pane
+						}
+					} else if (longest.second.distance() >= 1) {
+						for (final Choice choice : choices) {
+							choice.choose(context, string);
+							return;
+						}
+					}
+				}
 			};
 			front = ImmutableList.copyOf(Iterables.concat(frontPrefix,
 					ImmutableList.of(gap),
@@ -164,19 +286,20 @@ public class SuffixGapNodeType extends NodeType {
 			));
 		}
 		{
-			final BackType type = new BackType();
-			type.value = "__gap";
-			final BackDataNode value = new BackDataNode();
+			final BackDataArray value = new BackDataArray();
 			value.middle = "value";
 			final BackDataPrimitive gap = new BackDataPrimitive();
 			gap.middle = "gap";
 			final BackRecord record = new BackRecord();
 			record.pairs.put("value", value);
 			record.pairs.put("gap", gap);
-			back = ImmutableList.of(type, record);
+			final BackType type = new BackType();
+			type.value = "__gap";
+			type.child = record;
+			back = ImmutableList.of(type);
 		}
 		{
-			dataValue = new DataNode();
+			dataValue = new DataArray();
 			dataValue.id = "value";
 			dataGap = new DataPrimitive();
 			dataGap.id = "gap";
@@ -231,13 +354,10 @@ public class SuffixGapNodeType extends NodeType {
 	}
 
 	public Node create(final boolean raise, final Node value) {
-		return new SuffixGapNode(this,
-				ImmutableMap.of("value",
-						new DataNode.Value(dataValue, value),
-						"gap",
-						new DataPrimitive.Value(dataGap, "")
-				),
-				raise
-		);
+		return new SuffixGapNode(this, ImmutableMap.of("value",
+				new DataArray.Value(dataValue, ImmutableList.of(value)),
+				"gap",
+				new DataPrimitive.Value(dataGap, "")
+		), raise);
 	}
 }

@@ -1,12 +1,12 @@
 package com.zarbosoft.bonestruct.editor.model.front;
 
-import com.zarbosoft.bonestruct.DeadCode;
 import com.zarbosoft.bonestruct.editor.model.NodeType;
 import com.zarbosoft.bonestruct.editor.model.middle.DataElement;
 import com.zarbosoft.bonestruct.editor.visual.Context;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
 import com.zarbosoft.interface1.Configuration;
+import com.zarbosoft.rendaw.common.DeadCode;
 
 import java.util.HashSet;
 import java.util.Map;

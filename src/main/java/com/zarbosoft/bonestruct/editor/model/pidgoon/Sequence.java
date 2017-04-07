@@ -10,7 +10,7 @@ public class Sequence implements Node {
 	public List<Node> nodes;
 
 	@Override
-	public com.zarbosoft.pidgoon.internal.Node build() {
+	public com.zarbosoft.pidgoon.Node build() {
 		final com.zarbosoft.pidgoon.nodes.Sequence out = new com.zarbosoft.pidgoon.nodes.Sequence();
 		for (final Node node : nodes)
 			out.add(node.build());

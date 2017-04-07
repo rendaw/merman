@@ -6,11 +6,12 @@ import com.zarbosoft.bonestruct.editor.visual.Context;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
 
 import java.util.Map;
+import java.util.Set;
 
 public class Node {
 	public Parent parent;
 	public NodeType type;
-	public Map<String, DataElement.Value> data;
+	private final Map<String, DataElement.Value> data;
 	private NodeType.NodeTypeVisual visual;
 
 	public Node(final NodeType type, final Map<String, DataElement.Value> data) {
@@ -24,6 +25,14 @@ public class Node {
 				}
 			});
 		});
+	}
+
+	public DataElement.Value data(final String key) {
+		return data.get(key);
+	}
+
+	public Set<String> dataKeys() {
+		return data.keySet();
 	}
 
 	public Path getPath() {

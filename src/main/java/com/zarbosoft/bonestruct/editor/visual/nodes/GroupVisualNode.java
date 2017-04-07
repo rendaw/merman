@@ -112,7 +112,7 @@ public class GroupVisualNode extends VisualNodePart {
 			throw new AssertionError("Removing visual node after group end.");
 		final Integer index = preindex;
 		final VisualNodePart node = children.get(index);
-		node.destroyBricks(context);
+		node.destroy(context);
 		this.children.remove(index);
 		this.children.stream().skip(index).forEach(n -> ((GroupVisualNodeParent) n.parent()).index -= 1);
 	}
@@ -178,8 +178,8 @@ public class GroupVisualNode extends VisualNodePart {
 	}
 
 	@Override
-	public void destroyBricks(final Context context) {
+	public void destroy(final Context context) {
 		for (final VisualNodePart child : children)
-			child.destroyBricks(context);
+			child.destroy(context);
 	}
 }

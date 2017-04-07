@@ -5,10 +5,11 @@ import com.zarbosoft.bonestruct.editor.model.Syntax;
 import com.zarbosoft.interface1.Configuration;
 import com.zarbosoft.luxem.read.source.LArrayCloseEvent;
 import com.zarbosoft.luxem.read.source.LArrayOpenEvent;
+import com.zarbosoft.pidgoon.Node;
 import com.zarbosoft.pidgoon.events.Terminal;
-import com.zarbosoft.pidgoon.internal.Node;
 import com.zarbosoft.pidgoon.nodes.Sequence;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -19,8 +20,7 @@ public class BackArray extends BackPart {
 	@Configuration
 	public String name;
 	@Configuration
-	public List<BackPart> elements;
-	private Parent parent;
+	public List<BackPart> elements = new ArrayList<>();
 
 	@Override
 	public Node buildBackRule(final Syntax syntax, final NodeType nodeType) {
@@ -38,7 +38,7 @@ public class BackArray extends BackPart {
 	public void finish(final Syntax syntax, final NodeType nodeType, final Set<String> middleUsed) {
 		enumerate(elements.stream()).forEach(pair -> {
 			pair.second.finish(syntax, nodeType, middleUsed);
-			pair.second.parent = new Parent() {
+			pair.second.parent = new PartParent() {
 				@Override
 				public BackPart part() {
 					return BackArray.this;

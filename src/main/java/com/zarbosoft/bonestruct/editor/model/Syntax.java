@@ -30,6 +30,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static com.zarbosoft.rendaw.common.Common.stream;
 
 @Configuration
 public class Syntax {
@@ -228,12 +231,6 @@ public class Syntax {
 				foundRoot = true;
 			}
 		}
-		if (gap == null)
-			throw new InvalidSyntax("Gap definition missing.");
-		if (prefixGap == null)
-			throw new InvalidSyntax("Prefix gap definition missing.");
-		if (suffixGap == null)
-			throw new InvalidSyntax("Suffix gap definition missing.");
 		final Map<String, Set<String>> groupsThatContainType = new HashMap<>();
 		final Set<String> potentiallyScalarGroups = new HashSet<>();
 		for (final Map.Entry<String, Set<String>> pair : groups.entrySet()) {
@@ -334,30 +331,36 @@ public class Syntax {
 		return types.stream().filter(t -> t.id.equals(type)).findFirst().get();
 	}
 
-	public Set<FreeNodeType> getLeafTypes(final String type) {
+	public Stream<FreeNodeType> getLeafTypes(final String type) {
 		if (type == null)
-			return ImmutableSet.copyOf(types); // Gap types
+			return types.stream(); // Gap types
 		final Set<String> group = groups.get(type);
 		if (group == null)
-			return ImmutableSet.of(getType(type));
-		final Set<FreeNodeType> out = new HashSet<>();
+			return Stream.of(getType(type));
 		final Deque<Iterator<String>> stack = new ArrayDeque<>();
 		stack.addLast(group.iterator());
-		while (!stack.isEmpty()) {
-			final Iterator<String> top = stack.pollLast();
-			if (!top.hasNext())
-				continue;
-			final String childKey = top.next();
-			if (top.hasNext())
-				stack.addLast(top);
-			final Set<String> child = groups.get(childKey);
-			if (child == null) {
-				out.add(getType(childKey));
-			} else {
-				stack.addLast(child.iterator());
+		return stream(new Iterator<FreeNodeType>() {
+			@Override
+			public boolean hasNext() {
+				return !stack.isEmpty();
 			}
-		}
-		return out;
-	}
 
+			@Override
+			public FreeNodeType next() {
+				final Iterator<String> top = stack.pollLast();
+				if (!top.hasNext())
+					return null;
+				final String childKey = top.next();
+				if (top.hasNext())
+					stack.addLast(top);
+				final Set<String> child = groups.get(childKey);
+				if (child == null) {
+					return getType(childKey);
+				} else {
+					stack.addLast(child.iterator());
+				}
+				return null;
+			}
+		}).filter(x -> x != null);
+	}
 }

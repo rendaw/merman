@@ -14,10 +14,24 @@ import com.zarbosoft.bonestruct.editor.model.middle.DataPrimitive;
 import com.zarbosoft.bonestruct.editor.visual.AlignmentDefinition;
 import com.zarbosoft.bonestruct.editor.visual.Context;
 import com.zarbosoft.interface1.Configuration;
+import com.zarbosoft.pidgoon.ParseContext;
+import com.zarbosoft.pidgoon.bytes.Grammar;
+import com.zarbosoft.pidgoon.bytes.Operator;
+import com.zarbosoft.pidgoon.bytes.Parse;
+import com.zarbosoft.pidgoon.bytes.Position;
+import com.zarbosoft.pidgoon.nodes.Color;
+import com.zarbosoft.pidgoon.nodes.Union;
+import com.zarbosoft.rendaw.common.Common;
+import com.zarbosoft.rendaw.common.Pair;
 
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
+
+import static com.zarbosoft.rendaw.common.Common.iterable;
 
 @Configuration
 public class GapNodeType extends NodeType {
@@ -36,47 +50,101 @@ public class GapNodeType extends NodeType {
 		{
 			final FrontGapBase gap = new FrontGapBase() {
 				@Override
-				protected void buildChoices(
-						final Context context, final Node self, final Map<String, List<Choice>> choices
+				protected void process(
+						final Context context, final Node self, final String string, final Common.UserData store
 				) {
-					for (final FreeNodeType type : (
-							self.parent == null ?
-									context.syntax.getLeafTypes(context.syntax.root.type) :
-									context.syntax.getLeafTypes(self.parent.childType())
-					)) {
-						for (final FreeNodeType.GapKey key : type.gapKeys()) {
-							choices.putIfAbsent(key.key, new ArrayList<>());
-							choices.get(key.key).add(new Choice(type, -1, key.indexAfter));
+					class Choice {
+						private final FreeNodeType type;
+						private final GapKey key;
+
+						Choice(
+								final FreeNodeType type, final GapKey key
+						) {
+							this.type = type;
+							this.key = key;
+						}
+
+						public int ambiguity() {
+							return type.autoChooseAmbiguity;
+						}
+
+						public void choose(final Context context, final String string) {
+							// Build node
+							final GapKey.ParseResult parsed = key.parse(context, type, string);
+							final Node node = parsed.node;
+							final String remainder = parsed.remainder;
+
+							// Place the node
+							DataPrimitive.Value selectNext = findSelectNext(node, false);
+							final com.zarbosoft.bonestruct.editor.model.Node replacement;
+							if (selectNext == null) {
+								replacement = context.syntax.suffixGap.create(true, node);
+								selectNext = findSelectNext(replacement, false);
+							} else {
+								replacement = node;
+							}
+							self.parent.replace(context, replacement);
+							select(context, selectNext);
+							if (!remainder.isEmpty())
+								context.selection.receiveText(context, remainder);
 						}
 					}
-				}
 
-				@Override
-				protected void choose(
-						final Context context, final Node self, final Choice choice, final String remainder
-				) {
-					final Node node = choice.type.create();
-					DataPrimitive.Value selectNext = findSelectNext(node, false);
-					final com.zarbosoft.bonestruct.editor.model.Node replacement;
-					if (selectNext == null) {
-						replacement = context.syntax.suffixGap.create(true, node);
-						selectNext = findSelectNext(replacement, false);
-					} else {
-						replacement = node;
+					// Get or build gap grammar
+					final Grammar grammar = store.get(() -> {
+						final Union union = new Union();
+						for (final FreeNodeType type : (
+								self.parent == null ?
+										iterable(context.syntax.getLeafTypes(context.syntax.root.type)) :
+										iterable(context.syntax.getLeafTypes(self.parent.childType()))
+						)) {
+							final List<GapKey> gapKeys = gapKeys(type);
+							for (final GapKey key : gapKeys(type)) {
+								final Choice choice = new Choice(type, key);
+								union.add(new Color(choice, new Operator(key.matchGrammar(type), store1 -> {
+									return store1.pushStack(choice);
+								})));
+							}
+						}
+						final Grammar out = new Grammar();
+						out.add("root", union);
+						return out;
+					});
+
+					// If the whole text matches, try to auto complete
+					// Display info on matches and not-yet-mismatches
+					final Pair<ParseContext, Position> longest = new Parse<>()
+							.grammar(grammar)
+							.longestMatchFromStart(new ByteArrayInputStream(string.getBytes(StandardCharsets.UTF_8)));
+					final Iterable<Choice> choices = iterable(Stream.concat(
+							longest.first.results.stream().map(result -> (Choice) result),
+							longest.first.leaves.stream().map(leaf -> (Choice) leaf.color())
+					));
+					if (longest.second.distance() == string.length()) {
+						for (final Choice choice : choices) {
+							if (longest.first.leaves.size() <= choice.ambiguity()) {
+								choice.choose(context, string);
+								return;
+							}
+							// TODO add to details pane
+						}
+					} else if (longest.second.distance() >= 1) {
+						for (final Choice choice : choices) {
+							choice.choose(context, string);
+							return;
+						}
 					}
-					self.parent.replace(context, replacement);
-					select(context, selectNext);
-					setRemainder(context, selectNext, remainder);
 				}
 			};
 			front = ImmutableList.copyOf(Iterables.concat(frontPrefix, ImmutableList.of(gap), frontSuffix));
 		}
 		{
-			final BackType backType = new BackType();
-			backType.value = "__gap";
 			final BackDataPrimitive backDataPrimitive = new BackDataPrimitive();
 			backDataPrimitive.middle = "gap";
-			back = ImmutableList.of(backType, backDataPrimitive);
+			final BackType backType = new BackType();
+			backType.value = "__gap";
+			backType.child = backDataPrimitive;
+			back = ImmutableList.of(backType);
 		}
 		{
 			dataGap = new DataPrimitive();

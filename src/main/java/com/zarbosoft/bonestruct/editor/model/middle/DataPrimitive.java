@@ -1,7 +1,8 @@
 package com.zarbosoft.bonestruct.editor.model.middle;
 
-import com.zarbosoft.bonestruct.Path;
 import com.zarbosoft.bonestruct.editor.changes.Change;
+import com.zarbosoft.bonestruct.editor.model.Syntax;
+import com.zarbosoft.bonestruct.editor.model.pidgoon.Node;
 import com.zarbosoft.bonestruct.editor.visual.Context;
 import com.zarbosoft.interface1.Configuration;
 
@@ -11,6 +12,9 @@ import java.util.Set;
 
 @Configuration(name = "primitive")
 public class DataPrimitive extends DataElement {
+
+	@Configuration(optional = true, description = "An expression grammar describing valid primitive contents.")
+	public Node validation;
 
 	public abstract static class Listener {
 		public abstract void set(Context context, String value);
@@ -22,7 +26,6 @@ public class DataPrimitive extends DataElement {
 
 	public static class Value extends DataElement.Value {
 		public final DataPrimitive data;
-		public Parent parent = null;
 		private StringBuilder value = new StringBuilder();
 		private final Set<Listener> listeners = new HashSet<>();
 
@@ -48,18 +51,8 @@ public class DataPrimitive extends DataElement {
 		}
 
 		@Override
-		public void setParent(final Parent parent) {
-			this.parent = parent;
-		}
-
-		@Override
-		public Parent parent() {
-			return parent;
-		}
-
-		@Override
-		public Path getPath() {
-			return parent.node().type.getBackPart(data.id).getPath(parent.node().parent.getPath());
+		public DataElement data() {
+			return data;
 		}
 
 		public Change changeRemove(final int begin, final int length) {
@@ -89,7 +82,7 @@ public class DataPrimitive extends DataElement {
 	}
 
 	@Override
-	public DataElement.Value create() {
+	public DataElement.Value create(final Syntax syntax) {
 		return new Value(this, "");
 	}
 
@@ -188,12 +181,9 @@ public class DataPrimitive extends DataElement {
 
 		@Override
 		public boolean merge(final Change other) {
-			final ChangeRemove other2;
-			try {
-				other2 = (ChangeRemove) other;
-			} catch (final ClassCastException e) {
+			if (!(other instanceof ChangeRemove))
 				return false;
-			}
+			final ChangeRemove other2 = (ChangeRemove) other;
 			if (other2.data != data)
 				return false;
 			if (other2.index + other2.size < index)

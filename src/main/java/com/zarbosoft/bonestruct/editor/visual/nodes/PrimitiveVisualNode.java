@@ -773,11 +773,11 @@ public class PrimitiveVisualNode extends VisualNodePart {
 
 	public PrimitiveVisualNode(final Context context, final DataPrimitive.Value data, final Set<Tag> tags) {
 		super(HashTreePSet.from(tags).plus(new PartTag("primitive")));
-		this.data = data;
+		data.visual = this;
 		dataListener = new DataPrimitive.Listener() {
 			@Override
 			public void set(final Context context, final String newValue) {
-				destroy(context);
+				clear(context);
 				final Common.Mutable<Integer> offset = new Common.Mutable<>(0);
 				enumerate(Arrays.stream(newValue.split("\n", -1))).forEach(pair -> {
 					final Line line = new Line(true);
@@ -924,6 +924,7 @@ public class PrimitiveVisualNode extends VisualNodePart {
 		};
 		data.addListener(dataListener);
 		dataListener.set(context, data.get());
+		this.data = data;
 	}
 
 	@Override
@@ -961,14 +962,15 @@ public class PrimitiveVisualNode extends VisualNodePart {
 				.collect(Collectors.toList()));
 	}
 
-	private void destroy(final Context context) {
+	private void clear(final Context context) {
 		for (final Line line : lines)
 			line.destroy(context);
 		lines.clear();
 	}
 
 	@Override
-	public void destroyBricks(final Context context) {
-		destroy(context);
+	public void destroy(final Context context) {
+		data.visual = null;
+		clear(context);
 	}
 }

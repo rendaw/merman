@@ -2,7 +2,6 @@ package com.zarbosoft.bonestruct.editor.model;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
-import com.zarbosoft.bonestruct.DeadCode;
 import com.zarbosoft.bonestruct.editor.InvalidSyntax;
 import com.zarbosoft.bonestruct.editor.model.back.*;
 import com.zarbosoft.bonestruct.editor.model.front.FrontPart;
@@ -16,10 +15,11 @@ import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodeParent;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
 import com.zarbosoft.bonestruct.editor.visual.wall.Brick;
 import com.zarbosoft.interface1.Configuration;
-import com.zarbosoft.pidgoon.events.BakedOperator;
+import com.zarbosoft.pidgoon.events.Operator;
 import com.zarbosoft.pidgoon.events.Store;
 import com.zarbosoft.pidgoon.internal.Helper;
 import com.zarbosoft.pidgoon.nodes.Sequence;
+import com.zarbosoft.rendaw.common.DeadCode;
 import com.zarbosoft.rendaw.common.Pair;
 import org.pcollections.HashTreePSet;
 import org.pcollections.PSet;
@@ -46,6 +46,14 @@ public abstract class NodeType {
 
 	public abstract boolean frontAssociative();
 
+	public static class NodeBackParent extends BackPart.Parent {
+		public int index;
+
+		public NodeBackParent(final int index) {
+			this.index = index;
+		}
+	}
+
 	public void finish(final Syntax syntax, final Set<String> allTypes, final Set<String> scalarTypes) {
 		middle().forEach((k, v) -> {
 			v.id = k;
@@ -53,12 +61,17 @@ public abstract class NodeType {
 		});
 		{
 			final Set<String> middleUsedBack = new HashSet<>();
-			back().forEach(p -> p.finish(syntax, this, middleUsedBack));
+			enumerate(back().stream()).forEach(pair -> {
+				final Integer i = pair.first;
+				final BackPart p = pair.second;
+				p.finish(syntax, this, middleUsedBack);
+				p.parent = new NodeBackParent(i);
+			});
 			final Set<String> missing = Sets.difference(middle().keySet(), middleUsedBack);
 			if (!missing.isEmpty())
-				throw new InvalidSyntax(String.format("Data elements %s in %s are unused by back parts.",
-						this,
-						missing
+				throw new InvalidSyntax(String.format("Middle elements %s in %s are unused by back parts.",
+						missing,
+						id
 				));
 		}
 		{
@@ -66,18 +79,18 @@ public abstract class NodeType {
 			front().forEach(p -> p.finish(this, middleUsedFront));
 			final Set<String> missing = Sets.difference(middle().keySet(), middleUsedFront);
 			if (!missing.isEmpty())
-				throw new InvalidSyntax(String.format("Data elements %s in %s are unused by front parts.",
-						this,
-						missing
+				throw new InvalidSyntax(String.format("Middle elements %s in %s are unused by front parts.",
+						missing,
+						id
 				));
 		}
 	}
 
-	public com.zarbosoft.pidgoon.internal.Node buildBackRule(final Syntax syntax) {
+	public com.zarbosoft.pidgoon.Node buildBackRule(final Syntax syntax) {
 		final Sequence seq = new Sequence();
-		seq.add(new BakedOperator((store) -> store.pushStack(0)));
+		seq.add(new Operator((store) -> store.pushStack(0)));
 		back().forEach(p -> seq.add(p.buildBackRule(syntax, this)));
-		return new BakedOperator(seq, store -> {
+		return new Operator(seq, store -> {
 			final Map<String, DataElement.Value> data = new HashMap<>();
 			store = (Store) Helper.<Pair<String, DataElement.Value>>stackPopSingleList(store,
 					pair -> data.put(pair.first, pair.second)
@@ -283,8 +296,8 @@ public abstract class NodeType {
 		}
 
 		@Override
-		public void destroyBricks(final Context context) {
-			body.destroyBricks(context);
+		public void destroy(final Context context) {
+			body.destroy(context);
 		}
 
 		public NodeType getType() {
@@ -295,12 +308,12 @@ public abstract class NodeType {
 	private <D extends DataElement> D getData(final Class<? extends DataElement> type, final String id) {
 		final DataElement found = middle().get(id);
 		if (found == null) {
-			throw new InvalidSyntax(String.format("No data field named [%s] in %s", id, this));
+			throw new InvalidSyntax(String.format("No middle element [%s] in [%s]", id, this.id));
 		} else {
 			if (!type.isAssignableFrom(found.getClass()))
-				throw new InvalidSyntax(String.format("Conflicting types for data field %s in %s: %s, %s",
+				throw new InvalidSyntax(String.format("Conflicting types for middle element [%s] in [%s]: %s, %s",
 						id,
-						this,
+						this.id,
 						found.getClass(),
 						type
 				));
@@ -316,8 +329,8 @@ public abstract class NodeType {
 		return getData(DataNode.class, key);
 	}
 
-	public DataArray getDataArray(final String key) {
-		return getData(DataArray.class, key);
+	public DataArrayBase getDataArray(final String key) {
+		return getData(DataArrayBase.class, key);
 	}
 
 }

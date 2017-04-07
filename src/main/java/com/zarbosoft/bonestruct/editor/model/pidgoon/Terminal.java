@@ -6,7 +6,7 @@ import com.zarbosoft.pidgoon.events.Event;
 @Configuration(name = "terminal")
 public abstract class Terminal implements Node {
 	@Override
-	public com.zarbosoft.pidgoon.internal.Node build() {
+	public com.zarbosoft.pidgoon.Node build() {
 		return new com.zarbosoft.pidgoon.events.Terminal(getEvent());
 	}
 

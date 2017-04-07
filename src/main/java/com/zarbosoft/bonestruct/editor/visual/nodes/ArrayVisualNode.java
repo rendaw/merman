@@ -213,8 +213,8 @@ public abstract class ArrayVisualNode extends GroupVisualNode {
 				}
 
 				@Override
-				public void destroyBricks(final Context context) {
-					nodeVisual.destroyBricks(context);
+				public void destroy(final Context context) {
+					nodeVisual.destroy(context);
 				}
 			});
 			for (final FrontConstantPart fix : getSuffix())

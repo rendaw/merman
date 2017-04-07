@@ -4,6 +4,7 @@ import org.pcollections.PVector;
 import org.pcollections.TreePVector;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class Path {
@@ -47,5 +48,13 @@ public class Path {
 	@Override
 	public String toString() {
 		return segments.stream().map(s -> "/" + s).collect(Collectors.joining());
+	}
+
+	public List<String> toList() {
+		return segments;
+	}
+
+	public Path add(final Path path) {
+		return new Path(segments.plusAll(path.segments));
 	}
 }

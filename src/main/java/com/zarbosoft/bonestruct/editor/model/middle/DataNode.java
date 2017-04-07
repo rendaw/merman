@@ -4,6 +4,7 @@ import com.zarbosoft.bonestruct.Path;
 import com.zarbosoft.bonestruct.editor.InvalidSyntax;
 import com.zarbosoft.bonestruct.editor.changes.Change;
 import com.zarbosoft.bonestruct.editor.model.Node;
+import com.zarbosoft.bonestruct.editor.model.Syntax;
 import com.zarbosoft.bonestruct.editor.visual.Context;
 import com.zarbosoft.interface1.Configuration;
 
@@ -19,12 +20,10 @@ public class DataNode extends DataElement {
 
 	public static class Value extends DataElement.Value {
 		private final DataNode data;
-		public Parent parent = null;
 		private Node value = null;
 		private final Set<Listener> listeners = new HashSet<>();
 
 		private class NodeParent extends Node.Parent {
-
 			@Override
 			public void replace(final Context context, final Node node) {
 				context.history.apply(context, new ChangeSet(Value.this, node));
@@ -70,18 +69,9 @@ public class DataNode extends DataElement {
 			return value;
 		}
 
-		public void setParent(final Parent parent) {
-			this.parent = parent;
-		}
-
 		@Override
-		public Parent parent() {
-			return parent;
-		}
-
-		@Override
-		public Path getPath() {
-			return parent.node().type.getBackPart(data.id).getPath(parent.node().parent.getPath());
+		public DataElement data() {
+			return data;
 		}
 	}
 
@@ -139,7 +129,7 @@ public class DataNode extends DataElement {
 	}
 
 	@Override
-	public DataElement.Value create() {
-		return new Value(this, null);
+	public DataElement.Value create(final Syntax syntax) {
+		return new Value(this, syntax.gap.create());
 	}
 }

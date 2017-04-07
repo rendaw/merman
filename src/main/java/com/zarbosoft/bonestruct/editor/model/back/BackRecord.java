@@ -6,8 +6,8 @@ import com.zarbosoft.interface1.Configuration;
 import com.zarbosoft.luxem.read.source.LKeyEvent;
 import com.zarbosoft.luxem.read.source.LObjectCloseEvent;
 import com.zarbosoft.luxem.read.source.LObjectOpenEvent;
+import com.zarbosoft.pidgoon.Node;
 import com.zarbosoft.pidgoon.events.Terminal;
-import com.zarbosoft.pidgoon.internal.Node;
 import com.zarbosoft.pidgoon.nodes.Sequence;
 import com.zarbosoft.pidgoon.nodes.Set;
 
@@ -37,7 +37,7 @@ public class BackRecord extends BackPart {
 	public void finish(final Syntax syntax, final NodeType nodeType, final java.util.Set<String> middleUsed) {
 		pairs.forEach((k, v) -> {
 			v.finish(syntax, nodeType, middleUsed);
-			v.parent = new Parent() {
+			v.parent = new PartParent() {
 				@Override
 				public BackPart part() {
 					return BackRecord.this;

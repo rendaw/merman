@@ -1,11 +1,11 @@
 package com.zarbosoft.bonestruct.editor.model.front;
 
 import com.zarbosoft.bonestruct.editor.model.NodeType;
+import com.zarbosoft.bonestruct.editor.model.middle.DataArray;
 import com.zarbosoft.bonestruct.editor.model.middle.DataElement;
-import com.zarbosoft.bonestruct.editor.model.middle.DataNode;
 import com.zarbosoft.bonestruct.editor.model.pidgoon.Node;
 import com.zarbosoft.bonestruct.editor.visual.Context;
-import com.zarbosoft.bonestruct.editor.visual.nodes.NodeVisualNodePart;
+import com.zarbosoft.bonestruct.editor.visual.nodes.ArrayAsNodeVisualNodePart;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
 import com.zarbosoft.interface1.Configuration;
@@ -16,8 +16,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@Configuration(name = "node")
-public class FrontDataNode extends FrontPart {
+public class FrontDataArrayAsNode extends FrontPart {
 
 	@Override
 	public String middle() {
@@ -26,7 +25,7 @@ public class FrontDataNode extends FrontPart {
 
 	@Configuration
 	public String middle;
-	private DataNode dataType;
+	private DataArray dataType;
 
 	@Configuration(optional = true)
 	public Map<String, Node> hotkeys = new HashMap<>();
@@ -35,7 +34,7 @@ public class FrontDataNode extends FrontPart {
 	public VisualNodePart createVisual(
 			final Context context, final Map<String, DataElement.Value> data, final Set<VisualNode.Tag> tags
 	) {
-		return new NodeVisualNodePart(
+		return new ArrayAsNodeVisualNodePart(
 				context,
 				dataType.get(data),
 				HashTreePSet
@@ -48,11 +47,10 @@ public class FrontDataNode extends FrontPart {
 	@Override
 	public void finish(final NodeType nodeType, final Set<String> middleUsed) {
 		middleUsed.add(middle);
-		dataType = nodeType.getDataNode(middle);
+		dataType = (DataArray) nodeType.getDataArray(middle);
 	}
 
 	@Override
 	public void dispatch(final DispatchHandler handler) {
-		handler.handle(this);
 	}
 }

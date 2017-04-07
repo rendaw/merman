@@ -4,7 +4,7 @@ import com.zarbosoft.bonestruct.editor.model.NodeType;
 import com.zarbosoft.bonestruct.editor.model.Plugin;
 import com.zarbosoft.bonestruct.editor.visual.Context;
 import com.zarbosoft.bonestruct.editor.visual.nodes.ArrayVisualNode;
-import com.zarbosoft.bonestruct.editor.visual.nodes.NestedVisualNodePart;
+import com.zarbosoft.bonestruct.editor.visual.nodes.NodeVisualNodePart;
 import com.zarbosoft.bonestruct.editor.visual.nodes.PrimitiveVisualNode;
 import com.zarbosoft.interface1.Configuration;
 
@@ -43,7 +43,7 @@ public class HoverType extends Plugin {
 							temp = "array";
 						} else if (c == PrimitiveVisualNode.class) {
 							temp = "primitive";
-						} else if (c == NestedVisualNodePart.class) {
+						} else if (c == NodeVisualNodePart.class) {
 							temp = "nested";
 						} else
 							temp = c.getTypeName();

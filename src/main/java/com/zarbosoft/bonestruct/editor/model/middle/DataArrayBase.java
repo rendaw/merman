@@ -5,10 +5,10 @@ import com.zarbosoft.bonestruct.Path;
 import com.zarbosoft.bonestruct.editor.InvalidSyntax;
 import com.zarbosoft.bonestruct.editor.changes.Change;
 import com.zarbosoft.bonestruct.editor.model.Node;
+import com.zarbosoft.bonestruct.editor.model.Syntax;
 import com.zarbosoft.bonestruct.editor.visual.Context;
 import com.zarbosoft.interface1.Configuration;
 import com.zarbosoft.rendaw.common.Common;
-import org.pcollections.TreePVector;
 
 import java.util.*;
 
@@ -25,29 +25,11 @@ public abstract class DataArrayBase extends DataElement {
 
 	public static class Value extends DataElement.Value {
 		private final DataArrayBase data;
-		public Parent parent = null;
 		protected final List<Node> value = new ArrayList<>();
 		private final Set<Listener> listeners = new HashSet<>();
 
-		@Override
-		public void setParent(final Parent parent) {
-			this.parent = parent;
-		}
-
 		public DataElement data() {
 			return data;
-		}
-
-		@Override
-		public Parent parent() {
-			return parent;
-		}
-
-		@Override
-		public Path getPath() {
-			if (parent == null)
-				return new Path(TreePVector.empty());
-			return parent.node().type.getBackPart(data.id).getPath(parent.node().parent.getPath());
 		}
 
 		public class ArrayParent extends Node.Parent {
@@ -182,12 +164,9 @@ public abstract class DataArrayBase extends DataElement {
 
 		@Override
 		public boolean merge(final Change other) {
-			final ChangeRemove other2;
-			try {
-				other2 = (ChangeRemove) other;
-			} catch (final ClassCastException e) {
+			if (!(other instanceof ChangeRemove))
 				return false;
-			}
+			final ChangeRemove other2 = (ChangeRemove) other;
 			if (other2.data != data)
 				return false;
 			if (other2.index + other2.size < index)
@@ -225,12 +204,12 @@ public abstract class DataArrayBase extends DataElement {
 
 	@Override
 	public void finish(final Set<String> allTypes, final Set<String> scalarTypes) {
-		if (!allTypes.contains(type))
+		if (type != null && !allTypes.contains(type))
 			throw new InvalidSyntax(String.format("Unknown type [%s].", type));
 	}
 
 	@Override
-	public DataElement.Value create() {
+	public DataElement.Value create(final Syntax syntax) {
 		return new Value(this);
 	}
 

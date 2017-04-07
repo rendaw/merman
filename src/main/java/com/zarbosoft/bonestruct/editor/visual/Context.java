@@ -21,9 +21,9 @@ import com.zarbosoft.bonestruct.editor.visual.wall.Attachment;
 import com.zarbosoft.bonestruct.editor.visual.wall.Bedding;
 import com.zarbosoft.bonestruct.editor.visual.wall.Brick;
 import com.zarbosoft.bonestruct.editor.visual.wall.Wall;
-import com.zarbosoft.pidgoon.events.BakedOperator;
 import com.zarbosoft.pidgoon.events.EventStream;
 import com.zarbosoft.pidgoon.events.Grammar;
+import com.zarbosoft.pidgoon.events.Operator;
 import com.zarbosoft.pidgoon.nodes.Union;
 import javafx.animation.Interpolator;
 import javafx.animation.Transition;
@@ -167,19 +167,21 @@ public class Context {
 	public Object locate(final Path path) {
 		int pathIndex = -1;
 		final List<String> segments = ImmutableList.copyOf(path.segments);
+		// Either (value) or (node & part) are always set
 		DataElement.Value value = document.top;
 		com.zarbosoft.bonestruct.editor.model.Node node = null;
 		BackPart part = null;
-		while (true) {
+		for (int cycle = 0; cycle < 10000; ++cycle) {
 			if (part != null) {
 				// Process from either the root or a sublevel of a node
 				String middle = null;
 				while (true) {
-					final String segment = segments.get(++pathIndex);
-					final int tempPathIndex = pathIndex;
-					if (segment == null)
-						return node;
 					if (part instanceof BackArray) {
+						pathIndex += 1;
+						if (pathIndex == segments.size())
+							return node;
+						final String segment = segments.get(pathIndex);
+						final int tempPathIndex = pathIndex;
 						final int subIndex;
 						try {
 							subIndex = Integer.parseInt(segment);
@@ -197,6 +199,11 @@ public class Context {
 							));
 						part = arrayPart.elements.get(subIndex);
 					} else if (part instanceof BackRecord) {
+						pathIndex += 1;
+						if (pathIndex >= segments.size())
+							return node;
+						final String segment = segments.get(pathIndex);
+						final int tempPathIndex = pathIndex;
 						final BackRecord recordPart = ((BackRecord) part);
 						if (!recordPart.pairs.containsKey(segment))
 							throw new InvalidPath(String.format("Invalid key [%s] at [%s].",
@@ -219,22 +226,25 @@ public class Context {
 					} else if (part instanceof BackDataRecord) {
 						middle = ((BackDataRecord) part).middle;
 						break;
+					} else if (part instanceof BackType) {
+						part = ((BackType) part).child;
 					} else
 						return node;
 				}
-				value = node.data.get(middle);
+				value = node.data(middle);
 				part = null;
 				node = null;
 			} else {
 				// Start from a value
 				if (value instanceof DataArrayBase.Value) {
+					pathIndex += 1;
+					if (pathIndex == segments.size())
+						return value;
+					final int tempPathIndex = pathIndex;
+					final String segment = segments.get(pathIndex);
 					if (((DataArrayBase.Value) value).data() instanceof DataRecord) {
-						final String segment = segments.get(++pathIndex);
-						if (segment == null)
-							return null;
-						final int tempPathIndex = pathIndex;
 						node = ((DataArrayBase.Value) value).get().stream().filter(child -> (
-								(DataRecordKey.Value) child.data.get((
+								(DataRecordKey.Value) child.data((
 										(BackDataKey) child.type.back().get(0)
 								).middle)
 						).get().equals(segment)).findFirst().orElseThrow(() -> new InvalidPath(String.format(
@@ -242,12 +252,8 @@ public class Context {
 								segment,
 								new Path(TreePVector.from(segments.subList(0, tempPathIndex)))
 						)));
-						part = (BackDataNode) node.type.back().get(1);
+						part = node.type.back().get(1);
 					} else if (((DataArrayBase.Value) value).data() instanceof DataArray) {
-
-						final String segment = segments.get(++pathIndex);
-						if (segment == null)
-							return null;
 						final int index;
 						try {
 							index = Integer.parseInt(segment);
@@ -257,22 +263,22 @@ public class Context {
 									new Path(TreePVector.from(segments.subList(0, pathIndex)))
 							));
 						}
-						final int tempPathIndex = pathIndex;
 						node = ((DataArrayBase.Value) value).get().stream().filter(child -> (
 								((DataArrayBase.Value.ArrayParent) child.parent).actualIndex <= index
-						)).findFirst().orElseThrow(() -> new InvalidPath(String.format("Invalid index %d at [%s].",
+						)).reduce((a, b) -> b).orElseThrow(() -> new InvalidPath(String.format(
+								"Invalid index %d at [%s].",
 								index,
 								new Path(TreePVector.from(segments.subList(0, tempPathIndex)))
 						)));
 						part = node.type
 								.back()
-								.get(((DataArrayBase.Value.ArrayParent) node.parent).actualIndex - index);
+								.get(index - ((DataArrayBase.Value.ArrayParent) node.parent).actualIndex);
 					}
 				} else if (value instanceof DataNode.Value) {
 					node = ((DataNode.Value) value).get();
 					part = node.type.back().get(0);
 				} else if (value instanceof DataPrimitive.Value) {
-					if (!segments.isEmpty())
+					if (segments.size() > pathIndex + 1)
 						throw new InvalidPath(String.format("Path continues but data ends at primitive [%s].",
 								new Path(TreePVector.from(segments.subList(0, pathIndex)))
 						));
@@ -281,6 +287,7 @@ public class Context {
 				value = null;
 			}
 		}
+		throw new AssertionError("Path locate did not complete in a reasonable number of iterations.");
 	}
 
 	public static class Banner {
@@ -581,7 +588,7 @@ public class Context {
 				if (hotkeyEntries == null)
 					continue;
 				for (final com.zarbosoft.bonestruct.editor.model.pidgoon.Node hotkey : hotkeyEntries) {
-					union.add(new BakedOperator(hotkey.build(), store -> store.pushStack(action)));
+					union.add(new Operator(hotkey.build(), store -> store.pushStack(action)));
 				}
 			}
 			hotkeyGrammar.add("root", union);

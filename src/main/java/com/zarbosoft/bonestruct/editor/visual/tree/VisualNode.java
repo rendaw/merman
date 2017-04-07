@@ -64,7 +64,7 @@ public abstract class VisualNode {
 
 	public abstract void rootAlignments(Context context, Map<String, Alignment> alignments);
 
-	public abstract void destroyBricks(Context context);
+	public abstract void destroy(Context context);
 
 	@Configuration
 	public interface Tag {

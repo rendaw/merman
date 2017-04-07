@@ -4,7 +4,9 @@ import com.zarbosoft.bonestruct.Path;
 import com.zarbosoft.bonestruct.editor.model.NodeType;
 import com.zarbosoft.bonestruct.editor.model.Syntax;
 import com.zarbosoft.interface1.Configuration;
-import com.zarbosoft.pidgoon.internal.Node;
+import com.zarbosoft.pidgoon.Node;
+import com.zarbosoft.rendaw.common.DeadCode;
+import com.zarbosoft.rendaw.common.Pair;
 
 import java.util.Set;
 
@@ -12,18 +14,26 @@ import java.util.Set;
 public abstract class BackPart {
 	public abstract Node buildBackRule(Syntax syntax, NodeType nodeType);
 
-	protected Parent parent = null;
+	public Parent parent = null;
 
 	public void finish(final Syntax syntax, final NodeType nodeType, final Set<String> middleUsed) {
 	}
 
-	final public Path getPath(final Path basis) {
-		if (parent.part() == null)
-			return basis.add(parent.pathSection());
-		return parent.part().getPath(basis).add(parent.pathSection());
+	final public Pair<Integer, Path> getSubpath() {
+		if (parent instanceof NodeType.NodeBackParent)
+			return new Pair<>(((NodeType.NodeBackParent) parent).index, new Path());
+		else if (parent instanceof PartParent) {
+			final Pair<Integer, Path> base = ((PartParent) parent).part().getSubpath();
+			return new Pair<>(base.first, base.second.add(((PartParent) parent).pathSection()));
+		} else
+			throw new DeadCode();
 	}
 
-	abstract class Parent {
+	public abstract static class Parent {
+
+	}
+
+	public abstract static class PartParent extends Parent {
 		public abstract BackPart part();
 
 		public abstract String pathSection();

@@ -6,11 +6,11 @@ import com.zarbosoft.bonestruct.editor.model.middle.DataArray;
 import com.zarbosoft.interface1.Configuration;
 import com.zarbosoft.luxem.read.source.LArrayCloseEvent;
 import com.zarbosoft.luxem.read.source.LArrayOpenEvent;
-import com.zarbosoft.pidgoon.events.BakedOperator;
+import com.zarbosoft.pidgoon.Node;
+import com.zarbosoft.pidgoon.events.Operator;
 import com.zarbosoft.pidgoon.events.Store;
 import com.zarbosoft.pidgoon.events.Terminal;
 import com.zarbosoft.pidgoon.internal.Helper;
-import com.zarbosoft.pidgoon.internal.Node;
 import com.zarbosoft.pidgoon.nodes.Reference;
 import com.zarbosoft.pidgoon.nodes.Repeat;
 import com.zarbosoft.pidgoon.nodes.Sequence;
@@ -30,12 +30,12 @@ public class BackDataArray extends BackPart {
 	public Node buildBackRule(final Syntax syntax, final NodeType nodeType) {
 		final Sequence sequence;
 		sequence = new Sequence();
-		sequence.add(new BakedOperator(new Terminal(new LArrayOpenEvent()), (store) -> store.pushStack(0)));
-		sequence.add(new Repeat(new BakedOperator(new Reference(nodeType.getDataArray(middle).type),
+		sequence.add(new Operator(new Terminal(new LArrayOpenEvent()), (store) -> store.pushStack(0)));
+		sequence.add(new Repeat(new Operator(new Reference(nodeType.getDataArray(middle).type),
 				(store) -> com.zarbosoft.pidgoon.internal.Helper.stackSingleElement(store)
 		)));
 		sequence.add(new Terminal(new LArrayCloseEvent()));
-		return new BakedOperator(sequence, (store) -> {
+		return new Operator(sequence, (store) -> {
 			final List<com.zarbosoft.bonestruct.editor.model.Node> temp = new ArrayList<>();
 			store =
 					(Store) com.zarbosoft.pidgoon.internal.Helper.<com.zarbosoft.bonestruct.editor.model.Node>stackPopSingleList(
