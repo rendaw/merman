@@ -77,4 +77,10 @@ public class FreeNodeType extends NodeType {
 	public String name() {
 		return name;
 	}
+
+	public Node create(final Syntax syntax) {
+		final Map<String, DataElement.Value> data = new HashMap<>();
+		middle.entrySet().stream().forEach(e -> data.put(e.getKey(), e.getValue().create(syntax)));
+		return new Node(this, data);
+	}
 }

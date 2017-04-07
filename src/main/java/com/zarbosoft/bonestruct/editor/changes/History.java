@@ -79,7 +79,7 @@ public class History {
 				past.addLast(new ArrayList<>());
 			final Change reverse = change.apply(context);
 			final List<Change> subchanges = past.peekLast();
-			if (subchanges.isEmpty() || !last(subchanges).merge(change))
+			if (subchanges.isEmpty() || !last(subchanges).merge(reverse))
 				subchanges.add(reverse);
 			for (final Listener listener : ImmutableList.copyOf(listeners))
 				listener.applied(context, change);

@@ -2,6 +2,7 @@ package com.zarbosoft.bonestruct.editor.visual.nodes;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.zarbosoft.bonestruct.editor.model.FreeNodeType;
 import com.zarbosoft.bonestruct.editor.model.Hotkeys;
 import com.zarbosoft.bonestruct.editor.model.Node;
 import com.zarbosoft.bonestruct.editor.model.NodeType;
@@ -24,6 +25,7 @@ import org.pcollections.PSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.zarbosoft.rendaw.common.Common.enumerate;
 import static com.zarbosoft.rendaw.common.Common.last;
@@ -50,12 +52,28 @@ public abstract class ArrayVisualNode extends GroupVisualNode {
 		};
 		data.addListener(dataListener);
 		add(context, 0, data.get());
+		data.visual = this;
+	}
+
+	@Override
+	public void destroy(final Context context) {
+		data.visual = null;
+		super.destroy(context);
 	}
 
 	@Override
 	public boolean select(final Context context) {
-		if (children.isEmpty())
-			return false;
+		if (children.isEmpty()) {
+			final List<FreeNodeType> childTypes =
+					context.syntax.getLeafTypes(((DataArrayBase) data.data()).type).collect(Collectors.toList());
+			final Node element;
+			if (childTypes.size() == 1) {
+				element = childTypes.get(0).create(context.syntax);
+			} else {
+				element = context.syntax.gap.create();
+			}
+			context.history.apply(context, new DataArrayBase.ChangeAdd(data, 0, ImmutableList.of(element)));
+		}
 		((ArrayVisualNodeParent) children.get(0).parent()).selectDown(context);
 		return true;
 	}

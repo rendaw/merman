@@ -9,6 +9,7 @@ import com.zarbosoft.bonestruct.editor.model.back.BackType;
 import com.zarbosoft.bonestruct.editor.model.front.FrontConstantPart;
 import com.zarbosoft.bonestruct.editor.model.front.FrontGapBase;
 import com.zarbosoft.bonestruct.editor.model.front.FrontPart;
+import com.zarbosoft.bonestruct.editor.model.middle.DataArrayBase;
 import com.zarbosoft.bonestruct.editor.model.middle.DataElement;
 import com.zarbosoft.bonestruct.editor.model.middle.DataPrimitive;
 import com.zarbosoft.bonestruct.editor.visual.AlignmentDefinition;
@@ -133,6 +134,20 @@ public class GapNodeType extends NodeType {
 							choice.choose(context, string);
 							return;
 						}
+					}
+				}
+
+				@Override
+				protected void deselect(
+						final Context context, final Node self, final String string, final Common.UserData userData
+				) {
+					if (!string.isEmpty())
+						return;
+					if (self.parent == null)
+						return;
+					final DataElement.Value parentValue = self.parent.data();
+					if (parentValue instanceof DataArrayBase.Value) {
+						self.parent.delete(context);
 					}
 				}
 			};

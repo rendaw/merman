@@ -94,8 +94,16 @@ public abstract class FrontGapBase extends FrontPart {
 				super.receiveText(context, text);
 				process(context, self.parent.node(), self.get(), userData);
 			}
+
+			@Override
+			public void clear(final Context context) {
+				super.clear(context);
+				deselect(context, self.parent.node(), self.get(), userData);
+			}
 		}
 	}
+
+	protected abstract void deselect(Context context, Node self, String string, Common.UserData userData);
 
 	public DataPrimitive.Value findSelectNext(
 			final com.zarbosoft.bonestruct.editor.model.Node node, boolean skipFirstNode

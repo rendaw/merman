@@ -4,6 +4,7 @@ import com.zarbosoft.bonestruct.Path;
 import com.zarbosoft.bonestruct.editor.model.middle.DataElement;
 import com.zarbosoft.bonestruct.editor.visual.Context;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
+import com.zarbosoft.rendaw.common.DeadCode;
 
 import java.util.Map;
 import java.util.Set;
@@ -52,6 +53,15 @@ public class Node {
 		 */
 		public abstract void replace(Context context, Node node);
 
+		/**
+		 * Remove the element if an array.  (Creates history)
+		 *
+		 * @param context
+		 */
+		public void delete(final Context context) {
+			throw new DeadCode();
+		}
+
 		public abstract String childType();
 
 		public abstract DataElement.Value data();
@@ -59,6 +69,7 @@ public class Node {
 		public abstract String id();
 
 		public abstract Path getPath();
+
 	}
 
 	public VisualNode createVisual(final Context context) {

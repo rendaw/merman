@@ -277,6 +277,15 @@ public class SuffixGapNodeType extends NodeType {
 						}
 					}
 				}
+
+				@Override
+				protected void deselect(
+						final Context context, final Node self, final String string, final Common.UserData userData
+				) {
+					if (string.isEmpty()) {
+						self.parent.replace(context, ((DataArray.Value) self.data("value")).get().get(0));
+					}
+				}
 			};
 			front = ImmutableList.copyOf(Iterables.concat(frontPrefix,
 					ImmutableList.of(gap),

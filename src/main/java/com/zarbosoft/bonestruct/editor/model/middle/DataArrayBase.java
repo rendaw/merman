@@ -44,6 +44,11 @@ public abstract class DataArrayBase extends DataElement {
 			}
 
 			@Override
+			public void delete(final Context context) {
+				context.history.apply(context, new ChangeRemove(Value.this, index, 1));
+			}
+
+			@Override
 			public String childType() {
 				return data.type;
 			}

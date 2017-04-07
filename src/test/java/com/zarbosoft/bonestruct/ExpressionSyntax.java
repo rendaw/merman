@@ -12,6 +12,7 @@ public class ExpressionSyntax {
 	final static FreeNodeType multiply;
 	final static FreeNodeType divide;
 	final static FreeNodeType subscript;
+	final static FreeNodeType inclusiveRange;
 	final static Syntax syntax;
 
 	static {
@@ -89,6 +90,21 @@ public class ExpressionSyntax {
 				.precedence(0)
 				.autoComplete(99)
 				.build();
+		inclusiveRange = new Builders.TypeBuilder("inclusiveRange")
+				.middleNode("first", "any")
+				.middleNode("second", "any")
+				.back(new Builders.BackRecordBuilder()
+						.add("first", buildBackDataNode("first"))
+						.add("second", buildBackDataNode("second"))
+						.build())
+				.frontMark("[")
+				.frontDataNode("first")
+				.frontMark(", ")
+				.frontDataNode("second")
+				.frontMark("]")
+				.precedence(50)
+				.autoComplete(99)
+				.build();
 		syntax = new Builders.SyntaxBuilder("any")
 				.type(infinity)
 				.type(plus)
@@ -96,6 +112,7 @@ public class ExpressionSyntax {
 				.type(multiply)
 				.type(divide)
 				.type(subscript)
+				.type(inclusiveRange)
 				.group("name", new Builders.GroupBuilder().type(infinity).type(subscript).build())
 				.group(
 						"any",
@@ -105,6 +122,7 @@ public class ExpressionSyntax {
 								.type(multiply)
 								.type(divide)
 								.group("name")
+								.type(inclusiveRange)
 								.build()
 				)
 				.build();

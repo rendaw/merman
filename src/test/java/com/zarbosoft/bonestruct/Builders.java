@@ -417,15 +417,16 @@ public class Builders {
 	}
 
 	public static void assertTreeEqual(
-			final Context context, final Builders.TreeBuilder expected, final DataElement.Value got
+			final Context context, final Node expected, final DataElement.Value got
 	) {
-		assertTreeEqual(new DataArrayBase.Value(context.syntax.root, ImmutableList.of(expected.build())), got);
+		assertTreeEqual(new DataArrayBase.Value(context.syntax.root, ImmutableList.of(expected)), got);
 	}
 
 	public static Context buildDoc(final Syntax syntax, final Node... root) {
 		final Document doc = syntax.create();
 		final Context context = new Context(syntax, doc, null, null, null, new History());
 		context.history.apply(context, new DataArrayBase.ChangeAdd(doc.top, 0, Arrays.asList(root)));
+		context.history.finishChange();
 		final VisualNodePart visual =
 				syntax.rootFront.createVisual(context, ImmutableMap.of("value", doc.top), ImmutableSet.of());
 		visual.select(context);
