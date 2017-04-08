@@ -761,14 +761,12 @@ public class PrimitiveVisualNode extends VisualNodePart {
 	List<Line> lines = new ArrayList<>();
 
 	private int findContaining(final int offset) {
-		final Optional<Integer> found = lines
+		return lines
 				.stream()
 				.filter(line -> line.offset + line.text.length() >= offset)
 				.map(line -> line.index)
-				.findFirst();
-		if (found.isPresent())
-			return found.get();
-		return lines.size();
+				.findFirst()
+				.orElseGet(() -> lines.size());
 	}
 
 	public PrimitiveVisualNode(final Context context, final DataPrimitive.Value data, final Set<Tag> tags) {
@@ -970,6 +968,7 @@ public class PrimitiveVisualNode extends VisualNodePart {
 
 	@Override
 	public void destroy(final Context context) {
+		data.removeListener(dataListener);
 		data.visual = null;
 		clear(context);
 	}

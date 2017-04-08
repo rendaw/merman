@@ -170,23 +170,22 @@ public class SuffixGapNodeType extends NodeType {
 									root = context.syntax.suffixGap.create(true, node);
 									selectNext = (DataPrimitive.Value) root.data("gap");
 								} else {
-									final Node gap = context.syntax.gap.create();
 									final DataElement.Value nextNode =
 											node.data(type.front.get(key.indexAfter).middle());
-									if (nextNode instanceof DataNode.Value)
-										context.history.apply(context,
-												new DataNode.ChangeSet((DataNode.Value) nextNode, gap)
-										);
-									else if (nextNode instanceof DataArrayBase.Value)
+									if (nextNode instanceof DataNode.Value) {
+										selectNext =
+												(DataPrimitive.Value) ((DataNode.Value) nextNode).get().data("gap");
+									} else if (nextNode instanceof DataArrayBase.Value) {
+										final Node gap = context.syntax.gap.create();
 										context.history.apply(context,
 												new DataArrayBase.ChangeAdd((DataArrayBase.Value) nextNode,
 														0,
 														ImmutableList.of(gap)
 												)
 										);
-									else
+										selectNext = (DataPrimitive.Value) gap.data("gap");
+									} else
 										throw new DeadCode();
-									selectNext = (DataPrimitive.Value) gap.data("gap");
 								}
 							} else if (parsed.nextInput instanceof FrontDataPrimitive) {
 								selectNext = (DataPrimitive.Value) node.data(parsed.nextInput.middle());

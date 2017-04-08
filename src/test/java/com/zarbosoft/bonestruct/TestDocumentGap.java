@@ -6,12 +6,14 @@ import com.google.common.collect.ImmutableSet;
 import com.zarbosoft.bonestruct.editor.changes.History;
 import com.zarbosoft.bonestruct.editor.model.Document;
 import com.zarbosoft.bonestruct.editor.model.Node;
+import com.zarbosoft.bonestruct.editor.model.Syntax;
 import com.zarbosoft.bonestruct.editor.model.middle.DataArrayBase;
 import com.zarbosoft.bonestruct.editor.model.middle.DataPrimitive;
 import com.zarbosoft.bonestruct.editor.visual.Context;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
 import org.junit.Test;
 
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static com.zarbosoft.bonestruct.Builders.*;
@@ -29,6 +31,18 @@ public class TestDocumentGap {
 				MiscSyntax.syntax.rootFront.createVisual(context, ImmutableMap.of("value", doc.top), ImmutableSet.of());
 		gap.getVisual().select(context);
 		return context;
+	}
+
+	private void innerTestTransform(
+			final Syntax syntax, final Node start, final Consumer<Context> transform, final Node end
+	) {
+		final Context context = buildDoc(syntax, start);
+		transform.accept(context);
+		assertTreeEqual(context, end, context.document.top);
+		context.history.undo(context);
+		assertTreeEqual(context, start, context.document.top);
+		context.history.redo(context);
+		assertTreeEqual(context, end, context.document.top);
 	}
 
 	@Test
@@ -121,62 +135,63 @@ public class TestDocumentGap {
 
 	// ========================================================================
 	// Suffix
+
 	@Test
 	public void suffixContinueInside() {
-		final Node start = MiscSyntax.syntax.suffixGap.create(true, new Builders.TreeBuilder(MiscSyntax.one).build());
-		final Context context = buildDoc(MiscSyntax.syntax, start);
-		context.document.top.get().get(0).getVisual().select(context);
-		context.selection.receiveText(context, "?");
-		context.selection.receiveText(context, "e");
-		assertTreeEqual(context, new Builders.TreeBuilder(MiscSyntax.syntax.suffixGap).addArray("value",
-				ImmutableList.of(new Builders.TreeBuilder(MiscSyntax.waddle)
-						.add("first", new Builders.TreeBuilder(MiscSyntax.one))
-						.build())
-		).add("gap", "e").build(), context.document.top);
-		context.history.undo(context);
-		assertTreeEqual(context, start, context.document.top);
+		innerTestTransform(MiscSyntax.syntax,
+				MiscSyntax.syntax.suffixGap.create(true, new Builders.TreeBuilder(MiscSyntax.one).build()),
+				context -> {
+					context.document.top.get().get(0).getVisual().select(context);
+					context.selection.receiveText(context, "?");
+					context.selection.receiveText(context, "e");
+				},
+				new Builders.TreeBuilder(MiscSyntax.syntax.suffixGap).addArray("value",
+						ImmutableList.of(new Builders.TreeBuilder(MiscSyntax.waddle)
+								.add("first", new Builders.TreeBuilder(MiscSyntax.one))
+								.build())
+				).add("gap", "e").build()
+		);
 	}
 
 	// ========================================================================
 	// Prefix
 	@Test
 	public void prefixContinue() {
-		final Node start = new Builders.TreeBuilder(MiscSyntax.syntax.prefixGap)
-				.add("gap", "")
-				.addArray("value", new Builders.TreeBuilder(MiscSyntax.one).build())
-				.build();
-		final Context context = buildDoc(MiscSyntax.syntax, start);
-		((DataPrimitive.Value) context.locate(new Path("0", "gap"))).getVisual().select(context);
-		context.selection.receiveText(context, "x");
-		context.selection.receiveText(context, "13");
-		assertTreeEqual(context,
+		innerTestTransform(MiscSyntax.syntax,
+				new Builders.TreeBuilder(MiscSyntax.syntax.prefixGap)
+						.add("gap", "")
+						.addArray("value", new Builders.TreeBuilder(MiscSyntax.one).build())
+						.build(),
+				context -> {
+					((DataPrimitive.Value) context.locate(new Path("0", "gap"))).getVisual().select(context);
+					context.selection.receiveText(context, "x");
+					context.selection.receiveText(context, "13");
+				},
 				new Builders.TreeBuilder(MiscSyntax.multiplier)
 						.add("value", new Builders.TreeBuilder(MiscSyntax.one))
 						.add("text", "13")
-						.build(),
-				context.document.top
+						.build()
 		);
-		context.history.undo(context);
-		assertTreeEqual(context, start, context.document.top);
 	}
 
 	@Test
 	public void prefixContinueWrap() {
-		final Node start = new Builders.TreeBuilder(MiscSyntax.syntax.prefixGap)
-				.add("gap", "")
-				.addArray("value", new Builders.TreeBuilder(MiscSyntax.one).build())
-				.build();
-		final Context context = buildDoc(MiscSyntax.syntax, start);
-		((DataPrimitive.Value) context.locate(new Path("0", "gap"))).getVisual().select(context);
-		context.selection.receiveText(context, "#");
-		context.selection.receiveText(context, "e");
-		assertTreeEqual(context, new Builders.TreeBuilder(MiscSyntax.snooze).add("value",
-				new Builders.TreeBuilder(context.syntax.prefixGap)
-						.add("gap", "e")
+		innerTestTransform(MiscSyntax.syntax,
+				new Builders.TreeBuilder(MiscSyntax.syntax.prefixGap)
+						.add("gap", "")
 						.addArray("value", new Builders.TreeBuilder(MiscSyntax.one).build())
-		).build(), context.document.top);
-		context.history.undo(context);
-		assertTreeEqual(context, start, context.document.top);
+						.build(),
+				context -> {
+					((DataPrimitive.Value) context.locate(new Path("0", "gap"))).getVisual().select(context);
+					context.selection.receiveText(context, "#");
+					context.selection.receiveText(context, "e");
+				},
+				new Builders.TreeBuilder(MiscSyntax.snooze).add("value",
+						new Builders.TreeBuilder(MiscSyntax.syntax.prefixGap)
+								.add("gap", "e")
+								.addArray("value", new Builders.TreeBuilder(MiscSyntax.one).build())
+				).build()
+		);
 	}
 
 	// ========================================================================
@@ -184,152 +199,149 @@ public class TestDocumentGap {
 
 	@Test
 	public void testRaisePrecedenceLower() {
-		final Node start = new Builders.TreeBuilder(ExpressionSyntax.plus)
-				.add("first", new Builders.TreeBuilder(ExpressionSyntax.infinity))
-				.add("second",
-						ExpressionSyntax.syntax.suffixGap.create(true,
-								new Builders.TreeBuilder(ExpressionSyntax.infinity).build()
+		innerTestTransform(ExpressionSyntax.syntax,
+				new Builders.TreeBuilder(ExpressionSyntax.plus)
+						.add("first", new Builders.TreeBuilder(ExpressionSyntax.infinity))
+						.add("second",
+								ExpressionSyntax.syntax.suffixGap.create(true,
+										new Builders.TreeBuilder(ExpressionSyntax.infinity).build()
+								)
 						)
-				)
-				.build();
-		final Context context = buildDoc(ExpressionSyntax.syntax, start);
-		((DataPrimitive.Value) context.locate(new Path("0", "second", "gap"))).getVisual().select(context);
-		context.selection.receiveText(context, "*");
-		assertTreeEqual(context,
+						.build(),
+				context -> {
+					((DataPrimitive.Value) context.locate(new Path("0", "second", "gap"))).getVisual().select(context);
+					context.selection.receiveText(context, "*");
+				},
 				new Builders.TreeBuilder(ExpressionSyntax.plus)
 						.add("first", new Builders.TreeBuilder(ExpressionSyntax.infinity))
 						.add("second",
 								new Builders.TreeBuilder(ExpressionSyntax.multiply)
 										.add("first", new Builders.TreeBuilder(ExpressionSyntax.infinity))
-										.add("second", context.syntax.gap.create())
+										.add("second", ExpressionSyntax.syntax.gap.create())
 						)
-						.build(),
-				context.document.top
+						.build()
 		);
-		context.history.undo(context);
-		assertTreeEqual(context, start, context.document.top);
 	}
 
 	@Test
 	public void testRaisePrecedenceEqualAfter() {
-		final Node start = new Builders.TreeBuilder(ExpressionSyntax.plus)
-				.add("first", new Builders.TreeBuilder(ExpressionSyntax.infinity))
-				.add("second",
-						ExpressionSyntax.syntax.suffixGap.create(true,
-								new Builders.TreeBuilder(ExpressionSyntax.infinity).build()
+		innerTestTransform(ExpressionSyntax.syntax,
+				new Builders.TreeBuilder(ExpressionSyntax.plus)
+						.add("first", new Builders.TreeBuilder(ExpressionSyntax.infinity))
+						.add("second",
+								ExpressionSyntax.syntax.suffixGap.create(true,
+										new Builders.TreeBuilder(ExpressionSyntax.infinity).build()
+								)
 						)
-				)
-				.build();
-		final Context context = buildDoc(ExpressionSyntax.syntax, start);
-		((DataPrimitive.Value) context.locate(new Path("0", "second", "gap"))).getVisual().select(context);
-		context.selection.receiveText(context, "+");
-		assertTreeEqual(context,
+						.build(),
+				context -> {
+					((DataPrimitive.Value) context.locate(new Path("0", "second", "gap"))).getVisual().select(context);
+					context.selection.receiveText(context, "+");
+				},
 				new Builders.TreeBuilder(ExpressionSyntax.plus)
 						.add("first", new Builders.TreeBuilder(ExpressionSyntax.infinity))
 						.add("second",
 								new Builders.TreeBuilder(ExpressionSyntax.plus)
 										.add("first", new Builders.TreeBuilder(ExpressionSyntax.infinity))
-										.add("second", context.syntax.gap.create())
+										.add("second", ExpressionSyntax.syntax.gap.create())
 						)
-						.build(),
-				context.document.top
+						.build()
 		);
-		context.history.undo(context);
-		assertTreeEqual(context, start, context.document.top);
 	}
 
 	@Test
 	public void testRaisePrecedenceEqualBefore() {
-		final Node start = new Builders.TreeBuilder(ExpressionSyntax.minus)
-				.add("first", new Builders.TreeBuilder(ExpressionSyntax.infinity))
-				.add("second",
-						ExpressionSyntax.syntax.suffixGap.create(true,
-								new Builders.TreeBuilder(ExpressionSyntax.infinity).build()
-						)
-				)
-				.build();
-		final Context context = buildDoc(ExpressionSyntax.syntax, start);
-		((DataPrimitive.Value) context.locate(new Path("0", "second", "gap"))).getVisual().select(context);
-		context.selection.receiveText(context, "-");
-		assertTreeEqual(context, new Builders.TreeBuilder(ExpressionSyntax.minus).add("first",
+		innerTestTransform(ExpressionSyntax.syntax,
 				new Builders.TreeBuilder(ExpressionSyntax.minus)
 						.add("first", new Builders.TreeBuilder(ExpressionSyntax.infinity))
-						.add("second", new Builders.TreeBuilder(ExpressionSyntax.infinity))
-		).add("second", context.syntax.gap.create()).build(), context.document.top);
-		context.history.undo(context);
-		assertTreeEqual(context, start, context.document.top);
+						.add("second",
+								ExpressionSyntax.syntax.suffixGap.create(true,
+										new Builders.TreeBuilder(ExpressionSyntax.infinity).build()
+								)
+						)
+						.build(),
+				context -> {
+					((DataPrimitive.Value) context.locate(new Path("0", "second", "gap"))).getVisual().select(context);
+					context.selection.receiveText(context, "-");
+				},
+				new Builders.TreeBuilder(ExpressionSyntax.minus).add("first",
+						new Builders.TreeBuilder(ExpressionSyntax.minus)
+								.add("first", new Builders.TreeBuilder(ExpressionSyntax.infinity))
+								.add("second", new Builders.TreeBuilder(ExpressionSyntax.infinity))
+				).add("second", ExpressionSyntax.syntax.gap.create()).build()
+		);
 	}
 
 	@Test
 	public void testRaisePrecedenceGreater() {
-		final Node start = new Builders.TreeBuilder(ExpressionSyntax.multiply)
-				.add("first", new Builders.TreeBuilder(ExpressionSyntax.infinity))
-				.add("second",
-						ExpressionSyntax.syntax.suffixGap.create(true,
-								new Builders.TreeBuilder(ExpressionSyntax.infinity).build()
-						)
-				)
-				.build();
-		final Context context = buildDoc(ExpressionSyntax.syntax, start);
-		((DataPrimitive.Value) context.locate(new Path("0", "second", "gap"))).getVisual().select(context);
-		context.selection.receiveText(context, "+");
-		assertTreeEqual(context, new Builders.TreeBuilder(ExpressionSyntax.plus).add("first",
+		innerTestTransform(ExpressionSyntax.syntax,
 				new Builders.TreeBuilder(ExpressionSyntax.multiply)
 						.add("first", new Builders.TreeBuilder(ExpressionSyntax.infinity))
-						.add("second", new Builders.TreeBuilder(ExpressionSyntax.infinity))
-		).add("second", context.syntax.gap.create()).build(), context.document.top);
-		context.history.undo(context);
-		assertTreeEqual(context, start, context.document.top);
+						.add("second",
+								ExpressionSyntax.syntax.suffixGap.create(true,
+										new Builders.TreeBuilder(ExpressionSyntax.infinity).build()
+								)
+						)
+						.build(),
+				context -> {
+					((DataPrimitive.Value) context.locate(new Path("0", "second", "gap"))).getVisual().select(context);
+					context.selection.receiveText(context, "+");
+				},
+				new Builders.TreeBuilder(ExpressionSyntax.plus).add("first",
+						new Builders.TreeBuilder(ExpressionSyntax.multiply)
+								.add("first", new Builders.TreeBuilder(ExpressionSyntax.infinity))
+								.add("second", new Builders.TreeBuilder(ExpressionSyntax.infinity))
+				).add("second", ExpressionSyntax.syntax.gap.create()).build()
+		);
 	}
 
 	@Test
 	public void testRaiseSkipDissimilar() {
-		final Node start = new Builders.TreeBuilder(ExpressionSyntax.subscript)
-				.add("first", new Builders.TreeBuilder(ExpressionSyntax.infinity))
-				.add("second",
-						ExpressionSyntax.syntax.suffixGap.create(true,
-								new Builders.TreeBuilder(ExpressionSyntax.infinity).build()
-						)
-				)
-				.build();
-		final Context context = buildDoc(ExpressionSyntax.syntax, start);
-		((DataPrimitive.Value) context.locate(new Path("0", "second", "gap"))).getVisual().select(context);
-		context.selection.receiveText(context, "+");
-		assertTreeEqual(context, new Builders.TreeBuilder(ExpressionSyntax.plus).add("first",
+		innerTestTransform(ExpressionSyntax.syntax,
 				new Builders.TreeBuilder(ExpressionSyntax.subscript)
 						.add("first", new Builders.TreeBuilder(ExpressionSyntax.infinity))
-						.add("second", new Builders.TreeBuilder(ExpressionSyntax.infinity))
-		).add("second", context.syntax.gap.create()).build(), context.document.top);
-		context.history.undo(context);
-		assertTreeEqual(context, start, context.document.top);
+						.add("second",
+								ExpressionSyntax.syntax.suffixGap.create(true,
+										new Builders.TreeBuilder(ExpressionSyntax.infinity).build()
+								)
+						)
+						.build(),
+				context -> {
+					((DataPrimitive.Value) context.locate(new Path("0", "second", "gap"))).getVisual().select(context);
+					context.selection.receiveText(context, "+");
+				},
+				new Builders.TreeBuilder(ExpressionSyntax.plus).add("first",
+						new Builders.TreeBuilder(ExpressionSyntax.subscript)
+								.add("first", new Builders.TreeBuilder(ExpressionSyntax.infinity))
+								.add("second", new Builders.TreeBuilder(ExpressionSyntax.infinity))
+				).add("second", ExpressionSyntax.syntax.gap.create()).build()
+		);
 	}
 
 	@Test
 	public void testRaiseBounded() {
-		final Node start = new Builders.TreeBuilder(ExpressionSyntax.inclusiveRange)
-				.add("first", new Builders.TreeBuilder(ExpressionSyntax.infinity))
-				.add("second",
-						ExpressionSyntax.syntax.suffixGap.create(true,
-								new Builders.TreeBuilder(ExpressionSyntax.infinity).build()
+		innerTestTransform(ExpressionSyntax.syntax,
+				new Builders.TreeBuilder(ExpressionSyntax.inclusiveRange)
+						.add("first", new Builders.TreeBuilder(ExpressionSyntax.infinity))
+						.add("second",
+								ExpressionSyntax.syntax.suffixGap.create(true,
+										new Builders.TreeBuilder(ExpressionSyntax.infinity).build()
+								)
 						)
-				)
-				.build();
-		final Context context = buildDoc(ExpressionSyntax.syntax, start);
-		((DataPrimitive.Value) context.locate(new Path("0", "second", "gap"))).getVisual().select(context);
-		context.selection.receiveText(context, "+");
-		assertTreeEqual(context,
+						.build(),
+				context -> {
+					((DataPrimitive.Value) context.locate(new Path("0", "second", "gap"))).getVisual().select(context);
+					context.selection.receiveText(context, "+");
+				},
 				new Builders.TreeBuilder(ExpressionSyntax.inclusiveRange)
 						.add("first", new Builders.TreeBuilder(ExpressionSyntax.infinity))
 						.add("second",
 								new Builders.TreeBuilder(ExpressionSyntax.plus)
 										.add("first", new Builders.TreeBuilder(ExpressionSyntax.infinity))
-										.add("second", context.syntax.gap.create())
+										.add("second", ExpressionSyntax.syntax.gap.create())
 						)
-						.build(),
-				context.document.top
+						.build()
 		);
-		context.history.undo(context);
-		assertTreeEqual(context, start, context.document.top);
 	}
 
 	// ========================================================================
@@ -337,59 +349,53 @@ public class TestDocumentGap {
 
 	@Test
 	public void testDropArrayElement() {
-		final Node start =
-				new Builders.TreeBuilder(MiscSyntax.array).addArray("value", MiscSyntax.syntax.gap.create()).build();
-		final Context context = buildDoc(MiscSyntax.syntax, start);
-		((DataPrimitive.Value) context.locate(new Path("0", "0"))).getVisual().select(context);
-		((DataArrayBase.Value) context.locate(new Path("0"))).getVisual().select(context);
-		assertTreeEqual(context,
-				new Builders.TreeBuilder(MiscSyntax.array).addArray("value").build(),
-				context.document.top
+		innerTestTransform(MiscSyntax.syntax,
+				new Builders.TreeBuilder(MiscSyntax.array).addArray("value", MiscSyntax.syntax.gap.create()).build(),
+				context -> {
+					((DataPrimitive.Value) context.locate(new Path("0", "0"))).getVisual().select(context);
+					((DataArrayBase.Value) context.locate(new Path("0"))).getVisual().select(context);
+				},
+				new Builders.TreeBuilder(MiscSyntax.array).addArray("value").build()
 		);
-		context.history.undo(context);
-		assertTreeEqual(context, start, context.document.top);
 	}
 
 	@Test
 	public void testDontDropNodeGap() {
-		final Node start =
-				new Builders.TreeBuilder(MiscSyntax.array).addArray("value", MiscSyntax.syntax.gap.create()).build();
-		final Context context = buildDoc(MiscSyntax.syntax, start);
-		((DataPrimitive.Value) context.locate(new Path("0", "0"))).getVisual().select(context);
-		context.selection.receiveText(context, "urt");
-		((DataArrayBase.Value) context.locate(new Path("0"))).getVisual().select(context);
-		assertTreeEqual(context,
+		innerTestTransform(MiscSyntax.syntax,
+				new Builders.TreeBuilder(MiscSyntax.array).addArray("value", MiscSyntax.syntax.gap.create()).build(),
+				context -> {
+					((DataPrimitive.Value) context.locate(new Path("0", "0"))).getVisual().select(context);
+					context.selection.receiveText(context, "urt");
+					((DataArrayBase.Value) context.locate(new Path("0"))).getVisual().select(context);
+				},
 				new Builders.TreeBuilder(MiscSyntax.array)
 						.addArray("value", new TreeBuilder(MiscSyntax.syntax.gap).add("gap", "urt").build())
-						.build(),
-				context.document.top
+						.build()
 		);
-		context.history.undo(context);
-		assertTreeEqual(context, start, context.document.top);
 	}
 
 	@Test
 	public void testDropSuffixValue() {
-		final Node start = MiscSyntax.syntax.suffixGap.create(true, new TreeBuilder(MiscSyntax.infinity).build());
-		final Context context = buildDoc(MiscSyntax.syntax, start);
-		((DataPrimitive.Value) context.locate(new Path("0", "gap"))).getVisual().select(context);
-		((Node) context.locate(new Path("0"))).getVisual().select(context);
-		dump(context.document.top);
-		assertTreeEqual(context, new Builders.TreeBuilder(MiscSyntax.infinity).build(), context.document.top);
-		context.history.undo(context);
-		dump(context.document.top);
-		assertTreeEqual(context, start, context.document.top);
+		innerTestTransform(MiscSyntax.syntax,
+				MiscSyntax.syntax.suffixGap.create(true, new TreeBuilder(MiscSyntax.infinity).build()),
+				context -> {
+					((DataPrimitive.Value) context.locate(new Path("0", "gap"))).getVisual().select(context);
+					((Node) context.locate(new Path("0"))).getVisual().select(context);
+				},
+				new Builders.TreeBuilder(MiscSyntax.infinity).build()
+		);
 	}
 
 	@Test
 	public void testDropPrefixValue() {
-		final Node start = MiscSyntax.syntax.prefixGap.create(new TreeBuilder(MiscSyntax.infinity).build());
-		final Context context = buildDoc(MiscSyntax.syntax, start);
-		((DataPrimitive.Value) context.locate(new Path("0", "gap"))).getVisual().select(context);
-		((Node) context.locate(new Path("0"))).getVisual().select(context);
-		assertTreeEqual(context, new Builders.TreeBuilder(MiscSyntax.infinity).build(), context.document.top);
-		context.history.undo(context);
-		assertTreeEqual(context, start, context.document.top);
+		innerTestTransform(MiscSyntax.syntax,
+				MiscSyntax.syntax.prefixGap.create(new TreeBuilder(MiscSyntax.infinity).build()),
+				context -> {
+					((DataPrimitive.Value) context.locate(new Path("0", "gap"))).getVisual().select(context);
+					((Node) context.locate(new Path("0"))).getVisual().select(context);
+				},
+				new Builders.TreeBuilder(MiscSyntax.infinity).build()
+		);
 	}
 
 	// ========================================================================
@@ -397,16 +403,12 @@ public class TestDocumentGap {
 
 	@Test
 	public void testCreateArrayGap() {
-		final Node start = new Builders.TreeBuilder(MiscSyntax.array).addArray("value").build();
-		final Context context = buildDoc(MiscSyntax.syntax, start
-
+		innerTestTransform(MiscSyntax.syntax,
+				new Builders.TreeBuilder(MiscSyntax.array).addArray("value").build(),
+				context -> {
+					((DataArrayBase.Value) context.locate(new Path("0"))).getVisual().select(context);
+				},
+				new Builders.TreeBuilder(MiscSyntax.array).addArray("value", MiscSyntax.syntax.gap.create()).build()
 		);
-		((DataArrayBase.Value) context.locate(new Path("0"))).getVisual().select(context);
-		assertTreeEqual(context,
-				new Builders.TreeBuilder(MiscSyntax.array).addArray("value", MiscSyntax.syntax.gap.create()).build(),
-				context.document.top
-		);
-		context.history.undo(context);
-		assertTreeEqual(context, start, context.document.top);
 	}
 }

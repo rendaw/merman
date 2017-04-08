@@ -57,6 +57,7 @@ public abstract class ArrayVisualNode extends GroupVisualNode {
 
 	@Override
 	public void destroy(final Context context) {
+		data.removeListener(dataListener);
 		data.visual = null;
 		super.destroy(context);
 	}

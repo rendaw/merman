@@ -10,13 +10,14 @@ import java.util.Set;
 
 public class ArrayAsNodeVisualNodePart extends NodeVisualNodePartBase {
 	final DataArray.Value data;
+	private final DataArray.Listener dataListener;
 
 	public ArrayAsNodeVisualNodePart(
 			final Context context, final DataArray.Value data, final Set<Tag> tags
 	) {
 		super(tags);
 		this.data = data;
-		data.addListener(new DataArray.Listener() {
+		dataListener = new DataArray.Listener() {
 			@Override
 			public void added(final Context context, final int index, final List<Node> nodes) {
 				set(context, nodes.get(0));
@@ -26,7 +27,8 @@ public class ArrayAsNodeVisualNodePart extends NodeVisualNodePartBase {
 			public void removed(final Context context, final int index, final int count) {
 
 			}
-		});
+		};
+		data.addListener(dataListener);
 		set(context, data.get().get(0));
 		data.visual = this;
 	}
@@ -39,6 +41,7 @@ public class ArrayAsNodeVisualNodePart extends NodeVisualNodePartBase {
 
 	@Override
 	public void destroy(final Context context) {
+		data.removeListener(dataListener);
 		data.visual = null;
 		super.destroy(context);
 	}
