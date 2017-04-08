@@ -1,6 +1,6 @@
 package com.zarbosoft.bonestruct.syntax.hid;
 
-import com.zarbosoft.bonestruct.editor.visual.Keyboard;
+import com.zarbosoft.bonestruct.editor.Keyboard;
 import com.zarbosoft.bonestruct.syntax.hid.grammar.Terminal;
 import com.zarbosoft.interface1.Configuration;
 

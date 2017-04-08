@@ -1,7 +1,7 @@
 package com.zarbosoft.bonestruct.syntax.front;
 
 import com.zarbosoft.bonestruct.document.values.Value;
-import com.zarbosoft.bonestruct.editor.visual.Context;
+import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
 import com.zarbosoft.interface1.Configuration;

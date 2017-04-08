@@ -1,8 +1,8 @@
 package com.zarbosoft.bonestruct.syntax.front;
 
 import com.zarbosoft.bonestruct.document.values.Value;
-import com.zarbosoft.bonestruct.editor.visual.Context;
-import com.zarbosoft.bonestruct.editor.visual.nodes.PrimitiveVisualNode;
+import com.zarbosoft.bonestruct.editor.Context;
+import com.zarbosoft.bonestruct.editor.visual.nodes.VisualPrimitive;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
 import com.zarbosoft.bonestruct.syntax.NodeType;
@@ -31,7 +31,7 @@ public class FrontDataPrimitive extends FrontPart {
 	public VisualNodePart createVisual(
 			final Context context, final Map<String, Value> data, final Set<VisualNode.Tag> tags
 	) {
-		return new PrimitiveVisualNode(
+		return new VisualPrimitive(
 				context,
 				dataType.get(data),
 				HashTreePSet

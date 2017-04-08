@@ -4,21 +4,21 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.zarbosoft.bonestruct.document.values.ValuePrimitive;
+import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
-import com.zarbosoft.bonestruct.editor.visual.Context;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.editor.visual.attachments.CursorAttachment;
 import com.zarbosoft.bonestruct.editor.visual.attachments.TextBorderAttachment;
 import com.zarbosoft.bonestruct.editor.visual.attachments.VisualAttachmentAdapter;
-import com.zarbosoft.bonestruct.editor.visual.bricks.TextBrick;
 import com.zarbosoft.bonestruct.editor.visual.raw.Obbox;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodeParent;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
-import com.zarbosoft.bonestruct.editor.visual.wall.Brick;
 import com.zarbosoft.bonestruct.syntax.NodeType;
 import com.zarbosoft.bonestruct.syntax.hid.Hotkeys;
 import com.zarbosoft.bonestruct.syntax.style.ObboxStyle;
 import com.zarbosoft.bonestruct.syntax.style.Style;
+import com.zarbosoft.bonestruct.wall.Brick;
+import com.zarbosoft.bonestruct.wall.bricks.TextBrick;
 import com.zarbosoft.rendaw.common.Common;
 import com.zarbosoft.rendaw.common.Pair;
 import javafx.scene.input.Clipboard;
@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
 import static com.zarbosoft.rendaw.common.Common.enumerate;
 import static com.zarbosoft.rendaw.common.Common.last;
 
-public class PrimitiveVisualNode extends VisualNodePart {
+public class VisualPrimitive extends VisualNodePart {
 	// INVARIANT: Leaf nodes must always create at least one brick
 	// TODO index line offsets for faster insert/remove
 	// TODO compact/expand
@@ -544,7 +544,7 @@ public class PrimitiveVisualNode extends VisualNodePart {
 				public String getName() {
 					return prefix + "gather-previous";
 				}
-			}), PrimitiveVisualNode.this.getActions(context));
+			}), VisualPrimitive.this.getActions(context));
 			if (context.syntax.modalPrimitiveEditing) {
 				if (direct)
 					return Iterables.concat(out, ImmutableList.of(new Context.Action() {
@@ -576,7 +576,7 @@ public class PrimitiveVisualNode extends VisualNodePart {
 
 		@Override
 		public VisualNodePart getVisual() {
-			return PrimitiveVisualNode.this;
+			return VisualPrimitive.this;
 		}
 
 		private void reset(final Context context) {
@@ -615,14 +615,14 @@ public class PrimitiveVisualNode extends VisualNodePart {
 
 		@Override
 		public NodeType.NodeTypeVisual node() {
-			if (PrimitiveVisualNode.this.parent == null)
+			if (VisualPrimitive.this.parent == null)
 				return null;
-			return PrimitiveVisualNode.this.parent.getNode();
+			return VisualPrimitive.this.parent.getNode();
 		}
 
 		@Override
 		public VisualNodePart part() {
-			return PrimitiveVisualNode.this;
+			return VisualPrimitive.this;
 		}
 	}
 
@@ -658,7 +658,7 @@ public class PrimitiveVisualNode extends VisualNodePart {
 		private class LineBrick extends TextBrick {
 			@Override
 			public VisualNodePart getVisual() {
-				return PrimitiveVisualNode.this;
+				return VisualPrimitive.this;
 			}
 
 			@Override
@@ -674,10 +674,10 @@ public class PrimitiveVisualNode extends VisualNodePart {
 			@Override
 			public Brick createNext(final Context context) {
 				if (Line.this.index == lines.size() - 1) {
-					if (PrimitiveVisualNode.this.parent == null)
+					if (VisualPrimitive.this.parent == null)
 						return null;
 					else
-						return PrimitiveVisualNode.this.parent.createNextBrick(context);
+						return VisualPrimitive.this.parent.createNextBrick(context);
 				}
 				return lines.get(Line.this.index + 1).createBrick(context);
 			}
@@ -685,10 +685,10 @@ public class PrimitiveVisualNode extends VisualNodePart {
 			@Override
 			public Brick createPrevious(final Context context) {
 				if (Line.this.index == 0)
-					if (PrimitiveVisualNode.this.parent == null)
+					if (VisualPrimitive.this.parent == null)
 						return null;
 					else
-						return PrimitiveVisualNode.this.parent.createPreviousBrick(context);
+						return VisualPrimitive.this.parent.createPreviousBrick(context);
 				return lines.get(Line.this.index - 1).createBrick(context);
 			}
 
@@ -719,7 +719,7 @@ public class PrimitiveVisualNode extends VisualNodePart {
 			@Override
 			public Context.Hoverable hover(final Context context, final Vector point) {
 				if (selection == null) {
-					final Context.Hoverable out = PrimitiveVisualNode.this.hover(context, point);
+					final Context.Hoverable out = VisualPrimitive.this.hover(context, point);
 					if (out != null)
 						return out;
 				}
@@ -769,7 +769,7 @@ public class PrimitiveVisualNode extends VisualNodePart {
 				.orElseGet(() -> lines.size());
 	}
 
-	public PrimitiveVisualNode(final Context context, final ValuePrimitive data, final Set<Tag> tags) {
+	public VisualPrimitive(final Context context, final ValuePrimitive data, final Set<Tag> tags) {
 		super(HashTreePSet.from(tags).plus(new PartTag("primitive")));
 		data.visual = this;
 		dataListener = new ValuePrimitive.Listener() {

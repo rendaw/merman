@@ -1,4 +1,4 @@
-package com.zarbosoft.bonestruct.editor.visual;
+package com.zarbosoft.bonestruct.editor;
 
 import com.zarbosoft.rendaw.common.ChainComparator;
 

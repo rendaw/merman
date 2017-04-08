@@ -1,8 +1,8 @@
 package com.zarbosoft.bonestruct.syntax.front;
 
 import com.zarbosoft.bonestruct.document.values.Value;
-import com.zarbosoft.bonestruct.editor.visual.Context;
-import com.zarbosoft.bonestruct.editor.visual.nodes.ArrayVisualNode;
+import com.zarbosoft.bonestruct.editor.Context;
+import com.zarbosoft.bonestruct.editor.visual.nodes.VisualArray;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
 import com.zarbosoft.bonestruct.syntax.NodeType;
@@ -47,7 +47,7 @@ public abstract class FrontDataArrayBase extends FrontPart {
 	public VisualNodePart createVisual(
 			final Context context, final Map<String, Value> data, final Set<VisualNode.Tag> tags
 	) {
-		return new ArrayVisualNode(
+		return new VisualArray(
 				context,
 				dataType.get(data),
 				HashTreePSet

@@ -1,9 +1,9 @@
 package com.zarbosoft.bonestruct.editor.visual.tree;
 
 import com.google.common.collect.Iterators;
+import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
-import com.zarbosoft.bonestruct.editor.visual.Context;
-import com.zarbosoft.bonestruct.editor.visual.wall.Brick;
+import com.zarbosoft.bonestruct.wall.Brick;
 import com.zarbosoft.interface1.Configuration;
 import com.zarbosoft.rendaw.common.Pair;
 import org.pcollections.HashTreePSet;

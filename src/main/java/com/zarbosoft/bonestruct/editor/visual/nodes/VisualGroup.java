@@ -2,13 +2,14 @@ package com.zarbosoft.bonestruct.editor.visual.nodes;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
+import com.zarbosoft.bonestruct.editor.Context;
+import com.zarbosoft.bonestruct.editor.IdleTask;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
-import com.zarbosoft.bonestruct.editor.visual.Context;
-import com.zarbosoft.bonestruct.editor.visual.IdleTask;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodeParent;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
-import com.zarbosoft.bonestruct.editor.visual.wall.Brick;
+import com.zarbosoft.bonestruct.syntax.NodeType;
+import com.zarbosoft.bonestruct.wall.Brick;
 import com.zarbosoft.rendaw.common.Pair;
 import org.pcollections.HashTreePMap;
 import org.pcollections.PMap;
@@ -18,8 +19,8 @@ import java.util.function.IntFunction;
 
 import static com.zarbosoft.rendaw.common.Common.last;
 
-public class GroupVisualNode extends VisualNodePart {
-	public GroupVisualNode(final Set<Tag> tags) {
+public class VisualGroup extends VisualNodePart {
+	public VisualGroup(final Set<Tag> tags) {
 		super(tags);
 	}
 
@@ -84,7 +85,7 @@ public class GroupVisualNode extends VisualNodePart {
 		if (preindex >= this.children.size() + 1)
 			throw new AssertionError("Inserting visual node after group end.");
 		final int index = preindex;
-		this.children.stream().skip(index).forEach(n -> ((GroupVisualNodeParent) n.parent()).index += 1);
+		this.children.stream().skip(index).forEach(n -> ((Parent) n.parent()).index += 1);
 		this.children.add(index, node);
 		node.setParent(createParent(index));
 		final Brick previousBrick = index == 0 ?
@@ -98,7 +99,7 @@ public class GroupVisualNode extends VisualNodePart {
 	}
 
 	protected VisualNodeParent createParent(final int index) {
-		return new GroupVisualNodeParent(this, index);
+		return new Parent(this, index);
 	}
 
 	public void add(final Context context, final VisualNodePart node) {
@@ -114,7 +115,7 @@ public class GroupVisualNode extends VisualNodePart {
 		final VisualNodePart node = children.get(index);
 		node.destroy(context);
 		this.children.remove(index);
-		this.children.stream().skip(index).forEach(n -> ((GroupVisualNodeParent) n.parent()).index -= 1);
+		this.children.stream().skip(index).forEach(n -> ((Parent) n.parent()).index -= 1);
 	}
 
 	public void remove(final Context context, final int start, final int size) {
@@ -181,5 +182,90 @@ public class GroupVisualNode extends VisualNodePart {
 	public void destroy(final Context context) {
 		for (final VisualNodePart child : children)
 			child.destroy(context);
+	}
+
+	public static class Parent extends VisualNodeParent {
+		public final VisualGroup target;
+		public int index;
+
+		public Parent(final VisualGroup target, final int index) {
+			this.target = target;
+			this.index = index;
+		}
+
+		@Override
+		public void selectUp(final Context context) {
+			if (target.parent == null)
+				return;
+			target.parent.selectUp(context);
+		}
+
+		@Override
+		public Brick createNextBrick(final Context context) {
+			if (index + 1 < target.children.size())
+				return target.children.get(index + 1).createFirstBrick(context);
+			if (target.parent == null)
+				return null;
+			return target.parent.createNextBrick(context);
+		}
+
+		@Override
+		public Brick createPreviousBrick(final Context context) {
+			if (index > 0)
+				return target.children.get(index - 1).createLastBrick(context);
+			if (target.parent == null)
+				return null;
+			return target.parent.createPreviousBrick(context);
+		}
+
+		@Override
+		public VisualNode getTarget() {
+			return target;
+		}
+
+		@Override
+		public NodeType.NodeTypeVisual getNode() {
+			if (target.parent == null)
+				return null;
+			return target.parent.getNode();
+		}
+
+		@Override
+		public Alignment getAlignment(final String alignment) {
+			return target.getAlignment(alignment);
+		}
+
+		@Override
+		public Brick getPreviousBrick(final Context context) {
+			if (index == 0)
+				if (target.parent == null)
+					return null;
+				else
+					return target.parent.getPreviousBrick(context);
+			else
+				return target.children.get(index - 1).getLastBrick(context);
+		}
+
+		@Override
+		public Brick getNextBrick(final Context context) {
+			if (index + 1 >= target.children.size())
+				if (target.parent == null)
+					return null;
+				else
+					return target.parent.getNextBrick(context);
+			else
+				return target.children.get(index + 1).getFirstBrick(context);
+		}
+
+		@Override
+		public Context.Hoverable hover(
+				final Context context, final com.zarbosoft.bonestruct.editor.visual.Vector point
+		) {
+			return target.hover(context, point);
+		}
+
+		public int getIndex() {
+			return index;
+		}
 	}
 }

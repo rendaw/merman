@@ -3,7 +3,7 @@ package com.zarbosoft.bonestruct.history.changes;
 import com.zarbosoft.bonestruct.document.Node;
 import com.zarbosoft.bonestruct.document.values.Value;
 import com.zarbosoft.bonestruct.document.values.ValueNode;
-import com.zarbosoft.bonestruct.editor.visual.Context;
+import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.history.Change;
 
 public class ChangeNodeSet extends Change {

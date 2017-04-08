@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.zarbosoft.bonestruct.document.Node;
 import com.zarbosoft.bonestruct.document.values.ValueArray;
-import com.zarbosoft.bonestruct.editor.visual.Context;
+import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.editor.visual.attachments.BorderAttachment;
 import com.zarbosoft.bonestruct.editor.visual.attachments.MultiVisualAttachmentAdapter;
@@ -13,13 +13,13 @@ import com.zarbosoft.bonestruct.editor.visual.attachments.VisualBorderAttachment
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodeParent;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
-import com.zarbosoft.bonestruct.editor.visual.wall.Brick;
 import com.zarbosoft.bonestruct.history.changes.ChangeArrayAdd;
 import com.zarbosoft.bonestruct.syntax.FreeNodeType;
 import com.zarbosoft.bonestruct.syntax.NodeType;
 import com.zarbosoft.bonestruct.syntax.front.FrontConstantPart;
 import com.zarbosoft.bonestruct.syntax.hid.Hotkeys;
 import com.zarbosoft.bonestruct.syntax.middle.MiddleArrayBase;
+import com.zarbosoft.bonestruct.wall.Brick;
 import com.zarbosoft.rendaw.common.Pair;
 import org.pcollections.HashTreePSet;
 import org.pcollections.PSet;
@@ -33,18 +33,18 @@ import static com.zarbosoft.rendaw.common.Common.enumerate;
 import static com.zarbosoft.rendaw.common.Common.last;
 import static java.io.File.separator;
 
-public abstract class ArrayVisualNode extends GroupVisualNode {
+public abstract class VisualArray extends VisualGroup {
 
 	private final ValueArray.Listener dataListener;
 	private final ValueArray data;
 
-	public ArrayVisualNode(final Context context, final ValueArray data, final Set<VisualNode.Tag> tags) {
+	public VisualArray(final Context context, final ValueArray data, final Set<VisualNode.Tag> tags) {
 		super(tags);
 		this.data = data;
 		dataListener = new ValueArray.Listener() {
 			@Override
 			public void added(final Context context, final int index, final List<Node> nodes) {
-				ArrayVisualNode.this.add(context, index, nodes);
+				VisualArray.this.add(context, index, nodes);
 			}
 
 			@Override
@@ -123,7 +123,7 @@ public abstract class ArrayVisualNode extends GroupVisualNode {
 
 	protected abstract boolean tagFirst();
 
-	private class ChildGroup extends GroupVisualNode {
+	private class ChildGroup extends VisualGroup {
 
 		private final boolean selectable;
 
@@ -298,14 +298,14 @@ public abstract class ArrayVisualNode extends GroupVisualNode {
 
 		@Override
 		public NodeType.NodeTypeVisual node() {
-			if (ArrayVisualNode.this.parent == null)
+			if (VisualArray.this.parent == null)
 				return null;
-			return ArrayVisualNode.this.parent.getNode();
+			return VisualArray.this.parent.getNode();
 		}
 
 		@Override
 		public VisualNodePart part() {
-			return ArrayVisualNode.this;
+			return VisualArray.this;
 		}
 	}
 
@@ -532,12 +532,12 @@ public abstract class ArrayVisualNode extends GroupVisualNode {
 		}
 	}
 
-	private class ArrayVisualNodeParent extends GroupVisualNodeParent {
+	private class ArrayVisualNodeParent extends Parent {
 
 		private final boolean selectable;
 
 		public ArrayVisualNodeParent(final int index, final boolean selectable) {
-			super(ArrayVisualNode.this, index);
+			super(VisualArray.this, index);
 			this.selectable = selectable;
 		}
 

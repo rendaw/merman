@@ -5,8 +5,8 @@ import com.zarbosoft.bonestruct.document.values.Value;
 import com.zarbosoft.bonestruct.document.values.ValueArray;
 import com.zarbosoft.bonestruct.document.values.ValueNode;
 import com.zarbosoft.bonestruct.document.values.ValuePrimitive;
-import com.zarbosoft.bonestruct.editor.visual.Context;
-import com.zarbosoft.bonestruct.editor.visual.nodes.PrimitiveVisualNode;
+import com.zarbosoft.bonestruct.editor.Context;
+import com.zarbosoft.bonestruct.editor.visual.nodes.VisualPrimitive;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
 import com.zarbosoft.bonestruct.syntax.FreeNodeType;
@@ -39,7 +39,7 @@ public abstract class FrontGapBase extends FrontPart {
 	public VisualNodePart createVisual(
 			final Context context, final Map<String, Value> data, final Set<VisualNode.Tag> tags
 	) {
-		return new GapPrimitiveVisualNode(context, data, tags);
+		return new GapVisualPrimitive(context, data, tags);
 	}
 
 	@Override
@@ -52,10 +52,10 @@ public abstract class FrontGapBase extends FrontPart {
 			final Context context, final Node self, final String string, final Common.UserData store
 	);
 
-	private class GapPrimitiveVisualNode extends PrimitiveVisualNode {
+	private class GapVisualPrimitive extends VisualPrimitive {
 		private final Map<String, Value> data;
 
-		public GapPrimitiveVisualNode(
+		public GapVisualPrimitive(
 				final Context context, final Map<String, Value> data, final Set<Tag> tags
 		) {
 			super(context,

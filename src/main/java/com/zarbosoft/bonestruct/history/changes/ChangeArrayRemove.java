@@ -3,7 +3,7 @@ package com.zarbosoft.bonestruct.history.changes;
 import com.google.common.collect.ImmutableList;
 import com.zarbosoft.bonestruct.document.values.Value;
 import com.zarbosoft.bonestruct.document.values.ValueArray;
-import com.zarbosoft.bonestruct.editor.visual.Context;
+import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.history.Change;
 
 public class ChangeArrayRemove extends Change {

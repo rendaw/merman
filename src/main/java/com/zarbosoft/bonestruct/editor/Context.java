@@ -1,4 +1,4 @@
-package com.zarbosoft.bonestruct.editor.visual;
+package com.zarbosoft.bonestruct.editor;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -9,19 +9,12 @@ import com.zarbosoft.bonestruct.document.values.Value;
 import com.zarbosoft.bonestruct.document.values.ValueArray;
 import com.zarbosoft.bonestruct.document.values.ValueNode;
 import com.zarbosoft.bonestruct.document.values.ValuePrimitive;
-import com.zarbosoft.bonestruct.editor.InvalidPath;
-import com.zarbosoft.bonestruct.editor.Path;
-import com.zarbosoft.bonestruct.editor.model.Plugin;
 import com.zarbosoft.bonestruct.editor.visual.attachments.TransverseExtentsAdapter;
 import com.zarbosoft.bonestruct.editor.visual.attachments.VisualAttachmentAdapter;
 import com.zarbosoft.bonestruct.editor.visual.raw.RawText;
 import com.zarbosoft.bonestruct.editor.visual.raw.RawTextUtils;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
-import com.zarbosoft.bonestruct.editor.visual.wall.Attachment;
-import com.zarbosoft.bonestruct.editor.visual.wall.Bedding;
-import com.zarbosoft.bonestruct.editor.visual.wall.Brick;
-import com.zarbosoft.bonestruct.editor.visual.wall.Wall;
 import com.zarbosoft.bonestruct.history.History;
 import com.zarbosoft.bonestruct.syntax.NodeType;
 import com.zarbosoft.bonestruct.syntax.Syntax;
@@ -29,7 +22,12 @@ import com.zarbosoft.bonestruct.syntax.back.*;
 import com.zarbosoft.bonestruct.syntax.hid.Hotkeys;
 import com.zarbosoft.bonestruct.syntax.middle.MiddleArray;
 import com.zarbosoft.bonestruct.syntax.middle.MiddleRecord;
+import com.zarbosoft.bonestruct.syntax.plugins.Plugin;
 import com.zarbosoft.bonestruct.syntax.style.Style;
+import com.zarbosoft.bonestruct.wall.Attachment;
+import com.zarbosoft.bonestruct.wall.Bedding;
+import com.zarbosoft.bonestruct.wall.Brick;
+import com.zarbosoft.bonestruct.wall.Wall;
 import com.zarbosoft.pidgoon.events.EventStream;
 import com.zarbosoft.pidgoon.events.Grammar;
 import com.zarbosoft.pidgoon.events.Operator;
@@ -132,7 +130,7 @@ public class Context {
 		throw new AssertionError("DEAD CODE");
 	}
 
-	public Vector sceneGet(final Node node) {
+	public com.zarbosoft.bonestruct.editor.visual.Vector sceneGet(final Node node) {
 		final Bounds bounds = node.getLayoutBounds();
 		int converse = 0;
 		int transverse = 0;
@@ -164,7 +162,7 @@ public class Context {
 				transverse = (int) node.getLayoutX();
 				break;
 		}
-		return new Vector(converse, transverse);
+		return new com.zarbosoft.bonestruct.editor.visual.Vector(converse, transverse);
 	}
 
 	/**
@@ -690,7 +688,7 @@ public class Context {
 	}
 
 	public class HoverIdle extends IdleTask {
-		public Vector point = null;
+		public com.zarbosoft.bonestruct.editor.visual.Vector point = null;
 		Context context;
 		Brick at;
 
@@ -801,7 +799,9 @@ public class Context {
 
 	public static TheInterpolator interpolator = new TheInterpolator();
 
-	public Vector sceneToVector(final Pane scene, final double x, final double y) {
+	public com.zarbosoft.bonestruct.editor.visual.Vector sceneToVector(
+			final Pane scene, final double x, final double y
+	) {
 		int converse = 0;
 		int transverse = 0;
 		switch (syntax.converseDirection) {
@@ -832,10 +832,10 @@ public class Context {
 				transverse = (int) x;
 				break;
 		}
-		return new Vector(converse, transverse);
+		return new com.zarbosoft.bonestruct.editor.visual.Vector(converse, transverse);
 	}
 
-	public Point2D toScreen(final Vector source) {
+	public Point2D toScreen(final com.zarbosoft.bonestruct.editor.visual.Vector source) {
 		double x = 0, y = 0;
 		switch (syntax.converseDirection) {
 			case UP:
@@ -868,7 +868,7 @@ public class Context {
 		return new Point2D(x, y);
 	}
 
-	public Point2D toScreenSpan(final Vector source) {
+	public Point2D toScreenSpan(final com.zarbosoft.bonestruct.editor.visual.Vector source) {
 		double x = 0, y = 0;
 		switch (syntax.converseDirection) {
 			case UP:
@@ -885,7 +885,7 @@ public class Context {
 		return new Point2D(x, y);
 	}
 
-	public void translate(final javafx.scene.Node node, final Vector vector) {
+	public void translate(final javafx.scene.Node node, final com.zarbosoft.bonestruct.editor.visual.Vector vector) {
 		translate(node, vector, false);
 	}
 
@@ -970,7 +970,11 @@ public class Context {
 		}
 	}
 
-	public void translate(final javafx.scene.Node node, final Vector vector, final boolean animate) {
+	public void translate(
+			final javafx.scene.Node node,
+			final com.zarbosoft.bonestruct.editor.visual.Vector vector,
+			final boolean animate
+	) {
 		int x = 0;
 		int y = 0;
 		switch (syntax.converseDirection) {

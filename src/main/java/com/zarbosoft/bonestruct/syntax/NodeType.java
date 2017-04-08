@@ -4,17 +4,17 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.zarbosoft.bonestruct.document.Node;
 import com.zarbosoft.bonestruct.document.values.Value;
+import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
-import com.zarbosoft.bonestruct.editor.visual.Context;
-import com.zarbosoft.bonestruct.editor.visual.nodes.GroupVisualNode;
+import com.zarbosoft.bonestruct.editor.visual.nodes.VisualGroup;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodeParent;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
-import com.zarbosoft.bonestruct.editor.visual.wall.Brick;
 import com.zarbosoft.bonestruct.syntax.alignments.AlignmentDefinition;
 import com.zarbosoft.bonestruct.syntax.back.*;
 import com.zarbosoft.bonestruct.syntax.front.FrontPart;
 import com.zarbosoft.bonestruct.syntax.middle.*;
+import com.zarbosoft.bonestruct.wall.Brick;
 import com.zarbosoft.interface1.Configuration;
 import com.zarbosoft.pidgoon.events.Operator;
 import com.zarbosoft.pidgoon.events.Store;
@@ -145,7 +145,7 @@ public abstract class NodeType {
 	}
 
 	public class NodeTypeVisual extends VisualNode {
-		private final GroupVisualNode body;
+		private final VisualGroup body;
 		private boolean compact;
 		private VisualNodeParent parent;
 		public Map<String, VisualNodePart> frontToData = new HashMap<>();
@@ -154,7 +154,7 @@ public abstract class NodeType {
 			super(HashTreePSet.<Tag>empty().plus(new TypeTag(id)).plus(new PartTag("node")));
 			final PSet<Tag> tags = HashTreePSet.singleton(new TypeTag(id));
 			compact = false;
-			body = new GroupVisualNode(ImmutableSet.of());
+			body = new VisualGroup(ImmutableSet.of());
 			for (final Map.Entry<String, AlignmentDefinition> entry : alignments().entrySet()) {
 				body.alignments.put(entry.getKey(), entry.getValue().create());
 			}

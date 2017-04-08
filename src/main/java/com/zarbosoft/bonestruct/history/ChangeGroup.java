@@ -1,7 +1,7 @@
 package com.zarbosoft.bonestruct.history;
 
 import com.google.common.collect.Lists;
-import com.zarbosoft.bonestruct.editor.visual.Context;
+import com.zarbosoft.bonestruct.editor.Context;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -2,8 +2,8 @@ package com.zarbosoft.bonestruct.document.values;
 
 import com.google.common.collect.ImmutableList;
 import com.zarbosoft.bonestruct.document.Node;
+import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.Path;
-import com.zarbosoft.bonestruct.editor.visual.Context;
 import com.zarbosoft.bonestruct.history.changes.ChangeArrayAdd;
 import com.zarbosoft.bonestruct.history.changes.ChangeArrayRemove;
 import com.zarbosoft.bonestruct.syntax.middle.MiddleArrayBase;

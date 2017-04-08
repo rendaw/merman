@@ -1,8 +1,8 @@
 package com.zarbosoft.bonestruct.editor.visual.alignment;
 
+import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.AlignmentListener;
-import com.zarbosoft.bonestruct.editor.visual.Context;
 
 import java.util.Map;
 

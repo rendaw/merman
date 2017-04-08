@@ -1,4 +1,4 @@
-package com.zarbosoft.bonestruct.editor.model;
+package com.zarbosoft.bonestruct.syntax;
 
 import com.zarbosoft.interface1.Configuration;
 

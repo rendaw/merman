@@ -1,6 +1,6 @@
-package com.zarbosoft.bonestruct.editor.visual.wall;
+package com.zarbosoft.bonestruct.wall;
 
-import com.zarbosoft.bonestruct.editor.visual.Context;
+import com.zarbosoft.bonestruct.editor.Context;
 
 public abstract class Attachment {
 	public void setTransverse(final Context context, final int transverse) {

@@ -3,18 +3,18 @@ package com.zarbosoft.bonestruct.editor.visual.nodes;
 import com.google.common.collect.ImmutableList;
 import com.zarbosoft.bonestruct.document.Node;
 import com.zarbosoft.bonestruct.document.values.ValueArray;
-import com.zarbosoft.bonestruct.editor.visual.Context;
+import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.history.changes.ChangeArrayAdd;
 import com.zarbosoft.bonestruct.history.changes.ChangeArrayRemove;
 
 import java.util.List;
 import java.util.Set;
 
-public class ArrayAsNodeVisualNodePart extends NodeVisualNodePartBase {
+public class VisualNodeFromArray extends VisualNodeBase {
 	final ValueArray data;
 	private final ValueArray.Listener dataListener;
 
-	public ArrayAsNodeVisualNodePart(
+	public VisualNodeFromArray(
 			final Context context, final ValueArray data, final Set<Tag> tags
 	) {
 		super(tags);

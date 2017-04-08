@@ -1,7 +1,7 @@
 package com.zarbosoft.bonestruct.history;
 
 import com.zarbosoft.bonestruct.document.values.Value;
-import com.zarbosoft.bonestruct.editor.visual.Context;
+import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.interface1.Configuration;
 
 @Configuration

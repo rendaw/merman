@@ -1,8 +1,8 @@
 package com.zarbosoft.bonestruct.document;
 
 import com.zarbosoft.bonestruct.document.values.Value;
+import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.Path;
-import com.zarbosoft.bonestruct.editor.visual.Context;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
 import com.zarbosoft.bonestruct.syntax.NodeType;
 import com.zarbosoft.bonestruct.syntax.middle.MiddleElement;

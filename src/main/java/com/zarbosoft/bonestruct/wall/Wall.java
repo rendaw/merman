@@ -1,8 +1,8 @@
-package com.zarbosoft.bonestruct.editor.visual.wall;
+package com.zarbosoft.bonestruct.wall;
 
 import com.google.common.collect.ImmutableList;
-import com.zarbosoft.bonestruct.editor.visual.Context;
-import com.zarbosoft.bonestruct.editor.visual.IdleTask;
+import com.zarbosoft.bonestruct.editor.Context;
+import com.zarbosoft.bonestruct.editor.IdleTask;
 import javafx.scene.Group;
 
 import java.util.ArrayList;
@@ -100,7 +100,7 @@ public class Wall {
 		this.cornerstoneCourse = cornerstone.parent;
 	}
 
-	class IdleCompactTask extends com.zarbosoft.bonestruct.editor.visual.IdleTask {
+	class IdleCompactTask extends IdleTask {
 		private final Context context;
 		int at = 0;
 
@@ -132,7 +132,7 @@ public class Wall {
 		}
 	}
 
-	class IdleExpandTask extends com.zarbosoft.bonestruct.editor.visual.IdleTask {
+	class IdleExpandTask extends IdleTask {
 		private final Context context;
 		int at = 0;
 

@@ -1,10 +1,9 @@
-package com.zarbosoft.bonestruct.plugins;
+package com.zarbosoft.bonestruct.syntax.plugins;
 
-import com.zarbosoft.bonestruct.editor.model.Plugin;
-import com.zarbosoft.bonestruct.editor.visual.Context;
-import com.zarbosoft.bonestruct.editor.visual.nodes.ArrayVisualNode;
-import com.zarbosoft.bonestruct.editor.visual.nodes.NodeVisualNodePart;
-import com.zarbosoft.bonestruct.editor.visual.nodes.PrimitiveVisualNode;
+import com.zarbosoft.bonestruct.editor.Context;
+import com.zarbosoft.bonestruct.editor.visual.nodes.VisualArray;
+import com.zarbosoft.bonestruct.editor.visual.nodes.VisualNode;
+import com.zarbosoft.bonestruct.editor.visual.nodes.VisualPrimitive;
 import com.zarbosoft.bonestruct.syntax.NodeType;
 import com.zarbosoft.interface1.Configuration;
 
@@ -39,11 +38,11 @@ public class HoverType extends Plugin {
 					if (part) {
 						final String temp;
 						final Class<?> c = hoverable.part().getClass();
-						if (c == ArrayVisualNode.class) {
+						if (c == VisualArray.class) {
 							temp = "array";
-						} else if (c == PrimitiveVisualNode.class) {
+						} else if (c == VisualPrimitive.class) {
 							temp = "primitive";
-						} else if (c == NodeVisualNodePart.class) {
+						} else if (c == VisualNode.class) {
 							temp = "nested";
 						} else
 							temp = c.getTypeName();

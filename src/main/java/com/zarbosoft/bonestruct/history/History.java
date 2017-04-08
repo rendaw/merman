@@ -2,7 +2,7 @@ package com.zarbosoft.bonestruct.history;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import com.zarbosoft.bonestruct.editor.visual.Context;
+import com.zarbosoft.bonestruct.editor.Context;
 
 import java.io.Closeable;
 import java.io.IOException;

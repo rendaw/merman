@@ -1,9 +1,10 @@
-package com.zarbosoft.bonestruct.editor.visual.wall;
+package com.zarbosoft.bonestruct.wall;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.zarbosoft.bonestruct.editor.Context;
+import com.zarbosoft.bonestruct.editor.IdleTask;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
-import com.zarbosoft.bonestruct.editor.visual.Context;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
 import com.zarbosoft.rendaw.common.ChainComparator;
 import com.zarbosoft.rendaw.common.Pair;
@@ -213,7 +214,7 @@ public class Course {
 		return beddingBefore + ascent + descent + beddingAfter;
 	}
 
-	class IdlePlaceTask extends com.zarbosoft.bonestruct.editor.visual.IdleTask {
+	class IdlePlaceTask extends IdleTask {
 
 		private final Context context;
 		int first = Integer.MAX_VALUE;
@@ -336,7 +337,7 @@ public class Course {
 		return true;
 	}
 
-	class IdleCompactTask extends com.zarbosoft.bonestruct.editor.visual.IdleTask {
+	class IdleCompactTask extends IdleTask {
 		private final Context context;
 
 		IdleCompactTask(final Context context) {
@@ -415,7 +416,7 @@ public class Course {
 		return true;
 	}
 
-	class IdleExpandTask extends com.zarbosoft.bonestruct.editor.visual.IdleTask {
+	class IdleExpandTask extends IdleTask {
 		private final Context context;
 
 		IdleExpandTask(final Context context) {

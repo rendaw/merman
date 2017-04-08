@@ -1,5 +1,7 @@
 package com.zarbosoft.bonestruct.editor.visual;
 
+import com.zarbosoft.bonestruct.editor.Context;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;

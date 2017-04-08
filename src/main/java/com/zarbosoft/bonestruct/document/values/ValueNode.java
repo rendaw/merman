@@ -1,8 +1,8 @@
 package com.zarbosoft.bonestruct.document.values;
 
 import com.zarbosoft.bonestruct.document.Node;
+import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.Path;
-import com.zarbosoft.bonestruct.editor.visual.Context;
 import com.zarbosoft.bonestruct.history.changes.ChangeNodeSet;
 import com.zarbosoft.bonestruct.syntax.middle.MiddleElement;
 import com.zarbosoft.bonestruct.syntax.middle.MiddleNode;

@@ -1,10 +1,10 @@
 package com.zarbosoft.bonestruct.standalone;
 
 import com.google.common.collect.ImmutableList;
+import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.Editor;
 import com.zarbosoft.bonestruct.editor.EditorGlobal;
-import com.zarbosoft.bonestruct.editor.visual.Context;
-import com.zarbosoft.bonestruct.editor.visual.IdleTask;
+import com.zarbosoft.bonestruct.editor.IdleTask;
 import com.zarbosoft.bonestruct.history.History;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -35,6 +35,7 @@ public class Main extends Application {
 	public void start(final Stage primaryStage) {
 		/*
 		TODO
+		plugin add colored bar to side if dirty
 		banner background
 		add mouse scroll buttons to input patterns
 		details

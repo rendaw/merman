@@ -1,6 +1,6 @@
 package com.zarbosoft.bonestruct.document.values;
 
-import com.zarbosoft.bonestruct.editor.visual.Context;
+import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.history.Change;
 import com.zarbosoft.bonestruct.syntax.middle.MiddleElement;
 import com.zarbosoft.bonestruct.syntax.middle.MiddlePrimitive;

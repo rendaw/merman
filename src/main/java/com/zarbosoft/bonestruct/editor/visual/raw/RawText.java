@@ -1,6 +1,6 @@
 package com.zarbosoft.bonestruct.editor.visual.raw;
 
-import com.zarbosoft.bonestruct.editor.visual.Context;
+import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.syntax.style.Style;
 import javafx.geometry.Point2D;

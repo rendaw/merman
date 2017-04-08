@@ -1,9 +1,9 @@
 package com.zarbosoft.bonestruct.editor.visual.attachments;
 
 import com.google.common.collect.ImmutableSet;
-import com.zarbosoft.bonestruct.editor.visual.Context;
+import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
-import com.zarbosoft.bonestruct.editor.visual.wall.Brick;
+import com.zarbosoft.bonestruct.wall.Brick;
 
 import java.util.HashSet;
 import java.util.Set;

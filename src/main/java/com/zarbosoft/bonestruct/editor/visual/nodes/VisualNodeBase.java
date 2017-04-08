@@ -2,24 +2,24 @@ package com.zarbosoft.bonestruct.editor.visual.nodes;
 
 import com.google.common.collect.ImmutableList;
 import com.zarbosoft.bonestruct.document.Node;
+import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
-import com.zarbosoft.bonestruct.editor.visual.Context;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.editor.visual.attachments.BorderAttachment;
 import com.zarbosoft.bonestruct.editor.visual.attachments.VisualAttachmentAdapter;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodeParent;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
-import com.zarbosoft.bonestruct.editor.visual.wall.Brick;
 import com.zarbosoft.bonestruct.syntax.NodeType;
 import com.zarbosoft.bonestruct.syntax.hid.Hotkeys;
+import com.zarbosoft.bonestruct.wall.Brick;
 import com.zarbosoft.rendaw.common.Pair;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.Map;
 import java.util.Set;
 
-public abstract class NodeVisualNodePartBase extends VisualNodePart {
+public abstract class VisualNodeBase extends VisualNodePart {
 	protected VisualNode body;
 	VisualNodeParent parent;
 	boolean selected = false;
@@ -28,7 +28,7 @@ public abstract class NodeVisualNodePartBase extends VisualNodePart {
 	Context.Hoverable hoverable;
 	private NestedSelection selection;
 
-	public NodeVisualNodePartBase(
+	public VisualNodeBase(
 			final Set<Tag> tags
 	) {
 		super(tags);
@@ -206,12 +206,12 @@ public abstract class NodeVisualNodePartBase extends VisualNodePart {
 
 		@Override
 		public Iterable<Context.Action> getActions(final Context context) {
-			return NodeVisualNodePartBase.this.getActions(context);
+			return VisualNodeBase.this.getActions(context);
 		}
 
 		@Override
 		public VisualNodePart getVisual() {
-			return NodeVisualNodePartBase.this;
+			return VisualNodeBase.this;
 		}
 
 		@Override
@@ -250,7 +250,7 @@ public abstract class NodeVisualNodePartBase extends VisualNodePart {
 
 		@Override
 		public VisualNode getTarget() {
-			return NodeVisualNodePartBase.this;
+			return VisualNodeBase.this;
 		}
 
 		@Override
@@ -335,14 +335,14 @@ public abstract class NodeVisualNodePartBase extends VisualNodePart {
 
 				@Override
 				public NodeType.NodeTypeVisual node() {
-					if (NodeVisualNodePartBase.this.parent == null)
+					if (VisualNodeBase.this.parent == null)
 						return null;
-					return NodeVisualNodePartBase.this.parent.getNode();
+					return VisualNodeBase.this.parent.getNode();
 				}
 
 				@Override
 				public VisualNodePart part() {
-					return NodeVisualNodePartBase.this;
+					return VisualNodeBase.this;
 				}
 			};
 			return hoverable;
