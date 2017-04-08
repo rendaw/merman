@@ -2,12 +2,12 @@ package com.zarbosoft.bonestruct;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.zarbosoft.bonestruct.editor.model.Syntax;
-import com.zarbosoft.bonestruct.editor.model.middle.DataArrayBase;
-import com.zarbosoft.bonestruct.editor.model.middle.DataElement;
-import com.zarbosoft.bonestruct.editor.model.middle.DataNode;
-import com.zarbosoft.bonestruct.editor.model.middle.DataRecord;
+import com.zarbosoft.bonestruct.document.values.Value;
+import com.zarbosoft.bonestruct.document.values.ValueArray;
+import com.zarbosoft.bonestruct.document.values.ValueNode;
+import com.zarbosoft.bonestruct.editor.Path;
 import com.zarbosoft.bonestruct.editor.visual.Context;
+import com.zarbosoft.bonestruct.syntax.Syntax;
 import org.junit.Test;
 
 import static com.zarbosoft.bonestruct.Builders.TreeBuilder;
@@ -23,13 +23,13 @@ public class TestDocumentPaths {
 				new TreeBuilder(MiscSyntax.multiback).add("a", "").add("b", "").build(),
 				new TreeBuilder(MiscSyntax.quoted).add("value", "").build()
 		);
-		final DataElement.Value value1 = context.document.top.get().get(0).data("value");
+		final Value value1 = context.document.top.get().get(0).data("value");
 		assertThat(value1.getPath().toList(), equalTo(ImmutableList.of("0")));
 		assertThat(context.locate(value1.getPath()), equalTo(value1));
-		final DataElement.Value value2 = context.document.top.get().get(1).data("b");
+		final Value value2 = context.document.top.get().get(1).data("b");
 		assertThat(value2.getPath().toList(), equalTo(ImmutableList.of("2")));
 		assertThat(context.locate(value2.getPath()), equalTo(value2));
-		final DataElement.Value value3 = context.document.top.get().get(2).data("value");
+		final Value value3 = context.document.top.get().get(2).data("value");
 		assertThat(value3.getPath().toList(), equalTo(ImmutableList.of("3")));
 		assertThat(context.locate(value3.getPath()), equalTo(value3));
 	}
@@ -45,7 +45,7 @@ public class TestDocumentPaths {
 				.group("any", ImmutableSet.of("base"))
 				.build();
 		final Context context = buildDoc(syntax, new Builders.TreeBuilder(syntax.types.get(0)).add("a", "").build());
-		final DataElement.Value value1 = context.document.top.get().get(0).data("a");
+		final Value value1 = context.document.top.get().get(0).data("a");
 		assertThat(value1.getPath().toList(), equalTo(ImmutableList.of("0", "a")));
 		assertThat(context.locate(value1.getPath()), equalTo(value1));
 	}
@@ -61,7 +61,7 @@ public class TestDocumentPaths {
 				.group("any", ImmutableSet.of("base"))
 				.build();
 		final Context context = buildDoc(syntax, new Builders.TreeBuilder(syntax.types.get(0)).add("a", "").build());
-		final DataElement.Value value1 = context.document.top.get().get(0).data("a");
+		final Value value1 = context.document.top.get().get(0).data("a");
 		assertThat(value1.getPath().toList(), equalTo(ImmutableList.of("0", "0")));
 		assertThat(context.locate(value1.getPath()), equalTo(value1));
 	}
@@ -86,7 +86,7 @@ public class TestDocumentPaths {
 						.add("a", new Builders.TreeBuilder(syntax.types.get(1)).add("b", ""))
 						.build()
 		);
-		final DataElement.Value value1 = ((DataNode.Value) context.document.top.get().get(0).data("a")).get().data("b");
+		final Value value1 = ((ValueNode) context.document.top.get().get(0).data("a")).get().data("b");
 		assertThat(value1.getPath().toList(), equalTo(ImmutableList.of("0")));
 		assertThat(context.locate(value1.getPath()), equalTo(value1));
 	}
@@ -106,13 +106,15 @@ public class TestDocumentPaths {
 						.build())
 				.group("any", ImmutableSet.of("base"))
 				.build();
-		final Context context = buildDoc(syntax, new Builders.TreeBuilder(syntax.types.get(0))
-				.addArray("a",
-						ImmutableList.of(new Builders.TreeBuilder(syntax.types.get(1)).add("b", "").build())
-				)
-				.build());
-		final DataElement.Value value1 =
-				((DataRecord.Value) context.document.top.get().get(0).data("a")).get().get(0).data("b");
+		final Context context = buildDoc(
+				syntax,
+				new Builders.TreeBuilder(syntax.types.get(0))
+						.addArray("a",
+								ImmutableList.of(new Builders.TreeBuilder(syntax.types.get(1)).add("b", "").build())
+						)
+						.build()
+		);
+		final Value value1 = ((ValueArray) context.document.top.get().get(0).data("a")).get().get(0).data("b");
 		assertThat(value1.getPath().toList(), equalTo(ImmutableList.of("0", "0")));
 		assertThat(context.locate(value1.getPath()), equalTo(value1));
 	}
@@ -135,13 +137,15 @@ public class TestDocumentPaths {
 						.build())
 				.group("any", ImmutableSet.of("base"))
 				.build();
-		final Context context = buildDoc(syntax, new Builders.TreeBuilder(syntax.types.get(0))
-				.addRecord("a",
-						new Builders.TreeBuilder(syntax.types.get(1)).add("k", "K").add("v", "V").build()
-				)
-				.build());
-		final DataElement.Value value1 =
-				((DataRecord.Value) context.document.top.get().get(0).data("a")).get().get(0).data("v");
+		final Context context = buildDoc(
+				syntax,
+				new Builders.TreeBuilder(syntax.types.get(0))
+						.addRecord("a",
+								new Builders.TreeBuilder(syntax.types.get(1)).add("k", "K").add("v", "V").build()
+						)
+						.build()
+		);
+		final Value value1 = ((ValueArray) context.document.top.get().get(0).data("a")).get().get(0).data("v");
 		assertThat(value1.getPath().toList(), equalTo(ImmutableList.of("0", "K")));
 		assertThat(context.locate(value1.getPath()), equalTo(value1));
 	}
@@ -186,10 +190,10 @@ public class TestDocumentPaths {
 		);
 		assertThat(context.locate(new Path("0")), equalTo(context.document.top.get().get(0)));
 		assertThat(context.locate(new Path("0", "first")),
-				equalTo(((DataNode.Value) context.document.top.get().get(0).data("first")).get())
+				equalTo(((ValueNode) context.document.top.get().get(0).data("first")).get())
 		);
 		assertThat(context.locate(new Path("0", "second")),
-				equalTo(((DataNode.Value) context.document.top.get().get(0).data("second")).get())
+				equalTo(((ValueNode) context.document.top.get().get(0).data("second")).get())
 		);
 	}
 
@@ -211,10 +215,10 @@ public class TestDocumentPaths {
 						.build()
 		);
 		assertThat(context.locate(new Path("0", "0")),
-				equalTo(((DataNode.Value) context.document.top.get().get(0).data("first")).get())
+				equalTo(((ValueNode) context.document.top.get().get(0).data("first")).get())
 		);
 		assertThat(context.locate(new Path("0", "1")),
-				equalTo(((DataNode.Value) context.document.top.get().get(0).data("second")).get())
+				equalTo(((ValueNode) context.document.top.get().get(0).data("second")).get())
 		);
 	}
 
@@ -232,35 +236,26 @@ public class TestDocumentPaths {
 						.build()
 		).build());
 		assertThat(context.locate(new Path("0", "first")), equalTo((
-				(DataNode.Value) ((DataArrayBase.Value) context.document.top.get().get(0).data("value"))
-						.get()
-						.get(0)
-						.data("value")
+				(ValueNode) ((ValueArray) context.document.top.get().get(0).data("value")).get().get(0).data("value")
 		).get()));
 		assertThat(context.locate(new Path("0", "second")), equalTo((
-				(DataNode.Value) ((DataArrayBase.Value) context.document.top.get().get(0).data("value"))
-						.get()
-						.get(1)
-						.data("value")
+				(ValueNode) ((ValueArray) context.document.top.get().get(0).data("value")).get().get(1).data("value")
 		).get()));
 	}
 
 	@Test
 	public void testLocateDataArrayElement() {
-		final Context context = buildDoc(
-				MiscSyntax.syntax,
-				new Builders.TreeBuilder(MiscSyntax.array)
-						.addArray("value",
-								new TreeBuilder(MiscSyntax.one).build(),
-								new TreeBuilder(MiscSyntax.one).build()
-						)
-						.build()
-		);
+		final Context context = buildDoc(MiscSyntax.syntax, new Builders.TreeBuilder(MiscSyntax.array)
+				.addArray("value",
+						new TreeBuilder(MiscSyntax.one).build(),
+						new TreeBuilder(MiscSyntax.one).build()
+				)
+				.build());
 		assertThat(context.locate(new Path("0", "0")),
-				equalTo(((DataArrayBase.Value) context.document.top.get().get(0).data("value")).get().get(0))
+				equalTo(((ValueArray) context.document.top.get().get(0).data("value")).get().get(0))
 		);
 		assertThat(context.locate(new Path("0", "1")),
-				equalTo(((DataArrayBase.Value) context.document.top.get().get(0).data("value")).get().get(1))
+				equalTo(((ValueArray) context.document.top.get().get(0).data("value")).get().get(1))
 		);
 	}
 }

@@ -1,11 +1,11 @@
 package com.zarbosoft.bonestruct.plugins;
 
-import com.zarbosoft.bonestruct.editor.model.NodeType;
 import com.zarbosoft.bonestruct.editor.model.Plugin;
 import com.zarbosoft.bonestruct.editor.visual.Context;
 import com.zarbosoft.bonestruct.editor.visual.nodes.ArrayVisualNode;
 import com.zarbosoft.bonestruct.editor.visual.nodes.NodeVisualNodePart;
 import com.zarbosoft.bonestruct.editor.visual.nodes.PrimitiveVisualNode;
+import com.zarbosoft.bonestruct.syntax.NodeType;
 import com.zarbosoft.interface1.Configuration;
 
 @Configuration(name = "hover-type", description = "Shows the type of the element being hovered in the banner.")

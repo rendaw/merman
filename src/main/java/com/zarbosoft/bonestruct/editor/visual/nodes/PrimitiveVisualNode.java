@@ -3,11 +3,7 @@ package com.zarbosoft.bonestruct.editor.visual.nodes;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
-import com.zarbosoft.bonestruct.editor.model.Hotkeys;
-import com.zarbosoft.bonestruct.editor.model.NodeType;
-import com.zarbosoft.bonestruct.editor.model.ObboxStyle;
-import com.zarbosoft.bonestruct.editor.model.Style;
-import com.zarbosoft.bonestruct.editor.model.middle.DataPrimitive;
+import com.zarbosoft.bonestruct.document.values.ValuePrimitive;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.Context;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
@@ -19,6 +15,10 @@ import com.zarbosoft.bonestruct.editor.visual.raw.Obbox;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodeParent;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
 import com.zarbosoft.bonestruct.editor.visual.wall.Brick;
+import com.zarbosoft.bonestruct.syntax.NodeType;
+import com.zarbosoft.bonestruct.syntax.hid.Hotkeys;
+import com.zarbosoft.bonestruct.syntax.style.ObboxStyle;
+import com.zarbosoft.bonestruct.syntax.style.Style;
 import com.zarbosoft.rendaw.common.Common;
 import com.zarbosoft.rendaw.common.Pair;
 import javafx.scene.input.Clipboard;
@@ -37,9 +37,9 @@ public class PrimitiveVisualNode extends VisualNodePart {
 	// INVARIANT: Leaf nodes must always create at least one brick
 	// TODO index line offsets for faster insert/remove
 	// TODO compact/expand
-	private final DataPrimitive.Listener dataListener;
+	private final ValuePrimitive.Listener dataListener;
 	private final Obbox border = null;
-	private final DataPrimitive.Value data;
+	private final ValuePrimitive data;
 	private VisualNodeParent parent;
 	Alignment softAlignment, hardAlignment, firstAlignment;
 	Style.Baked softStyle, hardStyle, firstStyle;
@@ -219,7 +219,7 @@ public class PrimitiveVisualNode extends VisualNodePart {
 		final RangeAttachment range;
 		final boolean direct;
 		final BreakIterator clusterIterator = BreakIterator.getCharacterInstance();
-		private final DataPrimitive.Listener clusterListener = new DataPrimitive.Listener() {
+		private final ValuePrimitive.Listener clusterListener = new ValuePrimitive.Listener() {
 			@Override
 			public void set(final Context context, final String value) {
 				clusterIterator.setText(value);
@@ -769,10 +769,10 @@ public class PrimitiveVisualNode extends VisualNodePart {
 				.orElseGet(() -> lines.size());
 	}
 
-	public PrimitiveVisualNode(final Context context, final DataPrimitive.Value data, final Set<Tag> tags) {
+	public PrimitiveVisualNode(final Context context, final ValuePrimitive data, final Set<Tag> tags) {
 		super(HashTreePSet.from(tags).plus(new PartTag("primitive")));
 		data.visual = this;
-		dataListener = new DataPrimitive.Listener() {
+		dataListener = new ValuePrimitive.Listener() {
 			@Override
 			public void set(final Context context, final String newValue) {
 				clear(context);

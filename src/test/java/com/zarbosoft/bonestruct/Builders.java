@@ -4,13 +4,22 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
-import com.zarbosoft.bonestruct.editor.changes.History;
-import com.zarbosoft.bonestruct.editor.model.*;
-import com.zarbosoft.bonestruct.editor.model.back.*;
-import com.zarbosoft.bonestruct.editor.model.front.*;
-import com.zarbosoft.bonestruct.editor.model.middle.*;
+import com.zarbosoft.bonestruct.document.Document;
+import com.zarbosoft.bonestruct.document.Node;
+import com.zarbosoft.bonestruct.document.values.Value;
+import com.zarbosoft.bonestruct.document.values.ValueArray;
+import com.zarbosoft.bonestruct.document.values.ValueNode;
+import com.zarbosoft.bonestruct.document.values.ValuePrimitive;
 import com.zarbosoft.bonestruct.editor.visual.Context;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
+import com.zarbosoft.bonestruct.history.History;
+import com.zarbosoft.bonestruct.history.changes.ChangeArrayAdd;
+import com.zarbosoft.bonestruct.syntax.FreeNodeType;
+import com.zarbosoft.bonestruct.syntax.NodeType;
+import com.zarbosoft.bonestruct.syntax.Syntax;
+import com.zarbosoft.bonestruct.syntax.back.*;
+import com.zarbosoft.bonestruct.syntax.front.*;
+import com.zarbosoft.bonestruct.syntax.middle.*;
 import com.zarbosoft.luxem.write.RawWriter;
 import com.zarbosoft.rendaw.common.DeadCode;
 import org.junit.ComparisonFailure;
@@ -22,22 +31,22 @@ import static com.zarbosoft.rendaw.common.Common.uncheck;
 import static com.zarbosoft.rendaw.common.Common.zip;
 
 public class Builders {
-	public static void dump(final DataElement.Value value) {
+	public static void dump(final Value value) {
 		dump(value, new RawWriter(System.out, (byte) ' ', 4));
 		System.out.write('\n');
 		System.out.flush();
 	}
 
-	static void dump(final DataElement.Value value, final RawWriter writer) {
+	static void dump(final Value value, final RawWriter writer) {
 		uncheck(() -> {
-			if (value.getClass() == DataArrayBase.Value.class) {
+			if (value.getClass() == ValueArray.class) {
 				writer.arrayBegin();
-				((DataArrayBase.Value) value).get().stream().forEach(element -> dump(element, writer));
+				((ValueArray) value).get().stream().forEach(element -> dump(element, writer));
 				writer.arrayEnd();
-			} else if (value.getClass() == DataNode.Value.class) {
-				dump(((DataNode.Value) value).get(), writer);
-			} else if (value.getClass() == DataPrimitive.Value.class) {
-				writer.quotedPrimitive(((DataPrimitive.Value) value).get().getBytes(StandardCharsets.UTF_8));
+			} else if (value.getClass() == ValueNode.class) {
+				dump(((ValueNode) value).get(), writer);
+			} else if (value.getClass() == ValuePrimitive.class) {
+				writer.quotedPrimitive(((ValuePrimitive) value).get().getBytes(StandardCharsets.UTF_8));
 			} else
 				throw new DeadCode();
 		});
@@ -60,7 +69,7 @@ public class Builders {
 
 		public SyntaxBuilder(final String root) {
 			this.syntax = new Syntax();
-			syntax.root = new DataArray();
+			syntax.root = new MiddleArray();
 			syntax.root.type = root;
 		}
 
@@ -158,14 +167,14 @@ public class Builders {
 		}
 
 		public TypeBuilder middlePrimitive(final String id) {
-			final DataPrimitive middle = new DataPrimitive();
+			final MiddlePrimitive middle = new MiddlePrimitive();
 			middle.id = id;
 			this.type.middle.put(id, middle);
 			return this;
 		}
 
 		public TypeBuilder middleNode(final String id, final String type) {
-			final DataNode middle = new DataNode();
+			final MiddleNode middle = new MiddleNode();
 			middle.type = type;
 			middle.id = id;
 			this.type.middle.put(id, middle);
@@ -173,7 +182,7 @@ public class Builders {
 		}
 
 		public TypeBuilder middleArray(final String id, final String type) {
-			final DataArray middle = new DataArray();
+			final MiddleArray middle = new MiddleArray();
 			middle.type = type;
 			middle.id = id;
 			this.type.middle.put(id, middle);
@@ -181,7 +190,7 @@ public class Builders {
 		}
 
 		public TypeBuilder middleRecord(final String id, final String type) {
-			final DataRecord middle = new DataRecord();
+			final MiddleRecord middle = new MiddleRecord();
 			middle.type = type;
 			middle.id = id;
 			this.type.middle.put(id, middle);
@@ -189,7 +198,7 @@ public class Builders {
 		}
 
 		public TypeBuilder middleRecordKey(final String id) {
-			final DataRecordKey middle = new DataRecordKey();
+			final MiddleRecordKey middle = new MiddleRecordKey();
 			middle.id = id;
 			this.type.middle.put(id, middle);
 			return this;
@@ -306,44 +315,44 @@ public class Builders {
 
 	public static class TreeBuilder {
 		private final NodeType type;
-		private final Map<String, DataElement.Value> data = new HashMap<>();
+		private final Map<String, Value> data = new HashMap<>();
 
 		public TreeBuilder(final NodeType type) {
 			this.type = type;
 		}
 
 		public TreeBuilder add(final String key, final TreeBuilder builder) {
-			data.put(key, new DataNode.Value((DataNode) type.middle().get(key), builder.build()));
+			data.put(key, new ValueNode((MiddleNode) type.middle().get(key), builder.build()));
 			return this;
 		}
 
 		public TreeBuilder add(final String key, final Node node) {
-			data.put(key, new DataNode.Value((DataNode) type.middle().get(key), node));
+			data.put(key, new ValueNode((MiddleNode) type.middle().get(key), node));
 			return this;
 		}
 
 		public TreeBuilder add(final String key, final String text) {
-			data.put(key, new DataPrimitive.Value((DataPrimitive) type.middle().get(key), text));
+			data.put(key, new ValuePrimitive((MiddlePrimitive) type.middle().get(key), text));
 			return this;
 		}
 
 		public TreeBuilder addKey(final String key, final String text) {
-			data.put(key, new DataRecordKey.Value((DataRecordKey) type.middle().get(key), text));
+			data.put(key, new ValuePrimitive((MiddleRecordKey) type.middle().get(key), text));
 			return this;
 		}
 
 		public TreeBuilder addArray(final String key, final List<Node> values) {
-			data.put(key, new DataArray.Value(type.getDataArray(key), values));
+			data.put(key, new ValueArray(type.getDataArray(key), values));
 			return this;
 		}
 
 		public TreeBuilder addArray(final String key, final Node... values) {
-			data.put(key, new DataArray.Value(type.getDataArray(key), Arrays.asList(values)));
+			data.put(key, new ValueArray(type.getDataArray(key), Arrays.asList(values)));
 			return this;
 		}
 
 		public TreeBuilder addRecord(final String key, final Node... values) {
-			data.put(key, new DataRecord.Value(type.getDataRecord(key), Arrays.asList(values)));
+			data.put(key, new ValueArray(type.getDataRecord(key), Arrays.asList(values)));
 			return this;
 		}
 
@@ -351,8 +360,8 @@ public class Builders {
 			return new Node(type, data);
 		}
 
-		public DataElement.Value buildArray() {
-			return new DataArray.Value(null, Arrays.asList(new Node(type, data)));
+		public Value buildArray() {
+			return new ValueArray(null, Arrays.asList(new Node(type, data)));
 		}
 
 	}
@@ -382,11 +391,11 @@ public class Builders {
 	}
 
 	public static void assertTreeEqual(
-			final DataElement.Value expected, final DataElement.Value got
+			final Value expected, final Value got
 	) {
-		if (expected.getClass() == DataArrayBase.Value.class) {
-			final DataArrayBase.Value expectedValue = (DataArrayBase.Value) expected;
-			final DataArrayBase.Value gotValue = (DataArrayBase.Value) got;
+		if (expected.getClass() == ValueArray.class) {
+			final ValueArray expectedValue = (ValueArray) expected;
+			final ValueArray gotValue = (ValueArray) got;
 			if (expectedValue.get().size() != gotValue.get().size())
 				throw new AssertionError(String.format("Array length mismatch.\nExpected: %s\nGot: %s\nAt: %s",
 						expectedValue.get().size(),
@@ -396,13 +405,13 @@ public class Builders {
 			zip(expectedValue.get().stream(), gotValue.get().stream()).forEach(pair -> assertTreeEqual(pair.first,
 					pair.second
 			));
-		} else if (expected.getClass() == DataNode.Value.class) {
-			final DataNode.Value expectedValue = (DataNode.Value) expected;
-			final DataNode.Value gotValue = (DataNode.Value) got;
+		} else if (expected.getClass() == ValueNode.class) {
+			final ValueNode expectedValue = (ValueNode) expected;
+			final ValueNode gotValue = (ValueNode) got;
 			assertTreeEqual(expectedValue.get(), gotValue.get());
-		} else if (expected.getClass() == DataPrimitive.Value.class) {
-			final DataPrimitive.Value expectedValue = (DataPrimitive.Value) expected;
-			final DataPrimitive.Value gotValue = (DataPrimitive.Value) got;
+		} else if (expected.getClass() == ValuePrimitive.class) {
+			final ValuePrimitive expectedValue = (ValuePrimitive) expected;
+			final ValuePrimitive gotValue = (ValuePrimitive) got;
 			if (!expectedValue.get().equals(gotValue.get()))
 				throw new ComparisonFailure(String.format("Array length mismatch.\nAt: %s", got.getPath()),
 						expectedValue.get(),
@@ -417,15 +426,15 @@ public class Builders {
 	}
 
 	public static void assertTreeEqual(
-			final Context context, final Node expected, final DataElement.Value got
+			final Context context, final Node expected, final Value got
 	) {
-		assertTreeEqual(new DataArrayBase.Value(context.syntax.root, ImmutableList.of(expected)), got);
+		assertTreeEqual(new ValueArray(context.syntax.root, ImmutableList.of(expected)), got);
 	}
 
 	public static Context buildDoc(final Syntax syntax, final Node... root) {
 		final Document doc = syntax.create();
 		final Context context = new Context(syntax, doc, null, null, null, new History());
-		context.history.apply(context, new DataArrayBase.ChangeAdd(doc.top, 0, Arrays.asList(root)));
+		context.history.apply(context, new ChangeArrayAdd(doc.top, 0, Arrays.asList(root)));
 		context.history.finishChange();
 		final VisualNodePart visual =
 				syntax.rootFront.createVisual(context, ImmutableMap.of("value", doc.top), ImmutableSet.of());

@@ -1,23 +1,25 @@
 package com.zarbosoft.bonestruct.editor.visual.nodes;
 
 import com.google.common.collect.ImmutableList;
-import com.zarbosoft.bonestruct.editor.model.Node;
-import com.zarbosoft.bonestruct.editor.model.middle.DataArray;
+import com.zarbosoft.bonestruct.document.Node;
+import com.zarbosoft.bonestruct.document.values.ValueArray;
 import com.zarbosoft.bonestruct.editor.visual.Context;
+import com.zarbosoft.bonestruct.history.changes.ChangeArrayAdd;
+import com.zarbosoft.bonestruct.history.changes.ChangeArrayRemove;
 
 import java.util.List;
 import java.util.Set;
 
 public class ArrayAsNodeVisualNodePart extends NodeVisualNodePartBase {
-	final DataArray.Value data;
-	private final DataArray.Listener dataListener;
+	final ValueArray data;
+	private final ValueArray.Listener dataListener;
 
 	public ArrayAsNodeVisualNodePart(
-			final Context context, final DataArray.Value data, final Set<Tag> tags
+			final Context context, final ValueArray data, final Set<Tag> tags
 	) {
 		super(tags);
 		this.data = data;
-		dataListener = new DataArray.Listener() {
+		dataListener = new ValueArray.Listener() {
 			@Override
 			public void added(final Context context, final int index, final List<Node> nodes) {
 				set(context, nodes.get(0));
@@ -35,8 +37,8 @@ public class ArrayAsNodeVisualNodePart extends NodeVisualNodePartBase {
 
 	@Override
 	protected void nodeSet(final Context context, final Node value) {
-		context.history.apply(context, new DataArray.ChangeRemove(data, 0, 1));
-		context.history.apply(context, new DataArray.ChangeAdd(data, 0, ImmutableList.of(value)));
+		context.history.apply(context, new ChangeArrayRemove(data, 0, 1));
+		context.history.apply(context, new ChangeArrayAdd(data, 0, ImmutableList.of(value)));
 	}
 
 	@Override

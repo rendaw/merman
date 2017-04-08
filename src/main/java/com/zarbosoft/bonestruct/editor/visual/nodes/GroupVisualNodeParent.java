@@ -1,12 +1,12 @@
 package com.zarbosoft.bonestruct.editor.visual.nodes;
 
-import com.zarbosoft.bonestruct.editor.model.NodeType;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.Context;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodeParent;
 import com.zarbosoft.bonestruct.editor.visual.wall.Brick;
+import com.zarbosoft.bonestruct.syntax.NodeType;
 
 public class GroupVisualNodeParent extends VisualNodeParent {
 	public final GroupVisualNode target;

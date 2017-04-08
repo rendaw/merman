@@ -1,7 +1,7 @@
 package com.zarbosoft.bonestruct.editor.visual.raw;
 
-import com.zarbosoft.bonestruct.editor.model.Style;
 import com.zarbosoft.bonestruct.editor.visual.Context;
+import com.zarbosoft.bonestruct.syntax.style.Style;
 import javafx.scene.Node;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;

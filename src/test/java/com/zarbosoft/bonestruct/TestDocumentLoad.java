@@ -1,9 +1,10 @@
 package com.zarbosoft.bonestruct;
 
-import com.zarbosoft.bonestruct.editor.model.Document;
-import com.zarbosoft.bonestruct.editor.model.FreeNodeType;
-import com.zarbosoft.bonestruct.editor.model.Node;
-import com.zarbosoft.bonestruct.editor.model.Syntax;
+import com.zarbosoft.bonestruct.document.Document;
+import com.zarbosoft.bonestruct.document.Node;
+import com.zarbosoft.bonestruct.editor.Path;
+import com.zarbosoft.bonestruct.syntax.FreeNodeType;
+import com.zarbosoft.bonestruct.syntax.Syntax;
 import org.junit.Test;
 
 import java.util.List;

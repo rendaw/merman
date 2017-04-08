@@ -2,12 +2,8 @@ package com.zarbosoft.bonestruct.editor.visual.nodes;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.zarbosoft.bonestruct.editor.model.FreeNodeType;
-import com.zarbosoft.bonestruct.editor.model.Hotkeys;
-import com.zarbosoft.bonestruct.editor.model.Node;
-import com.zarbosoft.bonestruct.editor.model.NodeType;
-import com.zarbosoft.bonestruct.editor.model.front.FrontConstantPart;
-import com.zarbosoft.bonestruct.editor.model.middle.DataArrayBase;
+import com.zarbosoft.bonestruct.document.Node;
+import com.zarbosoft.bonestruct.document.values.ValueArray;
 import com.zarbosoft.bonestruct.editor.visual.Context;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.editor.visual.attachments.BorderAttachment;
@@ -18,6 +14,12 @@ import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodeParent;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
 import com.zarbosoft.bonestruct.editor.visual.wall.Brick;
+import com.zarbosoft.bonestruct.history.changes.ChangeArrayAdd;
+import com.zarbosoft.bonestruct.syntax.FreeNodeType;
+import com.zarbosoft.bonestruct.syntax.NodeType;
+import com.zarbosoft.bonestruct.syntax.front.FrontConstantPart;
+import com.zarbosoft.bonestruct.syntax.hid.Hotkeys;
+import com.zarbosoft.bonestruct.syntax.middle.MiddleArrayBase;
 import com.zarbosoft.rendaw.common.Pair;
 import org.pcollections.HashTreePSet;
 import org.pcollections.PSet;
@@ -33,13 +35,13 @@ import static java.io.File.separator;
 
 public abstract class ArrayVisualNode extends GroupVisualNode {
 
-	private final DataArrayBase.Listener dataListener;
-	private final DataArrayBase.Value data;
+	private final ValueArray.Listener dataListener;
+	private final ValueArray data;
 
-	public ArrayVisualNode(final Context context, final DataArrayBase.Value data, final Set<VisualNode.Tag> tags) {
+	public ArrayVisualNode(final Context context, final ValueArray data, final Set<VisualNode.Tag> tags) {
 		super(tags);
 		this.data = data;
-		dataListener = new DataArrayBase.Listener() {
+		dataListener = new ValueArray.Listener() {
 			@Override
 			public void added(final Context context, final int index, final List<Node> nodes) {
 				ArrayVisualNode.this.add(context, index, nodes);
@@ -66,14 +68,14 @@ public abstract class ArrayVisualNode extends GroupVisualNode {
 	public boolean select(final Context context) {
 		if (children.isEmpty()) {
 			final List<FreeNodeType> childTypes =
-					context.syntax.getLeafTypes(((DataArrayBase) data.data()).type).collect(Collectors.toList());
+					context.syntax.getLeafTypes(((MiddleArrayBase) data.data()).type).collect(Collectors.toList());
 			final Node element;
 			if (childTypes.size() == 1) {
 				element = childTypes.get(0).create(context.syntax);
 			} else {
 				element = context.syntax.gap.create();
 			}
-			context.history.apply(context, new DataArrayBase.ChangeAdd(data, 0, ImmutableList.of(element)));
+			context.history.apply(context, new ChangeArrayAdd(data, 0, ImmutableList.of(element)));
 		}
 		((ArrayVisualNodeParent) children.get(0).parent()).selectDown(context);
 		return true;
@@ -259,7 +261,7 @@ public abstract class ArrayVisualNode extends GroupVisualNode {
 		}
 	}
 
-	protected abstract Map<String, com.zarbosoft.bonestruct.editor.model.pidgoon.Node> getHotkeys();
+	protected abstract Map<String, com.zarbosoft.bonestruct.syntax.hid.grammar.Node> getHotkeys();
 
 	protected abstract List<FrontConstantPart> getPrefix();
 

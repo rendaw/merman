@@ -3,14 +3,16 @@ package com.zarbosoft.bonestruct;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.zarbosoft.bonestruct.editor.changes.History;
-import com.zarbosoft.bonestruct.editor.model.Document;
-import com.zarbosoft.bonestruct.editor.model.Node;
-import com.zarbosoft.bonestruct.editor.model.Syntax;
-import com.zarbosoft.bonestruct.editor.model.middle.DataArrayBase;
-import com.zarbosoft.bonestruct.editor.model.middle.DataPrimitive;
+import com.zarbosoft.bonestruct.document.Document;
+import com.zarbosoft.bonestruct.document.Node;
+import com.zarbosoft.bonestruct.document.values.ValueArray;
+import com.zarbosoft.bonestruct.document.values.ValuePrimitive;
+import com.zarbosoft.bonestruct.editor.Path;
 import com.zarbosoft.bonestruct.editor.visual.Context;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
+import com.zarbosoft.bonestruct.history.History;
+import com.zarbosoft.bonestruct.history.changes.ChangeArrayAdd;
+import com.zarbosoft.bonestruct.syntax.Syntax;
 import org.junit.Test;
 
 import java.util.function.Consumer;
@@ -26,7 +28,7 @@ public class TestDocumentGap {
 		final Document doc = MiscSyntax.syntax.create();
 		final Context context = new Context(MiscSyntax.syntax, doc, null, null, null, new History());
 		final Node gap = MiscSyntax.syntax.gap.create();
-		context.history.apply(context, new DataArrayBase.ChangeAdd(doc.top, 0, ImmutableList.of(gap)));
+		context.history.apply(context, new ChangeArrayAdd(doc.top, 0, ImmutableList.of(gap)));
 		final VisualNodePart visual =
 				MiscSyntax.syntax.rootFront.createVisual(context, ImmutableMap.of("value", doc.top), ImmutableSet.of());
 		gap.getVisual().select(context);
@@ -163,7 +165,7 @@ public class TestDocumentGap {
 						.addArray("value", new Builders.TreeBuilder(MiscSyntax.one).build())
 						.build(),
 				context -> {
-					((DataPrimitive.Value) context.locate(new Path("0", "gap"))).getVisual().select(context);
+					((ValuePrimitive) context.locate(new Path("0", "gap"))).getVisual().select(context);
 					context.selection.receiveText(context, "x");
 					context.selection.receiveText(context, "13");
 				},
@@ -182,7 +184,7 @@ public class TestDocumentGap {
 						.addArray("value", new Builders.TreeBuilder(MiscSyntax.one).build())
 						.build(),
 				context -> {
-					((DataPrimitive.Value) context.locate(new Path("0", "gap"))).getVisual().select(context);
+					((ValuePrimitive) context.locate(new Path("0", "gap"))).getVisual().select(context);
 					context.selection.receiveText(context, "#");
 					context.selection.receiveText(context, "e");
 				},
@@ -209,7 +211,7 @@ public class TestDocumentGap {
 						)
 						.build(),
 				context -> {
-					((DataPrimitive.Value) context.locate(new Path("0", "second", "gap"))).getVisual().select(context);
+					((ValuePrimitive) context.locate(new Path("0", "second", "gap"))).getVisual().select(context);
 					context.selection.receiveText(context, "*");
 				},
 				new Builders.TreeBuilder(ExpressionSyntax.plus)
@@ -235,7 +237,7 @@ public class TestDocumentGap {
 						)
 						.build(),
 				context -> {
-					((DataPrimitive.Value) context.locate(new Path("0", "second", "gap"))).getVisual().select(context);
+					((ValuePrimitive) context.locate(new Path("0", "second", "gap"))).getVisual().select(context);
 					context.selection.receiveText(context, "+");
 				},
 				new Builders.TreeBuilder(ExpressionSyntax.plus)
@@ -261,7 +263,7 @@ public class TestDocumentGap {
 						)
 						.build(),
 				context -> {
-					((DataPrimitive.Value) context.locate(new Path("0", "second", "gap"))).getVisual().select(context);
+					((ValuePrimitive) context.locate(new Path("0", "second", "gap"))).getVisual().select(context);
 					context.selection.receiveText(context, "-");
 				},
 				new Builders.TreeBuilder(ExpressionSyntax.minus).add("first",
@@ -284,7 +286,7 @@ public class TestDocumentGap {
 						)
 						.build(),
 				context -> {
-					((DataPrimitive.Value) context.locate(new Path("0", "second", "gap"))).getVisual().select(context);
+					((ValuePrimitive) context.locate(new Path("0", "second", "gap"))).getVisual().select(context);
 					context.selection.receiveText(context, "+");
 				},
 				new Builders.TreeBuilder(ExpressionSyntax.plus).add("first",
@@ -307,7 +309,7 @@ public class TestDocumentGap {
 						)
 						.build(),
 				context -> {
-					((DataPrimitive.Value) context.locate(new Path("0", "second", "gap"))).getVisual().select(context);
+					((ValuePrimitive) context.locate(new Path("0", "second", "gap"))).getVisual().select(context);
 					context.selection.receiveText(context, "+");
 				},
 				new Builders.TreeBuilder(ExpressionSyntax.plus).add("first",
@@ -330,7 +332,7 @@ public class TestDocumentGap {
 						)
 						.build(),
 				context -> {
-					((DataPrimitive.Value) context.locate(new Path("0", "second", "gap"))).getVisual().select(context);
+					((ValuePrimitive) context.locate(new Path("0", "second", "gap"))).getVisual().select(context);
 					context.selection.receiveText(context, "+");
 				},
 				new Builders.TreeBuilder(ExpressionSyntax.inclusiveRange)
@@ -352,8 +354,8 @@ public class TestDocumentGap {
 		innerTestTransform(MiscSyntax.syntax,
 				new Builders.TreeBuilder(MiscSyntax.array).addArray("value", MiscSyntax.syntax.gap.create()).build(),
 				context -> {
-					((DataPrimitive.Value) context.locate(new Path("0", "0"))).getVisual().select(context);
-					((DataArrayBase.Value) context.locate(new Path("0"))).getVisual().select(context);
+					((ValuePrimitive) context.locate(new Path("0", "0"))).getVisual().select(context);
+					((ValueArray) context.locate(new Path("0"))).getVisual().select(context);
 				},
 				new Builders.TreeBuilder(MiscSyntax.array).addArray("value").build()
 		);
@@ -364,9 +366,9 @@ public class TestDocumentGap {
 		innerTestTransform(MiscSyntax.syntax,
 				new Builders.TreeBuilder(MiscSyntax.array).addArray("value", MiscSyntax.syntax.gap.create()).build(),
 				context -> {
-					((DataPrimitive.Value) context.locate(new Path("0", "0"))).getVisual().select(context);
+					((ValuePrimitive) context.locate(new Path("0", "0"))).getVisual().select(context);
 					context.selection.receiveText(context, "urt");
-					((DataArrayBase.Value) context.locate(new Path("0"))).getVisual().select(context);
+					((ValueArray) context.locate(new Path("0"))).getVisual().select(context);
 				},
 				new Builders.TreeBuilder(MiscSyntax.array)
 						.addArray("value", new TreeBuilder(MiscSyntax.syntax.gap).add("gap", "urt").build())
@@ -379,7 +381,7 @@ public class TestDocumentGap {
 		innerTestTransform(MiscSyntax.syntax,
 				MiscSyntax.syntax.suffixGap.create(true, new TreeBuilder(MiscSyntax.infinity).build()),
 				context -> {
-					((DataPrimitive.Value) context.locate(new Path("0", "gap"))).getVisual().select(context);
+					((ValuePrimitive) context.locate(new Path("0", "gap"))).getVisual().select(context);
 					((Node) context.locate(new Path("0"))).getVisual().select(context);
 				},
 				new Builders.TreeBuilder(MiscSyntax.infinity).build()
@@ -391,7 +393,7 @@ public class TestDocumentGap {
 		innerTestTransform(MiscSyntax.syntax,
 				MiscSyntax.syntax.prefixGap.create(new TreeBuilder(MiscSyntax.infinity).build()),
 				context -> {
-					((DataPrimitive.Value) context.locate(new Path("0", "gap"))).getVisual().select(context);
+					((ValuePrimitive) context.locate(new Path("0", "gap"))).getVisual().select(context);
 					((Node) context.locate(new Path("0"))).getVisual().select(context);
 				},
 				new Builders.TreeBuilder(MiscSyntax.infinity).build()
@@ -406,7 +408,7 @@ public class TestDocumentGap {
 		innerTestTransform(MiscSyntax.syntax,
 				new Builders.TreeBuilder(MiscSyntax.array).addArray("value").build(),
 				context -> {
-					((DataArrayBase.Value) context.locate(new Path("0"))).getVisual().select(context);
+					((ValueArray) context.locate(new Path("0"))).getVisual().select(context);
 				},
 				new Builders.TreeBuilder(MiscSyntax.array).addArray("value", MiscSyntax.syntax.gap.create()).build()
 		);

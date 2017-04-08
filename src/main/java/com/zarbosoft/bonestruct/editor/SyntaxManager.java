@@ -1,9 +1,9 @@
 package com.zarbosoft.bonestruct.editor;
 
 import com.zarbosoft.appdirsj.AppDirs;
-import com.zarbosoft.bonestruct.WeakCache;
-import com.zarbosoft.bonestruct.editor.model.Syntax;
+import com.zarbosoft.bonestruct.syntax.Syntax;
 import com.zarbosoft.rendaw.common.Common;
+import com.zarbosoft.rendaw.common.WeakCache;
 
 import java.io.InputStream;
 import java.nio.file.Files;

@@ -1,8 +1,8 @@
 package com.zarbosoft.bonestruct.editor.visual.attachments;
 
-import com.zarbosoft.bonestruct.editor.model.ObboxStyle;
 import com.zarbosoft.bonestruct.editor.visual.Context;
 import com.zarbosoft.bonestruct.editor.visual.wall.Brick;
+import com.zarbosoft.bonestruct.syntax.style.ObboxStyle;
 
 public class VisualBorderAttachment extends MultiVisualAttachmentAdapter {
 	private final BorderAttachment border;

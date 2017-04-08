@@ -1,10 +1,10 @@
 package com.zarbosoft.bonestruct.editor.visual.tree;
 
-import com.zarbosoft.bonestruct.editor.model.NodeType;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.Context;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.editor.visual.wall.Brick;
+import com.zarbosoft.bonestruct.syntax.NodeType;
 
 public abstract class VisualNodeParent {
 	public abstract void selectUp(Context context);

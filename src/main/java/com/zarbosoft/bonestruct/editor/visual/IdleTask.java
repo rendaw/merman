@@ -1,6 +1,6 @@
 package com.zarbosoft.bonestruct.editor.visual;
 
-import com.zarbosoft.bonestruct.ChainComparator;
+import com.zarbosoft.rendaw.common.ChainComparator;
 
 import java.util.Comparator;
 

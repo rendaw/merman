@@ -1,7 +1,7 @@
 package com.zarbosoft.bonestruct;
 
-import com.zarbosoft.bonestruct.editor.model.FreeNodeType;
-import com.zarbosoft.bonestruct.editor.model.Syntax;
+import com.zarbosoft.bonestruct.syntax.FreeNodeType;
+import com.zarbosoft.bonestruct.syntax.Syntax;
 
 import static com.zarbosoft.bonestruct.Builders.buildBackDataNode;
 

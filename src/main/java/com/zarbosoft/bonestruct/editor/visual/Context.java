@@ -4,13 +4,14 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
-import com.zarbosoft.bonestruct.ChainComparator;
-import com.zarbosoft.bonestruct.Path;
+import com.zarbosoft.bonestruct.document.Document;
+import com.zarbosoft.bonestruct.document.values.Value;
+import com.zarbosoft.bonestruct.document.values.ValueArray;
+import com.zarbosoft.bonestruct.document.values.ValueNode;
+import com.zarbosoft.bonestruct.document.values.ValuePrimitive;
 import com.zarbosoft.bonestruct.editor.InvalidPath;
-import com.zarbosoft.bonestruct.editor.changes.History;
-import com.zarbosoft.bonestruct.editor.model.*;
-import com.zarbosoft.bonestruct.editor.model.back.*;
-import com.zarbosoft.bonestruct.editor.model.middle.*;
+import com.zarbosoft.bonestruct.editor.Path;
+import com.zarbosoft.bonestruct.editor.model.Plugin;
 import com.zarbosoft.bonestruct.editor.visual.attachments.TransverseExtentsAdapter;
 import com.zarbosoft.bonestruct.editor.visual.attachments.VisualAttachmentAdapter;
 import com.zarbosoft.bonestruct.editor.visual.raw.RawText;
@@ -21,10 +22,19 @@ import com.zarbosoft.bonestruct.editor.visual.wall.Attachment;
 import com.zarbosoft.bonestruct.editor.visual.wall.Bedding;
 import com.zarbosoft.bonestruct.editor.visual.wall.Brick;
 import com.zarbosoft.bonestruct.editor.visual.wall.Wall;
+import com.zarbosoft.bonestruct.history.History;
+import com.zarbosoft.bonestruct.syntax.NodeType;
+import com.zarbosoft.bonestruct.syntax.Syntax;
+import com.zarbosoft.bonestruct.syntax.back.*;
+import com.zarbosoft.bonestruct.syntax.hid.Hotkeys;
+import com.zarbosoft.bonestruct.syntax.middle.MiddleArray;
+import com.zarbosoft.bonestruct.syntax.middle.MiddleRecord;
+import com.zarbosoft.bonestruct.syntax.style.Style;
 import com.zarbosoft.pidgoon.events.EventStream;
 import com.zarbosoft.pidgoon.events.Grammar;
 import com.zarbosoft.pidgoon.events.Operator;
 import com.zarbosoft.pidgoon.nodes.Union;
+import com.zarbosoft.rendaw.common.ChainComparator;
 import javafx.animation.Interpolator;
 import javafx.animation.Transition;
 import javafx.geometry.Bounds;
@@ -158,7 +168,7 @@ public class Context {
 	}
 
 	/**
-	 * Locate a Node or DataElement.Value from a path.  If the path ends between those two, the last valid value
+	 * Locate a Node or MiddleElement.Value from a path.  If the path ends between those two, the last valid value
 	 * is returned.  If the path references an invalid location InvalidPath is thrown.
 	 *
 	 * @param path
@@ -168,8 +178,8 @@ public class Context {
 		int pathIndex = -1;
 		final List<String> segments = ImmutableList.copyOf(path.segments);
 		// Either (value) or (node & part) are always set
-		DataElement.Value value = document.top;
-		com.zarbosoft.bonestruct.editor.model.Node node = null;
+		Value value = document.top;
+		com.zarbosoft.bonestruct.document.Node node = null;
 		BackPart part = null;
 		for (int cycle = 0; cycle < 10000; ++cycle) {
 			if (part != null) {
@@ -236,15 +246,15 @@ public class Context {
 				node = null;
 			} else {
 				// Start from a value
-				if (value instanceof DataArrayBase.Value) {
+				if (value instanceof ValueArray) {
 					pathIndex += 1;
 					if (pathIndex == segments.size())
 						return value;
 					final int tempPathIndex = pathIndex;
 					final String segment = segments.get(pathIndex);
-					if (((DataArrayBase.Value) value).data() instanceof DataRecord) {
-						node = ((DataArrayBase.Value) value).get().stream().filter(child -> (
-								(DataRecordKey.Value) child.data((
+					if (((ValueArray) value).data() instanceof MiddleRecord) {
+						node = ((ValueArray) value).get().stream().filter(child -> (
+								(ValuePrimitive) child.data((
 										(BackDataKey) child.type.back().get(0)
 								).middle)
 						).get().equals(segment)).findFirst().orElseThrow(() -> new InvalidPath(String.format(
@@ -253,7 +263,7 @@ public class Context {
 								new Path(TreePVector.from(segments.subList(0, tempPathIndex)))
 						)));
 						part = node.type.back().get(1);
-					} else if (((DataArrayBase.Value) value).data() instanceof DataArray) {
+					} else if (((ValueArray) value).data() instanceof MiddleArray) {
 						final int index;
 						try {
 							index = Integer.parseInt(segment);
@@ -263,21 +273,19 @@ public class Context {
 									new Path(TreePVector.from(segments.subList(0, pathIndex)))
 							));
 						}
-						node = ((DataArrayBase.Value) value).get().stream().filter(child -> (
-								((DataArrayBase.Value.ArrayParent) child.parent).actualIndex <= index
+						node = ((ValueArray) value).get().stream().filter(child -> (
+								((ValueArray.ArrayParent) child.parent).actualIndex <= index
 						)).reduce((a, b) -> b).orElseThrow(() -> new InvalidPath(String.format(
 								"Invalid index %d at [%s].",
 								index,
 								new Path(TreePVector.from(segments.subList(0, tempPathIndex)))
 						)));
-						part = node.type
-								.back()
-								.get(index - ((DataArrayBase.Value.ArrayParent) node.parent).actualIndex);
+						part = node.type.back().get(index - ((ValueArray.ArrayParent) node.parent).actualIndex);
 					}
-				} else if (value instanceof DataNode.Value) {
-					node = ((DataNode.Value) value).get();
+				} else if (value instanceof ValueNode) {
+					node = ((ValueNode) value).get();
 					part = node.type.back().get(0);
-				} else if (value instanceof DataPrimitive.Value) {
+				} else if (value instanceof ValuePrimitive) {
 					if (segments.size() > pathIndex + 1)
 						throw new InvalidPath(String.format("Path continues but data ends at primitive [%s].",
 								new Path(TreePVector.from(segments.subList(0, pathIndex)))
@@ -583,11 +591,11 @@ public class Context {
 			hotkeyGrammar = new Grammar();
 			final Union union = new Union();
 			for (final Action action : Iterables.concat(selection.getActions(this), globalActions)) {
-				final List<com.zarbosoft.bonestruct.editor.model.pidgoon.Node> hotkeyEntries =
+				final List<com.zarbosoft.bonestruct.syntax.hid.grammar.Node> hotkeyEntries =
 						selection.getHotkeys(this).hotkeys.get(action.getName());
 				if (hotkeyEntries == null)
 					continue;
-				for (final com.zarbosoft.bonestruct.editor.model.pidgoon.Node hotkey : hotkeyEntries) {
+				for (final com.zarbosoft.bonestruct.syntax.hid.grammar.Node hotkey : hotkeyEntries) {
 					union.add(new Operator(hotkey.build(), store -> store.pushStack(action)));
 				}
 			}
