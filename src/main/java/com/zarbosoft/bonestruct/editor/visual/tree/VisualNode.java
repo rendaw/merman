@@ -93,14 +93,19 @@ public abstract class VisualNode {
 		}
 	}
 
-	public Set<Tag> tags() {
-		return tags;
+	public Set<Tag> tags(final Context context) {
+		return HashTreePSet.from(tags).plusAll(context.globalTags);
 	}
 
 	public void changeTags(final Context context, final TagsChange tagsChange) {
 		tags.removeAll(tagsChange.remove);
 		tags.addAll(tagsChange.add);
+		if (context.selection.getVisual() == this)
+			context.selectionTagsChanged();
+		tagsChanged(context);
 	}
+
+	public abstract void tagsChanged(Context context);
 
 	@Configuration(name = "type")
 	public static class TypeTag implements Tag {
@@ -207,6 +212,33 @@ public abstract class VisualNode {
 		@Override
 		public int hashCode() {
 			return Objects.hash(FreeTag.class.hashCode(), value);
+		}
+	}
+
+	@Configuration(name = "global")
+	public static class GlobalTag implements Tag {
+		@Configuration
+		public String value;
+
+		public GlobalTag() {
+		}
+
+		public GlobalTag(final String value) {
+			this.value = value;
+		}
+
+		@Override
+		public boolean equals(final Object obj) {
+			return obj instanceof GlobalTag && value.equals(((GlobalTag) obj).value);
+		}
+
+		public String toString() {
+			return String.format("global:%s", value);
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(GlobalTag.class.hashCode(), value);
 		}
 	}
 }

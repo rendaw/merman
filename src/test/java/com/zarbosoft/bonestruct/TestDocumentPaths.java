@@ -106,14 +106,11 @@ public class TestDocumentPaths {
 						.build())
 				.group("any", ImmutableSet.of("base"))
 				.build();
-		final Context context = buildDoc(
-				syntax,
-				new Builders.TreeBuilder(syntax.types.get(0))
-						.addArray("a",
-								ImmutableList.of(new Builders.TreeBuilder(syntax.types.get(1)).add("b", "").build())
-						)
-						.build()
-		);
+		final Context context = buildDoc(syntax, new Builders.TreeBuilder(syntax.types.get(0))
+				.addArray("a",
+						ImmutableList.of(new Builders.TreeBuilder(syntax.types.get(1)).add("b", "").build())
+				)
+				.build());
 		final Value value1 = ((ValueArray) context.document.top.get().get(0).data("a")).get().get(0).data("b");
 		assertThat(value1.getPath().toList(), equalTo(ImmutableList.of("0", "0")));
 		assertThat(context.locate(value1.getPath()), equalTo(value1));
@@ -137,14 +134,11 @@ public class TestDocumentPaths {
 						.build())
 				.group("any", ImmutableSet.of("base"))
 				.build();
-		final Context context = buildDoc(
-				syntax,
-				new Builders.TreeBuilder(syntax.types.get(0))
-						.addRecord("a",
-								new Builders.TreeBuilder(syntax.types.get(1)).add("k", "K").add("v", "V").build()
-						)
-						.build()
-		);
+		final Context context = buildDoc(syntax, new Builders.TreeBuilder(syntax.types.get(0))
+				.addRecord("a",
+						new Builders.TreeBuilder(syntax.types.get(1)).add("k", "K").add("v", "V").build()
+				)
+				.build());
 		final Value value1 = ((ValueArray) context.document.top.get().get(0).data("a")).get().get(0).data("v");
 		assertThat(value1.getPath().toList(), equalTo(ImmutableList.of("0", "K")));
 		assertThat(context.locate(value1.getPath()), equalTo(value1));
@@ -245,12 +239,15 @@ public class TestDocumentPaths {
 
 	@Test
 	public void testLocateDataArrayElement() {
-		final Context context = buildDoc(MiscSyntax.syntax, new Builders.TreeBuilder(MiscSyntax.array)
-				.addArray("value",
-						new TreeBuilder(MiscSyntax.one).build(),
-						new TreeBuilder(MiscSyntax.one).build()
-				)
-				.build());
+		final Context context = buildDoc(
+				MiscSyntax.syntax,
+				new Builders.TreeBuilder(MiscSyntax.array)
+						.addArray("value",
+								new TreeBuilder(MiscSyntax.one).build(),
+								new TreeBuilder(MiscSyntax.one).build()
+						)
+						.build()
+		);
 		assertThat(context.locate(new Path("0", "0")),
 				equalTo(((ValueArray) context.document.top.get().get(0).data("value")).get().get(0))
 		);

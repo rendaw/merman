@@ -28,7 +28,7 @@ public class BrickImage extends Brick implements AlignmentListener {
 	}
 
 	public void setStyle(final Context context) {
-		style = context.getStyle(imageVisual.tags());
+		style = context.getStyle(imageVisual.tags(context));
 		if (alignment != null)
 			alignment.removeListener(context, this);
 		alignment = imageVisual.getAlignment(style.alignment);
@@ -84,7 +84,7 @@ public class BrickImage extends Brick implements AlignmentListener {
 	public Properties getPropertiesForTagsChange(
 			final Context context, final VisualNode.TagsChange change
 	) {
-		final Set<VisualNode.Tag> tags = new HashSet<>(imageVisual.tags());
+		final Set<VisualNode.Tag> tags = new HashSet<>(imageVisual.tags(context));
 		tags.removeAll(change.remove);
 		tags.addAll(change.add);
 		return properties(context.getStyle(tags));

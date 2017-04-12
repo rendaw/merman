@@ -3,63 +3,73 @@ package com.zarbosoft.bonestruct.editor;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 import com.zarbosoft.bonestruct.document.Document;
 import com.zarbosoft.bonestruct.document.values.Value;
 import com.zarbosoft.bonestruct.document.values.ValueArray;
 import com.zarbosoft.bonestruct.document.values.ValueNode;
 import com.zarbosoft.bonestruct.document.values.ValuePrimitive;
+import com.zarbosoft.bonestruct.editor.banner.Banner;
+import com.zarbosoft.bonestruct.editor.details.Details;
 import com.zarbosoft.bonestruct.editor.visual.attachments.TransverseExtentsAdapter;
 import com.zarbosoft.bonestruct.editor.visual.attachments.VisualAttachmentAdapter;
-import com.zarbosoft.bonestruct.editor.visual.raw.RawText;
-import com.zarbosoft.bonestruct.editor.visual.raw.RawTextUtils;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
 import com.zarbosoft.bonestruct.history.History;
-import com.zarbosoft.bonestruct.syntax.NodeType;
 import com.zarbosoft.bonestruct.syntax.Syntax;
 import com.zarbosoft.bonestruct.syntax.back.*;
-import com.zarbosoft.bonestruct.syntax.hid.Hotkeys;
 import com.zarbosoft.bonestruct.syntax.middle.MiddleArray;
 import com.zarbosoft.bonestruct.syntax.middle.MiddleRecord;
-import com.zarbosoft.bonestruct.syntax.plugins.Plugin;
+import com.zarbosoft.bonestruct.syntax.modules.Module;
 import com.zarbosoft.bonestruct.syntax.style.Style;
-import com.zarbosoft.bonestruct.wall.Attachment;
-import com.zarbosoft.bonestruct.wall.Bedding;
 import com.zarbosoft.bonestruct.wall.Brick;
 import com.zarbosoft.bonestruct.wall.Wall;
-import com.zarbosoft.pidgoon.events.EventStream;
-import com.zarbosoft.pidgoon.events.Grammar;
-import com.zarbosoft.pidgoon.events.Operator;
-import com.zarbosoft.pidgoon.nodes.Union;
-import com.zarbosoft.rendaw.common.ChainComparator;
 import javafx.animation.Interpolator;
 import javafx.animation.Transition;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.scene.Group;
 import javafx.scene.Node;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Pane;
 import org.pcollections.TreePVector;
 
 import java.lang.ref.WeakReference;
-import java.time.Duration;
 import java.util.*;
 import java.util.function.Consumer;
 
 public class Context {
 	public final History history;
-	public Grammar hotkeyGrammar;
-	public EventStream<Action> hotkeyParse;
-	public String hotkeySequence = "";
 	public WeakHashMap<Set<VisualNode.Tag>, WeakReference<Style.Baked>> styleCache = new WeakHashMap<>();
-	public WeakHashMap<Set<VisualNode.Tag>, WeakReference<Hotkeys>> hotkeysCache = new WeakHashMap<>();
 	private final Iterable<Action> globalActions;
 	public VisualNodePart window;
 	private final Set<SelectionListener> selectionListeners = new HashSet<>();
 	private final Set<HoverListener> hoverListeners = new HashSet<>();
+	private final Set<TagsListener> tagsChangeListeners = new HashSet<>();
 	public final TransverseExtentsAdapter selectionExtentsAdapter = new TransverseExtentsAdapter();
-	public List<Plugin.State> plugins;
+	public List<Module.State> plugins;
+	public Set<VisualNode.Tag> globalTags = new HashSet<>();
+	public List<KeyListener> keyListeners = new ArrayList<>();
+	public Map<Object, List<Action>> actions = new HashMap<>();
+
+	@FunctionalInterface
+	public interface KeyListener {
+		boolean handleKey(Context context, KeyEvent event);
+	}
+
+	public void changeGlobalTags(final VisualNode.TagsChange change) {
+		globalTags.removeAll(change.remove);
+		globalTags.addAll(change.add);
+		selectionTagsChanged();
+		if (display != null) {
+			display.wall.children.forEach(course -> course.children.forEach(brick -> brick
+					.getVisual()
+					.tagsChanged(this)));
+		}
+	}
+
+	public void selectionTagsChanged() {
+		tagsChangeListeners.forEach(listener -> listener.tagsChanged(this, selection.getVisual().tags(this)));
+	}
 
 	public static class Display {
 
@@ -194,14 +204,16 @@ public class Context {
 						try {
 							subIndex = Integer.parseInt(segment);
 						} catch (final NumberFormatException e) {
-							throw new InvalidPath(String.format("Segment [%s] at [%s] is not an integer.",
+							throw new InvalidPath(String.format(
+									"Segment [%s] at [%s] is not an integer.",
 									segment,
 									new Path(TreePVector.from(segments.subList(0, tempPathIndex)))
 							));
 						}
 						final BackArray arrayPart = ((BackArray) part);
 						if (subIndex >= arrayPart.elements.size())
-							throw new InvalidPath(String.format("Invalid index %d at [%s].",
+							throw new InvalidPath(String.format(
+									"Invalid index %d at [%s].",
 									subIndex,
 									new Path(TreePVector.from(segments.subList(0, tempPathIndex)))
 							));
@@ -214,7 +226,8 @@ public class Context {
 						final int tempPathIndex = pathIndex;
 						final BackRecord recordPart = ((BackRecord) part);
 						if (!recordPart.pairs.containsKey(segment))
-							throw new InvalidPath(String.format("Invalid key [%s] at [%s].",
+							throw new InvalidPath(String.format(
+									"Invalid key [%s] at [%s].",
 									segment,
 									new Path(TreePVector.from(segments.subList(0, pathIndex)))
 							));
@@ -266,7 +279,8 @@ public class Context {
 						try {
 							index = Integer.parseInt(segment);
 						} catch (final NumberFormatException e) {
-							throw new InvalidPath(String.format("Segment [%s] at [%s] is not an integer.",
+							throw new InvalidPath(String.format(
+									"Segment [%s] at [%s] is not an integer.",
 									segment,
 									new Path(TreePVector.from(segments.subList(0, pathIndex)))
 							));
@@ -285,7 +299,8 @@ public class Context {
 					part = node.type.back().get(0);
 				} else if (value instanceof ValuePrimitive) {
 					if (segments.size() > pathIndex + 1)
-						throw new InvalidPath(String.format("Path continues but data ends at primitive [%s].",
+						throw new InvalidPath(String.format(
+								"Path continues but data ends at primitive [%s].",
 								new Path(TreePVector.from(segments.subList(0, pathIndex)))
 						));
 					return value;
@@ -296,166 +311,6 @@ public class Context {
 		throw new AssertionError("Path locate did not complete in a reasonable number of iterations.");
 	}
 
-	public static class Banner {
-		public RawText text;
-		private final PriorityQueue<BannerMessage> queue =
-				new PriorityQueue<>(11, new ChainComparator<BannerMessage>().greaterFirst(m -> m.priority).build());
-		private BannerMessage current;
-		private final Timer timer = new Timer();
-		private Brick brick;
-		private int transverse;
-		private int scroll;
-		private Bedding bedding;
-		private IdlePlace idle;
-		private final Attachment attachment = new Attachment() {
-			@Override
-			public void setTransverse(final Context context, final int transverse) {
-				Banner.this.transverse = transverse;
-				idlePlace(context);
-			}
-
-			@Override
-			public void destroy(final Context context) {
-				brick = null;
-			}
-		};
-
-		private void idlePlace(final Context context) {
-			if (text == null)
-				return;
-			if (idle == null) {
-				idle = new IdlePlace(context);
-				context.addIdle(idle);
-			}
-		}
-
-		public void setScroll(final Context context, final int scroll) {
-			this.scroll = scroll;
-			idlePlace(context);
-		}
-
-		private class IdlePlace extends IdleTask {
-			private final Context context;
-
-			private IdlePlace(final Context context) {
-				this.context = context;
-			}
-
-			@Override
-			protected void runImplementation() {
-				if (text != null) {
-					text.setTransverse(context,
-							Math.max(scroll, Banner.this.transverse - (int) RawTextUtils.getDescent(text.getFont())),
-							false
-					);
-				}
-				idle = null;
-			}
-
-			@Override
-			protected void destroyed() {
-				idle = null;
-			}
-		}
-
-		public Banner(final Context context) {
-			context.addSelectionListener(new SelectionListener() {
-				@Override
-				public void selectionChanged(final Context context, final Selection selection) {
-					selection.addBrickListener(context, new VisualAttachmentAdapter.BoundsListener() {
-						@Override
-						public void firstChanged(final Context context, final Brick first) {
-							if (brick != null) {
-								if (bedding != null)
-									brick.removeBedding(context, bedding);
-								brick.removeAttachment(context, attachment);
-							}
-							brick = first;
-							if (bedding != null) {
-								brick.addBedding(context, bedding);
-							}
-							brick.addAttachment(context, attachment);
-						}
-
-						@Override
-						public void lastChanged(final Context context, final Brick last) {
-
-						}
-					});
-				}
-			});
-		}
-
-		public void addMessage(final Context context, final BannerMessage message) {
-			if (queue.isEmpty()) {
-				text = new RawText(context, context.getStyle(ImmutableSet.of(new VisualNode.PartTag("banner"))));
-				context.display.background.getChildren().add(text.getVisual());
-				text.setTransverse(context,
-						Math.max(scroll, transverse - (int) RawTextUtils.getDescent(text.getFont())),
-						false
-				);
-				bedding = new Bedding(text.transverseSpan(context), 0);
-				brick.addBedding(context, bedding);
-			}
-			queue.add(message);
-			update(context);
-		}
-
-		private void update(final Context context) {
-			if (queue.isEmpty()) {
-				if (text != null) {
-					context.display.background.getChildren().remove(text.getVisual());
-					text = null;
-					brick.removeBedding(context, bedding);
-					bedding = null;
-				}
-			} else if (queue.peek() != current) {
-				current = queue.peek();
-				text.setText(context, current.text);
-				timer.purge();
-				if (current.duration != null)
-					try {
-						timer.schedule(new TimerTask() {
-							@Override
-							public void run() {
-								context.addIdle(new IdleTask() {
-									@Override
-									protected void runImplementation() {
-										queue.poll();
-										update(context);
-									}
-
-									@Override
-									protected void destroyed() {
-
-									}
-								});
-							}
-						}, current.duration.toMillis());
-					} catch (final IllegalStateException e) {
-						// While shutting down
-					}
-			}
-		}
-
-		public void destroy(final Context context) {
-			timer.cancel();
-		}
-
-		public void removeMessage(final Context context, final BannerMessage message) {
-			if (queue.isEmpty())
-				return; // TODO implement message destroy cb, extraneous removeMessages unnecessary
-			queue.remove(message);
-			if (queue.isEmpty())
-				timer.purge();
-			update(context);
-		}
-	}
-
-	public static class Details {
-
-	}
-
 	public abstract static class SelectionListener {
 
 		public abstract void selectionChanged(Context context, Selection selection);
@@ -464,6 +319,11 @@ public class Context {
 	public abstract static class HoverListener {
 
 		public abstract void hoverChanged(Context context, Hoverable selection);
+	}
+
+	public abstract static class TagsListener {
+
+		public abstract void tagsChanged(Context context, Set<VisualNode.Tag> tags);
 	}
 
 	public void addSelectionListener(final SelectionListener listener) {
@@ -480,6 +340,22 @@ public class Context {
 
 	public void removeHoverListener(final HoverListener listener) {
 		this.hoverListeners.remove(listener);
+	}
+
+	public void addTagsChangeListener(final TagsListener listener) {
+		this.tagsChangeListeners.add(listener);
+	}
+
+	public void removeTagsChangeListener(final TagsListener listener) {
+		this.tagsChangeListeners.remove(listener);
+	}
+
+	public void addKeyListener(final KeyListener listener) {
+		this.keyListeners.add(listener);
+	}
+
+	public void removeKeyListener(final KeyListener listener) {
+		this.keyListeners.remove(listener);
 	}
 
 	public void fillFromEndBrick(final Brick end) {
@@ -586,18 +462,7 @@ public class Context {
 			fillFromEndBrick(display.cornerstone);
 			fillFromStartBrick(display.cornerstone);
 
-			hotkeyGrammar = new Grammar();
-			final Union union = new Union();
-			for (final Action action : Iterables.concat(selection.getActions(this), globalActions)) {
-				final List<com.zarbosoft.bonestruct.syntax.hid.grammar.Node> hotkeyEntries =
-						selection.getHotkeys(this).hotkeys.get(action.getName());
-				if (hotkeyEntries == null)
-					continue;
-				for (final com.zarbosoft.bonestruct.syntax.hid.grammar.Node hotkey : hotkeyEntries) {
-					union.add(new Operator(hotkey.build(), store -> store.pushStack(action)));
-				}
-			}
-			hotkeyGrammar.add("root", union);
+			selectionTagsChanged();
 		}
 	}
 
@@ -619,72 +484,6 @@ public class Context {
 		}
 		styleCache.put(out.tags, new WeakReference<>(out));
 		return out;
-	}
-
-	public Hotkeys getHotkeys(final Set<VisualNode.Tag> tags) {
-		final Optional<Hotkeys> found = hotkeysCache
-				.entrySet()
-				.stream()
-				.filter(e -> tags.equals(e.getKey()))
-				.map(e -> e.getValue().get())
-				.filter(v -> v != null)
-				.findFirst();
-		if (found.isPresent())
-			return found.get();
-		final Hotkeys out = new Hotkeys(tags);
-		for (final Hotkeys hotkeys : syntax.hotkeys) {
-			if (tags.containsAll(hotkeys.tags)) {
-				out.merge(hotkeys);
-			}
-			hotkeysCache.put(out.tags, new WeakReference<>(out));
-		}
-		return out;
-	}
-
-	public static abstract class Action {
-		public abstract void run(Context context);
-
-		public abstract String getName();
-	}
-
-	public static abstract class Selection {
-		protected abstract void clear(Context context);
-
-		protected abstract Hotkeys getHotkeys(Context context);
-
-		public void receiveText(final Context context, final String text) {
-		}
-
-		public abstract Iterable<Action> getActions(Context context);
-
-		public abstract VisualNodePart getVisual();
-
-		public abstract class VisualListener {
-
-		}
-
-		public abstract void addBrickListener(Context context, final VisualAttachmentAdapter.BoundsListener listener);
-
-		public abstract void removeBrickListener(
-				Context context, final VisualAttachmentAdapter.BoundsListener listener
-		);
-	}
-
-	public static abstract class Hoverable {
-		protected abstract void clear(Context context);
-
-		public abstract void click(Context context);
-
-		public abstract NodeType.NodeTypeVisual node();
-
-		public abstract VisualNodePart part();
-	}
-
-	public static class BannerMessage {
-
-		public Duration duration;
-		public int priority = 0;
-		public String text;
 	}
 
 	public class HoverIdle extends IdleTask {

@@ -21,7 +21,13 @@ public class History {
 		public abstract void applied(Context context, Change change);
 	}
 
+	@FunctionalInterface
+	public interface ModifiedStateListener {
+		void changed(boolean modified);
+	}
+
 	private final Set<Listener> listeners = new HashSet<>();
+	private final Set<ModifiedStateListener> modifiedStateListeners = new HashSet<>();
 
 	private Closeable lock() {
 		if (locked)
@@ -52,15 +58,20 @@ public class History {
 			future.addLast(applyGroup(context, past.pollLast()));
 		} catch (final IOException e) {
 		}
+		if (past.isEmpty())
+			modifiedStateListeners.forEach(l -> l.changed(false));
 	}
 
 	public void redo(final Context context) {
+		final boolean wasModified = isModified();
 		try (Closeable lock = lock()) {
 			if (future.isEmpty())
 				return;
 			past.addLast(applyGroup(context, future.pollLast()));
 		} catch (final IOException e) {
 		}
+		if (!wasModified)
+			modifiedStateListeners.forEach(l -> l.changed(true));
 	}
 
 	public void finishChange() {
@@ -73,6 +84,7 @@ public class History {
 	}
 
 	public void apply(final Context context, final Change change) {
+		final boolean wasModified = isModified();
 		try (Closeable lock = lock()) {
 			future.clear();
 			if (past.isEmpty())
@@ -85,6 +97,12 @@ public class History {
 				listener.applied(context, change);
 		} catch (final IOException e) {
 		}
+		if (!wasModified)
+			modifiedStateListeners.forEach(l -> l.changed(true));
+	}
+
+	public boolean isModified() {
+		return !past.isEmpty();
 	}
 
 	public void addListener(final Listener listener) {
@@ -93,5 +111,9 @@ public class History {
 
 	public void removeListener(final Listener listener) {
 		listeners.remove(listener);
+	}
+
+	public void addModifiedStateListener(ModifiedStateListener listener) {
+		modifiedStateListeners.add(listener);
 	}
 }

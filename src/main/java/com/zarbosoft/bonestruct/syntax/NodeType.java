@@ -5,6 +5,7 @@ import com.google.common.collect.Sets;
 import com.zarbosoft.bonestruct.document.Node;
 import com.zarbosoft.bonestruct.document.values.Value;
 import com.zarbosoft.bonestruct.editor.Context;
+import com.zarbosoft.bonestruct.editor.Hoverable;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.nodes.VisualGroup;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
@@ -210,7 +211,7 @@ public abstract class NodeType {
 				}
 
 				@Override
-				public Context.Hoverable hover(
+				public Hoverable hover(
 						final Context context, final com.zarbosoft.bonestruct.editor.visual.Vector point
 				) {
 					if (parent == null)

@@ -11,7 +11,7 @@ import com.zarbosoft.bonestruct.wall.Brick;
 import javafx.scene.Node;
 import javafx.scene.text.Font;
 
-public abstract class TextBrick extends Brick implements AlignmentListener {
+public abstract class BrickText extends Brick implements AlignmentListener {
 	RawText text;
 	private int minConverse;
 

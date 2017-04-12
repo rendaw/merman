@@ -11,6 +11,7 @@ import com.zarbosoft.bonestruct.syntax.style.Style;
 import com.zarbosoft.bonestruct.wall.Brick;
 import javafx.scene.Node;
 import javafx.scene.layout.Region;
+import org.pcollections.HashTreePSet;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -29,7 +30,7 @@ public class BrickSpace extends Brick implements AlignmentListener {
 	}
 
 	public void setStyle(final Context context) {
-		this.style = context.getStyle(spaceVisual.tags());
+		this.style = context.getStyle(HashTreePSet.from(spaceVisual.tags(context)).plusAll(context.globalTags));
 		if (alignment != null)
 			alignment.removeListener(context, this);
 		alignment = spaceVisual.getAlignment(style.alignment);
@@ -50,7 +51,7 @@ public class BrickSpace extends Brick implements AlignmentListener {
 
 	@Override
 	public Properties getPropertiesForTagsChange(final Context context, final VisualNode.TagsChange change) {
-		final Set<VisualNode.Tag> tags = new HashSet<>(spaceVisual.tags());
+		final Set<VisualNode.Tag> tags = new HashSet<>(spaceVisual.tags(context));
 		tags.removeAll(change.remove);
 		tags.addAll(change.add);
 		return properties(context.getStyle(tags));

@@ -1,6 +1,7 @@
 package com.zarbosoft.bonestruct.editor.visual.tree;
 
 import com.zarbosoft.bonestruct.editor.Context;
+import com.zarbosoft.bonestruct.editor.Hoverable;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.syntax.NodeType;
@@ -19,7 +20,7 @@ public abstract class VisualNodeParent {
 
 	public abstract Brick getNextBrick(Context context);
 
-	public abstract Context.Hoverable hover(Context context, Vector point);
+	public abstract Hoverable hover(Context context, Vector point);
 
 	public abstract Brick createPreviousBrick(Context context);
 

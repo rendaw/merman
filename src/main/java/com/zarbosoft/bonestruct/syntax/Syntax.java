@@ -5,22 +5,19 @@ import com.zarbosoft.bonestruct.document.Document;
 import com.zarbosoft.bonestruct.document.Node;
 import com.zarbosoft.bonestruct.document.values.ValueArray;
 import com.zarbosoft.bonestruct.syntax.front.RootFrontDataArray;
-import com.zarbosoft.bonestruct.syntax.hid.Hotkeys;
 import com.zarbosoft.bonestruct.syntax.middle.MiddleArray;
-import com.zarbosoft.bonestruct.syntax.plugins.Plugin;
+import com.zarbosoft.bonestruct.syntax.modules.Module;
 import com.zarbosoft.bonestruct.syntax.style.ObboxStyle;
 import com.zarbosoft.bonestruct.syntax.style.Style;
 import com.zarbosoft.interface1.Configuration;
 import com.zarbosoft.interface1.events.InterfaceEvent;
-import com.zarbosoft.luxem.Luxem;
+import com.zarbosoft.luaconf.LuaConf;
 import com.zarbosoft.luxem.read.LuxemEvent;
 import com.zarbosoft.luxem.read.Parse;
 import com.zarbosoft.pidgoon.events.Grammar;
 import com.zarbosoft.pidgoon.nodes.Reference;
 import com.zarbosoft.pidgoon.nodes.Union;
 import com.zarbosoft.rendaw.common.Pair;
-import javafx.geometry.Bounds;
-import javafx.geometry.Point2D;
 import javafx.scene.paint.Color;
 import org.pcollections.HashTreePSet;
 import org.pcollections.PSet;
@@ -93,9 +90,9 @@ public class Syntax {
 	public Map<String, java.util.Set<String>> groups = new HashMap<>();
 
 	@Configuration(optional = true, description =
-			"A list of plugins to activate.  Listed are plugins bundled with this distribution, but " +
-					"addional plugins may be installed and used.")
-	public List<Plugin> plugins = new ArrayList<>();
+			"A list of modules to activate.  Listed are modules bundled with this distribution, but " +
+					"addional modules may be installed and used.")
+	public List<Module> modules = new ArrayList<>();
 
 	@Configuration(description = "The type of the root array in a document.  This is not used when " +
 			"pasting code; in that case the context is used to determine the paste's potential root type.")
@@ -103,17 +100,6 @@ public class Syntax {
 
 	@Configuration(optional = true, description = "Root front-end configuration.")
 	public RootFrontDataArray rootFront = new RootFrontDataArray();
-
-	@Configuration(optional = true)
-	public List<Hotkeys> hotkeys = new ArrayList<>();
-
-	@Configuration(optional = true, name = "modal-primitive-editing", description =
-			"In modeless editing, a selected primitive is always in direct editing mode.  Non-hotkey keypresses " +
-					"will modify the primitive text.  In modal editing an extra 'enter' action will be available " +
-					"to enter the direct editing mode.  After entering, non-hotkey kepresses will modify the " +
-					"primitive text.  In the indirect editing action names will more closely match the action names " +
-					"of other node types.")
-	public boolean modalPrimitiveEditing = false;
 
 	@Configuration(optional = true, name = "animate-course-placement")
 	public boolean animateCoursePlacement = false;
@@ -128,34 +114,8 @@ public class Syntax {
 		@Configuration(name = "left")
 		LEFT,
 		@Configuration(name = "right")
-		RIGHT;
+		RIGHT
 		// TODO boustrophedon
-
-		public double extract(final Bounds bounds) {
-			switch (this) {
-				case UP:
-				case DOWN:
-					return bounds.getHeight();
-				case LEFT:
-				case RIGHT:
-					return bounds.getWidth();
-			}
-			return 0; // unreachable
-		}
-
-		public Point2D consVector(final double value) {
-			switch (this) {
-				case UP:
-					return new Point2D(0, -value);
-				case DOWN:
-					return new Point2D(0, value);
-				case LEFT:
-					return new Point2D(-value, 0);
-				case RIGHT:
-					return new Point2D(value, 0);
-			}
-			return null; // unreachable
-		}
 	}
 
 	@Configuration(name = "converse-direction", optional = true,
@@ -170,8 +130,8 @@ public class Syntax {
 
 	public static Reflections reflections = new Reflections("com.zarbosoft");
 
-	public static Syntax loadSyntax(final String id, final InputStream stream) {
-		final Syntax out = Luxem.parse(reflections, Syntax.class, stream).findFirst().get();
+	public static Syntax loadSyntax(final String id, final Path path) {
+		final Syntax out = LuaConf.parse(reflections, Syntax.class, path);
 		out.id = id;
 		out.finish();
 		return out;

@@ -4,7 +4,10 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.zarbosoft.bonestruct.document.Node;
 import com.zarbosoft.bonestruct.document.values.ValueArray;
+import com.zarbosoft.bonestruct.editor.Action;
 import com.zarbosoft.bonestruct.editor.Context;
+import com.zarbosoft.bonestruct.editor.Hoverable;
+import com.zarbosoft.bonestruct.editor.Selection;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.editor.visual.attachments.BorderAttachment;
 import com.zarbosoft.bonestruct.editor.visual.attachments.MultiVisualAttachmentAdapter;
@@ -17,7 +20,6 @@ import com.zarbosoft.bonestruct.history.changes.ChangeArrayAdd;
 import com.zarbosoft.bonestruct.syntax.FreeNodeType;
 import com.zarbosoft.bonestruct.syntax.NodeType;
 import com.zarbosoft.bonestruct.syntax.front.FrontConstantPart;
-import com.zarbosoft.bonestruct.syntax.hid.Hotkeys;
 import com.zarbosoft.bonestruct.syntax.middle.MiddleArrayBase;
 import com.zarbosoft.bonestruct.wall.Brick;
 import com.zarbosoft.rendaw.common.Pair;
@@ -176,7 +178,7 @@ public abstract class VisualArray extends VisualGroup {
 			if (retagLast)
 				last(children).changeTags(context, new VisualNode.TagsChange().remove(new VisualNode.PartTag("last")));
 		}
-		final PSet<VisualNode.Tag> tags = HashTreePSet.from(tags());
+		final PSet<VisualNode.Tag> tags = HashTreePSet.from(tags(context));
 		enumerate(nodes.stream(), start).forEach(p -> {
 			int index = p.first;
 			if (p.first > 0 && !separator.isEmpty()) {
@@ -237,6 +239,11 @@ public abstract class VisualArray extends VisualGroup {
 				public void destroy(final Context context) {
 					nodeVisual.destroy(context);
 				}
+
+				@Override
+				public void tagsChanged(final Context context) {
+
+				}
 			});
 			for (final FrontConstantPart fix : getSuffix())
 				group.add(context, fix.createVisual(context, tags.plus(new VisualNode.PartTag("suffix"))));
@@ -271,7 +278,7 @@ public abstract class VisualArray extends VisualGroup {
 
 	private ArrayHoverable hoverable;
 
-	private class ArrayHoverable extends Context.Hoverable {
+	private class ArrayHoverable extends Hoverable {
 		private int index;
 		VisualBorderAttachment border;
 
@@ -311,7 +318,7 @@ public abstract class VisualArray extends VisualGroup {
 
 	private ArraySelection selection;
 
-	private class ArraySelection extends Context.Selection {
+	private class ArraySelection extends Selection {
 		MultiVisualAttachmentAdapter adapter;
 		BorderAttachment border;
 		int beginIndex;
@@ -335,6 +342,147 @@ public abstract class VisualArray extends VisualGroup {
 			}
 			setBegin(context, index);
 			setEnd(context, index);
+			context.actions.put(this, ImmutableList.of(new Action() {
+				@Override
+				public void run(final Context context) {
+
+				}
+
+				@Override
+				public String getName() {
+					return "enter";
+				}
+			}, new Action() {
+				@Override
+				public void run(final Context context) {
+
+				}
+
+				@Override
+				public String getName() {
+					return "exit";
+				}
+			}, new Action() {
+				@Override
+				public void run(final Context context) {
+
+				}
+
+				@Override
+				public String getName() {
+					return "next";
+				}
+			}, new Action() {
+				@Override
+				public void run(final Context context) {
+
+				}
+
+				@Override
+				public String getName() {
+					return "previous";
+				}
+			}, new Action() {
+				@Override
+				public void run(final Context context) {
+
+				}
+
+				@Override
+				public String getName() {
+					return "insert-before";
+				}
+			}, new Action() {
+				@Override
+				public void run(final Context context) {
+
+				}
+
+				@Override
+				public String getName() {
+					return "insert-after";
+				}
+			}, new Action() {
+				@Override
+				public void run(final Context context) {
+
+				}
+
+				@Override
+				public String getName() {
+					return "copy";
+				}
+			}, new Action() {
+				@Override
+				public void run(final Context context) {
+
+				}
+
+				@Override
+				public String getName() {
+					return "cut";
+				}
+			}, new Action() {
+				@Override
+				public void run(final Context context) {
+
+				}
+
+				@Override
+				public String getName() {
+					return "paste";
+				}
+			}, new Action() {
+				@Override
+				public void run(final Context context) {
+
+				}
+
+				@Override
+				public String getName() {
+					return "reset-selection";
+				}
+			}, new Action() {
+				@Override
+				public void run(final Context context) {
+
+				}
+
+				@Override
+				public String getName() {
+					return "gather-next";
+				}
+			}, new Action() {
+				@Override
+				public void run(final Context context) {
+
+				}
+
+				@Override
+				public String getName() {
+					return "gather-previous";
+				}
+			}, new Action() {
+				@Override
+				public void run(final Context context) {
+
+				}
+
+				@Override
+				public String getName() {
+					return "move-before";
+				}
+			}, new Action() {
+				@Override
+				public void run(final Context context) {
+
+				}
+
+				@Override
+				public String getName() {
+					return "move-after";
+				}
+			}));
 		}
 
 		private void setEnd(final Context context, final int index) {
@@ -352,17 +500,13 @@ public abstract class VisualArray extends VisualGroup {
 		}
 
 		@Override
-		protected Hotkeys getHotkeys(final Context context) {
-			return context.getHotkeys(tags());
-		}
-
-		@Override
 		public void clear(final Context context) {
 			if (context.display != null) {
 				adapter.destroy(context);
 				border.destroy(context);
 			}
 			selection = null;
+			context.actions.remove(this);
 		}
 
 		@Override
@@ -379,151 +523,6 @@ public abstract class VisualArray extends VisualGroup {
 		@Override
 		public void removeBrickListener(final Context context, final VisualAttachmentAdapter.BoundsListener listener) {
 			adapter.removeListener(context, listener);
-		}
-
-		@Override
-		public Iterable<Context.Action> getActions(final Context context) {
-			return ImmutableList.of(new Context.Action() {
-				@Override
-				public void run(final Context context) {
-
-				}
-
-				@Override
-				public String getName() {
-					return "enter";
-				}
-			}, new Context.Action() {
-				@Override
-				public void run(final Context context) {
-
-				}
-
-				@Override
-				public String getName() {
-					return "exit";
-				}
-			}, new Context.Action() {
-				@Override
-				public void run(final Context context) {
-
-				}
-
-				@Override
-				public String getName() {
-					return "next";
-				}
-			}, new Context.Action() {
-				@Override
-				public void run(final Context context) {
-
-				}
-
-				@Override
-				public String getName() {
-					return "previous";
-				}
-			}, new Context.Action() {
-				@Override
-				public void run(final Context context) {
-
-				}
-
-				@Override
-				public String getName() {
-					return "insert-before";
-				}
-			}, new Context.Action() {
-				@Override
-				public void run(final Context context) {
-
-				}
-
-				@Override
-				public String getName() {
-					return "insert-after";
-				}
-			}, new Context.Action() {
-				@Override
-				public void run(final Context context) {
-
-				}
-
-				@Override
-				public String getName() {
-					return "copy";
-				}
-			}, new Context.Action() {
-				@Override
-				public void run(final Context context) {
-
-				}
-
-				@Override
-				public String getName() {
-					return "cut";
-				}
-			}, new Context.Action() {
-				@Override
-				public void run(final Context context) {
-
-				}
-
-				@Override
-				public String getName() {
-					return "paste";
-				}
-			}, new Context.Action() {
-				@Override
-				public void run(final Context context) {
-
-				}
-
-				@Override
-				public String getName() {
-					return "reset-selection";
-				}
-			}, new Context.Action() {
-				@Override
-				public void run(final Context context) {
-
-				}
-
-				@Override
-				public String getName() {
-					return "gather-next";
-				}
-			}, new Context.Action() {
-				@Override
-				public void run(final Context context) {
-
-				}
-
-				@Override
-				public String getName() {
-					return "gather-previous";
-				}
-			}, new Context.Action() {
-				@Override
-				public void run(final Context context) {
-
-				}
-
-				@Override
-				public String getName() {
-					return "move-before";
-				}
-			}, new Context.Action() {
-				@Override
-				public void run(final Context context) {
-
-				}
-
-				@Override
-				public String getName() {
-					return "move-after";
-				}
-			});
 		}
 
 		@Override
@@ -550,7 +549,7 @@ public abstract class VisualArray extends VisualGroup {
 		}
 
 		@Override
-		public Context.Hoverable hover(final Context context, final Vector point) {
+		public Hoverable hover(final Context context, final Vector point) {
 			if (!selectable) {
 				if (parent != null)
 					return parent.hover(context, point);

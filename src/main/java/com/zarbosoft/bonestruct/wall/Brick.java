@@ -3,6 +3,7 @@ package com.zarbosoft.bonestruct.wall;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.zarbosoft.bonestruct.editor.Context;
+import com.zarbosoft.bonestruct.editor.Hoverable;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
@@ -33,7 +34,7 @@ public abstract class Brick {
 
 	public abstract int getConverse(Context context);
 
-	public Context.Hoverable hover(final Context context, final Vector point) {
+	public Hoverable hover(final Context context, final Vector point) {
 		return getVisual().hover(context, point);
 	}
 

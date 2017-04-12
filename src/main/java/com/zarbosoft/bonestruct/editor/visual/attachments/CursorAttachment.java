@@ -5,7 +5,7 @@ import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.editor.visual.raw.RawTextUtils;
 import com.zarbosoft.bonestruct.syntax.style.ObboxStyle;
 import com.zarbosoft.bonestruct.wall.Attachment;
-import com.zarbosoft.bonestruct.wall.bricks.TextBrick;
+import com.zarbosoft.bonestruct.wall.bricks.BrickText;
 import javafx.geometry.Point2D;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -53,14 +53,14 @@ public class CursorAttachment extends Canvas {
 	private int startConverse;
 	private int startTransverse;
 	private int transverseAscent;
-	private TextBrick brick;
+	private BrickText brick;
 
 	public CursorAttachment(final Context context, final ObboxStyle.Baked style) {
 		this.style = style;
 		context.display.background.getChildren().add(this);
 	}
 
-	public void setPosition(final Context context, final TextBrick brick, final int index) {
+	public void setPosition(final Context context, final BrickText brick, final int index) {
 		if (this.brick != brick) {
 			offset = null;
 			if (this.brick != null)

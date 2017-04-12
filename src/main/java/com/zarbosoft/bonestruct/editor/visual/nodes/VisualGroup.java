@@ -3,6 +3,7 @@ package com.zarbosoft.bonestruct.editor.visual.nodes;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.zarbosoft.bonestruct.editor.Context;
+import com.zarbosoft.bonestruct.editor.Hoverable;
 import com.zarbosoft.bonestruct.editor.IdleTask;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
@@ -258,7 +259,7 @@ public class VisualGroup extends VisualNodePart {
 		}
 
 		@Override
-		public Context.Hoverable hover(
+		public Hoverable hover(
 				final Context context, final com.zarbosoft.bonestruct.editor.visual.Vector point
 		) {
 			return target.hover(context, point);

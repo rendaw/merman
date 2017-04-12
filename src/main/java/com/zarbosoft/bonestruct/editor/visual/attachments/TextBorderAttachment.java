@@ -4,12 +4,12 @@ import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.visual.raw.Obbox;
 import com.zarbosoft.bonestruct.syntax.style.ObboxStyle;
 import com.zarbosoft.bonestruct.wall.Attachment;
-import com.zarbosoft.bonestruct.wall.bricks.TextBrick;
+import com.zarbosoft.bonestruct.wall.bricks.BrickText;
 
 public class TextBorderAttachment {
-	TextBrick first;
+	BrickText first;
 	int firstIndex;
-	TextBrick last;
+	BrickText last;
 	int lastIndex;
 	private final Obbox border;
 	private final Attachment firstAttachment = new Attachment() {
@@ -74,7 +74,7 @@ public class TextBorderAttachment {
 		context.display.background.getChildren().add(border);
 	}
 
-	public void setFirst(final Context context, final TextBrick first) {
+	public void setFirst(final Context context, final BrickText first) {
 		if (this.first != null)
 			this.first.removeAttachment(context, this.firstAttachment);
 		this.first = first;
@@ -88,7 +88,7 @@ public class TextBorderAttachment {
 		redraw(context);
 	}
 
-	public void setLast(final Context context, final TextBrick last) {
+	public void setLast(final Context context, final BrickText last) {
 		if (this.last != null)
 			this.last.removeAttachment(context, this.lastAttachment);
 		this.last = last;

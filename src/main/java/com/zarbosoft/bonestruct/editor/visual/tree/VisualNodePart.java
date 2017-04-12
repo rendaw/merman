@@ -2,6 +2,7 @@ package com.zarbosoft.bonestruct.editor.visual.tree;
 
 import com.google.common.collect.ImmutableSet;
 import com.zarbosoft.bonestruct.editor.Context;
+import com.zarbosoft.bonestruct.editor.Hoverable;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
@@ -49,7 +50,7 @@ public abstract class VisualNodePart extends VisualNode {
 	public void rootAlignments(final Context context, final Map<String, Alignment> alignments) {
 	}
 
-	public Context.Hoverable hover(final Context context, final Vector point) {
+	public Hoverable hover(final Context context, final Vector point) {
 		return parent().hover(context, point);
 	}
 }

@@ -6,12 +6,15 @@ import com.zarbosoft.bonestruct.document.values.ValueArray;
 import com.zarbosoft.bonestruct.document.values.ValueNode;
 import com.zarbosoft.bonestruct.document.values.ValuePrimitive;
 import com.zarbosoft.bonestruct.editor.Context;
+import com.zarbosoft.bonestruct.editor.details.DetailsPage;
 import com.zarbosoft.bonestruct.editor.visual.nodes.VisualPrimitive;
+import com.zarbosoft.bonestruct.editor.visual.raw.RawText;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
 import com.zarbosoft.bonestruct.syntax.FreeNodeType;
 import com.zarbosoft.bonestruct.syntax.NodeType;
 import com.zarbosoft.bonestruct.syntax.middle.MiddlePrimitive;
+import com.zarbosoft.bonestruct.syntax.style.Style;
 import com.zarbosoft.pidgoon.ParseContext;
 import com.zarbosoft.pidgoon.bytes.Grammar;
 import com.zarbosoft.pidgoon.bytes.Parse;
@@ -22,7 +25,9 @@ import com.zarbosoft.pidgoon.nodes.Wildcard;
 import com.zarbosoft.rendaw.common.Common;
 import com.zarbosoft.rendaw.common.DeadCode;
 import com.zarbosoft.rendaw.common.Pair;
+import javafx.scene.Group;
 import org.pcollections.HashTreePSet;
+import org.pcollections.PSet;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
@@ -48,7 +53,7 @@ public abstract class FrontGapBase extends FrontPart {
 		this.dataType = nodeType.getDataPrimitive(middle());
 	}
 
-	protected abstract void process(
+	protected abstract List<String> process(
 			final Context context, final Node self, final String string, final Common.UserData store
 	);
 
@@ -80,8 +85,26 @@ public abstract class FrontGapBase extends FrontPart {
 
 		public class GapSelection extends PrimitiveSelection {
 
+			private GapDetails gapDetails;
+
 			private final ValuePrimitive self;
 			private final Common.UserData userData = new Common.UserData();
+
+			private class GapDetails extends DetailsPage {
+				public GapDetails(final Context context, final List<String> choices) {
+					final Group group = (Group) this.node;
+					final PSet tags = HashTreePSet.from(context.globalTags);
+					final Style.Baked lineStyle = context.getStyle(tags.plus(new VisualNode.PartTag("details-line")));
+					int transverse = 0;
+					for (final String choice : choices) {
+						final RawText line = new RawText(context, lineStyle);
+						line.setText(context, choice);
+						group.getChildren().add(line.getVisual());
+						line.setTransverse(context, transverse);
+						transverse += line.transverseSpan(context);
+					}
+				}
+			}
 
 			public GapSelection(
 					final Context context, final int beginOffset, final int endOffset, final boolean direct
@@ -93,13 +116,23 @@ public abstract class FrontGapBase extends FrontPart {
 			@Override
 			public void receiveText(final Context context, final String text) {
 				super.receiveText(context, text);
-				process(context, self.parent.node(), self.get(), userData);
+				final List<String> choices = process(context, self.parent.node(), self.get(), userData);
+				if (!choices.isEmpty() && context.display != null) {
+					if (gapDetails != null)
+						context.display.details.removePage(context, gapDetails);
+					gapDetails = new GapDetails(context, choices);
+					context.display.details.addPage(context, gapDetails);
+				}
 			}
 
 			@Override
 			public void clear(final Context context) {
 				super.clear(context);
 				deselect(context, self.parent.node(), self.get(), userData);
+				if (gapDetails != null) {
+					context.display.details.removePage(context, gapDetails);
+					gapDetails = null;
+				}
 			}
 		}
 	}

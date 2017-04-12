@@ -1,10 +1,12 @@
 package com.zarbosoft.bonestruct.editor.visual.nodes;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.zarbosoft.bonestruct.document.values.ValuePrimitive;
+import com.zarbosoft.bonestruct.editor.Action;
 import com.zarbosoft.bonestruct.editor.Context;
+import com.zarbosoft.bonestruct.editor.Hoverable;
+import com.zarbosoft.bonestruct.editor.Selection;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.editor.visual.attachments.CursorAttachment;
@@ -14,11 +16,10 @@ import com.zarbosoft.bonestruct.editor.visual.raw.Obbox;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodeParent;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
 import com.zarbosoft.bonestruct.syntax.NodeType;
-import com.zarbosoft.bonestruct.syntax.hid.Hotkeys;
 import com.zarbosoft.bonestruct.syntax.style.ObboxStyle;
 import com.zarbosoft.bonestruct.syntax.style.Style;
 import com.zarbosoft.bonestruct.wall.Brick;
-import com.zarbosoft.bonestruct.wall.bricks.TextBrick;
+import com.zarbosoft.bonestruct.wall.bricks.LineBrick;
 import com.zarbosoft.rendaw.common.Common;
 import com.zarbosoft.rendaw.common.Pair;
 import javafx.scene.input.Clipboard;
@@ -26,9 +27,11 @@ import javafx.scene.input.ClipboardContent;
 import org.pcollections.HashTreePSet;
 import org.pcollections.PSet;
 
+import java.lang.ref.WeakReference;
 import java.text.BreakIterator;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.zarbosoft.rendaw.common.Common.enumerate;
 import static com.zarbosoft.rendaw.common.Common.last;
@@ -40,30 +43,49 @@ public class VisualPrimitive extends VisualNodePart {
 	private final ValuePrimitive.Listener dataListener;
 	private final Obbox border = null;
 	private final ValuePrimitive data;
-	private VisualNodeParent parent;
-	Alignment softAlignment, hardAlignment, firstAlignment;
-	Style.Baked softStyle, hardStyle, firstStyle;
-	Set<Tag> softTags = new HashSet<>(), hardTags = new HashSet<>();
-	int brickCount = 0;
-	private PrimitiveHoverable hoverable;
+	public VisualNodeParent parent;
 
-	private void getStyles(final Context context) {
-		final PSet<Tag> tags = HashTreePSet.from(tags());
-		firstStyle = context.getStyle(tags.plus(new StateTag("first")));
-		hardStyle = context.getStyle(tags.plus(new StateTag("hard")));
-		softStyle = context.getStyle(tags.plus(new StateTag("soft")));
-		firstAlignment = getAlignment(firstStyle.alignment);
-		hardAlignment = getAlignment(hardStyle.alignment);
-		softAlignment = getAlignment(softStyle.alignment);
+	public class BrickStyle {
+		public Alignment softAlignment;
+		public Alignment hardAlignment;
+		public Alignment firstAlignment;
+		public Style.Baked softStyle;
+		public Style.Baked hardStyle;
+		public Style.Baked firstStyle;
+
+		BrickStyle(final Context context) {
+			update(context);
+		}
+
+		public void update(final Context context) {
+			final PSet<Tag> tags = HashTreePSet.from(tags(context));
+			firstStyle = context.getStyle(tags.plus(new StateTag("first")));
+			hardStyle = context.getStyle(tags.plus(new StateTag("hard")));
+			softStyle = context.getStyle(tags.plus(new StateTag("soft")));
+			firstAlignment = getAlignment(firstStyle.alignment);
+			hardAlignment = getAlignment(hardStyle.alignment);
+			softAlignment = getAlignment(softStyle.alignment);
+		}
 	}
+
+	private WeakReference<BrickStyle> brickStyle;
+	public Set<Tag> softTags = new HashSet<>();
+	public Set<Tag> hardTags = new HashSet<>();
+	public int brickCount = 0;
+	public PrimitiveHoverable hoverable;
 
 	@Override
 	public void changeTags(final Context context, final TagsChange tagsChange) {
 		super.changeTags(context, tagsChange);
+	}
+
+	@Override
+	public void tagsChanged(final Context context) {
 		final boolean fetched = false;
-		if (brickCount == 0)
+		final BrickStyle style = brickStyle.get();
+		if (style == null)
 			return;
-		getStyles(context);
+		style.update(context);
 		for (final Line line : lines) {
 			if (line.brick == null)
 				continue;
@@ -93,18 +115,18 @@ public class VisualPrimitive extends VisualNodePart {
 	}
 
 	@Override
-	public Context.Hoverable hover(final Context context, final Vector point) {
+	public Hoverable hover(final Context context, final Vector point) {
 		if (parent != null) {
 			return parent.hover(context, point);
 		}
 		return null;
 	}
 
-	protected Iterable<Context.Action> getActions(final Context context) {
-		return ImmutableList.of();
+	protected Stream<Action> getActions(final Context context) {
+		return Stream.of();
 	}
 
-	PrimitiveSelection selection;
+	public PrimitiveSelection selection;
 
 	private class RangeAttachment {
 		TextBorderAttachment border;
@@ -215,9 +237,8 @@ public class VisualPrimitive extends VisualNodePart {
 		}
 	}
 
-	protected class PrimitiveSelection extends Context.Selection {
+	protected class PrimitiveSelection extends Selection {
 		final RangeAttachment range;
-		final boolean direct;
 		final BreakIterator clusterIterator = BreakIterator.getCharacterInstance();
 		private final ValuePrimitive.Listener clusterListener = new ValuePrimitive.Listener() {
 			@Override
@@ -237,57 +258,15 @@ public class VisualPrimitive extends VisualNodePart {
 		};
 
 		public PrimitiveSelection(
-				final Context context, final int beginOffset, final int endOffset, final boolean direct
+				final Context context, final int beginOffset, final int endOffset
 		) {
 			final ObboxStyle.Baked style = new ObboxStyle.Baked();
 			style.merge(context.syntax.selectStyle);
 			range = new RangeAttachment(style);
 			range.setOffsets(context, beginOffset, endOffset);
-			this.direct = direct;
 			clusterIterator.setText(data.get());
 			data.addListener(this.clusterListener);
-		}
-
-		public PrimitiveSelection(final Context context, final int beginOffset, final int endOffset) {
-			this(context, beginOffset, endOffset, context.syntax.modalPrimitiveEditing ? false : true);
-		}
-
-		@Override
-		public void addBrickListener(final Context context, final VisualAttachmentAdapter.BoundsListener listener) {
-			range.addListener(context, listener);
-		}
-
-		@Override
-		public void removeBrickListener(final Context context, final VisualAttachmentAdapter.BoundsListener listener) {
-			range.removeListener(context, listener);
-		}
-
-		@Override
-		public void clear(final Context context) {
-			range.destroy(context);
-			selection = null;
-			commit(context);
-			data.removeListener(clusterListener);
-		}
-
-		@Override
-		protected Hotkeys getHotkeys(final Context context) {
-			return context.getHotkeys(tags());
-		}
-
-		@Override
-		public void receiveText(final Context context, final String text) {
-			if (range.beginOffset != range.endOffset)
-				context.history.apply(context,
-						data.changeRemove(range.beginOffset, range.endOffset - range.beginOffset)
-				);
-			context.history.apply(context, data.changeAdd(range.beginOffset, text));
-		}
-
-		@Override
-		public Iterable<Context.Action> getActions(final Context context) {
-			final String prefix = direct ? "text-" : "";
-			final Iterable<Context.Action> out = Iterables.concat(ImmutableList.of(new Context.Action() {
+			context.actions.put(this, Stream.concat(Stream.of(new Action() {
 				@Override
 				public void run(final Context context) {
 					if (parent != null) {
@@ -297,9 +276,9 @@ public class VisualPrimitive extends VisualNodePart {
 
 				@Override
 				public String getName() {
-					return prefix + "exit";
+					return "exit";
 				}
-			}, new Context.Action() {
+			}, new Action() {
 				@Override
 				public void run(final Context context) {
 					if (range.beginOffset < data.length()) {
@@ -309,9 +288,9 @@ public class VisualPrimitive extends VisualNodePart {
 
 				@Override
 				public String getName() {
-					return prefix + "next";
+					return "next";
 				}
-			}, new Context.Action() {
+			}, new Action() {
 				@Override
 				public void run(final Context context) {
 					if (range.beginOffset > 0) {
@@ -321,9 +300,9 @@ public class VisualPrimitive extends VisualNodePart {
 
 				@Override
 				public String getName() {
-					return prefix + "previous";
+					return "previous";
 				}
-			}, new Context.Action() {
+			}, new Action() {
 				@Override
 				public void run(final Context context) {
 					final BreakIterator iter = BreakIterator.getWordInstance();
@@ -333,9 +312,9 @@ public class VisualPrimitive extends VisualNodePart {
 
 				@Override
 				public String getName() {
-					return prefix + "next-word";
+					return "next-word";
 				}
-			}, new Context.Action() {
+			}, new Action() {
 				@Override
 				public void run(final Context context) {
 					final BreakIterator iter = BreakIterator.getWordInstance();
@@ -345,9 +324,9 @@ public class VisualPrimitive extends VisualNodePart {
 
 				@Override
 				public String getName() {
-					return prefix + "previous-word";
+					return "previous-word";
 				}
-			}, new Context.Action() {
+			}, new Action() {
 				@Override
 				public void run(final Context context) {
 					range.setOffsets(context, range.beginLine.offset);
@@ -355,9 +334,9 @@ public class VisualPrimitive extends VisualNodePart {
 
 				@Override
 				public String getName() {
-					return prefix + "line-begin";
+					return "line-begin";
 				}
-			}, new Context.Action() {
+			}, new Action() {
 				@Override
 				public void run(final Context context) {
 					range.setOffsets(context, range.beginLine.offset + range.beginLine.text.length());
@@ -365,9 +344,9 @@ public class VisualPrimitive extends VisualNodePart {
 
 				@Override
 				public String getName() {
-					return prefix + "line-end";
+					return "line-end";
 				}
-			}, new Context.Action() {
+			}, new Action() {
 				@Override
 				public void run(final Context context) {
 					if (range.beginLine.index < lines.size()) {
@@ -377,9 +356,9 @@ public class VisualPrimitive extends VisualNodePart {
 
 				@Override
 				public String getName() {
-					return prefix + "next-line";
+					return "next-line";
 				}
-			}, new Context.Action() {
+			}, new Action() {
 				@Override
 				public void run(final Context context) {
 					if (range.beginLine.index > 0) {
@@ -389,9 +368,9 @@ public class VisualPrimitive extends VisualNodePart {
 
 				@Override
 				public String getName() {
-					return prefix + "previous-line";
+					return "previous-line";
 				}
-			}, new Context.Action() {
+			}, new Action() {
 				@Override
 				public void run(final Context context) {
 					if (range.beginOffset == range.endOffset) {
@@ -407,9 +386,9 @@ public class VisualPrimitive extends VisualNodePart {
 
 				@Override
 				public String getName() {
-					return prefix + "delete-previous";
+					return "delete-previous";
 				}
-			}, new Context.Action() {
+			}, new Action() {
 				@Override
 				public void run(final Context context) {
 					if (range.beginOffset == range.endOffset) {
@@ -428,9 +407,9 @@ public class VisualPrimitive extends VisualNodePart {
 
 				@Override
 				public String getName() {
-					return prefix + "delete-next";
+					return "delete-next";
 				}
-			}, new Context.Action() {
+			}, new Action() {
 				@Override
 				public void run(final Context context) {
 					context.history.finishChange();
@@ -444,9 +423,9 @@ public class VisualPrimitive extends VisualNodePart {
 
 				@Override
 				public String getName() {
-					return prefix + "split";
+					return "split";
 				}
-			}, new Context.Action() {
+			}, new Action() {
 				@Override
 				public void run(final Context context) {
 					if (range.beginOffset == range.endOffset) {
@@ -468,9 +447,9 @@ public class VisualPrimitive extends VisualNodePart {
 
 				@Override
 				public String getName() {
-					return prefix + "join";
+					return "join";
 				}
-			}, new Context.Action() {
+			}, new Action() {
 				@Override
 				public void run(final Context context) {
 					final ClipboardContent content = new ClipboardContent();
@@ -480,9 +459,9 @@ public class VisualPrimitive extends VisualNodePart {
 
 				@Override
 				public String getName() {
-					return prefix + "copy";
+					return "copy";
 				}
-			}, new Context.Action() {
+			}, new Action() {
 				@Override
 				public void run(final Context context) {
 					final ClipboardContent content = new ClipboardContent();
@@ -494,9 +473,9 @@ public class VisualPrimitive extends VisualNodePart {
 
 				@Override
 				public String getName() {
-					return prefix + "cut";
+					return "cut";
 				}
-			}, new Context.Action() {
+			}, new Action() {
 				@Override
 				public void run(final Context context) {
 					final String value = Clipboard.getSystemClipboard().getString();
@@ -512,9 +491,9 @@ public class VisualPrimitive extends VisualNodePart {
 
 				@Override
 				public String getName() {
-					return prefix + "paste";
+					return "paste";
 				}
-			}, new Context.Action() {
+			}, new Action() {
 				@Override
 				public void run(final Context context) {
 					reset(context);
@@ -522,9 +501,9 @@ public class VisualPrimitive extends VisualNodePart {
 
 				@Override
 				public String getName() {
-					return prefix + "reset-selection";
+					return "reset-selection";
 				}
-			}, new Context.Action() {
+			}, new Action() {
 				@Override
 				public void run(final Context context) {
 					range.setEndOffset(context, clusterIterator.following(range.endOffset));
@@ -532,9 +511,9 @@ public class VisualPrimitive extends VisualNodePart {
 
 				@Override
 				public String getName() {
-					return prefix + "gather-next";
+					return "gather-next";
 				}
-			}, new Context.Action() {
+			}, new Action() {
 				@Override
 				public void run(final Context context) {
 					range.setBeginOffset(context, clusterIterator.preceding(range.beginOffset));
@@ -542,36 +521,36 @@ public class VisualPrimitive extends VisualNodePart {
 
 				@Override
 				public String getName() {
-					return prefix + "gather-previous";
+					return "gather-previous";
 				}
-			}), VisualPrimitive.this.getActions(context));
-			if (context.syntax.modalPrimitiveEditing) {
-				if (direct)
-					return Iterables.concat(out, ImmutableList.of(new Context.Action() {
-						@Override
-						public void run(final Context context) {
-							context.setSelection(createSelection(context, range.beginOffset, range.endOffset, false));
-						}
+			}), VisualPrimitive.this.getActions(context)).collect(Collectors.toList()));
+		}
 
-						@Override
-						public String getName() {
-							return prefix + "exit";
-						}
-					}));
-				else
-					return Iterables.concat(out, ImmutableList.of(new Context.Action() {
-						@Override
-						public void run(final Context context) {
-							context.setSelection(createSelection(context, range.beginOffset, range.endOffset, true));
-						}
+		@Override
+		public void addBrickListener(final Context context, final VisualAttachmentAdapter.BoundsListener listener) {
+			range.addListener(context, listener);
+		}
 
-						@Override
-						public String getName() {
-							return "enter";
-						}
-					}));
-			} else
-				return out;
+		@Override
+		public void removeBrickListener(final Context context, final VisualAttachmentAdapter.BoundsListener listener) {
+			range.removeListener(context, listener);
+		}
+
+		@Override
+		public void clear(final Context context) {
+			range.destroy(context);
+			selection = null;
+			commit(context);
+			data.removeListener(clusterListener);
+		}
+
+		@Override
+		public void receiveText(final Context context, final String text) {
+			if (range.beginOffset != range.endOffset)
+				context.history.apply(context,
+						data.changeRemove(range.beginOffset, range.endOffset - range.beginOffset)
+				);
+			context.history.apply(context, data.changeAdd(range.beginOffset, text));
 		}
 
 		@Override
@@ -588,7 +567,7 @@ public class VisualPrimitive extends VisualNodePart {
 
 	}
 
-	private class PrimitiveHoverable extends Context.Hoverable {
+	public class PrimitiveHoverable extends Hoverable {
 		RangeAttachment range;
 
 		PrimitiveHoverable(final Context context) {
@@ -626,17 +605,13 @@ public class VisualPrimitive extends VisualNodePart {
 		}
 	}
 
-	private PrimitiveSelection createSelection(final Context context, final int beginOffset, final int endOffset) {
-		return createSelection(context, beginOffset, endOffset, context.syntax.modalPrimitiveEditing ? false : true);
-	}
-
 	public PrimitiveSelection createSelection(
-			final Context context, final int beginOffset, final int endOffset, final boolean direct
+			final Context context, final int beginOffset, final int endOffset
 	) {
-		return new PrimitiveSelection(context, beginOffset, endOffset, direct);
+		return new PrimitiveSelection(context, beginOffset, endOffset);
 	}
 
-	private class Line {
+	public class Line {
 		public int offset;
 
 		private Line(final boolean hard) {
@@ -655,88 +630,10 @@ public class VisualPrimitive extends VisualNodePart {
 				brick.setText(context, text);
 		}
 
-		private class LineBrick extends TextBrick {
-			@Override
-			public VisualNodePart getVisual() {
-				return VisualPrimitive.this;
-			}
-
-			@Override
-			public Properties getPropertiesForTagsChange(
-					final Context context, final TagsChange change
-			) {
-				final Set<Tag> tags = new HashSet<>(hard ? hardTags : softTags);
-				tags.removeAll(change.remove);
-				tags.addAll(change.add);
-				return properties(context.getStyle(tags));
-			}
-
-			@Override
-			public Brick createNext(final Context context) {
-				if (Line.this.index == lines.size() - 1) {
-					if (VisualPrimitive.this.parent == null)
-						return null;
-					else
-						return VisualPrimitive.this.parent.createNextBrick(context);
-				}
-				return lines.get(Line.this.index + 1).createBrick(context);
-			}
-
-			@Override
-			public Brick createPrevious(final Context context) {
-				if (Line.this.index == 0)
-					if (VisualPrimitive.this.parent == null)
-						return null;
-					else
-						return VisualPrimitive.this.parent.createPreviousBrick(context);
-				return lines.get(Line.this.index - 1).createBrick(context);
-			}
-
-			@Override
-			public void destroyed(final Context context) {
-				brick = null;
-				brickCount -= 1;
-				if (brickCount == 0) {
-					hardStyle = null;
-					firstStyle = null;
-					softStyle = null;
-					hardAlignment = null;
-					firstAlignment = null;
-					softAlignment = null;
-				}
-			}
-
-			@Override
-			protected Alignment getAlignment(final Style.Baked style) {
-				return Line.this.index == 0 ? firstAlignment : hard ? hardAlignment : softAlignment;
-			}
-
-			@Override
-			protected Style.Baked getStyle() {
-				return Line.this.index == 0 ? firstStyle : hard ? hardStyle : softStyle;
-			}
-
-			@Override
-			public Context.Hoverable hover(final Context context, final Vector point) {
-				if (selection == null) {
-					final Context.Hoverable out = VisualPrimitive.this.hover(context, point);
-					if (out != null)
-						return out;
-				}
-				if (brick == null)
-					return null;
-				if (hoverable == null) {
-					hoverable = new PrimitiveHoverable(context);
-				}
-				hoverable.setPosition(context, offset + getUnder(context, point));
-				return hoverable;
-			}
-		}
-
-		final boolean hard;
+		public final boolean hard;
 		String text;
-		LineBrick brick;
-		private int index;
+		public LineBrick brick;
+		public int index;
 
 		public void setIndex(final Context context, final int index) {
 			if (this.index == 0 && brick != null)
@@ -747,18 +644,52 @@ public class VisualPrimitive extends VisualNodePart {
 		public Brick createBrick(final Context context) {
 			if (brick != null)
 				return null;
-			brickCount += 1;
-			if (brickCount == 1)
-				getStyles(context);
-			brick = new LineBrick();
+			BrickStyle style = brickStyle.get();
+			if (style == null) {
+				style = new BrickStyle(context);
+				brickStyle = new WeakReference<>(style);
+			}
+			brick = new LineBrick(VisualPrimitive.this, this, style);
 			brick.setText(context, text);
 			if (selection != null && (selection.range.beginLine == Line.this || selection.range.endLine == Line.this))
 				selection.range.nudge(context);
 			return brick;
 		}
+
+		public Hoverable hover(final Context context, final Vector point) {
+			if (VisualPrimitive.this.selection == null) {
+				final Hoverable out = VisualPrimitive.this.hover(context, point);
+				if (out != null)
+					return out;
+			}
+			if (hoverable == null) {
+				hoverable = new VisualPrimitive.PrimitiveHoverable(context);
+			}
+			hoverable.setPosition(context, offset + brick.getUnder(context, point));
+			return hoverable;
+		}
+
+		public Brick createNextBrick(final Context context) {
+			if (index == lines.size() - 1) {
+				if (parent == null)
+					return null;
+				else
+					return parent.createNextBrick(context);
+			}
+			return lines.get(index + 1).createBrick(context);
+		}
+
+		public Brick createPreviousBrick(final Context context) {
+			if (index == 0)
+				if (parent == null)
+					return null;
+				else
+					return parent.createPreviousBrick(context);
+			return lines.get(index - 1).createBrick(context);
+		}
 	}
 
-	List<Line> lines = new ArrayList<>();
+	public List<Line> lines = new ArrayList<>();
 
 	private int findContaining(final int offset) {
 		return lines
@@ -972,4 +903,5 @@ public class VisualPrimitive extends VisualNodePart {
 		data.visual = null;
 		clear(context);
 	}
+
 }

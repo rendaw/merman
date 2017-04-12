@@ -1,6 +1,8 @@
-package com.zarbosoft.bonestruct.syntax.plugins;
+package com.zarbosoft.bonestruct.syntax.modules;
 
 import com.zarbosoft.bonestruct.editor.Context;
+import com.zarbosoft.bonestruct.editor.Hoverable;
+import com.zarbosoft.bonestruct.editor.banner.BannerMessage;
 import com.zarbosoft.bonestruct.editor.visual.nodes.VisualArray;
 import com.zarbosoft.bonestruct.editor.visual.nodes.VisualNode;
 import com.zarbosoft.bonestruct.editor.visual.nodes.VisualPrimitive;
@@ -8,24 +10,24 @@ import com.zarbosoft.bonestruct.syntax.NodeType;
 import com.zarbosoft.interface1.Configuration;
 
 @Configuration(name = "hover-type", description = "Shows the type of the element being hovered in the banner.")
-public class HoverType extends Plugin {
+public class HoverType extends Module {
 	@Configuration(optional = true, description = "Include the type of the node.")
 	public boolean node = true;
 	@Configuration(optional = true, description = "Include the type of the node part.")
 	public boolean part = true;
 
-	private Context.BannerMessage message;
+	private BannerMessage message;
 
 	@Override
 	public State initialize(final Context context) {
 		context.addHoverListener(new Context.HoverListener() {
 
 			@Override
-			public void hoverChanged(final Context context, final Context.Hoverable hoverable) {
-				Context.BannerMessage oldMessage = message;
+			public void hoverChanged(final Context context, final Hoverable hoverable) {
+				BannerMessage oldMessage = message;
 				message = null;
 				if (hoverable != null) {
-					message = new Context.BannerMessage();
+					message = new BannerMessage();
 					message.priority = 100;
 					final StringBuilder text = new StringBuilder();
 					if (node) {

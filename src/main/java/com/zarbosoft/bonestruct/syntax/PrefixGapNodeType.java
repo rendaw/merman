@@ -56,7 +56,7 @@ public class PrefixGapNodeType extends NodeType {
 		{
 			final FrontGapBase gap = new FrontGapBase() {
 				@Override
-				protected void process(
+				protected List<String> process(
 						final Context context, final Node self, final String string, final Common.UserData store
 				) {
 					class Choice {
@@ -147,11 +147,12 @@ public class PrefixGapNodeType extends NodeType {
 						))) {
 							if (longest.first.leaves.size() <= choice.ambiguity()) {
 								choice.choose(context, string);
-								return;
+								return null;
 							}
 							// TODO add to details pane
 						}
 					}
+					return null;
 				}
 
 				@Override

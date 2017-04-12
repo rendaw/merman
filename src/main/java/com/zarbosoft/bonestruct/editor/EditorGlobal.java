@@ -19,13 +19,15 @@ public class EditorGlobal {
 	public void initializeFilesystem() {
 		final Path config = appDirs.user_config_dir();
 		uncheck(() -> Files.createDirectories(config));
+		final Path syntaxes = config.resolve("syntaxes");
+		uncheck(() -> Files.createDirectories(syntaxes));
 		Collections
 				.list(uncheck(() -> Thread.currentThread().getContextClassLoader().getResources("")))
 				.stream()
-				.filter(u -> u.getFile().endsWith(".syntax"))
+				.filter(u -> u.getFile().endsWith(".lua"))
 				.forEach(syntax -> {
 					try {
-						Files.copy(syntax.openStream(), config.resolve(syntax.getFile() + ".template"));
+						Files.copy(syntax.openStream(), syntaxes.resolve(syntax.getFile()));
 					} catch (final FileAlreadyExistsException e) {
 					} catch (final IOException e) {
 						throw new Common.UncheckedException(e);

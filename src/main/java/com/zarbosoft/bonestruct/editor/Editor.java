@@ -5,15 +5,13 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.zarbosoft.bonestruct.document.Document;
+import com.zarbosoft.bonestruct.editor.banner.Banner;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.editor.visual.attachments.TransverseExtentsAdapter;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
 import com.zarbosoft.bonestruct.history.History;
 import com.zarbosoft.bonestruct.syntax.Syntax;
-import com.zarbosoft.bonestruct.syntax.hid.Key;
 import com.zarbosoft.bonestruct.wall.Wall;
-import com.zarbosoft.pidgoon.InvalidStream;
-import com.zarbosoft.pidgoon.events.Parse;
 import javafx.beans.value.ChangeListener;
 import javafx.scene.Group;
 import javafx.scene.input.KeyCode;
@@ -22,8 +20,11 @@ import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.Pane;
 
+import java.nio.file.Path;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+
+import static com.zarbosoft.rendaw.common.Common.last;
 
 public class Editor {
 	private final Context context;
@@ -38,30 +39,27 @@ public class Editor {
 			final EditorGlobal global,
 			final Consumer<IdleTask> addIdle,
 			final String path,
-			final Iterable<Context.Action> globalActions,
+			final Iterable<Action> globalActions,
 			final History history
 	) {
-		final Syntax luxemSyntax = global.getSyntax("luxem");
-		//final Document doc = luxemSyntax.load("[[dog, dog, dog, dog, dog, dogdogdog, dog, dog, dog]],");
-		final Document doc = luxemSyntax.load("[dog, dog, dog, dog, dog, dogdogdog, dog,],");
-		//final Document doc = luxemSyntax.load("[{getConverse: 47,transverse:{ar:[2,9,13]},},[atler]]");
-		//final Document doc = luxemSyntax.load("[\"one\"]");
-		//final Document doc = luxemSyntax.load("{analogue:bolivar}");
+		final String extension = last(path.split("\\."));
+		final Syntax syntax = global.getSyntax(extension);
+		final Document doc = syntax.load(path);
 		final Wall wall = new Wall();
-		context = new Context(luxemSyntax, doc, addIdle, wall, Iterables.concat(ImmutableList.of(new Context.Action() {
+		context = new Context(syntax, doc, addIdle, wall, Iterables.concat(ImmutableList.of(new Action() {
 			@Override
 			public void run(final Context context) {
-
+				context.history.undo(context);
 			}
 
 			@Override
 			public String getName() {
 				return "undo";
 			}
-		}, new Context.Action() {
+		}, new Action() {
 			@Override
 			public void run(final Context context) {
-
+				context.history.redo(context);
 			}
 
 			@Override
@@ -70,9 +68,12 @@ public class Editor {
 			}
 		}), globalActions), history);
 		context.display.background = new Group();
-		context.display.banner = new Context.Banner(context);
-		context.plugins = doc.syntax.plugins.stream().map(p -> p.initialize(context)).collect(Collectors.toList());
+		context.display.banner = new Banner(context);
+		context.plugins = doc.syntax.modules.stream().map(p -> p.initialize(context)).collect(Collectors.toList());
 		this.visual = new Pane();
+		visual.setOnKeyPressed(event -> {
+			handleKey(event);
+		});
 		visual.setBackground(new Background(new BackgroundFill(context.syntax.background, null, null)));
 		visual.getChildren().add(context.display.background);
 		visual.getChildren().add(wall.visual);
@@ -185,11 +186,13 @@ public class Editor {
 			newScroll = scroll + maxDiff;
 		}
 		if (newScroll != null) {
-			context.translate(context.display.wall.visual,
+			context.translate(
+					context.display.wall.visual,
 					new Vector(context.syntax.padConverse, -newScroll),
 					context.syntax.animateCoursePlacement
 			);
-			context.translate(context.display.background,
+			context.translate(
+					context.display.background,
 					new Vector(context.syntax.padConverse, -newScroll),
 					context.syntax.animateCoursePlacement
 			);
@@ -203,47 +206,21 @@ public class Editor {
 	}
 
 	public void handleKey(final KeyEvent event) {
-		if (context.hotkeyParse == null) {
-			context.hotkeyParse = new Parse<Context.Action>().grammar(context.hotkeyGrammar).parse();
-		}
-		final Keyboard.Event keyEvent = new Keyboard.Event(Key.fromJFX(event.getCode()),
-				event.isControlDown(),
-				event.isAltDown(),
-				event.isShiftDown()
-		);
-		if (context.hotkeySequence.isEmpty())
-			context.hotkeySequence += keyEvent.toString();
+		if (context.keyListeners.stream().map(l -> l.handleKey(event)).findFirst().orElse(false))
+			return;
+		if (event.getCode() == KeyCode.ENTER)
+			context.selection.receiveText(context, "\n");
 		else
-			context.hotkeySequence += ", " + keyEvent.toString();
-		boolean clean = false;
-		boolean receiveText = false;
-		try {
-			context.hotkeyParse = context.hotkeyParse.push(keyEvent, context.hotkeySequence);
-		} catch (final InvalidStream e) {
-			clean = true;
-			receiveText = true;
-		}
-		final Context.Action action = context.hotkeyParse.finish();
-		if (action != null) {
-			clean = true;
-			action.run(context);
-		} else
-			receiveText = true;
-		if (clean) {
-			context.hotkeySequence = "";
-			context.hotkeyParse = null;
-		}
-		if (receiveText) {
-			if (event.getCode() == KeyCode.ENTER)
-				context.selection.receiveText(context, "\n");
-			else
-				context.selection.receiveText(context, event.getText());
-		}
+			context.selection.receiveText(context, event.getText());
 	}
 
 	public void destroy() {
 		context.plugins.forEach(p -> p.destroy(context));
 		context.display.banner.destroy(context);
 		context.display.wall.clear(context);
+	}
+
+	public void save(final Path dest) {
+		context.document.write(dest);
 	}
 }

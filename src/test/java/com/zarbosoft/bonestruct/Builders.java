@@ -21,46 +21,17 @@ import com.zarbosoft.bonestruct.syntax.back.*;
 import com.zarbosoft.bonestruct.syntax.front.*;
 import com.zarbosoft.bonestruct.syntax.middle.*;
 import com.zarbosoft.luxem.write.RawWriter;
-import com.zarbosoft.rendaw.common.DeadCode;
 import org.junit.ComparisonFailure;
 
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 
-import static com.zarbosoft.rendaw.common.Common.uncheck;
 import static com.zarbosoft.rendaw.common.Common.zip;
 
 public class Builders {
 	public static void dump(final Value value) {
-		dump(value, new RawWriter(System.out, (byte) ' ', 4));
+		Document.write(value, new RawWriter(System.out, (byte) ' ', 4));
 		System.out.write('\n');
 		System.out.flush();
-	}
-
-	static void dump(final Value value, final RawWriter writer) {
-		uncheck(() -> {
-			if (value.getClass() == ValueArray.class) {
-				writer.arrayBegin();
-				((ValueArray) value).get().stream().forEach(element -> dump(element, writer));
-				writer.arrayEnd();
-			} else if (value.getClass() == ValueNode.class) {
-				dump(((ValueNode) value).get(), writer);
-			} else if (value.getClass() == ValuePrimitive.class) {
-				writer.quotedPrimitive(((ValuePrimitive) value).get().getBytes(StandardCharsets.UTF_8));
-			} else
-				throw new DeadCode();
-		});
-	}
-
-	private static void dump(final Node value, final RawWriter writer) {
-		uncheck(() -> {
-			writer.type(value.type.id.getBytes(StandardCharsets.UTF_8));
-			writer.recordBegin();
-			value
-					.dataKeys()
-					.forEach(k -> dump(value.data(k), uncheck(() -> writer.key(k.getBytes(StandardCharsets.UTF_8)))));
-			writer.recordEnd();
-		});
 	}
 
 	static class SyntaxBuilder {

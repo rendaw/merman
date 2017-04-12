@@ -54,7 +54,7 @@ public class GapNodeType extends NodeType {
 		{
 			final FrontGapBase gap = new FrontGapBase() {
 				@Override
-				protected void process(
+				protected List<String> process(
 						final Context context, final Node self, final String string, final Common.UserData store
 				) {
 					class Choice {
@@ -128,16 +128,17 @@ public class GapNodeType extends NodeType {
 						for (final Choice choice : choices) {
 							if (longest.first.leaves.size() <= choice.ambiguity()) {
 								choice.choose(context, string);
-								return;
+								return null;
 							}
 							// TODO add to details pane
 						}
 					} else if (longest.second.distance() >= 1) {
 						for (final Choice choice : choices) {
 							choice.choose(context, string);
-							return;
+							return null;
 						}
 					}
+					return null;
 				}
 
 				@Override

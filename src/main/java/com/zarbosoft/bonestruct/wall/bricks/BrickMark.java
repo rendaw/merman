@@ -11,7 +11,7 @@ import com.zarbosoft.bonestruct.wall.Brick;
 import java.util.HashSet;
 import java.util.Set;
 
-public class BrickMark extends TextBrick {
+public class BrickMark extends BrickText {
 	private final VisualMark markVisual;
 	private Style.Baked style;
 	private Alignment alignment;
@@ -22,7 +22,7 @@ public class BrickMark extends TextBrick {
 	}
 
 	public void setStyle(final Context context) {
-		style = context.getStyle(markVisual.tags());
+		style = context.getStyle(markVisual.tags(context));
 		if (alignment != null)
 			alignment.removeListener(context, this);
 		alignment = markVisual.getAlignment(style.alignment);
@@ -68,7 +68,7 @@ public class BrickMark extends TextBrick {
 	public Properties getPropertiesForTagsChange(
 			final Context context, final VisualNode.TagsChange change
 	) {
-		final Set<VisualNode.Tag> tags = new HashSet<>(markVisual.tags());
+		final Set<VisualNode.Tag> tags = new HashSet<>(markVisual.tags(context));
 		tags.removeAll(change.remove);
 		tags.addAll(change.add);
 		return properties(context.getStyle(tags));

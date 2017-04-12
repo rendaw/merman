@@ -1,8 +1,10 @@
 package com.zarbosoft.bonestruct.editor.visual.nodes;
 
-import com.google.common.collect.ImmutableList;
 import com.zarbosoft.bonestruct.document.Node;
+import com.zarbosoft.bonestruct.editor.Action;
 import com.zarbosoft.bonestruct.editor.Context;
+import com.zarbosoft.bonestruct.editor.Hoverable;
+import com.zarbosoft.bonestruct.editor.Selection;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.editor.visual.attachments.BorderAttachment;
@@ -11,13 +13,14 @@ import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodeParent;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
 import com.zarbosoft.bonestruct.syntax.NodeType;
-import com.zarbosoft.bonestruct.syntax.hid.Hotkeys;
 import com.zarbosoft.bonestruct.wall.Brick;
 import com.zarbosoft.rendaw.common.Pair;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public abstract class VisualNodeBase extends VisualNodePart {
 	protected VisualNode body;
@@ -25,7 +28,7 @@ public abstract class VisualNodeBase extends VisualNodePart {
 	boolean selected = false;
 	private VisualAttachmentAdapter adapter;
 	private BorderAttachment border;
-	Context.Hoverable hoverable;
+	Hoverable hoverable;
 	private NestedSelection selection;
 
 	public VisualNodeBase(
@@ -119,12 +122,12 @@ public abstract class VisualNodeBase extends VisualNodePart {
 		selected = true;
 		border = new BorderAttachment(context, context.syntax.selectStyle);
 		createAdapter(context);
-		context.setSelection(new NestedSelection());
+		context.setSelection(new NestedSelection(context));
 		return true;
 	}
 
-	protected Iterable<Context.Action> getActions(final Context context) {
-		return ImmutableList.of(new Context.Action() {
+	protected Stream<Action> getActions(final Context context) {
+		return Stream.of(new Action() {
 			@Override
 			public void run(final Context context) {
 				body.select(context);
@@ -134,7 +137,7 @@ public abstract class VisualNodeBase extends VisualNodePart {
 			public String getName() {
 				return "enter";
 			}
-		}, new Context.Action() {
+		}, new Action() {
 			@Override
 			public void run(final Context context) {
 				if (parent != null) {
@@ -146,7 +149,7 @@ public abstract class VisualNodeBase extends VisualNodePart {
 			public String getName() {
 				return "exit";
 			}
-		}, new Context.Action() {
+		}, new Action() {
 			@Override
 			public void run(final Context context) {
 				nodeSet(context, context.syntax.gap.create());
@@ -156,7 +159,7 @@ public abstract class VisualNodeBase extends VisualNodePart {
 			public String getName() {
 				return "delete";
 			}
-		}, new Context.Action() {
+		}, new Action() {
 			@Override
 			public void run(final Context context) {
 
@@ -166,7 +169,7 @@ public abstract class VisualNodeBase extends VisualNodePart {
 			public String getName() {
 				return "copy";
 			}
-		}, new Context.Action() {
+		}, new Action() {
 			@Override
 			public void run(final Context context) {
 
@@ -176,7 +179,7 @@ public abstract class VisualNodeBase extends VisualNodePart {
 			public String getName() {
 				return "cut";
 			}
-		}, new Context.Action() {
+		}, new Action() {
 			@Override
 			public void run(final Context context) {
 
@@ -189,7 +192,11 @@ public abstract class VisualNodeBase extends VisualNodePart {
 		});
 	}
 
-	private class NestedSelection extends Context.Selection {
+	private class NestedSelection extends Selection {
+		public NestedSelection(final Context context) {
+			context.actions.put(this, VisualNodeBase.this.getActions(context).collect(Collectors.toList()));
+		}
+
 		@Override
 		public void clear(final Context context) {
 			border.destroy(context);
@@ -197,16 +204,7 @@ public abstract class VisualNodeBase extends VisualNodePart {
 			adapter.destroy(context);
 			adapter = null;
 			selected = false;
-		}
-
-		@Override
-		protected Hotkeys getHotkeys(final Context context) {
-			return context.getHotkeys(tags());
-		}
-
-		@Override
-		public Iterable<Context.Action> getActions(final Context context) {
-			return VisualNodeBase.this.getActions(context);
+			context.actions.remove(this);
 		}
 
 		@Override
@@ -302,11 +300,11 @@ public abstract class VisualNodeBase extends VisualNodePart {
 		}
 
 		@Override
-		public Context.Hoverable hover(final Context context, final Vector point) {
+		public Hoverable hover(final Context context, final Vector point) {
 			if (selected)
 				return null;
 			{
-				final Context.Hoverable parentHoverable;
+				final Hoverable parentHoverable;
 				if (parent == null)
 					parentHoverable = null;
 				else
@@ -318,7 +316,7 @@ public abstract class VisualNodeBase extends VisualNodePart {
 				return hoverable;
 			border = new BorderAttachment(context, context.syntax.hoverStyle);
 			createAdapter(context);
-			hoverable = new Context.Hoverable() {
+			hoverable = new Hoverable() {
 				@Override
 				public void clear(final Context context) {
 					border.destroy(context);
