@@ -15,12 +15,12 @@ public class RawText {
 	public RawText(final Context context, final Style.Baked style) {
 		text.setTextOrigin(VPos.BASELINE);
 		text.setFont(style.getFont());
-		text.setFill(style.color);
+		text.setFill(style.color.get());
 	}
 
 	public void setStyle(final Style.Baked style) {
 		text.setFont(style.getFont());
-		text.setFill(style.color);
+		text.setFill(style.color.get());
 	}
 
 	public void setText(final Context context, final String newText) {

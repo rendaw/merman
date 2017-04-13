@@ -16,19 +16,20 @@ import java.util.stream.Collectors;
 
 public abstract class FrontDataArrayBase extends FrontPart {
 
-	@Configuration
+	@Configuration(optional = true)
 	public List<FrontConstantPart> prefix = new ArrayList<>();
-	@Configuration
+	@Configuration(optional = true)
 	public List<FrontConstantPart> suffix = new ArrayList<>();
-	@Configuration
+	@Configuration(optional = true)
 	public List<FrontConstantPart> separator = new ArrayList<>();
-	protected MiddleArrayBase dataType;
 	@Configuration(optional = true)
 	public Map<String, Node> hotkeys = new HashMap<>();
-	@Configuration(name = "tag-first", optional = true)
+	@Configuration(name = "tag_first", optional = true)
 	public boolean tagFirst = false;
-	@Configuration(name = "tag-last", optional = true)
+	@Configuration(name = "tag_last", optional = true)
 	public boolean tagLast = false;
+
+	protected MiddleArrayBase dataType;
 
 	@Override
 	public void finish(final NodeType nodeType, final Set<String> middleUsed) {

@@ -9,7 +9,7 @@ import com.zarbosoft.bonestruct.editor.visual.nodes.VisualPrimitive;
 import com.zarbosoft.bonestruct.syntax.NodeType;
 import com.zarbosoft.interface1.Configuration;
 
-@Configuration(name = "hover-type", description = "Shows the type of the element being hovered in the banner.")
+@Configuration(name = "hover_type", description = "Shows the type of the element being hovered in the banner.")
 public class HoverType extends Module {
 	@Configuration(optional = true, description = "Include the type of the node.")
 	public boolean node = true;

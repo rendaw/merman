@@ -185,6 +185,11 @@ public class VisualGroup extends VisualNodePart {
 			child.destroy(context);
 	}
 
+	@Override
+	public void tagsChanged(final Context context) {
+
+	}
+
 	public static class Parent extends VisualNodeParent {
 		public final VisualGroup target;
 		public int index;

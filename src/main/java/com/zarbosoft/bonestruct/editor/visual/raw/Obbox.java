@@ -55,7 +55,7 @@ public abstract class Obbox extends Canvas {
 
 			@Override
 			public Color lineColor() {
-				return settings.lineColor;
+				return settings.lineColor.get();
 			}
 
 			@Override
@@ -70,7 +70,7 @@ public abstract class Obbox extends Canvas {
 
 			@Override
 			public Color fillColor() {
-				return settings.fillColor;
+				return settings.fillColor.get();
 			}
 		};
 	}

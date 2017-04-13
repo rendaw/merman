@@ -14,7 +14,7 @@ import com.zarbosoft.rendaw.common.Pair;
 
 import java.util.Set;
 
-@Configuration(name = "data-primitive")
+@Configuration(name = "data_primitive")
 public class BackDataPrimitive extends BackPart {
 	@Configuration
 	public String middle;

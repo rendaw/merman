@@ -68,7 +68,7 @@ public class VisualPrimitive extends VisualNodePart {
 		}
 	}
 
-	private WeakReference<BrickStyle> brickStyle;
+	private WeakReference<BrickStyle> brickStyle = new WeakReference<>(null);
 	public Set<Tag> softTags = new HashSet<>();
 	public Set<Tag> hardTags = new HashSet<>();
 	public int brickCount = 0;
@@ -312,7 +312,7 @@ public class VisualPrimitive extends VisualNodePart {
 
 				@Override
 				public String getName() {
-					return "next-word";
+					return "next_word";
 				}
 			}, new Action() {
 				@Override
@@ -324,7 +324,7 @@ public class VisualPrimitive extends VisualNodePart {
 
 				@Override
 				public String getName() {
-					return "previous-word";
+					return "previous_word";
 				}
 			}, new Action() {
 				@Override
@@ -334,7 +334,7 @@ public class VisualPrimitive extends VisualNodePart {
 
 				@Override
 				public String getName() {
-					return "line-begin";
+					return "line_begin";
 				}
 			}, new Action() {
 				@Override
@@ -344,7 +344,7 @@ public class VisualPrimitive extends VisualNodePart {
 
 				@Override
 				public String getName() {
-					return "line-end";
+					return "line_end";
 				}
 			}, new Action() {
 				@Override
@@ -356,7 +356,7 @@ public class VisualPrimitive extends VisualNodePart {
 
 				@Override
 				public String getName() {
-					return "next-line";
+					return "next_line";
 				}
 			}, new Action() {
 				@Override
@@ -368,7 +368,7 @@ public class VisualPrimitive extends VisualNodePart {
 
 				@Override
 				public String getName() {
-					return "previous-line";
+					return "previous_line";
 				}
 			}, new Action() {
 				@Override
@@ -386,7 +386,7 @@ public class VisualPrimitive extends VisualNodePart {
 
 				@Override
 				public String getName() {
-					return "delete-previous";
+					return "delete_previous";
 				}
 			}, new Action() {
 				@Override
@@ -407,7 +407,7 @@ public class VisualPrimitive extends VisualNodePart {
 
 				@Override
 				public String getName() {
-					return "delete-next";
+					return "delete_next";
 				}
 			}, new Action() {
 				@Override
@@ -501,7 +501,7 @@ public class VisualPrimitive extends VisualNodePart {
 
 				@Override
 				public String getName() {
-					return "reset-selection";
+					return "reset_selection";
 				}
 			}, new Action() {
 				@Override
@@ -511,7 +511,7 @@ public class VisualPrimitive extends VisualNodePart {
 
 				@Override
 				public String getName() {
-					return "gather-next";
+					return "gather_next";
 				}
 			}, new Action() {
 				@Override
@@ -521,7 +521,7 @@ public class VisualPrimitive extends VisualNodePart {
 
 				@Override
 				public String getName() {
-					return "gather-previous";
+					return "gather_previous";
 				}
 			}), VisualPrimitive.this.getActions(context)).collect(Collectors.toList()));
 		}

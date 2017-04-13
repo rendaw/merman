@@ -21,7 +21,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-@Configuration(name = "data-array")
+@Configuration(name = "data_array")
 public class BackDataArray extends BackPart {
 	@Configuration
 	public String middle;

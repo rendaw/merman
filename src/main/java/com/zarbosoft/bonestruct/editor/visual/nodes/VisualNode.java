@@ -38,4 +38,9 @@ public class VisualNode extends VisualNodeBase {
 		data.visual = null;
 		super.destroy(context);
 	}
+
+	@Override
+	public void tagsChanged(final Context context) {
+
+	}
 }

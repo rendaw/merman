@@ -302,6 +302,11 @@ public abstract class NodeType {
 			body.destroy(context);
 		}
 
+		@Override
+		public void tagsChanged(final Context context) {
+
+		}
+
 		public NodeType getType() {
 			return NodeType.this;
 		}

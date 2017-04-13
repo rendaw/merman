@@ -120,7 +120,7 @@ public class MiscSyntax {
 				.frontMark(">")
 				.autoComplete(99)
 				.build();
-		openArray = new Builders.TypeBuilder("open-array")
+		openArray = new Builders.TypeBuilder("open_array")
 				.middleArray("value", "any")
 				.back(buildBackDataArray("value"))
 				.front(new FrontDataArrayBuilder("value").addSeparator(new FrontMarkBuilder(",,").build()).build())
@@ -128,14 +128,14 @@ public class MiscSyntax {
 				.autoComplete(99)
 				.build();
 		record = new Builders.TypeBuilder("record")
-				.middleRecord("value", "record-element")
+				.middleRecord("value", "record_element")
 				.back(buildBackDataRecord("value"))
 				.frontMark("{")
 				.frontDataArray("value")
 				.frontMark("}")
 				.autoComplete(99)
 				.build();
-		recordElement = new Builders.TypeBuilder("record-element")
+		recordElement = new Builders.TypeBuilder("record_element")
 				.middleRecordKey("key")
 				.middleNode("value", "any")
 				.back(buildBackDataKey("key"))
@@ -145,8 +145,8 @@ public class MiscSyntax {
 				.frontDataNode("value")
 				.autoComplete(99)
 				.build();
-		openRecord = new Builders.TypeBuilder("open-record")
-				.middleRecord("value", "record-element")
+		openRecord = new Builders.TypeBuilder("open_record")
+				.middleRecord("value", "record_element")
 				.back(buildBackDataRecord("value"))
 				.front(new Builders.FrontDataArrayBuilder("value")
 						.addSeparator(new Builders.FrontMarkBuilder(",,").build())
@@ -199,15 +199,15 @@ public class MiscSyntax {
 				.type(pair)
 				.type(ratio)
 				.group(
-						"test-group-1",
+						"test_group_1",
 						new Builders.GroupBuilder()
 								.type(infinity)
 								.type(MiscSyntax.one)
 								.type(MiscSyntax.multiback)
-								.group("test-group-2")
+								.group("test_group_2")
 								.build()
 				)
-				.group("test-group-2", new Builders.GroupBuilder().type(quoted).build())
+				.group("test_group_2", new Builders.GroupBuilder().type(quoted).build())
 				.group(
 						"any",
 						new Builders.GroupBuilder()

@@ -41,10 +41,10 @@ public enum Key {
 	@Configuration(name = "space")
 	SPACE,
 
-	@Configuration(name = "page-up")
+	@Configuration(name = "page_up")
 	PAGE_UP,
 
-	@Configuration(name = "page-down")
+	@Configuration(name = "page_down")
 	PAGE_DOWN,
 
 	@Configuration(name = "end")
@@ -191,13 +191,13 @@ public enum Key {
 	@Configuration(name = "z")
 	Z,
 
-	@Configuration(name = "open-bracket")
+	@Configuration(name = "open_bracket")
 	OPEN_BRACKET,
 
-	@Configuration(name = "back-slash")
+	@Configuration(name = "back_slash")
 	BACK_SLASH,
 
-	@Configuration(name = "close-bracket")
+	@Configuration(name = "close_bracket")
 	CLOSE_BRACKET,
 
 	@Configuration(name = "numpad0")
@@ -251,10 +251,10 @@ public enum Key {
 	@Configuration(name = "delete")
 	DELETE,
 
-	@Configuration(name = "num-lock")
+	@Configuration(name = "num_lock")
 	NUM_LOCK,
 
-	@Configuration(name = "scroll-lock")
+	@Configuration(name = "scroll_lock")
 	SCROLL_LOCK,
 
 	@Configuration(name = "f1")
@@ -341,70 +341,70 @@ public enum Key {
 	@Configuration(name = "meta")
 	META,
 
-	@Configuration(name = "back-quote")
+	@Configuration(name = "back_quote")
 	BACK_QUOTE,
 
 	@Configuration(name = "quote")
 	QUOTE,
 
-	@Configuration(name = "kp-up")
+	@Configuration(name = "kp_up")
 	KP_UP,
 
-	@Configuration(name = "kp-down")
+	@Configuration(name = "kp_down")
 	KP_DOWN,
 
-	@Configuration(name = "kp-left")
+	@Configuration(name = "kp_left")
 	KP_LEFT,
 
-	@Configuration(name = "kp-right")
+	@Configuration(name = "kp_right")
 	KP_RIGHT,
 
-	@Configuration(name = "dead-grave")
+	@Configuration(name = "dead_grave")
 	DEAD_GRAVE,
 
-	@Configuration(name = "dead-acute")
+	@Configuration(name = "dead_acute")
 	DEAD_ACUTE,
 
-	@Configuration(name = "dead-circumflex")
+	@Configuration(name = "dead_circumflex")
 	DEAD_CIRCUMFLEX,
 
-	@Configuration(name = "dead-tilde")
+	@Configuration(name = "dead_tilde")
 	DEAD_TILDE,
 
-	@Configuration(name = "dead-macron")
+	@Configuration(name = "dead_macron")
 	DEAD_MACRON,
 
-	@Configuration(name = "dead-breve")
+	@Configuration(name = "dead_breve")
 	DEAD_BREVE,
 
-	@Configuration(name = "dead-abovedot")
+	@Configuration(name = "dead_abovedot")
 	DEAD_ABOVEDOT,
 
-	@Configuration(name = "dead-diaeresis")
+	@Configuration(name = "dead_diaeresis")
 	DEAD_DIAERESIS,
 
-	@Configuration(name = "dead-abovering")
+	@Configuration(name = "dead_abovering")
 	DEAD_ABOVERING,
 
-	@Configuration(name = "dead-doubleacute")
+	@Configuration(name = "dead_doubleacute")
 	DEAD_DOUBLEACUTE,
 
-	@Configuration(name = "dead-caron")
+	@Configuration(name = "dead_caron")
 	DEAD_CARON,
 
-	@Configuration(name = "dead-cedilla")
+	@Configuration(name = "dead_cedilla")
 	DEAD_CEDILLA,
 
-	@Configuration(name = "dead-ogonek")
+	@Configuration(name = "dead_ogonek")
 	DEAD_OGONEK,
 
-	@Configuration(name = "dead-iota")
+	@Configuration(name = "dead_iota")
 	DEAD_IOTA,
 
-	@Configuration(name = "dead_voiced-sound")
+	@Configuration(name = "dead_voiced_sound")
 	DEAD_VOICED_SOUND,
 
-	@Configuration(name = "dead_semivoiced-sound")
+	@Configuration(name = "dead_semivoiced_sound")
 	DEAD_SEMIVOICED_SOUND,
 
 	@Configuration(name = "ampersand")
@@ -440,25 +440,25 @@ public enum Key {
 	@Configuration(name = "dollar")
 	DOLLAR,
 
-	@Configuration(name = "euro-sign")
+	@Configuration(name = "euro_sign")
 	EURO_SIGN,
 
-	@Configuration(name = "exclamation-mark")
+	@Configuration(name = "exclamation_mark")
 	EXCLAMATION_MARK,
 
-	@Configuration(name = "inverted_exclamation-mark")
+	@Configuration(name = "inverted_exclamation_mark")
 	INVERTED_EXCLAMATION_MARK,
 
-	@Configuration(name = "left-parenthesis")
+	@Configuration(name = "left_parenthesis")
 	LEFT_PARENTHESIS,
 
-	@Configuration(name = "number-sign")
+	@Configuration(name = "number_sign")
 	NUMBER_SIGN,
 
 	@Configuration(name = "plus")
 	PLUS,
 
-	@Configuration(name = "right-parenthesis")
+	@Configuration(name = "right_parenthesis")
 	RIGHT_PARENTHESIS,
 
 	@Configuration(name = "underscore")
@@ -467,7 +467,7 @@ public enum Key {
 	@Configuration(name = "windows")
 	WINDOWS,
 
-	@Configuration(name = "context-menu")
+	@Configuration(name = "context_menu")
 	CONTEXT_MENU,
 
 	@Configuration(name = "final")
@@ -500,37 +500,37 @@ public enum Key {
 	@Configuration(name = "hiragana")
 	HIRAGANA,
 
-	@Configuration(name = "full-width")
+	@Configuration(name = "full_width")
 	FULL_WIDTH,
 
-	@Configuration(name = "half-width")
+	@Configuration(name = "half_width")
 	HALF_WIDTH,
 
-	@Configuration(name = "roman-characters")
+	@Configuration(name = "roman_characters")
 	ROMAN_CHARACTERS,
 
-	@Configuration(name = "all-candidates")
+	@Configuration(name = "all_candidates")
 	ALL_CANDIDATES,
 
-	@Configuration(name = "previous-candidate")
+	@Configuration(name = "previous_candidate")
 	PREVIOUS_CANDIDATE,
 
-	@Configuration(name = "code-input")
+	@Configuration(name = "code_input")
 	CODE_INPUT,
 
-	@Configuration(name = "japanese-katakana")
+	@Configuration(name = "japanese_katakana")
 	JAPANESE_KATAKANA,
 
-	@Configuration(name = "japanese-hiragana")
+	@Configuration(name = "japanese_hiragana")
 	JAPANESE_HIRAGANA,
 
-	@Configuration(name = "japanese-roman")
+	@Configuration(name = "japanese_roman")
 	JAPANESE_ROMAN,
 
-	@Configuration(name = "kana-lock")
+	@Configuration(name = "kana_lock")
 	KANA_LOCK,
 
-	@Configuration(name = "input_method_on-off")
+	@Configuration(name = "input_method_on_off")
 	INPUT_METHOD_ON_OFF,
 
 	@Configuration(name = "cut")
@@ -560,7 +560,7 @@ public enum Key {
 	@Configuration(name = "compose")
 	COMPOSE,
 
-	@Configuration(name = "alt-graph")
+	@Configuration(name = "alt_graph")
 	ALT_GRAPH,
 
 	@Configuration(name = "begin")
@@ -569,46 +569,46 @@ public enum Key {
 	@Configuration(name = "undefined")
 	UNDEFINED,
 
-	@Configuration(name = "softkey-0")
+	@Configuration(name = "softkey_0")
 	SOFTKEY_0,
 
-	@Configuration(name = "softkey-1")
+	@Configuration(name = "softkey_1")
 	SOFTKEY_1,
 
-	@Configuration(name = "softkey-2")
+	@Configuration(name = "softkey_2")
 	SOFTKEY_2,
 
-	@Configuration(name = "softkey-3")
+	@Configuration(name = "softkey_3")
 	SOFTKEY_3,
 
-	@Configuration(name = "softkey-4")
+	@Configuration(name = "softkey_4")
 	SOFTKEY_4,
 
-	@Configuration(name = "softkey-5")
+	@Configuration(name = "softkey_5")
 	SOFTKEY_5,
 
-	@Configuration(name = "softkey-6")
+	@Configuration(name = "softkey_6")
 	SOFTKEY_6,
 
-	@Configuration(name = "softkey-7")
+	@Configuration(name = "softkey_7")
 	SOFTKEY_7,
 
-	@Configuration(name = "softkey-8")
+	@Configuration(name = "softkey_8")
 	SOFTKEY_8,
 
-	@Configuration(name = "softkey-9")
+	@Configuration(name = "softkey_9")
 	SOFTKEY_9,
 
-	@Configuration(name = "game-a")
+	@Configuration(name = "game_a")
 	GAME_A,
 
-	@Configuration(name = "game-b")
+	@Configuration(name = "game_b")
 	GAME_B,
 
-	@Configuration(name = "game-c")
+	@Configuration(name = "game_c")
 	GAME_C,
 
-	@Configuration(name = "game-d")
+	@Configuration(name = "game_d")
 	GAME_D,
 
 	@Configuration(name = "star")
@@ -623,19 +623,19 @@ public enum Key {
 	@Configuration(name = "info")
 	INFO,
 
-	@Configuration(name = "colored_key-0")
+	@Configuration(name = "colored_key_0")
 	COLORED_KEY_0,
 
-	@Configuration(name = "colored_key-1")
+	@Configuration(name = "colored_key_1")
 	COLORED_KEY_1,
 
-	@Configuration(name = "colored_key-2")
+	@Configuration(name = "colored_key_2")
 	COLORED_KEY_2,
 
-	@Configuration(name = "colored_key-3")
+	@Configuration(name = "colored_key_3")
 	COLORED_KEY_3,
 
-	@Configuration(name = "eject-toggle")
+	@Configuration(name = "eject_toggle")
 	EJECT_TOGGLE,
 
 	@Configuration(name = "play")
@@ -644,28 +644,28 @@ public enum Key {
 	@Configuration(name = "record")
 	RECORD,
 
-	@Configuration(name = "fast-fwd")
+	@Configuration(name = "fast_fwd")
 	FAST_FWD,
 
 	@Configuration(name = "rewind")
 	REWIND,
 
-	@Configuration(name = "track-prev")
+	@Configuration(name = "track_prev")
 	TRACK_PREV,
 
-	@Configuration(name = "track-next")
+	@Configuration(name = "track_next")
 	TRACK_NEXT,
 
-	@Configuration(name = "channel-up")
+	@Configuration(name = "channel_up")
 	CHANNEL_UP,
 
-	@Configuration(name = "channel-down")
+	@Configuration(name = "channel_down")
 	CHANNEL_DOWN,
 
-	@Configuration(name = "volume-up")
+	@Configuration(name = "volume_up")
 	VOLUME_UP,
 
-	@Configuration(name = "volume-down")
+	@Configuration(name = "volume_down")
 	VOLUME_DOWN,
 
 	@Configuration(name = "mute")

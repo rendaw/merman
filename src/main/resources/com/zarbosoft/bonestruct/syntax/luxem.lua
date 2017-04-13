@@ -1,9 +1,11 @@
+free ''
+state ''
 return {
     name = 'luxem',
-    background = { 0.21568, 0.21568, 0.21568 },
+    background = rgb { r = 0.21568, g = 0.21568, b = 0.21568 },
     animate_course_placement = true,
     hover_style = {
-        line_color = { 0.21568, 0.05, 0.43 },
+        line_color = rgb { r = 0.21568, g = 0.05, b = 0.43 },
     },
     styles = {
         {
@@ -41,25 +43,12 @@ return {
     root = 'value',
     types = {
         {
-            id = '__gap',
-            name = 'Gap',
-            back = {
-                type '__gap',
-                data_primitive 'value',
-            },
-            middle = { value = primitive {} },
-            front = {
-                mark '*',
-                gap 'value',
-            },
-        },
-        {
             id = 'luxem_object',
             name = 'Luxem Object',
             back = { data_record 'data' },
             middle = {
                 data = record {
-                    tag = 'value',
+                    type = 'luxem_object_element',
                 }
             },
             alignments = {
@@ -69,16 +58,27 @@ return {
             },
             front = {
                 mark '{',
-                record {
-                    middle = data,
-                    prefix = { space { tags = { 'indent', 'break' } } },
-                    infix = {
-                        mark ':',
-                        space { tags = { 'record_table' } },
-                    },
+                array {
+                    middle = 'data',
                     separator = { mark ',' },
                 },
                 mark { value = '}', tags = { 'break', 'base' }, },
+            },
+        },
+        {
+            id = 'luxem_object_element',
+            name = 'Luxem Object Element',
+            back = { data_key 'key', data_node 'value' },
+            middle = {
+                key = primitive {},
+                value = node 'value',
+            },
+            front = {
+                space { tags = { 'indent', 'break' } },
+                primitive 'key',
+                mark ':',
+                space { tags = { 'record_table' } },
+                node 'value',
             },
         },
         {
@@ -87,7 +87,7 @@ return {
             back = { data_array 'data' },
             middle = {
                 data = array {
-                    tag = 'value',
+                    type = 'value',
                 }
             },
             alignments = {
@@ -97,7 +97,7 @@ return {
             front = {
                 mark '{',
                 array {
-                    middle = data,
+                    middle = 'data',
                     prefix = { space { tags = { 'indent', 'break' } } },
                     separator = { mark ',' },
                 },
@@ -114,9 +114,9 @@ return {
             },
         }
     },
-    plugins = {
+    modules = {
         hover_type {},
-        mode {
+        modes {
             states = {
                 'nottyping',
                 'typing',

@@ -52,7 +52,7 @@ public class PrefixGapNodeType extends NodeType {
 	private final Map<String, MiddleElement> middle;
 
 	public PrefixGapNodeType() {
-		id = "__prefix-gap";
+		id = "__prefix_gap";
 		{
 			final FrontGapBase gap = new FrontGapBase() {
 				@Override

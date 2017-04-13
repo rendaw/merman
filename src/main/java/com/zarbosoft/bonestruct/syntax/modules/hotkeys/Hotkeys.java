@@ -26,12 +26,12 @@ import java.util.*;
 
 import static com.zarbosoft.rendaw.common.Common.iterable;
 
-@Configuration(name = "rules", description = "Trigger actions with keys and key combinations.")
+@Configuration(name = "hotkeys", description = "Trigger actions with keys and key combinations.")
 public class Hotkeys extends Module {
 	@Configuration(optional = true)
 	public List<HotkeyRule> rules = new ArrayList<>();
 
-	@Configuration(optional = true, name = "show-details")
+	@Configuration(optional = true, name = "show_details")
 	public boolean showDetails = true;
 
 	public WeakHashMap<Set<VisualNode.Tag>, WeakReference<HotkeyRule>> hotkeysCache = new WeakHashMap<>();
@@ -46,9 +46,9 @@ public class Hotkeys extends Module {
 			this.node = group;
 			final PSet tags = HashTreePSet.from(context.globalTags);
 			final RawText first =
-					new RawText(context, context.getStyle(tags.plus(new VisualNode.PartTag("details-prompt"))));
+					new RawText(context, context.getStyle(tags.plus(new VisualNode.PartTag("details_prompt"))));
 			group.getChildren().add(first.getVisual());
-			final Style.Baked lineStyle = context.getStyle(tags.plus(new VisualNode.PartTag("details-line")));
+			final Style.Baked lineStyle = context.getStyle(tags.plus(new VisualNode.PartTag("details_line")));
 			first.setText(context, hotkeySequence);
 			int transverse = first.transverseSpan(context);
 			for (final com.zarbosoft.pidgoon.internal.State leaf : hotkeyParse.context().leaves) {

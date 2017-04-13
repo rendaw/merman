@@ -74,7 +74,7 @@ public class Editor {
 		visual.setOnKeyPressed(event -> {
 			handleKey(event);
 		});
-		visual.setBackground(new Background(new BackgroundFill(context.syntax.background, null, null)));
+		visual.setBackground(new Background(new BackgroundFill(context.syntax.background.get(), null, null)));
 		visual.getChildren().add(context.display.background);
 		visual.getChildren().add(wall.visual);
 		final VisualNodePart root =
@@ -206,7 +206,7 @@ public class Editor {
 	}
 
 	public void handleKey(final KeyEvent event) {
-		if (context.keyListeners.stream().map(l -> l.handleKey(event)).findFirst().orElse(false))
+		if (context.keyListeners.stream().map(l -> l.handleKey(context, event)).findFirst().orElse(false))
 			return;
 		if (event.getCode() == KeyCode.ENTER)
 			context.selection.receiveText(context, "\n");

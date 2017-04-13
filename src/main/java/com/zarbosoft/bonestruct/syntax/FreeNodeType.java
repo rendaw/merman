@@ -35,13 +35,13 @@ public class FreeNodeType extends NodeType {
 			"when wrapping lines - lower precedence nodes will be compacted first, expanded last.")
 	public int precedence = 0;
 
-	@Configuration(name = "associate-forward", optional = true, description =
+	@Configuration(name = "associate_forward", optional = true, description =
 			"If this is an operator, the operator associativity.  This is used when filling in a " +
 					"suffix gap to raise the new node to the appropriate level.  If two operators have the same " +
 					"precedence, if the higher operator is back associative the lower operator will not be raised.")
 	public boolean frontAssociative = false;
 
-	@Configuration(name = "auto-choose-ambiguity", optional = true,
+	@Configuration(name = "auto_choose_ambiguity", optional = true,
 			description = "If this type is a suggestion and there are less than this many choices, auto-choose this type.")
 	public int autoChooseAmbiguity = -1;
 

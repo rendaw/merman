@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 @Configuration(name = "image")
 public class FrontImage extends FrontConstantPart {
 
-	@Configuration(name = "gap-key", optional = true,
+	@Configuration(name = "gap_key", optional = true,
 			description = "Use this string as a key for matching the node when filling a gap.")
 	public String gapKey = "";
 

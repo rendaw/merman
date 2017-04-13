@@ -7,6 +7,7 @@ import com.zarbosoft.bonestruct.document.values.ValueArray;
 import com.zarbosoft.bonestruct.syntax.front.RootFrontDataArray;
 import com.zarbosoft.bonestruct.syntax.middle.MiddleArray;
 import com.zarbosoft.bonestruct.syntax.modules.Module;
+import com.zarbosoft.bonestruct.syntax.style.ModelColor;
 import com.zarbosoft.bonestruct.syntax.style.ObboxStyle;
 import com.zarbosoft.bonestruct.syntax.style.Style;
 import com.zarbosoft.interface1.Configuration;
@@ -18,7 +19,6 @@ import com.zarbosoft.pidgoon.events.Grammar;
 import com.zarbosoft.pidgoon.nodes.Reference;
 import com.zarbosoft.pidgoon.nodes.Union;
 import com.zarbosoft.rendaw.common.Pair;
-import javafx.scene.paint.Color;
 import org.pcollections.HashTreePSet;
 import org.pcollections.PSet;
 import org.reflections.Reflections;
@@ -43,13 +43,13 @@ public class Syntax {
 	public String name;
 
 	@Configuration(optional = true, description = "The background color of the document.")
-	public Color background = Color.WHITE;
+	public ModelColor background = ModelColor.RGB.white;
 
-	@Configuration(optional = true, name = "pad-converse",
+	@Configuration(optional = true, name = "pad_converse",
 			description = "Pad the converse edge of the document by this many pixels.")
 	public int padConverse = 5;
 
-	@Configuration(optional = true, name = "pad-transverse",
+	@Configuration(optional = true, name = "pad_transverse",
 			description = "Pad the transverse edge of the document by this many pixels.")
 	public int padTransverse = 60;
 
@@ -61,10 +61,10 @@ public class Syntax {
 	@Configuration(optional = true)
 	public List<Style> styles = new ArrayList<>();
 
-	@Configuration(optional = true, name = "hover-style")
+	@Configuration(optional = true, name = "hover_style")
 	public ObboxStyle hoverStyle = new ObboxStyle();
 
-	@Configuration(optional = true, name = "select-style")
+	@Configuration(optional = true, name = "select_style")
 	public ObboxStyle selectStyle = new ObboxStyle();
 
 	@Configuration(description = "The definitions of all distinct element types in a document.\n" +
@@ -75,11 +75,11 @@ public class Syntax {
 	@Configuration(optional = true, description = "The gap type is used when editing the document, for " +
 			"new data whose type is not yet known.")
 	public GapNodeType gap = new GapNodeType();
-	@Configuration(name = "prefix-gap", optional = true, description =
+	@Configuration(name = "prefix_gap", optional = true, description =
 			"The prefix gap type is similar to the gap type, but is used when enclosing an " +
 					"existing node in a new node, where the new node visually precedes the existing node.")
 	public PrefixGapNodeType prefixGap = new PrefixGapNodeType();
-	@Configuration(name = "suffix-gap", optional = true, description =
+	@Configuration(name = "suffix_gap", optional = true, description =
 			"The suffix gap type is similar to the gap type, but is used when enclosing an " +
 					"existing node in a new node, where the new node visually succeeds the existing node.")
 	public SuffixGapNodeType suffixGap = new SuffixGapNodeType();
@@ -101,7 +101,7 @@ public class Syntax {
 	@Configuration(optional = true, description = "Root front-end configuration.")
 	public RootFrontDataArray rootFront = new RootFrontDataArray();
 
-	@Configuration(optional = true, name = "animate-course-placement")
+	@Configuration(optional = true, name = "animate_course_placement")
 	public boolean animateCoursePlacement = false;
 	public String id; // Fake final - don't modify (set in loadSyntax)
 
@@ -118,11 +118,11 @@ public class Syntax {
 		// TODO boustrophedon
 	}
 
-	@Configuration(name = "converse-direction", optional = true,
+	@Configuration(name = "converse_direction", optional = true,
 			description = "The direction of text flow in a line.  For English, this will be RIGHT.")
 	public Direction converseDirection = Direction.RIGHT;
 
-	@Configuration(name = "transverse-direction", optional = true,
+	@Configuration(name = "transverse_direction", optional = true,
 			description = "The direction of successive lines.  For English, this will be DOWN.")
 	public Direction transverseDirection = Direction.DOWN;
 

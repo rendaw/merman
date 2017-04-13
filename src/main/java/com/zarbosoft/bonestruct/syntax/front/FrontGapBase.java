@@ -78,9 +78,9 @@ public abstract class FrontGapBase extends FrontPart {
 
 		@Override
 		public PrimitiveSelection createSelection(
-				final Context context, final int beginOffset, final int endOffset, final boolean direct
+				final Context context, final int beginOffset, final int endOffset
 		) {
-			return new GapSelection(context, beginOffset, endOffset, direct);
+			return new GapSelection(context, beginOffset, endOffset);
 		}
 
 		public class GapSelection extends PrimitiveSelection {
@@ -94,7 +94,7 @@ public abstract class FrontGapBase extends FrontPart {
 				public GapDetails(final Context context, final List<String> choices) {
 					final Group group = (Group) this.node;
 					final PSet tags = HashTreePSet.from(context.globalTags);
-					final Style.Baked lineStyle = context.getStyle(tags.plus(new VisualNode.PartTag("details-line")));
+					final Style.Baked lineStyle = context.getStyle(tags.plus(new VisualNode.PartTag("details_line")));
 					int transverse = 0;
 					for (final String choice : choices) {
 						final RawText line = new RawText(context, lineStyle);
@@ -107,9 +107,9 @@ public abstract class FrontGapBase extends FrontPart {
 			}
 
 			public GapSelection(
-					final Context context, final int beginOffset, final int endOffset, final boolean direct
+					final Context context, final int beginOffset, final int endOffset
 			) {
-				super(context, beginOffset, endOffset, direct);
+				super(context, beginOffset, endOffset);
 				self = dataType.get(data);
 			}
 

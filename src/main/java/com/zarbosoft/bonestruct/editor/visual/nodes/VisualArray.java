@@ -390,7 +390,7 @@ public abstract class VisualArray extends VisualGroup {
 
 				@Override
 				public String getName() {
-					return "insert-before";
+					return "insert_before";
 				}
 			}, new Action() {
 				@Override
@@ -400,7 +400,7 @@ public abstract class VisualArray extends VisualGroup {
 
 				@Override
 				public String getName() {
-					return "insert-after";
+					return "insert_after";
 				}
 			}, new Action() {
 				@Override
@@ -440,7 +440,7 @@ public abstract class VisualArray extends VisualGroup {
 
 				@Override
 				public String getName() {
-					return "reset-selection";
+					return "reset_selection";
 				}
 			}, new Action() {
 				@Override
@@ -450,7 +450,7 @@ public abstract class VisualArray extends VisualGroup {
 
 				@Override
 				public String getName() {
-					return "gather-next";
+					return "gather_next";
 				}
 			}, new Action() {
 				@Override
@@ -460,7 +460,7 @@ public abstract class VisualArray extends VisualGroup {
 
 				@Override
 				public String getName() {
-					return "gather-previous";
+					return "gather_previous";
 				}
 			}, new Action() {
 				@Override
@@ -470,7 +470,7 @@ public abstract class VisualArray extends VisualGroup {
 
 				@Override
 				public String getName() {
-					return "move-before";
+					return "move_before";
 				}
 			}, new Action() {
 				@Override
@@ -480,7 +480,7 @@ public abstract class VisualArray extends VisualGroup {
 
 				@Override
 				public String getName() {
-					return "move-after";
+					return "move_after";
 				}
 			}));
 		}

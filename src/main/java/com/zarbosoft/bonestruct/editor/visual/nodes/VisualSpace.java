@@ -76,8 +76,7 @@ public class VisualSpace extends VisualNodePart {
 	}
 
 	@Override
-	public void changeTags(final Context context, final TagsChange tagsChange) {
-		super.changeTags(context, tagsChange);
+	public void tagsChanged(final Context context) {
 		if (brick != null) {
 			brick.setStyle(context);
 		}

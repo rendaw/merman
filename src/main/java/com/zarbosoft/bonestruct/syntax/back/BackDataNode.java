@@ -18,7 +18,7 @@ import java.util.Set;
 
 import static com.zarbosoft.rendaw.common.Common.iterable;
 
-@Configuration(name = "data-node")
+@Configuration(name = "data_node")
 public class BackDataNode extends BackPart {
 	@Configuration
 	public String middle;

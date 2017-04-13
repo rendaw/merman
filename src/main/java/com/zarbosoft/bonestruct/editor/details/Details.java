@@ -1,22 +1,19 @@
 package com.zarbosoft.bonestruct.editor.details;
 
-import com.zarbosoft.bonestruct.editor.*;
+import com.zarbosoft.bonestruct.editor.Context;
+import com.zarbosoft.bonestruct.editor.IdleTask;
+import com.zarbosoft.bonestruct.editor.Selection;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.editor.visual.attachments.VisualAttachmentAdapter;
-import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
 import com.zarbosoft.bonestruct.wall.Attachment;
 import com.zarbosoft.bonestruct.wall.Bedding;
 import com.zarbosoft.bonestruct.wall.Brick;
 import com.zarbosoft.rendaw.common.ChainComparator;
 import javafx.scene.Group;
-import javafx.scene.shape.Rectangle;
 
 import java.util.PriorityQueue;
-import java.util.Set;
-import java.util.stream.Stream;
 
 public class Details {
-	private final static int maxTransverse = 300;
 	private Group group;
 	private final PriorityQueue<DetailsPage> queue =
 			new PriorityQueue<>(11, new ChainComparator<DetailsPage>().greaterFirst(m -> m.priority).build());
@@ -25,7 +22,6 @@ public class Details {
 	private int transverse;
 	private int transverseSpan;
 	private int documentScroll;
-	private int detailsScroll;
 	private Bedding bedding;
 	private IdlePlace idle;
 	private final Attachment attachment = new Attachment() {
@@ -108,73 +104,14 @@ public class Details {
 				});
 			}
 		});
-		context.addActionSource(new ActionSource() {
-			@Override
-			public Stream<Action> getActions(
-					final Context context, final Set<VisualNode.Tag> tags
-			) {
-				return Stream.of(new Action() {
-					@Override
-					public void run(final Context context) {
-						scroll(context, detailsScroll - 100);
-					}
-
-					@Override
-					public String getName() {
-						return "details-back";
-					}
-				}, new Action() {
-					@Override
-					public void run(final Context context) {
-						scroll(context, detailsScroll + 100);
-					}
-
-					@Override
-					public String getName() {
-						return "details-forward";
-					}
-				}, new Action() {
-					@Override
-					public void run(final Context context) {
-						scroll(context, 0);
-					}
-
-					@Override
-					public String getName() {
-						return "details-start";
-					}
-				}, new Action() {
-					@Override
-					public void run(final Context context) {
-						if (current == null)
-							return;
-						scroll(context, context.sceneGetTransverseSpan(current.node) - maxTransverse);
-					}
-
-					@Override
-					public String getName() {
-						return "details-end";
-					}
-				});
-			}
-		});
-	}
-
-	private void scroll(final Context context, int newScroll) {
-		if (current == null)
-			return;
-		newScroll = Math.min(newScroll, context.sceneGetTransverseSpan(current.node) - maxTransverse);
-		newScroll = Math.max(newScroll, 0);
-		detailsScroll = newScroll;
-		translateGroup(context);
-		group.setClip(new Rectangle(0, detailsScroll, 100000, maxTransverse));
 	}
 
 	private void translateGroup(final Context context) {
-		context.translate(current.node, new Vector(0, Math.min(
-				context.transverseEdge - Math.min(maxTransverse, context.sceneGetTransverseSpan(current.node)),
-				transverse + transverseSpan - detailsScroll
-		)));
+		context.translate(current.node,
+				new Vector(0, Math.min(context.transverseEdge - context.sceneGetTransverseSpan(current.node),
+						transverse + transverseSpan
+				))
+		);
 	}
 
 	public void addPage(final Context context, final DetailsPage page) {
@@ -201,9 +138,8 @@ public class Details {
 			if (bedding != null) {
 				brick.removeBedding(context, bedding);
 			}
-			bedding = new Bedding(0, Math.min(maxTransverse, context.sceneGetTransverseSpan(current.node)));
+			bedding = new Bedding(0, context.sceneGetTransverseSpan(current.node));
 			brick.addBedding(context, bedding);
-			scroll(context, 0);
 		}
 	}
 

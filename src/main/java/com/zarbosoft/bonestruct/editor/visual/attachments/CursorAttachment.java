@@ -88,7 +88,7 @@ public class CursorAttachment extends Canvas {
 		setHeight(size.getY());
 		gc.setLineWidth(style.lineThickness);
 		gc.setLineCap(style.roundStart ? StrokeLineCap.ROUND : StrokeLineCap.BUTT);
-		gc.setStroke(style.lineColor);
+		gc.setStroke(style.lineColor.get());
 		gc.beginPath();
 		gc.moveTo(halfBuffer, halfBuffer);
 		gc.lineTo(size.getX() - halfBuffer - 1, size.getY() - halfBuffer - 1);

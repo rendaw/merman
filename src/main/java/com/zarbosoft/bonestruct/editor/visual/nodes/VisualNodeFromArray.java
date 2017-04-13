@@ -47,4 +47,9 @@ public class VisualNodeFromArray extends VisualNodeBase {
 		data.visual = null;
 		super.destroy(context);
 	}
+
+	@Override
+	public void tagsChanged(final Context context) {
+
+	}
 }

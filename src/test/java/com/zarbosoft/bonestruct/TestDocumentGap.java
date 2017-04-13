@@ -50,7 +50,7 @@ public class TestDocumentGap {
 	@Test
 	public void syntaxLeafNodes() {
 		final Context context = blank();
-		assertThat(context.syntax.getLeafTypes("test-group-1").collect(Collectors.toSet()),
+		assertThat(context.syntax.getLeafTypes("test_group_1").collect(Collectors.toSet()),
 				equalTo(ImmutableSet.of(MiscSyntax.infinity, MiscSyntax.one, MiscSyntax.multiback, MiscSyntax.quoted))
 		);
 	}

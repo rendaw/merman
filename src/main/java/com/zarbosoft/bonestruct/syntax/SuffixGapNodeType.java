@@ -55,7 +55,7 @@ public class SuffixGapNodeType extends NodeType {
 	private final Map<String, MiddleElement> middle;
 
 	public SuffixGapNodeType() {
-		id = "__suffix-gap";
+		id = "__suffix_gap";
 		{
 			final FrontDataArrayAsNode value = new FrontDataArrayAsNode();
 			value.middle = "value";

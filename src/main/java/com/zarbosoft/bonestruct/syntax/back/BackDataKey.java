@@ -15,7 +15,7 @@ import com.zarbosoft.rendaw.common.Pair;
 
 import java.util.Set;
 
-@Configuration(name = "data-key")
+@Configuration(name = "data_key")
 public class BackDataKey extends BackPart {
 	@Configuration
 	public String middle;

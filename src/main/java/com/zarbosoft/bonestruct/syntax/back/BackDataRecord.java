@@ -27,8 +27,9 @@ import java.util.Set;
 
 import static com.zarbosoft.rendaw.common.Common.iterable;
 
-@Configuration(name = "data-record")
+@Configuration(name = "data_record")
 public class BackDataRecord extends BackPart {
+	@Configuration
 	public String middle;
 
 	@Override

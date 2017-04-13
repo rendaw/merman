@@ -1,7 +1,6 @@
 package com.zarbosoft.bonestruct.syntax.style;
 
 import com.zarbosoft.interface1.Configuration;
-import javafx.scene.paint.Color;
 
 import java.lang.reflect.Field;
 
@@ -11,28 +10,28 @@ import static com.zarbosoft.rendaw.common.Common.uncheck;
 public class ObboxStyle {
 	@Configuration(optional = true, name = "pad")
 	public Integer padding = null;
-	@Configuration(optional = true, name = "round-start")
+	@Configuration(optional = true, name = "round_start")
 	public Boolean roundStart = null;
-	@Configuration(optional = true, name = "round-end")
+	@Configuration(optional = true, name = "round_end")
 	public Boolean roundEnd = null;
-	@Configuration(optional = true, name = "round-outer-edges")
+	@Configuration(optional = true, name = "round_outer_edges")
 	public Boolean roundOuterEdges = null;
-	@Configuration(optional = true, name = "round-inner-edges")
+	@Configuration(optional = true, name = "round_inner_edges")
 	public Boolean roundInnerEdges = null;
-	@Configuration(optional = true, name = "round-concave")
+	@Configuration(optional = true, name = "round_concave")
 	public Boolean roundConcave = null;
-	@Configuration(optional = true, name = "round-radius")
+	@Configuration(optional = true, name = "round_radius")
 	public Integer roundRadius = null;
 	@Configuration(optional = true, name = "line")
 	public Boolean line = null;
-	@Configuration(optional = true, name = "line-color")
-	public Color lineColor = null;
-	@Configuration(optional = true, name = "line-thickness")
+	@Configuration(optional = true, name = "line_color")
+	public ModelColor lineColor = null;
+	@Configuration(optional = true, name = "line_thickness")
 	public Double lineThickness = null;
 	@Configuration(optional = true, name = "fill")
 	public Boolean fill = null;
-	@Configuration(optional = true, name = "fill-color")
-	public Color fillColor = null;
+	@Configuration(optional = true, name = "fill_color")
+	public ModelColor fillColor = null;
 
 	public void merge(final ObboxStyle settings) {
 		for (final Field field : getClass().getFields()) {
@@ -42,7 +41,7 @@ public class ObboxStyle {
 					field.getType() != Double.class &&
 					field.getType() != Boolean.class &&
 					field.getType() != String.class &&
-					field.getType() != Color.class)
+					field.getType() != ModelColor.class)
 				continue;
 			final Object value = uncheck(() -> field.get(settings));
 			if (value != null)
@@ -59,10 +58,10 @@ public class ObboxStyle {
 		public boolean roundConcave = false;
 		public int roundRadius = 0;
 		public boolean line = true;
-		public Color lineColor = Color.BLACK;
+		public ModelColor lineColor = new ModelColor.RGB();
 		public double lineThickness = 1;
 		public boolean fill = false;
-		public Color fillColor = Color.WHITE;
+		public ModelColor fillColor = ModelColor.RGB.white;
 
 		public void merge(final ObboxStyle settings) {
 			for (final Field field : ObboxStyle.class.getFields()) {
@@ -72,7 +71,7 @@ public class ObboxStyle {
 						field.getType() != Double.class &&
 						field.getType() != Boolean.class &&
 						field.getType() != String.class &&
-						field.getType() != Color.class)
+						field.getType() != ModelColor.class)
 					continue;
 				final Object value = uncheck(() -> field.get(settings));
 				if (value != null)

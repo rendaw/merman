@@ -103,6 +103,7 @@ public class Main extends Application {
 			fileAppender.setContext(lc);
 			fileAppender.start();
 		}
+		global.initializeFilesystem();
 		if (getParameters().getUnnamed().isEmpty())
 			throw new IllegalArgumentException("Must specify a filename as first argument.");
 		filename = Paths.get(getParameters().getUnnamed().get(0));

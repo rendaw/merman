@@ -2,7 +2,6 @@ package com.zarbosoft.bonestruct.syntax.style;
 
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
 import com.zarbosoft.interface1.Configuration;
-import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 
 import java.lang.reflect.Field;
@@ -26,29 +25,29 @@ public class Style {
 	@Configuration(name = "align", optional = true)
 	public String alignment = null;
 
-	@Configuration(name = "space-before", optional = true)
+	@Configuration(name = "space_before", optional = true)
 	public Integer spaceBefore = null;
 
-	@Configuration(name = "space-after", optional = true)
+	@Configuration(name = "space_after", optional = true)
 	public Integer spaceAfter = null;
 
-	@Configuration(name = "space-transverse-before", optional = true)
+	@Configuration(name = "space_transverse_before", optional = true)
 	public Integer spaceTransverseBefore = null;
 
-	@Configuration(name = "space-transverse-after", optional = true)
+	@Configuration(name = "space_transverse_after", optional = true)
 	public Integer spaceTransverseAfter = null;
 
 	// Text/image/shape only
 
 	@Configuration(optional = true)
-	public Color color = null;
+	public ModelColor color = null;
 
 	// Text only
 
 	@Configuration(optional = true)
 	public String font = null;
 
-	@Configuration(name = "font-size", optional = true)
+	@Configuration(name = "font_size", optional = true)
 	public Integer fontSize = null;
 
 	// Image only
@@ -80,7 +79,7 @@ public class Style {
 		public int spaceAfter = 0;
 		public int spaceTransverseBefore = 0;
 		public int spaceTransverseAfter = 0;
-		public Color color = Color.BLACK;
+		public ModelColor color = new ModelColor.RGB();
 		public String font = null;
 		public int fontSize = 14;
 		public String image = null;
@@ -101,7 +100,7 @@ public class Style {
 						field.getType() != Double.class &&
 						field.getType() != Boolean.class &&
 						field.getType() != String.class &&
-						field.getType() != Color.class)
+						field.getType() != ModelColor.class)
 					continue;
 				final Object value = uncheck(() -> field.get(style));
 				if (value != null)
