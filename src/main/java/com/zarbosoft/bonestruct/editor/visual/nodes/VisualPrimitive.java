@@ -102,15 +102,11 @@ public class VisualPrimitive extends VisualNodePart {
 
 	@Override
 	public Brick getFirstBrick(final Context context) {
-		if (lines.isEmpty())
-			return null;
 		return lines.get(0).brick;
 	}
 
 	@Override
 	public Brick getLastBrick(final Context context) {
-		if (lines.isEmpty())
-			return null;
 		return last(lines).brick;
 	}
 
@@ -588,8 +584,12 @@ public class VisualPrimitive extends VisualNodePart {
 
 		@Override
 		public void click(final Context context) {
-			selection = createSelection(context, range.beginOffset, range.endOffset);
-			context.setSelection(selection);
+			if (selection == null) {
+				selection = createSelection(context, range.beginOffset, range.endOffset);
+				context.setSelection(selection);
+			} else {
+				selection.range.setOffsets(context, range.beginOffset, range.endOffset);
+			}
 		}
 
 		@Override

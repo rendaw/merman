@@ -67,7 +67,7 @@ public abstract class FrontGapBase extends FrontPart {
 					FrontGapBase.this.dataType.get(data),
 					HashTreePSet
 							.from(tags)
-							.plus(new PartTag("primitive"))
+							.plus(new PartTag("gap"))
 							.plusAll(FrontGapBase.this.tags
 									.stream()
 									.map(s -> new FreeTag(s))
@@ -92,9 +92,12 @@ public abstract class FrontGapBase extends FrontPart {
 
 			private class GapDetails extends DetailsPage {
 				public GapDetails(final Context context, final List<String> choices) {
-					final Group group = (Group) this.node;
+					final Group group = new Group();
+					this.node = group;
 					final PSet tags = HashTreePSet.from(context.globalTags);
-					final Style.Baked lineStyle = context.getStyle(tags.plus(new VisualNode.PartTag("details_line")));
+					final Style.Baked lineStyle = context.getStyle(tags
+							.plus(new VisualNode.PartTag("details_choice"))
+							.plus(new PartTag("details")));
 					int transverse = 0;
 					for (final String choice : choices) {
 						final RawText line = new RawText(context, lineStyle);

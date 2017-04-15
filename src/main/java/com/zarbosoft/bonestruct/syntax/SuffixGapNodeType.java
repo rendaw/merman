@@ -37,8 +37,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.zarbosoft.rendaw.common.Common.iterable;
-
 @Configuration
 public class SuffixGapNodeType extends NodeType {
 	private final MiddleArray dataValue;
@@ -253,25 +251,25 @@ public class SuffixGapNodeType extends NodeType {
 					final Pair<ParseContext, Position> longest = new Parse<>()
 							.grammar(grammar)
 							.longestMatchFromStart(new ByteArrayInputStream(string.getBytes(StandardCharsets.UTF_8)));
-					final Iterable<Choice> choices =
-							iterable(Stream.concat(longest.first.results.stream().map(result -> (Choice) result),
+					final List<Choice> choices =
+							Stream.concat(longest.first.results.stream().map(result -> (Choice) result),
 									longest.first.leaves.stream().map(leaf -> (Choice) leaf.color())
-							));
+							).collect(Collectors.toList());
 					if (longest.second.distance() == string.length()) {
 						for (final Choice choice : choices) {
 							if (longest.first.leaves.size() <= choice.ambiguity()) {
 								choice.choose(context, string);
-								return null;
+								return ImmutableList.of();
 							}
-							// TODO add to details pane
 						}
+						return choices.stream().map(choice -> choice.type.id).collect(Collectors.toList());
 					} else if (longest.second.distance() >= 1) {
 						for (final Choice choice : choices) {
 							choice.choose(context, string);
-							return null;
+							return ImmutableList.of();
 						}
 					}
-					return null;
+					return ImmutableList.of();
 				}
 
 				@Override

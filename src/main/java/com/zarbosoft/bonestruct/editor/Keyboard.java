@@ -1,6 +1,6 @@
 package com.zarbosoft.bonestruct.editor;
 
-import com.zarbosoft.bonestruct.syntax.hid.Key;
+import com.zarbosoft.bonestruct.syntax.modules.hotkeys.Key;
 import com.zarbosoft.interface1.Configuration;
 import com.zarbosoft.pidgoon.Node;
 import com.zarbosoft.pidgoon.nodes.Sequence;

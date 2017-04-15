@@ -13,14 +13,18 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.Window;
 import javafx.stage.WindowEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,33 +51,51 @@ public class Main extends Application {
 	private ScheduledFuture<?> idleTimer = null;
 	private final PriorityQueue<IdleTask> idleQueue = new PriorityQueue<>();
 	private Path filename;
+	private Stage stage;
 
 	@FunctionalInterface
 	private interface Wrappable {
 		void run() throws Exception;
 	}
 
-	private void wrap(final Wrappable runnable) {
+	private void wrap(final Window top, final Wrappable runnable) {
 		try {
 			runnable.run();
 		} catch (final Exception e) {
 			logger.error("Exception passed sieve.", e);
 			final Alert alert = new Alert(Alert.AlertType.ERROR, e.getMessage());
+			alert.initModality(Modality.APPLICATION_MODAL);
+			alert.initOwner(top);
+			alert.setResizable(true);
 			alert.showAndWait();
 		}
 	}
 
+	private boolean confirmOverwrite(final Window top) {
+		final Alert confirm =
+				new Alert(Alert.AlertType.CONFIRMATION, "File exists, overwrite?", ButtonType.YES, ButtonType.NO);
+		confirm.initModality(Modality.APPLICATION_MODAL);
+		confirm.initOwner(top);
+		confirm.setResizable(true);
+		confirm.showAndWait();
+		if (confirm.getResult() != ButtonType.YES)
+			return false;
+		return true;
+	}
+
 	@Override
 	public void start(final Stage primaryStage) {
+		stage = primaryStage;
 		/*
 		TODO
 		add mouse scroll buttons to input patterns
+		button down + up hotkey events
 		details
 		editing, actions for everythinga
-		save
-		modes (global) - modules can create too
-			ex: nav/edit, edit, nav, debug, refactor
-			style/tag based on mode
+		//save
+		//modes (global) - modules can create too
+		//	ex: nav/edit, edit, nav, debug, refactor
+		//	style/tag based on mode
 		order of operations, conditional front elements
 
 		plugin add colored bar to side if dirty
@@ -107,30 +129,32 @@ public class Main extends Application {
 		if (getParameters().getUnnamed().isEmpty())
 			throw new IllegalArgumentException("Must specify a filename as first argument.");
 		filename = Paths.get(getParameters().getUnnamed().get(0));
+		stage.setTitle(filename.getFileName().toString());
 		final History history = new History();
 		final Editor editor =
-				new Editor(global, this::addIdle, getParameters().getUnnamed().get(0), ImmutableList.of(new Action() {
-					@Override
-					public void run(final Context context) {
-						Platform.exit();
-					}
+				new Editor(global, this::addIdle, Paths.get(getParameters().getUnnamed().get(0)), history);
+		editor.addActions(this, ImmutableList.of(new Action() {
+			@Override
+			public void run(final Context context) {
+				Platform.exit();
+			}
 
-					@Override
-					public String getName() {
-						return "quit";
-					}
-				}), history);
+			@Override
+			public String getName() {
+				return "quit";
+			}
+		}));
 		final HBox filesystemLayout = new HBox();
+		filesystemLayout.setPadding(new Insets(3, 2, 3, 2));
+		filesystemLayout.setSpacing(5);
 		final TextField filenameEntry = new TextField(getParameters().getUnnamed().get(0));
 		filesystemLayout.getChildren().add(filenameEntry);
-		final Button save = new Button("Save");
-		filesystemLayout.getChildren().add(save);
+		HBox.setHgrow(filenameEntry, Priority.ALWAYS);
+		final Button save = new Button("Save") {
+		};
 		final Button rename = new Button("Rename");
-		filesystemLayout.getChildren().add(rename);
 		final Button saveAs = new Button("Save as");
-		filesystemLayout.getChildren().add(saveAs);
 		final Button backup = new Button("Back-up");
-		filesystemLayout.getChildren().add(backup);
 		history.addModifiedStateListener(modified -> {
 			if (modified) {
 				save.getStyleClass().add("modified");
@@ -144,113 +168,103 @@ public class Main extends Application {
 				backup.getStyleClass().remove("modified");
 			}
 		});
-		final ChangeListener<String> alignFilesystemLayout = new ChangeListener<String>() {
+		final ChangeListener<String> alignFilesystemLayout = new ChangeListener<>() {
 			@Override
 			public void changed(
 					final ObservableValue<? extends String> observable, final String oldValue, final String newValue
 			) {
-				wrap(() -> {
-					if (newValue.equals(filename)) {
-						save.setVisible(true);
-						rename.setVisible(false);
-						saveAs.setVisible(false);
-						backup.setVisible(false);
+				wrap(stage.getOwner(), () -> {
+					if (newValue.equals(filename.toString())) {
+						filesystemLayout.getChildren().removeAll(ImmutableList.of(rename, saveAs, backup));
+						filesystemLayout.getChildren().add(save);
 					} else {
-						save.setVisible(false);
-						rename.setVisible(true);
-						saveAs.setVisible(true);
-						backup.setVisible(true);
+						filesystemLayout.getChildren().remove(save);
+						filesystemLayout.getChildren().addAll(ImmutableList.of(rename, saveAs, backup));
 					}
 				});
 			}
 		};
 		filenameEntry.textProperty().addListener(alignFilesystemLayout);
-		save.setOnAction(new EventHandler<ActionEvent>() {
+		alignFilesystemLayout.changed(null, null, filename.toString());
+		filenameEntry.setOnAction(new EventHandler<>() {
 			@Override
 			public void handle(final ActionEvent event) {
-				wrap(() -> {
+				if (save.isVisible())
+					save.getOnAction().handle(null);
+			}
+		});
+		save.setOnAction(new EventHandler<>() {
+			@Override
+			public void handle(final ActionEvent event) {
+				wrap(stage.getOwner(), () -> {
 					editor.save(filename);
+					editor.getVisual().requestFocus();
 				});
 			}
 		});
-		rename.setOnAction(new EventHandler<ActionEvent>() {
+		rename.setOnAction(new EventHandler<>() {
 			@Override
 			public void handle(final ActionEvent event) {
-				wrap(() -> {
+				wrap(stage.getOwner(), () -> {
 					final Path dest = Paths.get(filenameEntry.getText());
-					if (Files.exists(dest)) {
-						final Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
-								"File exists, overwrite?",
-								ButtonType.YES,
-								ButtonType.NO
-						);
-						confirm.showAndWait();
-						if (confirm.getResult() != ButtonType.YES)
-							return;
-					}
+					if (Files.exists(dest) && !confirmOverwrite(stage.getOwner()))
+						return;
 					editor.save(filename);
 					Files.move(filename, dest);
 					filename = Paths.get(filenameEntry.getText());
+					stage.setTitle(filename.getFileName().toString());
 					alignFilesystemLayout.changed(null, null, filename.toString());
+					editor.getVisual().requestFocus();
 				});
 			}
 		});
-		saveAs.setOnAction(new EventHandler<ActionEvent>() {
+		saveAs.setOnAction(new EventHandler<>() {
 			@Override
 			public void handle(final ActionEvent event) {
-				wrap(() -> {
+				wrap(stage.getOwner(), () -> {
 					final Path dest = Paths.get(filenameEntry.getText());
-					if (Files.exists(dest)) {
-						final Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
-								"File exists, overwrite?",
-								ButtonType.YES,
-								ButtonType.NO
-						);
-						confirm.showAndWait();
-						if (confirm.getResult() != ButtonType.YES)
-							return;
-					}
+					if (Files.exists(dest) && !confirmOverwrite(stage.getOwner()))
+						return;
 					filename = dest;
+					stage.setTitle(filename.getFileName().toString());
 					editor.save(dest);
 					alignFilesystemLayout.changed(null, null, filename.toString());
+					editor.getVisual().requestFocus();
 				});
 			}
 		});
-		backup.setOnAction(new EventHandler<ActionEvent>() {
+		backup.setOnAction(new EventHandler<>() {
 			@Override
 			public void handle(final ActionEvent event) {
-				wrap(() -> {
+				wrap(stage.getOwner(), () -> {
 					final Path dest = Paths.get(filenameEntry.getText());
-					if (Files.exists(dest)) {
-						final Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
-								"File exists, overwrite?",
-								ButtonType.YES,
-								ButtonType.NO
-						);
-						confirm.showAndWait();
-						if (confirm.getResult() != ButtonType.YES)
-							return;
-					}
+					if (Files.exists(dest) && !confirmOverwrite(stage.getOwner()))
+						return;
 					editor.save(dest);
 					filenameEntry.setText(filename.toString());
+					editor.getVisual().requestFocus();
 				});
 			}
 		});
 		final VBox mainLayout = new VBox();
 		mainLayout.getChildren().add(filesystemLayout);
 		mainLayout.getChildren().add(editor.getVisual());
+		VBox.setVgrow(editor.getVisual(), Priority.ALWAYS);
 		final Scene scene = new Scene(mainLayout, 300, 275);
-		primaryStage.setScene(scene);
-		primaryStage.show();
-		primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+		stage.setScene(scene);
+		stage.setOnCloseRequest(new EventHandler<>() {
 			@Override
 			public void handle(final WindowEvent t) {
 				if (history.isModified()) {
-					final Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
-							"File exists, overwrite?",
+					final Alert confirm = new Alert(
+							Alert.AlertType.CONFIRMATION,
+							"File has unsaved changes. Do you still want to quit?",
 							ButtonType.YES,
 							ButtonType.NO
 					);
+					confirm.initOwner(stage.getOwner());
+					confirm.initModality(Modality.APPLICATION_MODAL);
+					confirm.setResizable(true);
 					confirm.showAndWait();
 					if (confirm.getResult() != ButtonType.YES) {
 						t.consume();
@@ -261,6 +275,8 @@ public class Main extends Application {
 				worker.shutdown();
 			}
 		});
+		stage.show();
+		editor.getVisual().requestFocus();
 	}
 
 	private void addIdle(final IdleTask task) {
@@ -273,7 +289,7 @@ public class Main extends Application {
 						return;
 					idlePending = true;
 					Platform.runLater(() -> {
-						wrap(() -> {
+						wrap(stage.getOwner(), () -> {
 							//System.out.println(String.format("idle timer inner: %d", idleQueue.size()));
 							// TODO measure pending event backlog, adjust batch size to accomodate
 							// by proxy? time since last invocation?

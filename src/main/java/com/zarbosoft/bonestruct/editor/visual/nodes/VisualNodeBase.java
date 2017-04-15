@@ -14,8 +14,8 @@ import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodeParent;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
 import com.zarbosoft.bonestruct.syntax.NodeType;
 import com.zarbosoft.bonestruct.wall.Brick;
+import com.zarbosoft.rendaw.common.DeadCode;
 import com.zarbosoft.rendaw.common.Pair;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.Map;
 import java.util.Set;
@@ -253,7 +253,7 @@ public abstract class VisualNodeBase extends VisualNodePart {
 
 		@Override
 		public NodeType.NodeTypeVisual getNode() {
-			throw new NotImplementedException();
+			throw new DeadCode();
 		}
 
 		@Override

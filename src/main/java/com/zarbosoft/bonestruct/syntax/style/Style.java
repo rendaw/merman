@@ -14,7 +14,7 @@ import static com.zarbosoft.rendaw.common.Common.uncheck;
 public class Style {
 
 	@Configuration
-	public Set<VisualNode.Tag> tags;
+	public Set<VisualNode.Tag> tags = new HashSet<>();
 
 	@Configuration(optional = true)
 	public ObboxStyle border = new ObboxStyle();

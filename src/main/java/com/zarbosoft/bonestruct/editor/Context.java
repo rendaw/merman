@@ -40,13 +40,12 @@ import java.util.function.Consumer;
 public class Context {
 	public final History history;
 	public WeakHashMap<Set<VisualNode.Tag>, WeakReference<Style.Baked>> styleCache = new WeakHashMap<>();
-	private final Iterable<Action> globalActions;
 	public VisualNodePart window;
 	private final Set<SelectionListener> selectionListeners = new HashSet<>();
 	private final Set<HoverListener> hoverListeners = new HashSet<>();
 	private final Set<TagsListener> tagsChangeListeners = new HashSet<>();
 	public final TransverseExtentsAdapter selectionExtentsAdapter = new TransverseExtentsAdapter();
-	public List<Module.State> plugins;
+	public List<Module.State> modules;
 	public Set<VisualNode.Tag> globalTags = new HashSet<>();
 	public List<KeyListener> keyListeners = new ArrayList<>();
 	public Map<Object, List<Action>> actions = new HashMap<>();
@@ -68,6 +67,8 @@ public class Context {
 	}
 
 	public void selectionTagsChanged() {
+		if (selection == null)
+			return;
 		tagsChangeListeners.forEach(listener -> listener.tagsChanged(this, selection.getVisual().tags(this)));
 	}
 
@@ -566,7 +567,6 @@ public class Context {
 			final Document document,
 			final Consumer<IdleTask> addIdle,
 			final Wall wall,
-			final Iterable<Action> globalActions,
 			final History history
 	) {
 		this.syntax = syntax;
@@ -575,7 +575,6 @@ public class Context {
 		if (wall != null) {
 			display = new Display(wall);
 		}
-		this.globalActions = globalActions;
 		this.history = history;
 	}
 

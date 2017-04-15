@@ -32,6 +32,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.zarbosoft.rendaw.common.Common.iterable;
@@ -140,19 +141,19 @@ public class PrefixGapNodeType extends NodeType {
 							.grammar(grammar)
 							.longestMatchFromStart(new ByteArrayInputStream(string.getBytes(StandardCharsets.UTF_8)));
 					if (longest.second.distance() == string.length()) {
-						for (final Choice choice : iterable(Stream.concat(longest.first.results
-										.stream()
-										.map(result -> (Choice) result),
-								longest.first.leaves.stream().map(leaf -> (Choice) leaf.color())
-						))) {
+						final List<Choice> choices =
+								Stream.concat(longest.first.results.stream().map(result -> (Choice) result),
+										longest.first.leaves.stream().map(leaf -> (Choice) leaf.color())
+								).collect(Collectors.toList());
+						for (final Choice choice : choices) {
 							if (longest.first.leaves.size() <= choice.ambiguity()) {
 								choice.choose(context, string);
-								return null;
+								return ImmutableList.of();
 							}
-							// TODO add to details pane
 						}
+						return choices.stream().map(choice -> choice.type.id).collect(Collectors.toList());
 					}
-					return null;
+					return ImmutableList.of();
 				}
 
 				@Override

@@ -18,15 +18,18 @@ public class Modes extends Module {
 
 	private int state = 0;
 
+	private VisualNode.Tag getTag(final int state) {
+		return new VisualNode.GlobalTag(String.format("mode_%s", states.get(state)));
+	}
+
 	@Override
 	public State initialize(final Context context) {
 		context.actions.put(this, enumerate(states.stream()).map(pair -> {
 			return new Action() {
 				@Override
 				public void run(final Context context) {
-					context.changeGlobalTags(new VisualNode.TagsChange(ImmutableSet.of(new VisualNode.GlobalTag(states.get(
-							pair.first))),
-							ImmutableSet.of(new VisualNode.GlobalTag(states.get(state)))
+					context.changeGlobalTags(new VisualNode.TagsChange(ImmutableSet.of(getTag(pair.first)),
+							ImmutableSet.of(getTag(state))
 					));
 					state = pair.first;
 				}
@@ -37,15 +40,11 @@ public class Modes extends Module {
 				}
 			};
 		}).collect(Collectors.toList()));
-		context.changeGlobalTags(new VisualNode.TagsChange(ImmutableSet.of(new VisualNode.GlobalTag(states.get(state))),
-				ImmutableSet.of()
-		));
+		context.changeGlobalTags(new VisualNode.TagsChange(ImmutableSet.of(getTag(state)), ImmutableSet.of()));
 		return new State() {
 			@Override
 			public void destroy(final Context context) {
-				context.changeGlobalTags(new VisualNode.TagsChange(ImmutableSet.of(),
-						ImmutableSet.of(new VisualNode.GlobalTag(states.get(state)))
-				));
+				context.changeGlobalTags(new VisualNode.TagsChange(ImmutableSet.of(), ImmutableSet.of(getTag(state))));
 				context.actions.remove(this);
 			}
 		};

@@ -6,7 +6,6 @@ import com.zarbosoft.bonestruct.editor.Keyboard;
 import com.zarbosoft.bonestruct.editor.details.DetailsPage;
 import com.zarbosoft.bonestruct.editor.visual.raw.RawText;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
-import com.zarbosoft.bonestruct.syntax.hid.Key;
 import com.zarbosoft.bonestruct.syntax.modules.Module;
 import com.zarbosoft.bonestruct.syntax.style.Style;
 import com.zarbosoft.interface1.Configuration;
@@ -21,8 +20,9 @@ import javafx.scene.input.KeyEvent;
 import org.pcollections.HashTreePSet;
 import org.pcollections.PSet;
 
-import java.lang.ref.WeakReference;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 import static com.zarbosoft.rendaw.common.Common.iterable;
 
@@ -34,21 +34,26 @@ public class Hotkeys extends Module {
 	@Configuration(optional = true, name = "show_details")
 	public boolean showDetails = true;
 
-	public WeakHashMap<Set<VisualNode.Tag>, WeakReference<HotkeyRule>> hotkeysCache = new WeakHashMap<>();
-	public Grammar hotkeyGrammar;
-	public EventStream<Action> hotkeyParse;
-	public String hotkeySequence = "";
+	private Grammar hotkeyGrammar;
+	private EventStream<Action> hotkeyParse;
+	private String hotkeySequence = "";
 	private HotkeyDetails hotkeyDetails = null;
+	private HotkeyRule hotkeys = null;
 
 	private class HotkeyDetails extends DetailsPage {
 		public HotkeyDetails(final Context context) {
 			final Group group = new Group();
 			this.node = group;
 			final PSet tags = HashTreePSet.from(context.globalTags);
-			final RawText first =
-					new RawText(context, context.getStyle(tags.plus(new VisualNode.PartTag("details_prompt"))));
+			final RawText first = new RawText(context,
+					context.getStyle(tags
+							.plus(new VisualNode.PartTag("details_prompt"))
+							.plus(new VisualNode.PartTag("details")))
+			);
 			group.getChildren().add(first.getVisual());
-			final Style.Baked lineStyle = context.getStyle(tags.plus(new VisualNode.PartTag("details_line")));
+			final Style.Baked lineStyle = context.getStyle(tags
+					.plus(new VisualNode.PartTag("details_line"))
+					.plus(new VisualNode.PartTag("details")));
 			first.setText(context, hotkeySequence);
 			int transverse = first.transverseSpan(context);
 			for (final com.zarbosoft.pidgoon.internal.State leaf : hotkeyParse.context().leaves) {
@@ -67,27 +72,15 @@ public class Hotkeys extends Module {
 		context.addTagsChangeListener(new Context.TagsListener() {
 			@Override
 			public void tagsChanged(final Context context, final Set<VisualNode.Tag> tags) {
+				System.out.format("resetting hotkeys tags [%s]\n", tags);
 				clean(context);
-				final HotkeyRule hotkeys;
-				{
-					final Optional<HotkeyRule> found = hotkeysCache
-							.entrySet()
-							.stream()
-							.filter(e -> tags.equals(e.getKey()))
-							.map(e -> e.getValue().get())
-							.filter(v -> v != null)
-							.findFirst();
-					if (found.isPresent())
-						hotkeys = found.get();
-					else {
-						hotkeys = new HotkeyRule(tags);
-						for (final HotkeyRule rule : rules) {
-							if (tags.containsAll(rule.tags)) {
-								hotkeys.merge(rule);
-							}
-							hotkeysCache.put(hotkeys.tags, new WeakReference<>(hotkeys));
-						}
-					}
+				hotkeys = new HotkeyRule(tags);
+				for (final HotkeyRule rule : rules) {
+					System.out.format("rule [%s]\n", rule.tags);
+					if (!tags.containsAll(rule.tags))
+						continue;
+					System.out.format("\tmatches\n");
+					hotkeys.merge(rule);
 				}
 				hotkeyGrammar = new Grammar();
 				final Union union = new Union();
@@ -97,6 +90,7 @@ public class Hotkeys extends Module {
 						.flatMap(e -> e.getValue().stream()))) {
 					if (hotkeys.hotkeys.containsKey(action.getName())) {
 						for (final com.zarbosoft.bonestruct.syntax.hid.grammar.Node hotkey : hotkeys.hotkeys.get(action.getName())) {
+							System.out.format("action [%s] adding hotkey [%s]\n", action.getName(), hotkey);
 							union.add(new Operator(hotkey.build(), store -> store.pushStack(action)));
 						}
 					}
@@ -107,7 +101,7 @@ public class Hotkeys extends Module {
 		return new State() {
 			@Override
 			public void destroy(final Context context) {
-
+				clean(context);
 			}
 		};
 	}
@@ -131,6 +125,7 @@ public class Hotkeys extends Module {
 			if (hotkeyParse.ended()) {
 				final Action action = hotkeyParse.finish();
 				clean(context);
+				System.out.format("running [%s]\n", action.getName());
 				action.run(context);
 			} else {
 				if (showDetails && context.display != null) {
@@ -140,10 +135,11 @@ public class Hotkeys extends Module {
 					context.display.details.addPage(context, hotkeyDetails);
 				}
 			}
-			return false;
+			System.out.format("key consumed\n");
+			return true;
 		} catch (final InvalidStream e) {
 			clean(context);
-			return true;
+			return hotkeys.freeTyping ? false : true;
 		}
 	}
 

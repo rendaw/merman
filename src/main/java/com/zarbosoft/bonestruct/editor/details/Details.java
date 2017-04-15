@@ -109,7 +109,7 @@ public class Details {
 	private void translateGroup(final Context context) {
 		context.translate(current.node,
 				new Vector(0, Math.min(context.transverseEdge - context.sceneGetTransverseSpan(current.node),
-						transverse + transverseSpan
+						transverse + transverseSpan - documentScroll
 				))
 		);
 	}

@@ -37,14 +37,10 @@ public class RawText {
 		switch (context.syntax.converseDirection) {
 			case UP:
 			case DOWN:
-				return text
-						.impl_hitTestChar(new Point2D(text.getX(), converse - getConverse(context)))
-						.getInsertionIndex();
+				return text.hitTest(new Point2D(text.getX(), converse - getConverse(context))).getInsertionIndex();
 			case LEFT:
 			case RIGHT:
-				return text
-						.impl_hitTestChar(new Point2D(converse - getConverse(context), text.getY()))
-						.getInsertionIndex();
+				return text.hitTest(new Point2D(converse - getConverse(context), text.getY())).getInsertionIndex();
 		}
 		throw new AssertionError("DEAD CODE");
 	}

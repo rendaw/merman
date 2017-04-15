@@ -1,13 +1,34 @@
-free ''
-state ''
 return {
     name = 'luxem',
-    background = rgb { r = 0.21568, g = 0.21568, b = 0.21568 },
+    background = rgb { r = 74 / 255, g = 60 / 255, b = 89 / 255 },
     animate_course_placement = true,
     hover_style = {
-        line_color = rgb { r = 0.21568, g = 0.05, b = 0.43 },
+        line_color = rgb { r = 112 / 255, g = 80 / 255, b = 145 / 255 },
+    },
+    select_style = {
+        line_color = rgb { r = 101 / 255, g = 82 / 255, b = 122 / 255 },
     },
     styles = {
+        {
+            color = rgb { r = 163 / 255, g = 164 / 255, b = 232 / 255 },
+            font_size = 16,
+        },
+        {
+            tags = { part 'details' },
+            font_size = 12,
+        },
+        {
+            tags = { part 'banner' },
+            font_size = 12,
+        },
+        {
+            tags = { part 'primitive' },
+            color = rgb { r = 55 / 255, g = 83 / 255, b = 232 / 255 },
+        },
+        {
+            tags = { part 'gap' },
+            color = rgb { r = 255 / 255, g = 249 / 255, b = 106 / 255 },
+        },
         {
             tags = { free 'break', state 'compact' },
             ['break'] = true,
@@ -64,6 +85,7 @@ return {
                 },
                 mark { value = '}', tags = { 'break', 'base' }, },
             },
+            auto_choose_ambiguity = 999,
         },
         {
             id = 'luxem_object_element',
@@ -103,6 +125,7 @@ return {
                 },
                 mark { value = '}', tags = { 'break', 'base' }, }
             },
+            auto_choose_ambiguity = 999,
         },
         {
             id = 'luxem_primitive',
@@ -132,19 +155,19 @@ return {
                         next = { key 'down', key 'j' },
                         previous = { key 'up', key 'k' },
                         delete = { key 'x' },
-                        delete_next = { key 'x' },
-                    }
+                    },
+                    free_typing = false,
                 },
                 {
                     tags = { global 'mode_nottyping', part 'primitive' },
                     hotkeys = {
-                        set_mode_typing = { key 'right' },
+                        mode_typing = { key 'right', key 'l' },
                     }
                 },
                 {
                     tags = { global 'mode_typing', part 'primitive' },
                     hotkeys = {
-                        set_mode_nottyping = { key 'escape' },
+                        mode_nottyping = { key 'escape' },
                         next = { key 'right' },
                         previous = { key 'left' },
                         delete_next = { key 'delete' },

@@ -1,4 +1,4 @@
-package com.zarbosoft.bonestruct.syntax.hid;
+package com.zarbosoft.bonestruct.syntax.modules.hotkeys;
 
 import com.zarbosoft.bonestruct.editor.Keyboard;
 import com.zarbosoft.bonestruct.syntax.hid.grammar.Terminal;
@@ -18,5 +18,10 @@ public class KeyTerminal extends Terminal {
 	@Override
 	public com.zarbosoft.pidgoon.events.Event getEvent() {
 		return new Keyboard.Event(key, control, shift, alt);
+	}
+
+	@Override
+	public String toString() {
+		return key.toString();
 	}
 }

@@ -5,7 +5,7 @@ import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.Hoverable;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+import com.zarbosoft.rendaw.common.DeadCode;
 
 import java.util.Map;
 import java.util.Set;
@@ -17,17 +17,17 @@ public abstract class VisualNodePart extends VisualNode {
 
 	@Override
 	public int spacePriority() {
-		throw new NotImplementedException();
+		throw new DeadCode();
 	}
 
 	@Override
 	public boolean canCompact() {
-		throw new NotImplementedException();
+		throw new DeadCode();
 	}
 
 	@Override
 	public boolean canExpand() {
-		throw new NotImplementedException();
+		throw new DeadCode();
 	}
 
 	@Override

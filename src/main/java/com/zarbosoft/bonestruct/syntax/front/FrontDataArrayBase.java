@@ -68,11 +68,6 @@ public abstract class FrontDataArrayBase extends FrontPart {
 			}
 
 			@Override
-			protected Map<String, Node> getHotkeys() {
-				return hotkeys;
-			}
-
-			@Override
 			protected List<FrontConstantPart> getPrefix() {
 				return prefix;
 			}

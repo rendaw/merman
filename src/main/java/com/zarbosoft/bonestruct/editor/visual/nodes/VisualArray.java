@@ -27,7 +27,6 @@ import org.pcollections.HashTreePSet;
 import org.pcollections.PSet;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -267,8 +266,6 @@ public abstract class VisualArray extends VisualGroup {
 			}
 		}
 	}
-
-	protected abstract Map<String, com.zarbosoft.bonestruct.syntax.hid.grammar.Node> getHotkeys();
 
 	protected abstract List<FrontConstantPart> getPrefix();
 

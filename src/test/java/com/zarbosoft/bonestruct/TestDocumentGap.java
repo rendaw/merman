@@ -26,7 +26,7 @@ public class TestDocumentGap {
 
 	private Context blank() {
 		final Document doc = MiscSyntax.syntax.create();
-		final Context context = new Context(MiscSyntax.syntax, doc, null, null, null, new History());
+		final Context context = new Context(MiscSyntax.syntax, doc, null, null, new History());
 		final Node gap = MiscSyntax.syntax.gap.create();
 		context.history.apply(context, new ChangeArrayAdd(doc.top, 0, ImmutableList.of(gap)));
 		final VisualNodePart visual =

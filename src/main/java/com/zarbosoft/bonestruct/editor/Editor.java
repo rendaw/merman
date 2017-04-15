@@ -3,9 +3,9 @@ package com.zarbosoft.bonestruct.editor;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 import com.zarbosoft.bonestruct.document.Document;
 import com.zarbosoft.bonestruct.editor.banner.Banner;
+import com.zarbosoft.bonestruct.editor.details.Details;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.editor.visual.attachments.TransverseExtentsAdapter;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
@@ -20,11 +20,14 @@ import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.Pane;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static com.zarbosoft.rendaw.common.Common.last;
+import static com.zarbosoft.rendaw.common.Common.uncheck;
 
 public class Editor {
 	private final Context context;
@@ -36,17 +39,18 @@ public class Editor {
 	private int scroll;
 
 	public Editor(
-			final EditorGlobal global,
-			final Consumer<IdleTask> addIdle,
-			final String path,
-			final Iterable<Action> globalActions,
-			final History history
+			final EditorGlobal global, final Consumer<IdleTask> addIdle, final Path path, final History history
 	) {
-		final String extension = last(path.split("\\."));
+		final String extension = last(path.getFileName().toString().split("\\."));
 		final Syntax syntax = global.getSyntax(extension);
-		final Document doc = syntax.load(path);
+		final Document doc;
+		if (Files.exists(path))
+			doc = uncheck(() -> syntax.load(path));
+		else
+			doc = syntax.create();
 		final Wall wall = new Wall();
-		context = new Context(syntax, doc, addIdle, wall, Iterables.concat(ImmutableList.of(new Action() {
+		context = new Context(syntax, doc, addIdle, wall, history);
+		context.actions.put(this, ImmutableList.of(new Action() {
 			@Override
 			public void run(final Context context) {
 				context.history.undo(context);
@@ -66,10 +70,11 @@ public class Editor {
 			public String getName() {
 				return "redo";
 			}
-		}), globalActions), history);
+		}));
 		context.display.background = new Group();
 		context.display.banner = new Banner(context);
-		context.plugins = doc.syntax.modules.stream().map(p -> p.initialize(context)).collect(Collectors.toList());
+		context.display.details = new Details(context);
+		context.modules = doc.syntax.modules.stream().map(p -> p.initialize(context)).collect(Collectors.toList());
 		this.visual = new Pane();
 		visual.setOnKeyPressed(event -> {
 			handleKey(event);
@@ -105,6 +110,7 @@ public class Editor {
 			}
 		});
 		root.select(context);
+		visual.setFocusTraversable(true);
 		visual.setOnMouseExited(event -> {
 			if (context.hoverIdle != null) {
 				context.hoverIdle.point = null;
@@ -124,6 +130,7 @@ public class Editor {
 					.add(new Vector(-context.syntax.padConverse, scroll));
 		});
 		visual.setOnMouseClicked(event -> {
+			visual.requestFocus();
 			if (context.idleClick == null) {
 				context.idleClick = new IdleTask() {
 					@Override
@@ -198,6 +205,7 @@ public class Editor {
 			);
 			scroll = newScroll;
 			context.display.banner.setScroll(context, newScroll);
+			context.display.details.setScroll(context, newScroll);
 		}
 	}
 
@@ -215,12 +223,16 @@ public class Editor {
 	}
 
 	public void destroy() {
-		context.plugins.forEach(p -> p.destroy(context));
+		context.modules.forEach(p -> p.destroy(context));
 		context.display.banner.destroy(context);
 		context.display.wall.clear(context);
 	}
 
 	public void save(final Path dest) {
 		context.document.write(dest);
+	}
+
+	public void addActions(final Object object, final List<Action> actions) {
+		context.actions.put(object, actions);
 	}
 }

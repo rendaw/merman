@@ -1,4 +1,4 @@
-package com.zarbosoft.bonestruct.syntax.hid;
+package com.zarbosoft.bonestruct.syntax.modules.hotkeys;
 
 import com.zarbosoft.interface1.Configuration;
 import javafx.scene.input.KeyCode;

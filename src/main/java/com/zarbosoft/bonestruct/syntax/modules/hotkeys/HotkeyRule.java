@@ -14,6 +14,9 @@ public class HotkeyRule {
 	@Configuration
 	public Map<String, List<Node>> hotkeys = new HashMap<>();
 
+	@Configuration(name = "free_typing", optional = true)
+	public boolean freeTyping = true;
+
 	public HotkeyRule() {
 
 	}
@@ -24,5 +27,6 @@ public class HotkeyRule {
 
 	public void merge(final HotkeyRule hotkeys) {
 		this.hotkeys.putAll(hotkeys.hotkeys);
+		freeTyping = freeTyping && hotkeys.freeTyping;
 	}
 }

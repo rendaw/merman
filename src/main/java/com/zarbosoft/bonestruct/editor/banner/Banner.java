@@ -1,6 +1,5 @@
 package com.zarbosoft.bonestruct.editor.banner;
 
-import com.google.common.collect.ImmutableSet;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.IdleTask;
 import com.zarbosoft.bonestruct.editor.Selection;
@@ -8,12 +7,15 @@ import com.zarbosoft.bonestruct.editor.visual.attachments.VisualAttachmentAdapte
 import com.zarbosoft.bonestruct.editor.visual.raw.RawText;
 import com.zarbosoft.bonestruct.editor.visual.raw.RawTextUtils;
 import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
+import com.zarbosoft.bonestruct.syntax.style.Style;
 import com.zarbosoft.bonestruct.wall.Attachment;
 import com.zarbosoft.bonestruct.wall.Bedding;
 import com.zarbosoft.bonestruct.wall.Brick;
 import com.zarbosoft.rendaw.common.ChainComparator;
+import org.pcollections.HashTreePSet;
 
 import java.util.PriorityQueue;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -105,11 +107,17 @@ public class Banner {
 				});
 			}
 		});
+		context.addTagsChangeListener(new Context.TagsListener() {
+			@Override
+			public void tagsChanged(final Context context, final Set<VisualNode.Tag> tags) {
+				updateStyle(context);
+			}
+		});
 	}
 
 	public void addMessage(final Context context, final BannerMessage message) {
 		if (queue.isEmpty()) {
-			text = new RawText(context, context.getStyle(ImmutableSet.of(new VisualNode.PartTag("banner"))));
+			text = new RawText(context, getStyle(context));
 			context.display.background.getChildren().add(text.getVisual());
 			text.setTransverse(context,
 					Math.max(scroll, transverse - (int) RawTextUtils.getDescent(text.getFont())),
@@ -120,6 +128,16 @@ public class Banner {
 		}
 		queue.add(message);
 		update(context);
+	}
+
+	private Style.Baked getStyle(final Context context) {
+		return context.getStyle(HashTreePSet.from(context.globalTags).plus(new VisualNode.PartTag("banner")));
+	}
+
+	private void updateStyle(final Context context) {
+		if (text == null)
+			return;
+		text.setStyle(getStyle(context));
 	}
 
 	private void update(final Context context) {

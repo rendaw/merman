@@ -33,6 +33,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.zarbosoft.rendaw.common.Common.iterable;
@@ -120,25 +121,24 @@ public class GapNodeType extends NodeType {
 					final Pair<ParseContext, Position> longest = new Parse<>()
 							.grammar(grammar)
 							.longestMatchFromStart(new ByteArrayInputStream(string.getBytes(StandardCharsets.UTF_8)));
-					final Iterable<Choice> choices = iterable(Stream.concat(
+					final List<Choice> choices = Stream.concat(
 							longest.first.results.stream().map(result -> (Choice) result),
 							longest.first.leaves.stream().map(leaf -> (Choice) leaf.color())
-					));
+					).collect(Collectors.toList());
 					if (longest.second.distance() == string.length()) {
 						for (final Choice choice : choices) {
 							if (longest.first.leaves.size() <= choice.ambiguity()) {
 								choice.choose(context, string);
-								return null;
+								return ImmutableList.of();
 							}
-							// TODO add to details pane
 						}
 					} else if (longest.second.distance() >= 1) {
 						for (final Choice choice : choices) {
 							choice.choose(context, string);
-							return null;
+							return ImmutableList.of();
 						}
 					}
-					return null;
+					return choices.stream().map(choice -> choice.type.id).collect(Collectors.toList());
 				}
 
 				@Override

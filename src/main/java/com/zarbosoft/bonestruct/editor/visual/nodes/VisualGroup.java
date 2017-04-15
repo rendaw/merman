@@ -107,12 +107,11 @@ public class VisualGroup extends VisualNodePart {
 		add(context, node, -1);
 	}
 
-	public void remove(final Context context, int preindex) {
-		if (preindex < 0)
-			preindex = this.children.size() + preindex;
-		if (preindex >= this.children.size())
+	public void remove(final Context context, int index) {
+		if (index < 0)
+			index = this.children.size() + index;
+		if (index >= this.children.size())
 			throw new AssertionError("Removing visual node after group end.");
-		final Integer index = preindex;
 		final VisualNodePart node = children.get(index);
 		node.destroy(context);
 		this.children.remove(index);

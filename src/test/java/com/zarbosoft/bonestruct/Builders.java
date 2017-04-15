@@ -404,7 +404,7 @@ public class Builders {
 
 	public static Context buildDoc(final Syntax syntax, final Node... root) {
 		final Document doc = syntax.create();
-		final Context context = new Context(syntax, doc, null, null, null, new History());
+		final Context context = new Context(syntax, doc, null, null, new History());
 		context.history.apply(context, new ChangeArrayAdd(doc.top, 0, Arrays.asList(root)));
 		context.history.finishChange();
 		final VisualNodePart visual =
