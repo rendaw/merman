@@ -1,7 +1,7 @@
 package com.zarbosoft.bonestruct.editor.visual.attachments;
 
 import com.zarbosoft.bonestruct.editor.Context;
-import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
+import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.wall.Attachment;
 import com.zarbosoft.bonestruct.wall.Brick;
 
@@ -9,7 +9,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class VisualAttachmentAdapter {
-	private VisualNode base;
+	private Visual base;
 	Brick first;
 	private final Set<BoundsListener> boundsListeners = new HashSet<>();
 	private final Attachment firstAttachment = new Attachment() {
@@ -48,7 +48,7 @@ public class VisualAttachmentAdapter {
 
 	/**
 	 * The next brick to be added is outside the visual subtree so should be ignored.
-	 * This will most likely be called from the target's VisualNodeParent.
+	 * This will most likely be called from the target's VisualParent.
 	 *
 	 * @param context
 	 * @param next
@@ -59,7 +59,7 @@ public class VisualAttachmentAdapter {
 
 	/**
 	 * The next brick to be added is outside the visual subtree so should be ignored.
-	 * This will most likely be called from the target's VisualNodeParent.
+	 * This will most likely be called from the target's VisualParent.
 	 *
 	 * @param context
 	 * @param next
@@ -109,7 +109,7 @@ public class VisualAttachmentAdapter {
 		boundsListeners.remove(listener);
 	}
 
-	public void setBase(final Context context, final VisualNode base) {
+	public void setBase(final Context context, final Visual base) {
 		this.base = base;
 		setFirst(context, base.getFirstBrick(context));
 		setLast(context, base.getLastBrick(context));

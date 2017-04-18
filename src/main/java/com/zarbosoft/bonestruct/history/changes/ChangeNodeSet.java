@@ -30,8 +30,8 @@ public class ChangeNodeSet extends Change {
 	}
 
 	public Change apply(final Context context) {
-		final Change reverse = new ChangeNodeSet(value, value.value);
-		value.value = node;
+		final Change reverse = new ChangeNodeSet(value, value.data);
+		value.data = node;
 		node.setParent(value.new NodeParent());
 		for (final ValueNode.Listener listener : value.listeners)
 			listener.set(context, node);

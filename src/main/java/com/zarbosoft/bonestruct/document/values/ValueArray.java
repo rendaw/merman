@@ -19,12 +19,12 @@ import static com.zarbosoft.rendaw.common.Common.enumerate;
 import static java.util.Collections.unmodifiableList;
 
 public class ValueArray extends Value {
-	private final MiddleArrayBase data;
-	public final List<Node> value = new ArrayList<>();
+	private final MiddleArrayBase middle;
+	public final List<Node> data = new ArrayList<>();
 	public final Set<Listener> listeners = new HashSet<>();
 
 	public MiddleElement data() {
-		return data;
+		return middle;
 	}
 
 	public static abstract class Listener {
@@ -51,22 +51,22 @@ public class ValueArray extends Value {
 
 		@Override
 		public String childType() {
-			return data.type;
+			return middle.type;
 		}
 
 		@Override
-		public Value data() {
+		public Value value() {
 			return ValueArray.this;
 		}
 
 		@Override
 		public String id() {
-			return data.id;
+			return middle.id;
 		}
 
 		@Override
 		public Path getPath() {
-			return data.getPath(ValueArray.this, actualIndex);
+			return middle.getPath(ValueArray.this, actualIndex);
 		}
 	}
 
@@ -78,10 +78,10 @@ public class ValueArray extends Value {
 		listeners.remove(listener);
 	}
 
-	public ValueArray(final MiddleArrayBase data, final List<Node> value) {
-		this.data = data;
-		this.value.addAll(value);
-		value.stream().forEach(v -> {
+	public ValueArray(final MiddleArrayBase middle, final List<Node> data) {
+		this.middle = middle;
+		this.data.addAll(data);
+		data.stream().forEach(v -> {
 			v.setParent(new ArrayParent());
 		});
 		renumber(0);
@@ -89,7 +89,7 @@ public class ValueArray extends Value {
 
 	public void renumber(final int from) {
 		final Common.Mutable<Integer> sum = new Common.Mutable<>(0);
-		enumerate(value.stream().skip(from), from).forEach(p -> {
+		enumerate(data.stream().skip(from), from).forEach(p -> {
 			final ArrayParent parent = ((ArrayParent) p.second.parent);
 			parent.index = p.first;
 			parent.actualIndex = sum.value;
@@ -97,12 +97,12 @@ public class ValueArray extends Value {
 		});
 	}
 
-	public ValueArray(final MiddleArrayBase data) {
-		this.data = data;
+	public ValueArray(final MiddleArrayBase middle) {
+		this.middle = middle;
 
 	}
 
 	public List<Node> get() {
-		return unmodifiableList(value);
+		return unmodifiableList(data);
 	}
 }

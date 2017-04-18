@@ -35,7 +35,7 @@ public class ChangePrimitiveAdd extends Change {
 
 	@Override
 	public Change apply(final Context context) {
-		data.value.insert(index, value);
+		data.data.insert(index, value);
 		for (final ValuePrimitive.Listener listener : data.listeners)
 			listener.added(context, index, value.toString());
 		return new ChangePrimitiveRemove(data, index, value.length());

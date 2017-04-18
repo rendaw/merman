@@ -10,10 +10,10 @@ import com.zarbosoft.bonestruct.document.values.ValueNode;
 import com.zarbosoft.bonestruct.document.values.ValuePrimitive;
 import com.zarbosoft.bonestruct.editor.banner.Banner;
 import com.zarbosoft.bonestruct.editor.details.Details;
+import com.zarbosoft.bonestruct.editor.visual.Visual;
+import com.zarbosoft.bonestruct.editor.visual.VisualPart;
 import com.zarbosoft.bonestruct.editor.visual.attachments.TransverseExtentsAdapter;
 import com.zarbosoft.bonestruct.editor.visual.attachments.VisualAttachmentAdapter;
-import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
-import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
 import com.zarbosoft.bonestruct.history.History;
 import com.zarbosoft.bonestruct.syntax.Syntax;
 import com.zarbosoft.bonestruct.syntax.back.*;
@@ -39,14 +39,14 @@ import java.util.function.Consumer;
 
 public class Context {
 	public final History history;
-	public WeakHashMap<Set<VisualNode.Tag>, WeakReference<Style.Baked>> styleCache = new WeakHashMap<>();
-	public VisualNodePart window;
+	public WeakHashMap<Set<Visual.Tag>, WeakReference<Style.Baked>> styleCache = new WeakHashMap<>();
+	public VisualPart window;
 	private final Set<SelectionListener> selectionListeners = new HashSet<>();
 	private final Set<HoverListener> hoverListeners = new HashSet<>();
 	private final Set<TagsListener> tagsChangeListeners = new HashSet<>();
 	public final TransverseExtentsAdapter selectionExtentsAdapter = new TransverseExtentsAdapter();
 	public List<Module.State> modules;
-	public Set<VisualNode.Tag> globalTags = new HashSet<>();
+	public Set<Visual.Tag> globalTags = new HashSet<>();
 	public List<KeyListener> keyListeners = new ArrayList<>();
 	public Map<Object, List<Action>> actions = new HashMap<>();
 
@@ -55,7 +55,7 @@ public class Context {
 		boolean handleKey(Context context, KeyEvent event);
 	}
 
-	public void changeGlobalTags(final VisualNode.TagsChange change) {
+	public void changeGlobalTags(final Visual.TagsChange change) {
 		globalTags.removeAll(change.remove);
 		globalTags.addAll(change.add);
 		selectionTagsChanged();
@@ -324,7 +324,7 @@ public class Context {
 
 	public abstract static class TagsListener {
 
-		public abstract void tagsChanged(Context context, Set<VisualNode.Tag> tags);
+		public abstract void tagsChanged(Context context, Set<Visual.Tag> tags);
 	}
 
 	public void addSelectionListener(final SelectionListener listener) {
@@ -430,7 +430,7 @@ public class Context {
 		}
 		this.selection = selection;
 
-		final VisualNodePart visual = this.selection.getVisual();
+		final VisualPart visual = this.selection.getVisual();
 		if (!visual.isAncestor(window)) {
 			window = visual;
 			window.rootAlignments(this, ImmutableMap.of());
@@ -467,7 +467,7 @@ public class Context {
 		}
 	}
 
-	public Style.Baked getStyle(final Set<VisualNode.Tag> tags) {
+	public Style.Baked getStyle(final Set<Visual.Tag> tags) {
 		final Optional<Style.Baked> found = styleCache
 				.entrySet()
 				.stream()

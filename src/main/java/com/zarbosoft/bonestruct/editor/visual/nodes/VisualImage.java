@@ -2,8 +2,8 @@ package com.zarbosoft.bonestruct.editor.visual.nodes;
 
 import com.google.common.collect.Iterables;
 import com.zarbosoft.bonestruct.editor.Context;
-import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodeParent;
-import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
+import com.zarbosoft.bonestruct.editor.visual.VisualParent;
+import com.zarbosoft.bonestruct.editor.visual.VisualPart;
 import com.zarbosoft.bonestruct.wall.Brick;
 import com.zarbosoft.bonestruct.wall.bricks.BrickImage;
 import com.zarbosoft.rendaw.common.Pair;
@@ -11,8 +11,8 @@ import com.zarbosoft.rendaw.common.Pair;
 import java.util.Arrays;
 import java.util.Set;
 
-public class VisualImage extends VisualNodePart {
-	public VisualNodeParent parent;
+public class VisualImage extends VisualPart {
+	public VisualParent parent;
 	public BrickImage brick = null;
 
 	public VisualImage(final Set<Tag> tags) {
@@ -20,12 +20,12 @@ public class VisualImage extends VisualNodePart {
 	}
 
 	@Override
-	public void setParent(final VisualNodeParent parent) {
+	public void setParent(final VisualParent parent) {
 		this.parent = parent;
 	}
 
 	@Override
-	public VisualNodeParent parent() {
+	public VisualParent parent() {
 		return parent;
 	}
 

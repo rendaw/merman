@@ -11,8 +11,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class ValueNode extends Value {
-	private final MiddleNode data;
-	public Node value = null;
+	private final MiddleNode middle;
+	public Node data = null; // INVARIANT: Never null when in tree
 	public final Set<Listener> listeners = new HashSet<>();
 
 	public abstract static class Listener {
@@ -27,17 +27,17 @@ public class ValueNode extends Value {
 
 		@Override
 		public String childType() {
-			return data.type;
+			return middle.type;
 		}
 
 		@Override
-		public Value data() {
+		public Value value() {
 			return ValueNode.this;
 		}
 
 		@Override
 		public String id() {
-			return data.id;
+			return middle.id;
 		}
 
 		@Override
@@ -46,11 +46,11 @@ public class ValueNode extends Value {
 		}
 	}
 
-	public ValueNode(final MiddleNode data, final Node value) {
+	public ValueNode(final MiddleNode middle, final Node data) {
+		this.middle = middle;
 		this.data = data;
-		this.value = value;
-		if (value != null)
-			value.setParent(new NodeParent());
+		if (data != null)
+			data.setParent(new NodeParent());
 	}
 
 	public void addListener(final Listener listener) {
@@ -62,11 +62,11 @@ public class ValueNode extends Value {
 	}
 
 	public Node get() {
-		return value;
+		return data;
 	}
 
 	@Override
 	public MiddleElement data() {
-		return data;
+		return middle;
 	}
 }

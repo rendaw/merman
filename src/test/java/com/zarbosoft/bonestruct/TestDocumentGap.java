@@ -9,7 +9,7 @@ import com.zarbosoft.bonestruct.document.values.ValueArray;
 import com.zarbosoft.bonestruct.document.values.ValuePrimitive;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.Path;
-import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
+import com.zarbosoft.bonestruct.editor.visual.VisualPart;
 import com.zarbosoft.bonestruct.history.History;
 import com.zarbosoft.bonestruct.history.changes.ChangeArrayAdd;
 import com.zarbosoft.bonestruct.syntax.Syntax;
@@ -29,7 +29,7 @@ public class TestDocumentGap {
 		final Context context = new Context(MiscSyntax.syntax, doc, null, null, new History());
 		final Node gap = MiscSyntax.syntax.gap.create();
 		context.history.apply(context, new ChangeArrayAdd(doc.top, 0, ImmutableList.of(gap)));
-		final VisualNodePart visual =
+		final VisualPart visual =
 				MiscSyntax.syntax.rootFront.createVisual(context, ImmutableMap.of("value", doc.top), ImmutableSet.of());
 		gap.getVisual().select(context);
 		return context;

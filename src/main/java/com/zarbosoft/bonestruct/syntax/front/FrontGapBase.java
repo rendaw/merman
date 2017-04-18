@@ -7,10 +7,10 @@ import com.zarbosoft.bonestruct.document.values.ValueNode;
 import com.zarbosoft.bonestruct.document.values.ValuePrimitive;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.details.DetailsPage;
+import com.zarbosoft.bonestruct.editor.visual.Visual;
+import com.zarbosoft.bonestruct.editor.visual.VisualPart;
 import com.zarbosoft.bonestruct.editor.visual.nodes.VisualPrimitive;
 import com.zarbosoft.bonestruct.editor.visual.raw.RawText;
-import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
-import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
 import com.zarbosoft.bonestruct.syntax.FreeNodeType;
 import com.zarbosoft.bonestruct.syntax.NodeType;
 import com.zarbosoft.bonestruct.syntax.middle.MiddlePrimitive;
@@ -41,8 +41,8 @@ public abstract class FrontGapBase extends FrontPart {
 	private MiddlePrimitive dataType;
 
 	@Override
-	public VisualNodePart createVisual(
-			final Context context, final Map<String, Value> data, final Set<VisualNode.Tag> tags
+	public VisualPart createVisual(
+			final Context context, final Map<String, Value> data, final Set<Visual.Tag> tags
 	) {
 		return new GapVisualPrimitive(context, data, tags);
 	}
@@ -96,7 +96,7 @@ public abstract class FrontGapBase extends FrontPart {
 					this.node = group;
 					final PSet tags = HashTreePSet.from(context.globalTags);
 					final Style.Baked lineStyle = context.getStyle(tags
-							.plus(new VisualNode.PartTag("details_choice"))
+							.plus(new Visual.PartTag("details_choice"))
 							.plus(new PartTag("details")));
 					int transverse = 0;
 					for (final String choice : choices) {
@@ -178,7 +178,7 @@ public abstract class FrontGapBase extends FrontPart {
 	}
 
 	protected void select(final Context context, final ValuePrimitive value) {
-		value.parent.node().getVisual().frontToData.get(value.data.id).select(context);
+		value.parent.node().getVisual().frontToData.get(value.middle.id).select(context);
 	}
 
 	@Override

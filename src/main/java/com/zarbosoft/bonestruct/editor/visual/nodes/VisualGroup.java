@@ -6,9 +6,9 @@ import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.Hoverable;
 import com.zarbosoft.bonestruct.editor.IdleTask;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
-import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
-import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodeParent;
-import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
+import com.zarbosoft.bonestruct.editor.visual.Visual;
+import com.zarbosoft.bonestruct.editor.visual.VisualParent;
+import com.zarbosoft.bonestruct.editor.visual.VisualPart;
 import com.zarbosoft.bonestruct.syntax.NodeType;
 import com.zarbosoft.bonestruct.wall.Brick;
 import com.zarbosoft.rendaw.common.Pair;
@@ -20,7 +20,7 @@ import java.util.function.IntFunction;
 
 import static com.zarbosoft.rendaw.common.Common.last;
 
-public class VisualGroup extends VisualNodePart {
+public class VisualGroup extends VisualPart {
 	public VisualGroup(final Set<Tag> tags) {
 		super(tags);
 	}
@@ -41,7 +41,7 @@ public class VisualGroup extends VisualNodePart {
 
 	@Override
 	public boolean select(final Context context) {
-		for (final VisualNodePart child : children) {
+		for (final VisualPart child : children) {
 			if (child.select(context))
 				return true;
 		}
@@ -63,24 +63,24 @@ public class VisualGroup extends VisualNodePart {
 	}
 
 	public Map<String, Alignment> alignments = new HashMap<>();
-	public VisualNodeParent parent = null;
+	public VisualParent parent = null;
 
 	// State
 	IdleTask idle;
-	protected List<VisualNodePart> children = new ArrayList<>();
+	protected List<VisualPart> children = new ArrayList<>();
 	boolean compact = false;
 
 	@Override
-	public void setParent(final VisualNodeParent parent) {
+	public void setParent(final VisualParent parent) {
 		this.parent = parent;
 	}
 
 	@Override
-	public VisualNodeParent parent() {
+	public VisualParent parent() {
 		return parent;
 	}
 
-	public void add(final Context context, final VisualNodePart node, int preindex) {
+	public void add(final Context context, final VisualPart node, int preindex) {
 		if (preindex < 0)
 			preindex = this.children.size() + preindex + 1;
 		if (preindex >= this.children.size() + 1)
@@ -99,11 +99,11 @@ public class VisualGroup extends VisualNodePart {
 			context.fillFromEndBrick(previousBrick);
 	}
 
-	protected VisualNodeParent createParent(final int index) {
+	protected VisualParent createParent(final int index) {
 		return new Parent(this, index);
 	}
 
-	public void add(final Context context, final VisualNodePart node) {
+	public void add(final Context context, final VisualPart node) {
 		add(context, node, -1);
 	}
 
@@ -112,7 +112,7 @@ public class VisualGroup extends VisualNodePart {
 			index = this.children.size() + index;
 		if (index >= this.children.size())
 			throw new AssertionError("Removing visual node after group end.");
-		final VisualNodePart node = children.get(index);
+		final VisualPart node = children.get(index);
 		node.destroy(context);
 		this.children.remove(index);
 		this.children.stream().skip(index).forEach(n -> ((Parent) n.parent()).index -= 1);
@@ -129,11 +129,11 @@ public class VisualGroup extends VisualNodePart {
 	}
 
 	@Override
-	public Iterator<VisualNode> children() {
+	public Iterator<Visual> children() {
 		return Iterators.concat(children
 				.stream()
 				.map(c -> c.children())
-				.toArray((IntFunction<Iterator<VisualNode>[]>) Iterator[]::new));
+				.toArray((IntFunction<Iterator<Visual>[]>) Iterator[]::new));
 	}
 
 	@Override
@@ -174,13 +174,13 @@ public class VisualGroup extends VisualNodePart {
 			alignment.root(context, alignments);
 			derived = derived.plus(e.getKey(), alignment);
 		}
-		for (final VisualNodePart child : children)
+		for (final VisualPart child : children)
 			child.rootAlignments(context, derived);
 	}
 
 	@Override
 	public void destroy(final Context context) {
-		for (final VisualNodePart child : children)
+		for (final VisualPart child : children)
 			child.destroy(context);
 	}
 
@@ -189,7 +189,7 @@ public class VisualGroup extends VisualNodePart {
 
 	}
 
-	public static class Parent extends VisualNodeParent {
+	public static class Parent extends VisualParent {
 		public final VisualGroup target;
 		public int index;
 
@@ -224,15 +224,15 @@ public class VisualGroup extends VisualNodePart {
 		}
 
 		@Override
-		public VisualNode getTarget() {
+		public Visual getTarget() {
 			return target;
 		}
 
 		@Override
-		public NodeType.NodeTypeVisual getNode() {
+		public NodeType.NodeTypeVisual getNodeVisual() {
 			if (target.parent == null)
 				return null;
-			return target.parent.getNode();
+			return target.parent.getNodeVisual();
 		}
 
 		@Override

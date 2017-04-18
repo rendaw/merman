@@ -5,13 +5,10 @@ import com.zarbosoft.bonestruct.editor.Action;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.Hoverable;
 import com.zarbosoft.bonestruct.editor.Selection;
-import com.zarbosoft.bonestruct.editor.visual.Alignment;
-import com.zarbosoft.bonestruct.editor.visual.Vector;
+import com.zarbosoft.bonestruct.editor.visual.*;
+import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.attachments.BorderAttachment;
 import com.zarbosoft.bonestruct.editor.visual.attachments.VisualAttachmentAdapter;
-import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
-import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodeParent;
-import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
 import com.zarbosoft.bonestruct.syntax.NodeType;
 import com.zarbosoft.bonestruct.wall.Brick;
 import com.zarbosoft.rendaw.common.DeadCode;
@@ -22,9 +19,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public abstract class VisualNodeBase extends VisualNodePart {
-	protected VisualNode body;
-	VisualNodeParent parent;
+public abstract class VisualNodeBase extends VisualPart {
+	protected Visual body;
+	VisualParent parent;
 	boolean selected = false;
 	private VisualAttachmentAdapter adapter;
 	private BorderAttachment border;
@@ -40,12 +37,12 @@ public abstract class VisualNodeBase extends VisualNodePart {
 	protected abstract void nodeSet(Context context, Node value);
 
 	@Override
-	public void setParent(final VisualNodeParent parent) {
+	public void setParent(final VisualParent parent) {
 		this.parent = parent;
 	}
 
 	@Override
-	public VisualNodeParent parent() {
+	public VisualParent parent() {
 		return parent;
 	}
 
@@ -208,7 +205,7 @@ public abstract class VisualNodeBase extends VisualNodePart {
 		}
 
 		@Override
-		public VisualNodePart getVisual() {
+		public VisualPart getVisual() {
 			return VisualNodeBase.this;
 		}
 
@@ -240,19 +237,19 @@ public abstract class VisualNodeBase extends VisualNodePart {
 		}
 	}
 
-	private class NestedParent extends VisualNodeParent {
+	private class NestedParent extends VisualParent {
 		@Override
 		public void selectUp(final Context context) {
 			select(context);
 		}
 
 		@Override
-		public VisualNode getTarget() {
+		public Visual getTarget() {
 			return VisualNodeBase.this;
 		}
 
 		@Override
-		public NodeType.NodeTypeVisual getNode() {
+		public NodeType.NodeTypeVisual getNodeVisual() {
 			throw new DeadCode();
 		}
 
@@ -335,11 +332,11 @@ public abstract class VisualNodeBase extends VisualNodePart {
 				public NodeType.NodeTypeVisual node() {
 					if (VisualNodeBase.this.parent == null)
 						return null;
-					return VisualNodeBase.this.parent.getNode();
+					return VisualNodeBase.this.parent.getNodeVisual();
 				}
 
 				@Override
-				public VisualNodePart part() {
+				public VisualPart part() {
 					return VisualNodeBase.this;
 				}
 			};

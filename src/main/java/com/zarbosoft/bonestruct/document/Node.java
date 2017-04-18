@@ -3,9 +3,8 @@ package com.zarbosoft.bonestruct.document;
 import com.zarbosoft.bonestruct.document.values.Value;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.Path;
-import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
+import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.syntax.NodeType;
-import com.zarbosoft.bonestruct.syntax.middle.MiddleElement;
 import com.zarbosoft.rendaw.common.DeadCode;
 
 import java.util.Map;
@@ -21,7 +20,7 @@ public class Node {
 		this.type = type;
 		this.data = data;
 		data.forEach((k, v) -> {
-			v.setParent(new MiddleElement.Parent() {
+			v.setParent(new Value.Parent() {
 				@Override
 				public Node node() {
 					return Node.this;
@@ -66,7 +65,7 @@ public class Node {
 
 		public abstract String childType();
 
-		public abstract Value data();
+		public abstract Value value();
 
 		public abstract String id();
 
@@ -74,7 +73,7 @@ public class Node {
 
 	}
 
-	public VisualNode createVisual(final Context context) {
+	public Visual createVisual(final Context context) {
 		this.visual = type.createVisual(context, data);
 		return visual;
 	}

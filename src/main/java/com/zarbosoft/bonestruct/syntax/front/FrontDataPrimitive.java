@@ -2,9 +2,9 @@ package com.zarbosoft.bonestruct.syntax.front;
 
 import com.zarbosoft.bonestruct.document.values.Value;
 import com.zarbosoft.bonestruct.editor.Context;
+import com.zarbosoft.bonestruct.editor.visual.Visual;
+import com.zarbosoft.bonestruct.editor.visual.VisualPart;
 import com.zarbosoft.bonestruct.editor.visual.nodes.VisualPrimitive;
-import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
-import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
 import com.zarbosoft.bonestruct.syntax.NodeType;
 import com.zarbosoft.bonestruct.syntax.hid.grammar.Node;
 import com.zarbosoft.bonestruct.syntax.middle.MiddlePrimitive;
@@ -28,16 +28,16 @@ public class FrontDataPrimitive extends FrontPart {
 	public Map<String, Node> hotkeys = new HashMap<>();
 
 	@Override
-	public VisualNodePart createVisual(
-			final Context context, final Map<String, Value> data, final Set<VisualNode.Tag> tags
+	public VisualPart createVisual(
+			final Context context, final Map<String, Value> data, final Set<Visual.Tag> tags
 	) {
 		return new VisualPrimitive(
 				context,
 				dataType.get(data),
 				HashTreePSet
 						.from(tags)
-						.plus(new VisualNode.PartTag("primitive"))
-						.plusAll(this.tags.stream().map(s -> new VisualNode.FreeTag(s)).collect(Collectors.toSet()))
+						.plus(new Visual.PartTag("primitive"))
+						.plusAll(this.tags.stream().map(s -> new Visual.FreeTag(s)).collect(Collectors.toSet()))
 		);
 	}
 

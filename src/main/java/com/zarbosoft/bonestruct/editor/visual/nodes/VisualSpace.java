@@ -2,8 +2,8 @@ package com.zarbosoft.bonestruct.editor.visual.nodes;
 
 import com.google.common.collect.Iterables;
 import com.zarbosoft.bonestruct.editor.Context;
-import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodeParent;
-import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
+import com.zarbosoft.bonestruct.editor.visual.VisualParent;
+import com.zarbosoft.bonestruct.editor.visual.VisualPart;
 import com.zarbosoft.bonestruct.wall.Brick;
 import com.zarbosoft.bonestruct.wall.bricks.BrickSpace;
 import com.zarbosoft.rendaw.common.Pair;
@@ -12,8 +12,8 @@ import org.pcollections.HashTreePSet;
 import java.util.Arrays;
 import java.util.Set;
 
-public class VisualSpace extends VisualNodePart {
-	public VisualNodeParent parent;
+public class VisualSpace extends VisualPart {
+	public VisualParent parent;
 	public BrickSpace brick;
 
 	public VisualSpace(final Set<Tag> tags) {
@@ -48,12 +48,12 @@ public class VisualSpace extends VisualNodePart {
 	}
 
 	@Override
-	public void setParent(final VisualNodeParent parent) {
+	public void setParent(final VisualParent parent) {
 		this.parent = parent;
 	}
 
 	@Override
-	public VisualNodeParent parent() {
+	public VisualParent parent() {
 		return parent;
 	}
 

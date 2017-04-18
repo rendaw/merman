@@ -2,8 +2,7 @@ package com.zarbosoft.bonestruct.syntax.front;
 
 import com.zarbosoft.bonestruct.document.values.Value;
 import com.zarbosoft.bonestruct.editor.Context;
-import com.zarbosoft.bonestruct.editor.visual.nodes.VisualNode;
-import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
+import com.zarbosoft.bonestruct.editor.visual.VisualPart;
 import com.zarbosoft.bonestruct.syntax.NodeType;
 import com.zarbosoft.bonestruct.syntax.hid.grammar.Node;
 import com.zarbosoft.bonestruct.syntax.middle.MiddleNode;
@@ -31,21 +30,16 @@ public class FrontDataNode extends FrontPart {
 	public Map<String, Node> hotkeys = new HashMap<>();
 
 	@Override
-	public VisualNodePart createVisual(
-			final Context context,
-			final Map<String, Value> data,
-			final Set<com.zarbosoft.bonestruct.editor.visual.tree.VisualNode.Tag> tags
+	public VisualPart createVisual(
+			final Context context, final Map<String, Value> data, final Set<Visual.Tag> tags
 	) {
-		return new VisualNode(
+		return new com.zarbosoft.bonestruct.editor.visual.nodes.Visual(
 				context,
 				dataType.get(data),
 				HashTreePSet
 						.from(tags)
-						.plus(new com.zarbosoft.bonestruct.editor.visual.tree.VisualNode.PartTag("nested"))
-						.plusAll(this.tags
-								.stream()
-								.map(s -> new com.zarbosoft.bonestruct.editor.visual.tree.VisualNode.FreeTag(s))
-								.collect(Collectors.toSet()))
+						.plus(new Visual.PartTag("nested"))
+						.plusAll(this.tags.stream().map(s -> new Visual.FreeTag(s)).collect(Collectors.toSet()))
 		);
 	}
 

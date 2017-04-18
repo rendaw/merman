@@ -40,7 +40,7 @@ public class ChangeArrayAdd extends Change {
 
 	@Override
 	public Change apply(final Context context) {
-		data.value.addAll(index, value);
+		data.data.addAll(index, value);
 		value.stream().forEach(v -> {
 			v.setParent(data.new ArrayParent());
 		});

@@ -4,8 +4,8 @@ import com.zarbosoft.bonestruct.editor.Action;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.Keyboard;
 import com.zarbosoft.bonestruct.editor.details.DetailsPage;
+import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.raw.RawText;
-import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
 import com.zarbosoft.bonestruct.syntax.modules.Module;
 import com.zarbosoft.bonestruct.syntax.style.Style;
 import com.zarbosoft.interface1.Configuration;
@@ -47,13 +47,12 @@ public class Hotkeys extends Module {
 			final PSet tags = HashTreePSet.from(context.globalTags);
 			final RawText first = new RawText(context,
 					context.getStyle(tags
-							.plus(new VisualNode.PartTag("details_prompt"))
-							.plus(new VisualNode.PartTag("details")))
+							.plus(new Visual.PartTag("details_prompt"))
+							.plus(new Visual.PartTag("details")))
 			);
 			group.getChildren().add(first.getVisual());
-			final Style.Baked lineStyle = context.getStyle(tags
-					.plus(new VisualNode.PartTag("details_line"))
-					.plus(new VisualNode.PartTag("details")));
+			final Style.Baked lineStyle =
+					context.getStyle(tags.plus(new Visual.PartTag("details_line")).plus(new Visual.PartTag("details")));
 			first.setText(context, hotkeySequence);
 			int transverse = first.transverseSpan(context);
 			for (final com.zarbosoft.pidgoon.internal.State leaf : hotkeyParse.context().leaves) {
@@ -71,7 +70,7 @@ public class Hotkeys extends Module {
 		context.addKeyListener(this::handleKey);
 		context.addTagsChangeListener(new Context.TagsListener() {
 			@Override
-			public void tagsChanged(final Context context, final Set<VisualNode.Tag> tags) {
+			public void tagsChanged(final Context context, final Set<Visual.Tag> tags) {
 				System.out.format("resetting hotkeys tags [%s]\n", tags);
 				clean(context);
 				hotkeys = new HotkeyRule(tags);

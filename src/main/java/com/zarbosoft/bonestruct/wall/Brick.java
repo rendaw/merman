@@ -6,8 +6,8 @@ import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.Hoverable;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
-import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
-import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
+import com.zarbosoft.bonestruct.editor.visual.Visual;
+import com.zarbosoft.bonestruct.editor.visual.VisualPart;
 import javafx.scene.Node;
 
 import java.util.HashSet;
@@ -22,15 +22,15 @@ public abstract class Brick {
 
 	public abstract int converseEdge(final Context context);
 
-	public final VisualNode getNode() { // Temp final
+	public final Visual getNode() { // Temp final
 		if (getVisual().parent() == null)
 			return null;
-		return getVisual().parent().getNode();
+		return getVisual().parent().getNodeVisual();
 	}
 
-	public abstract VisualNodePart getVisual();
+	public abstract VisualPart getVisual();
 
-	public abstract Properties getPropertiesForTagsChange(Context context, VisualNode.TagsChange change);
+	public abstract Properties getPropertiesForTagsChange(Context context, Visual.TagsChange change);
 
 	public abstract int getConverse(Context context);
 

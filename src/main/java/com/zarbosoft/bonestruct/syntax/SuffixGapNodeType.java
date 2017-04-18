@@ -64,7 +64,7 @@ public class SuffixGapNodeType extends NodeType {
 					Node.Parent parent = null;
 					Node child = null;
 					Node.Parent test = start;
-					//Node testNode = test.data().parent().node();
+					//Node testNode = test.value().parent().node();
 					Node testNode = null;
 					while (test != null) {
 						boolean allowed = false;
@@ -79,9 +79,9 @@ public class SuffixGapNodeType extends NodeType {
 							allowed = true;
 						}
 
-						if (test.data().parent() == null)
+						if (test.value().parent() == null)
 							break;
-						testNode = test.data().parent().node();
+						testNode = test.value().parent().node();
 
 						// Can't move up if current level is bounded by any other front parts
 						final int index = getIndexOfData(test, testNode);

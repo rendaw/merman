@@ -7,8 +7,8 @@ import com.zarbosoft.bonestruct.document.Document;
 import com.zarbosoft.bonestruct.editor.banner.Banner;
 import com.zarbosoft.bonestruct.editor.details.Details;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
+import com.zarbosoft.bonestruct.editor.visual.VisualPart;
 import com.zarbosoft.bonestruct.editor.visual.attachments.TransverseExtentsAdapter;
-import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
 import com.zarbosoft.bonestruct.history.History;
 import com.zarbosoft.bonestruct.syntax.Syntax;
 import com.zarbosoft.bonestruct.wall.Wall;
@@ -82,7 +82,7 @@ public class Editor {
 		visual.setBackground(new Background(new BackgroundFill(context.syntax.background.get(), null, null)));
 		visual.getChildren().add(context.display.background);
 		visual.getChildren().add(wall.visual);
-		final VisualNodePart root =
+		final VisualPart root =
 				context.syntax.rootFront.createVisual(context, ImmutableMap.of("value", doc.top), ImmutableSet.of());
 		context.selectionExtentsAdapter.addListener(context, new TransverseExtentsAdapter.Listener() {
 			@Override

@@ -1,17 +1,15 @@
-package com.zarbosoft.bonestruct.editor.visual.tree;
+package com.zarbosoft.bonestruct.editor.visual;
 
 import com.google.common.collect.ImmutableSet;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.Hoverable;
-import com.zarbosoft.bonestruct.editor.visual.Alignment;
-import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.rendaw.common.DeadCode;
 
 import java.util.Map;
 import java.util.Set;
 
-public abstract class VisualNodePart extends VisualNode {
-	public VisualNodePart(final Set<Tag> tags) {
+public abstract class VisualPart extends Visual {
+	public VisualPart(final Set<Tag> tags) {
 		super(tags);
 	}
 

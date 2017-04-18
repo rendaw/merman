@@ -3,10 +3,10 @@ package com.zarbosoft.bonestruct.editor.banner;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.IdleTask;
 import com.zarbosoft.bonestruct.editor.Selection;
+import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.attachments.VisualAttachmentAdapter;
 import com.zarbosoft.bonestruct.editor.visual.raw.RawText;
 import com.zarbosoft.bonestruct.editor.visual.raw.RawTextUtils;
-import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
 import com.zarbosoft.bonestruct.syntax.style.Style;
 import com.zarbosoft.bonestruct.wall.Attachment;
 import com.zarbosoft.bonestruct.wall.Bedding;
@@ -109,7 +109,7 @@ public class Banner {
 		});
 		context.addTagsChangeListener(new Context.TagsListener() {
 			@Override
-			public void tagsChanged(final Context context, final Set<VisualNode.Tag> tags) {
+			public void tagsChanged(final Context context, final Set<Visual.Tag> tags) {
 				updateStyle(context);
 			}
 		});
@@ -131,7 +131,7 @@ public class Banner {
 	}
 
 	private Style.Baked getStyle(final Context context) {
-		return context.getStyle(HashTreePSet.from(context.globalTags).plus(new VisualNode.PartTag("banner")));
+		return context.getStyle(HashTreePSet.from(context.globalTags).plus(new Visual.PartTag("banner")));
 	}
 
 	private void updateStyle(final Context context) {

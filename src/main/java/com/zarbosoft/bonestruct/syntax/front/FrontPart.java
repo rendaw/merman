@@ -2,8 +2,8 @@ package com.zarbosoft.bonestruct.syntax.front;
 
 import com.zarbosoft.bonestruct.document.values.Value;
 import com.zarbosoft.bonestruct.editor.Context;
-import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
-import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
+import com.zarbosoft.bonestruct.editor.visual.Visual;
+import com.zarbosoft.bonestruct.editor.visual.VisualPart;
 import com.zarbosoft.bonestruct.syntax.NodeType;
 import com.zarbosoft.interface1.Configuration;
 import com.zarbosoft.rendaw.common.DeadCode;
@@ -18,8 +18,8 @@ public abstract class FrontPart {
 	@Configuration
 	public Set<String> tags = new HashSet<>();
 
-	public abstract VisualNodePart createVisual(
-			Context context, Map<String, Value> data, Set<VisualNode.Tag> tags
+	public abstract VisualPart createVisual(
+			Context context, Map<String, Value> data, Set<Visual.Tag> tags
 	);
 
 	public void finish(final NodeType nodeType, final Set<String> middleUsed) {

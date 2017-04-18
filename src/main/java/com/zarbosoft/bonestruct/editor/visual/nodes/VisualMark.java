@@ -2,8 +2,8 @@ package com.zarbosoft.bonestruct.editor.visual.nodes;
 
 import com.google.common.collect.Iterables;
 import com.zarbosoft.bonestruct.editor.Context;
-import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodeParent;
-import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
+import com.zarbosoft.bonestruct.editor.visual.VisualParent;
+import com.zarbosoft.bonestruct.editor.visual.VisualPart;
 import com.zarbosoft.bonestruct.syntax.front.FrontMark;
 import com.zarbosoft.bonestruct.wall.Brick;
 import com.zarbosoft.bonestruct.wall.bricks.BrickMark;
@@ -12,9 +12,9 @@ import com.zarbosoft.rendaw.common.Pair;
 import java.util.Arrays;
 import java.util.Set;
 
-public class VisualMark extends VisualNodePart {
+public class VisualMark extends VisualPart {
 	private final FrontMark frontMark;
-	public VisualNodeParent parent;
+	public VisualParent parent;
 	public BrickMark brick = null;
 
 	public VisualMark(final FrontMark frontMark, final Set<Tag> tags) {
@@ -28,12 +28,12 @@ public class VisualMark extends VisualNodePart {
 	}
 
 	@Override
-	public void setParent(final VisualNodeParent parent) {
+	public void setParent(final VisualParent parent) {
 		this.parent = parent;
 	}
 
 	@Override
-	public VisualNodeParent parent() {
+	public VisualParent parent() {
 		return parent;
 	}
 

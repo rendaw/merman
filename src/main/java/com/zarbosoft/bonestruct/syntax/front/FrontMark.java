@@ -1,9 +1,9 @@
 package com.zarbosoft.bonestruct.syntax.front;
 
 import com.zarbosoft.bonestruct.editor.Context;
+import com.zarbosoft.bonestruct.editor.visual.Visual;
+import com.zarbosoft.bonestruct.editor.visual.VisualPart;
 import com.zarbosoft.bonestruct.editor.visual.nodes.VisualMark;
-import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
-import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
 import com.zarbosoft.interface1.Configuration;
 import org.pcollections.HashTreePSet;
 
@@ -22,13 +22,13 @@ public class FrontMark extends FrontConstantPart {
 	}
 
 	@Override
-	public VisualNodePart createVisual(final Context context, final Set<VisualNode.Tag> tags) {
+	public VisualPart createVisual(final Context context, final Set<Visual.Tag> tags) {
 		final VisualMark out = new VisualMark(
 				this,
 				HashTreePSet
 						.from(tags)
-						.plusAll(this.tags.stream().map(s -> new VisualNode.FreeTag(s)).collect(Collectors.toSet()))
-						.plus(new VisualNode.PartTag("mark"))
+						.plusAll(this.tags.stream().map(s -> new Visual.FreeTag(s)).collect(Collectors.toSet()))
+						.plus(new Visual.PartTag("mark"))
 		);
 		out.setText(context, value);
 		return out;

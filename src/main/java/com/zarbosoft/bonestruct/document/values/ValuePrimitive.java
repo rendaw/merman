@@ -9,13 +9,13 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class ValuePrimitive extends com.zarbosoft.bonestruct.document.values.Value {
-	public final MiddlePrimitive data;
-	public StringBuilder value = new StringBuilder();
+	public final MiddlePrimitive middle;
+	public StringBuilder data = new StringBuilder();
 	public final Set<Listener> listeners = new HashSet<>();
 
-	public ValuePrimitive(final MiddlePrimitive data, final String value) {
-		this.data = data;
-		this.value = new StringBuilder(value);
+	public ValuePrimitive(final MiddlePrimitive middle, final String data) {
+		this.middle = middle;
+		this.data = new StringBuilder(data);
 	}
 
 	public void addListener(final Listener listener) {
@@ -27,24 +27,24 @@ public class ValuePrimitive extends com.zarbosoft.bonestruct.document.values.Val
 	}
 
 	public String get() {
-		return value.toString();
+		return data.toString();
 	}
 
 	public int length() {
-		return value.length();
+		return data.length();
 	}
 
 	@Override
 	public MiddleElement data() {
-		return data;
+		return middle;
 	}
 
 	public Change changeRemove(final int begin, final int length) {
-		return data.changeRemove(this, begin, length);
+		return middle.changeRemove(this, begin, length);
 	}
 
 	public Change changeAdd(final int begin, final String text) {
-		return data.changeAdd(this, begin, text);
+		return middle.changeAdd(this, begin, text);
 	}
 
 	public abstract static class Listener {

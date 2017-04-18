@@ -1,7 +1,7 @@
 package com.zarbosoft.bonestruct.editor;
 
+import com.zarbosoft.bonestruct.editor.visual.VisualPart;
 import com.zarbosoft.bonestruct.editor.visual.attachments.VisualAttachmentAdapter;
-import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
 
 public abstract class Selection {
 	protected abstract void clear(Context context);
@@ -9,7 +9,7 @@ public abstract class Selection {
 	public void receiveText(final Context context, final String text) {
 	}
 
-	public abstract VisualNodePart getVisual();
+	public abstract VisualPart getVisual();
 
 	public abstract class VisualListener {
 

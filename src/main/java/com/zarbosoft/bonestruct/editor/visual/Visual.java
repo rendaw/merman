@@ -1,8 +1,7 @@
-package com.zarbosoft.bonestruct.editor.visual.tree;
+package com.zarbosoft.bonestruct.editor.visual;
 
 import com.google.common.collect.Iterators;
 import com.zarbosoft.bonestruct.editor.Context;
-import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.wall.Brick;
 import com.zarbosoft.interface1.Configuration;
 import com.zarbosoft.rendaw.common.Pair;
@@ -11,16 +10,16 @@ import org.pcollections.PSet;
 
 import java.util.*;
 
-public abstract class VisualNode {
+public abstract class Visual {
 	private final Set<Tag> tags = new HashSet<>();
 
-	public VisualNode(final Set<Tag> tags) {
+	public Visual(final Set<Tag> tags) {
 		this.tags.addAll(tags);
 	}
 
-	public abstract void setParent(VisualNodeParent parent);
+	public abstract void setParent(VisualParent parent);
 
-	public abstract VisualNodeParent parent();
+	public abstract VisualParent parent();
 
 	public abstract boolean select(Context context);
 
@@ -32,13 +31,13 @@ public abstract class VisualNode {
 
 	public abstract Brick getLastBrick(Context context);
 
-	public boolean isAncestor(final VisualNodePart node) {
+	public boolean isAncestor(final VisualPart node) {
 		if (parent() == null)
 			return false;
 		return parent().getTarget().isAncestor(node);
 	}
 
-	public Iterator<VisualNode> children() {
+	public Iterator<Visual> children() {
 		return Iterators.forArray();
 	}
 

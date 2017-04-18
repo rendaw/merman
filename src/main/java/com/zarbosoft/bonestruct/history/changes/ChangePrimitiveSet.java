@@ -29,8 +29,8 @@ public class ChangePrimitiveSet extends Change {
 
 	@Override
 	public Change apply(final Context context) {
-		final Change reverse = new ChangePrimitiveSet(data, data.value.toString());
-		data.value = new StringBuilder(value);
+		final Change reverse = new ChangePrimitiveSet(data, data.data.toString());
+		data.data = new StringBuilder(value);
 		for (final ValuePrimitive.Listener listener : data.listeners)
 			listener.set(context, value);
 		return reverse;

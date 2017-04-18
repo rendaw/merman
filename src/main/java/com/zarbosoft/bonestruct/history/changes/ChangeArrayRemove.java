@@ -41,8 +41,8 @@ public class ChangeArrayRemove extends Change {
 	@Override
 	public Change apply(final Context context) {
 		final ChangeArrayAdd reverse =
-				new ChangeArrayAdd(data, index, ImmutableList.copyOf(data.value.subList(index, index + size)));
-		data.value.subList(index, index + size).clear();
+				new ChangeArrayAdd(data, index, ImmutableList.copyOf(data.data.subList(index, index + size)));
+		data.data.subList(index, index + size).clear();
 		data.renumber(index);
 		for (final ValueArray.Listener listener : data.listeners)
 			listener.removed(context, index, size);

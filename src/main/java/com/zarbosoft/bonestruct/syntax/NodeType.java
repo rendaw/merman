@@ -7,10 +7,10 @@ import com.zarbosoft.bonestruct.document.values.Value;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.Hoverable;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
+import com.zarbosoft.bonestruct.editor.visual.Visual;
+import com.zarbosoft.bonestruct.editor.visual.VisualParent;
+import com.zarbosoft.bonestruct.editor.visual.VisualPart;
 import com.zarbosoft.bonestruct.editor.visual.nodes.VisualGroup;
-import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
-import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodeParent;
-import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
 import com.zarbosoft.bonestruct.syntax.alignments.AlignmentDefinition;
 import com.zarbosoft.bonestruct.syntax.back.*;
 import com.zarbosoft.bonestruct.syntax.front.FrontPart;
@@ -145,11 +145,11 @@ public abstract class NodeType {
 		return getData(MiddleRecord.class, middle);
 	}
 
-	public class NodeTypeVisual extends VisualNode {
+	public class NodeTypeVisual extends Visual {
 		private final VisualGroup body;
 		private boolean compact;
-		private VisualNodeParent parent;
-		public Map<String, VisualNodePart> frontToData = new HashMap<>();
+		private VisualParent parent;
+		public Map<String, VisualPart> frontToData = new HashMap<>();
 
 		public NodeTypeVisual(final Context context, final Map<String, Value> data) {
 			super(HashTreePSet.<Tag>empty().plus(new TypeTag(id)).plus(new PartTag("node")));
@@ -160,11 +160,11 @@ public abstract class NodeType {
 				body.alignments.put(entry.getKey(), entry.getValue().create());
 			}
 			enumerate(stream(front())).forEach(pair -> {
-				final VisualNodePart visual = pair.second.createVisual(context, data, tags);
+				final VisualPart visual = pair.second.createVisual(context, data, tags);
 				frontToData.put(pair.second.middle(), visual);
 				body.add(context, visual);
 			});
-			body.setParent(new VisualNodeParent() {
+			body.setParent(new VisualParent() {
 
 				@Override
 				public void selectUp(final Context context) {
@@ -182,12 +182,12 @@ public abstract class NodeType {
 				}
 
 				@Override
-				public VisualNode getTarget() {
+				public Visual getTarget() {
 					return parent.getTarget();
 				}
 
 				@Override
-				public NodeType.NodeTypeVisual getNode() {
+				public NodeType.NodeTypeVisual getNodeVisual() {
 					return NodeTypeVisual.this;
 				}
 
@@ -222,12 +222,12 @@ public abstract class NodeType {
 		}
 
 		@Override
-		public void setParent(final VisualNodeParent parent) {
+		public void setParent(final VisualParent parent) {
 			this.parent = parent;
 		}
 
 		@Override
-		public VisualNodeParent parent() {
+		public VisualParent parent() {
 			return body.parent();
 		}
 

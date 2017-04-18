@@ -5,7 +5,7 @@ import com.google.common.collect.ImmutableSet;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.IdleTask;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
-import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
+import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.rendaw.common.ChainComparator;
 import com.zarbosoft.rendaw.common.Pair;
 import javafx.scene.Group;
@@ -313,13 +313,12 @@ public class Course {
 	}
 
 	boolean compact(final Context context) {
-		final PriorityQueue<VisualNode> priorities = new PriorityQueue<>(11,
-				new ChainComparator<VisualNode>().greaterFirst(VisualNode::spacePriority).build()
-		);
+		final PriorityQueue<Visual> priorities =
+				new PriorityQueue<>(11, new ChainComparator<Visual>().greaterFirst(Visual::spacePriority).build());
 		int converse = 0;
 		for (int index = 0; index < children.size(); ++index) {
 			final Brick brick = children.get(index);
-			final VisualNode node = brick.getNode();
+			final Visual node = brick.getNode();
 			if (node.canCompact())
 				priorities.add(node);
 			converse = brick.converseEdge(context);
@@ -365,21 +364,20 @@ public class Course {
 	}
 
 	boolean expand(final Context context) {
-		final PriorityQueue<VisualNode> priorities = new PriorityQueue<>(11,
-				new ChainComparator<VisualNode>().lesserFirst(VisualNode::spacePriority).build()
-		);
+		final PriorityQueue<Visual> priorities =
+				new PriorityQueue<>(11, new ChainComparator<Visual>().lesserFirst(Visual::spacePriority).build());
 		for (int index = 0; index < children.size(); ++index) {
 			final Brick brick = children.get(index);
-			final VisualNode node = brick.getNode();
+			final Visual node = brick.getNode();
 			if (node.canExpand())
 				priorities.add(node);
 		}
 		if (priorities.isEmpty())
 			return false;
-		final VisualNode top = priorities.poll();
+		final Visual top = priorities.poll();
 		final Iterable<Pair<Brick, Brick.Properties>> brickProperties = top.getPropertiesForTagsChange(context,
-				new VisualNode.TagsChange(ImmutableSet.of(new VisualNode.StateTag("expanded")),
-						ImmutableSet.of(new VisualNode.StateTag("compact"))
+				new Visual.TagsChange(ImmutableSet.of(new Visual.StateTag("expanded")),
+						ImmutableSet.of(new Visual.StateTag("compact"))
 				)
 		);
 		final Map<Brick, Brick.Properties> lookup =

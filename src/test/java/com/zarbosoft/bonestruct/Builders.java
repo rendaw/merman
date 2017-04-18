@@ -11,7 +11,7 @@ import com.zarbosoft.bonestruct.document.values.ValueArray;
 import com.zarbosoft.bonestruct.document.values.ValueNode;
 import com.zarbosoft.bonestruct.document.values.ValuePrimitive;
 import com.zarbosoft.bonestruct.editor.Context;
-import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
+import com.zarbosoft.bonestruct.editor.visual.VisualPart;
 import com.zarbosoft.bonestruct.history.History;
 import com.zarbosoft.bonestruct.history.changes.ChangeArrayAdd;
 import com.zarbosoft.bonestruct.syntax.FreeNodeType;
@@ -407,7 +407,7 @@ public class Builders {
 		final Context context = new Context(syntax, doc, null, null, new History());
 		context.history.apply(context, new ChangeArrayAdd(doc.top, 0, Arrays.asList(root)));
 		context.history.finishChange();
-		final VisualNodePart visual =
+		final VisualPart visual =
 				syntax.rootFront.createVisual(context, ImmutableMap.of("value", doc.top), ImmutableSet.of());
 		visual.select(context);
 		return context;

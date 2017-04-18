@@ -39,8 +39,8 @@ public class ChangePrimitiveRemove extends Change {
 	@Override
 	public Change apply(final Context context) {
 		final ChangePrimitiveAdd reverse =
-				new ChangePrimitiveAdd(data, index, data.value.substring(index, index + size));
-		data.value.delete(index, index + size);
+				new ChangePrimitiveAdd(data, index, data.data.substring(index, index + size));
+		data.data.delete(index, index + size);
 		for (final ValuePrimitive.Listener listener : data.listeners)
 			listener.removed(context, index, size);
 		return reverse;

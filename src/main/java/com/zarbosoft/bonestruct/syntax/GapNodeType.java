@@ -149,7 +149,7 @@ public class GapNodeType extends NodeType {
 						return;
 					if (self.parent == null)
 						return;
-					final Value parentValue = self.parent.data();
+					final Value parentValue = self.parent.value();
 					if (parentValue instanceof ValueArray) {
 						self.parent.delete(context);
 					}

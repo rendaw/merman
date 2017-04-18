@@ -1,12 +1,8 @@
 package com.zarbosoft.bonestruct.wall.bricks;
 
 import com.zarbosoft.bonestruct.editor.Context;
-import com.zarbosoft.bonestruct.editor.visual.Alignment;
-import com.zarbosoft.bonestruct.editor.visual.AlignmentListener;
-import com.zarbosoft.bonestruct.editor.visual.Vector;
+import com.zarbosoft.bonestruct.editor.visual.*;
 import com.zarbosoft.bonestruct.editor.visual.nodes.VisualSpace;
-import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
-import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
 import com.zarbosoft.bonestruct.syntax.style.Style;
 import com.zarbosoft.bonestruct.wall.Brick;
 import javafx.scene.Node;
@@ -45,13 +41,13 @@ public class BrickSpace extends Brick implements AlignmentListener {
 	}
 
 	@Override
-	public VisualNodePart getVisual() {
+	public VisualPart getVisual() {
 		return spaceVisual;
 	}
 
 	@Override
-	public Properties getPropertiesForTagsChange(final Context context, final VisualNode.TagsChange change) {
-		final Set<VisualNode.Tag> tags = new HashSet<>(spaceVisual.tags(context));
+	public Properties getPropertiesForTagsChange(final Context context, final Visual.TagsChange change) {
+		final Set<Visual.Tag> tags = new HashSet<>(spaceVisual.tags(context));
 		tags.removeAll(change.remove);
 		tags.addAll(change.add);
 		return properties(context.getStyle(tags));

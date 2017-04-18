@@ -1,6 +1,6 @@
 package com.zarbosoft.bonestruct.syntax.style;
 
-import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
+import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.interface1.Configuration;
 import javafx.scene.text.Font;
 
@@ -14,7 +14,7 @@ import static com.zarbosoft.rendaw.common.Common.uncheck;
 public class Style {
 
 	@Configuration
-	public Set<VisualNode.Tag> tags = new HashSet<>();
+	public Set<Visual.Tag> tags = new HashSet<>();
 
 	@Configuration(optional = true)
 	public ObboxStyle border = new ObboxStyle();
@@ -72,7 +72,7 @@ public class Style {
 	public Integer space = null;
 
 	public static class Baked {
-		public Set<VisualNode.Tag> tags = new HashSet<>();
+		public Set<Visual.Tag> tags = new HashSet<>();
 		public boolean broken = false;
 		public String alignment = null;
 		public int spaceBefore = 0;
@@ -88,7 +88,7 @@ public class Style {
 		public int transverse = 12;
 		public int space = 0;
 
-		public Baked(final Set<VisualNode.Tag> tags) {
+		public Baked(final Set<Visual.Tag> tags) {
 			this.tags.addAll(tags);
 		}
 

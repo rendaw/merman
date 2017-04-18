@@ -9,12 +9,12 @@ import com.zarbosoft.bonestruct.editor.Hoverable;
 import com.zarbosoft.bonestruct.editor.Selection;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
+import com.zarbosoft.bonestruct.editor.visual.VisualParent;
+import com.zarbosoft.bonestruct.editor.visual.VisualPart;
 import com.zarbosoft.bonestruct.editor.visual.attachments.CursorAttachment;
 import com.zarbosoft.bonestruct.editor.visual.attachments.TextBorderAttachment;
 import com.zarbosoft.bonestruct.editor.visual.attachments.VisualAttachmentAdapter;
 import com.zarbosoft.bonestruct.editor.visual.raw.Obbox;
-import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodeParent;
-import com.zarbosoft.bonestruct.editor.visual.tree.VisualNodePart;
 import com.zarbosoft.bonestruct.syntax.NodeType;
 import com.zarbosoft.bonestruct.syntax.style.ObboxStyle;
 import com.zarbosoft.bonestruct.syntax.style.Style;
@@ -36,14 +36,14 @@ import java.util.stream.Stream;
 import static com.zarbosoft.rendaw.common.Common.enumerate;
 import static com.zarbosoft.rendaw.common.Common.last;
 
-public class VisualPrimitive extends VisualNodePart {
+public class VisualPrimitive extends VisualPart {
 	// INVARIANT: Leaf nodes must always create at least one brick
 	// TODO index line offsets for faster insert/remove
 	// TODO compact/expand
 	private final ValuePrimitive.Listener dataListener;
 	private final Obbox border = null;
 	private final ValuePrimitive data;
-	public VisualNodeParent parent;
+	public VisualParent parent;
 
 	public class BrickStyle {
 		public Alignment softAlignment;
@@ -550,7 +550,7 @@ public class VisualPrimitive extends VisualNodePart {
 		}
 
 		@Override
-		public VisualNodePart getVisual() {
+		public VisualPart getVisual() {
 			return VisualPrimitive.this;
 		}
 
@@ -596,11 +596,11 @@ public class VisualPrimitive extends VisualNodePart {
 		public NodeType.NodeTypeVisual node() {
 			if (VisualPrimitive.this.parent == null)
 				return null;
-			return VisualPrimitive.this.parent.getNode();
+			return VisualPrimitive.this.parent.getNodeVisual();
 		}
 
 		@Override
-		public VisualNodePart part() {
+		public VisualPart part() {
 			return VisualPrimitive.this;
 		}
 	}
@@ -857,12 +857,12 @@ public class VisualPrimitive extends VisualNodePart {
 	}
 
 	@Override
-	public void setParent(final VisualNodeParent parent) {
+	public void setParent(final VisualParent parent) {
 		this.parent = parent;
 	}
 
 	@Override
-	public VisualNodeParent parent() {
+	public VisualParent parent() {
 		return parent;
 	}
 

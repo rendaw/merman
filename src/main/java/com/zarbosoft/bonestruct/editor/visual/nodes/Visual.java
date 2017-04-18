@@ -7,11 +7,11 @@ import com.zarbosoft.bonestruct.history.changes.ChangeNodeSet;
 
 import java.util.Set;
 
-public class VisualNode extends VisualNodeBase {
+public class Visual extends VisualNodeBase {
 	final ValueNode data;
 	final private ValueNode.Listener dataListener;
 
-	public VisualNode(
+	public Visual(
 			final Context context, final ValueNode data, final Set<Tag> tags
 	) {
 		super(tags);
@@ -19,7 +19,7 @@ public class VisualNode extends VisualNodeBase {
 		dataListener = new ValueNode.Listener() {
 			@Override
 			public void set(final Context context, final Node node) {
-				VisualNode.this.set(context, node);
+				Visual.this.set(context, node);
 			}
 		};
 		data.addListener(dataListener);

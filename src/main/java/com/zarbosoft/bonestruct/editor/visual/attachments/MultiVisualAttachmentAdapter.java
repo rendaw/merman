@@ -2,7 +2,7 @@ package com.zarbosoft.bonestruct.editor.visual.attachments;
 
 import com.google.common.collect.ImmutableSet;
 import com.zarbosoft.bonestruct.editor.Context;
-import com.zarbosoft.bonestruct.editor.visual.tree.VisualNode;
+import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.wall.Brick;
 
 import java.util.HashSet;
@@ -52,17 +52,17 @@ public class MultiVisualAttachmentAdapter {
 		listeners.remove(listener);
 	}
 
-	public void setFirst(final Context context, final VisualNode newFirst) {
+	public void setFirst(final Context context, final Visual newFirst) {
 		firstAdapter.setBase(context, newFirst);
 	}
 
-	public void setLast(final Context context, final VisualNode newLast) {
+	public void setLast(final Context context, final Visual newLast) {
 		lastAdapter.setBase(context, newLast);
 	}
 
 	/**
 	 * The next brick to be added is outside the visual subtree so should be ignored.
-	 * This will most likely be called from the target's VisualNodeParent.
+	 * This will most likely be called from the target's VisualParent.
 	 *
 	 * @param context
 	 * @param next
@@ -73,7 +73,7 @@ public class MultiVisualAttachmentAdapter {
 
 	/**
 	 * The next brick to be added is outside the visual subtree so should be ignored.
-	 * This will most likely be called from the target's VisualNodeParent.
+	 * This will most likely be called from the target's VisualParent.
 	 *
 	 * @param context
 	 * @param next
