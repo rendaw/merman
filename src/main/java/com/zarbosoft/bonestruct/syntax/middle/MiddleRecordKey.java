@@ -1,21 +1,13 @@
 package com.zarbosoft.bonestruct.syntax.middle;
 
-import com.zarbosoft.bonestruct.document.values.ValuePrimitive;
-import com.zarbosoft.bonestruct.history.Change;
-import com.zarbosoft.bonestruct.history.changes.ChangeRecordKeyAdd;
-import com.zarbosoft.bonestruct.history.changes.ChangeRecordKeyRemove;
+import com.zarbosoft.bonestruct.document.values.ValueRecordKey;
+import com.zarbosoft.bonestruct.syntax.Syntax;
+import com.zarbosoft.interface1.Configuration;
 
+@Configuration(name = "key")
 public class MiddleRecordKey extends MiddlePrimitive {
 	@Override
-	public Change changeAdd(
-			final ValuePrimitive value, final int begin, final String text
-	) {
-		return new ChangeRecordKeyAdd(value, begin, text);
+	public com.zarbosoft.bonestruct.document.values.Value create(final Syntax syntax) {
+		return new ValueRecordKey(this, "");
 	}
-
-	@Override
-	public Change changeRemove(final ValuePrimitive value, final int begin, final int length) {
-		return new ChangeRecordKeyRemove(value, begin, length);
-	}
-
 }

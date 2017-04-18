@@ -1,7 +1,6 @@
 package com.zarbosoft.bonestruct.history.changes;
 
 import com.google.common.collect.ImmutableList;
-import com.zarbosoft.bonestruct.document.values.Value;
 import com.zarbosoft.bonestruct.document.values.ValueArray;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.history.Change;
@@ -47,10 +46,5 @@ public class ChangeArrayRemove extends Change {
 		for (final ValueArray.Listener listener : data.listeners)
 			listener.removed(context, index, size);
 		return reverse;
-	}
-
-	@Override
-	public Value getValue() {
-		return data;
 	}
 }

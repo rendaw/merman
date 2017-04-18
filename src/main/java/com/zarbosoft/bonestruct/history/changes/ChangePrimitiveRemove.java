@@ -45,9 +45,4 @@ public class ChangePrimitiveRemove extends Change {
 			listener.removed(context, index, size);
 		return reverse;
 	}
-
-	@Override
-	public com.zarbosoft.bonestruct.document.values.Value getValue() {
-		return data;
-	}
 }

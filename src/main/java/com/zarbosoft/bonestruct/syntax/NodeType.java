@@ -340,4 +340,7 @@ public abstract class NodeType {
 		return getData(MiddleArrayBase.class, key);
 	}
 
+	public MiddleRecordKey getDataRecordKey(final String key) {
+		return getData(MiddleRecordKey.class, key);
+	}
 }

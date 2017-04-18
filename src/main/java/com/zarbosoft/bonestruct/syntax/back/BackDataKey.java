@@ -1,6 +1,6 @@
 package com.zarbosoft.bonestruct.syntax.back;
 
-import com.zarbosoft.bonestruct.document.values.ValuePrimitive;
+import com.zarbosoft.bonestruct.document.values.ValueRecordKey;
 import com.zarbosoft.bonestruct.syntax.NodeType;
 import com.zarbosoft.bonestruct.syntax.Syntax;
 import com.zarbosoft.interface1.Configuration;
@@ -25,7 +25,7 @@ public class BackDataKey extends BackPart {
 		return new Operator(new Terminal(new LKeyEvent(null)), store -> {
 			store = (Store) store.pushStack(new Pair<>(
 					middle,
-					new ValuePrimitive(nodeType.getDataPrimitive(middle), ((LPrimitiveEvent) store.top()).value)
+					new ValueRecordKey(nodeType.getDataRecordKey(middle), ((LPrimitiveEvent) store.top()).value)
 			));
 			return Helper.stackSingleElement(store);
 		});

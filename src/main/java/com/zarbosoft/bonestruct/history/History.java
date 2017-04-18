@@ -1,21 +1,21 @@
 package com.zarbosoft.bonestruct.history;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 import com.zarbosoft.bonestruct.editor.Context;
 
 import java.io.Closeable;
 import java.io.IOException;
 import java.time.Instant;
-import java.util.*;
-
-import static com.zarbosoft.rendaw.common.Common.last;
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.HashSet;
+import java.util.Set;
 
 public class History {
 	boolean locked = false;
 	private Instant pastEnd;
-	private final Deque<List<Change>> past = new ArrayDeque<>();
-	private final Deque<List<Change>> future = new ArrayDeque<>();
+	private final Deque<ChangeGroup> past = new ArrayDeque<>();
+	private final Deque<ChangeGroup> future = new ArrayDeque<>();
 
 	public static abstract class Listener {
 		public abstract void applied(Context context, Change change);
@@ -41,13 +41,10 @@ public class History {
 		};
 	}
 
-	private List<Change> applyGroup(final Context context, final List<Change> group) {
-		final List<Change> out = new ArrayList<>();
-		for (final Change change : Lists.reverse(group)) {
-			out.add(change.apply(context));
-			for (final Listener listener : listeners)
-				listener.applied(context, change);
-		}
+	private ChangeGroup applyGroup(final Context context, final ChangeGroup group) {
+		final ChangeGroup out = (ChangeGroup) group.apply(context);
+		for (final Listener listener : listeners)
+			listener.applied(context, group);
 		return out;
 	}
 
@@ -78,7 +75,7 @@ public class History {
 		try (Closeable lock = lock()) {
 			if (past.peekLast().isEmpty())
 				return;
-			past.addLast(new ArrayList<>());
+			past.addLast(new ChangeGroup());
 		} catch (final IOException e) {
 		}
 	}
@@ -88,11 +85,9 @@ public class History {
 		try (Closeable lock = lock()) {
 			future.clear();
 			if (past.isEmpty())
-				past.addLast(new ArrayList<>());
+				past.addLast(new ChangeGroup());
 			final Change reverse = change.apply(context);
-			final List<Change> subchanges = past.peekLast();
-			if (subchanges.isEmpty() || !last(subchanges).merge(reverse))
-				subchanges.add(reverse);
+			past.peekLast().merge(reverse);
 			for (final Listener listener : ImmutableList.copyOf(listeners))
 				listener.applied(context, change);
 		} catch (final IOException e) {
@@ -102,7 +97,7 @@ public class History {
 	}
 
 	public boolean isModified() {
-		return !past.isEmpty();
+		return past.size() > 1 || !past.peekLast().isEmpty();
 	}
 
 	public void addListener(final Listener listener) {
@@ -113,7 +108,7 @@ public class History {
 		listeners.remove(listener);
 	}
 
-	public void addModifiedStateListener(ModifiedStateListener listener) {
+	public void addModifiedStateListener(final ModifiedStateListener listener) {
 		modifiedStateListeners.add(listener);
 	}
 }

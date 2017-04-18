@@ -8,18 +8,27 @@ import java.util.List;
 
 import static com.zarbosoft.rendaw.common.Common.last;
 
-public class ChangeGroup {
+public class ChangeGroup extends Change {
 	public final List<Change> subchanges = new ArrayList<>();
 
-	public void add(final Change change) {
-		if (subchanges.isEmpty() || !last(subchanges).merge(change))
-			subchanges.add(change);
+	@Override
+	public boolean merge(final Change other) {
+		if (other instanceof ChangeGroup) {
+			subchanges.addAll(((ChangeGroup) other).subchanges);
+		} else if (subchanges.isEmpty()) {
+			subchanges.add(other);
+		} else if (last(subchanges).merge(other)) {
+		} else
+			subchanges.add(other);
+		return true;
 	}
 
-	public ChangeGroup apply(final Context context) {
+	@Override
+	public Change apply(final Context context) {
 		final ChangeGroup out = new ChangeGroup();
-		for (final Change change : Lists.reverse(subchanges))
+		for (final Change change : Lists.reverse(subchanges)) {
 			out.subchanges.add(change.apply(context));
+		}
 		return out;
 	}
 

@@ -1,7 +1,6 @@
 package com.zarbosoft.bonestruct.history.changes;
 
 import com.zarbosoft.bonestruct.document.Node;
-import com.zarbosoft.bonestruct.document.values.Value;
 import com.zarbosoft.bonestruct.document.values.ValueArray;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.history.Change;
@@ -48,10 +47,5 @@ public class ChangeArrayAdd extends Change {
 		for (final ValueArray.Listener listener : data.listeners)
 			listener.added(context, index, value);
 		return new ChangeArrayRemove(data, index, value.size());
-	}
-
-	@Override
-	public Value getValue() {
-		return data;
 	}
 }

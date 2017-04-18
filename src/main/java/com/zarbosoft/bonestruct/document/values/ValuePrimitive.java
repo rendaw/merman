@@ -2,6 +2,8 @@ package com.zarbosoft.bonestruct.document.values;
 
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.history.Change;
+import com.zarbosoft.bonestruct.history.changes.ChangePrimitiveAdd;
+import com.zarbosoft.bonestruct.history.changes.ChangePrimitiveRemove;
 import com.zarbosoft.bonestruct.syntax.middle.MiddleElement;
 import com.zarbosoft.bonestruct.syntax.middle.MiddlePrimitive;
 
@@ -40,11 +42,11 @@ public class ValuePrimitive extends com.zarbosoft.bonestruct.document.values.Val
 	}
 
 	public Change changeRemove(final int begin, final int length) {
-		return middle.changeRemove(this, begin, length);
+		return new ChangePrimitiveRemove(this, begin, length);
 	}
 
 	public Change changeAdd(final int begin, final String text) {
-		return middle.changeAdd(this, begin, text);
+		return new ChangePrimitiveAdd(this, begin, text);
 	}
 
 	public abstract static class Listener {

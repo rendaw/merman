@@ -35,9 +35,4 @@ public class ChangePrimitiveSet extends Change {
 			listener.set(context, value);
 		return reverse;
 	}
-
-	@Override
-	public com.zarbosoft.bonestruct.document.values.Value getValue() {
-		return data;
-	}
 }

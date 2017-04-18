@@ -40,9 +40,4 @@ public class ChangePrimitiveAdd extends Change {
 			listener.added(context, index, value.toString());
 		return new ChangePrimitiveRemove(data, index, value.length());
 	}
-
-	@Override
-	public com.zarbosoft.bonestruct.document.values.Value getValue() {
-		return data;
-	}
 }
