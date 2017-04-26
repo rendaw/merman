@@ -48,11 +48,75 @@ public abstract class VisualArray extends VisualGroup {
 			}
 		};
 		data.addListener(dataListener);
-		change(context, 0, 0, data.get());
+		coreChange(context, 0, 0, data.get());
 		data.visual = this;
 	}
 
 	private void change(final Context context, final int index, final int remove, final List<Node> add) {
+		int visualIndex = index;
+		int visualRemove = remove;
+		int visualAdd = add.size();
+		if (!separator.isEmpty()) {
+			visualIndex = index == 0 ? 0 : visualIndex * 2 - 1;
+			visualAdd = children.isEmpty() ? visualAdd * 2 - 1 : visualAdd * 2;
+			visualRemove = Math.min(visualRemove * 2, children.size());
+		}
+
+		// Prep to fix selection if deep under an element
+		Integer fixDeepSelectionIndex = null;
+		if (context.selection != null) {
+			VisualParent parent = context.selection.getVisual().parent();
+			while (parent != null) {
+				final Visual visual = parent.getTarget();
+				if (visual == this) {
+					fixDeepSelectionIndex = ((ArrayVisualParent) parent).index;
+					break;
+				}
+				parent = visual.parent();
+			}
+		}
+
+		coreChange(context, index, remove, add);
+
+		if (hoverable != null) {
+			if (hoverable.index > visualIndex + visualRemove) {
+				hoverable.setIndex(context, hoverable.index - visualRemove + visualAdd);
+			} else if (hoverable.index >= visualIndex) {
+				context.clearHover();
+			}
+		}
+		if (selection != null) {
+			if (children.isEmpty())
+				parent.selectUp(context);
+			else {
+				if (selection.beginIndex > visualIndex + visualRemove)
+					selection.setBegin(context, selection.beginIndex - visualRemove + visualAdd);
+				else if (selection.beginIndex >= visualIndex)
+					selection.setBegin(context, Math.min(children.size() - 1, (visualIndex + visualAdd + 1) / 2 * 2));
+				if (selection.endIndex > visualIndex + visualRemove)
+					selection.setEnd(context, selection.endIndex - visualRemove + visualAdd);
+				else if (selection.endIndex >= visualIndex)
+					selection.setEnd(context, Math.min(children.size() - 1, (visualIndex + visualAdd + 1) / 2 * 2));
+			}
+		} else if (fixDeepSelectionIndex != null) {
+			if (children.isEmpty())
+				parent.selectUp(context);
+			else {
+				final Integer newIndex;
+				if (fixDeepSelectionIndex > visualIndex + visualRemove)
+					newIndex = selection.beginIndex - visualRemove + visualAdd;
+				else if (fixDeepSelectionIndex >= visualIndex)
+					newIndex = Math.min(children.size() - 1, (visualIndex + visualAdd + 1) / 2 * 2);
+				else
+					newIndex = null;
+				if (newIndex != null) {
+					select(context, newIndex, newIndex);
+				}
+			}
+		}
+	}
+
+	private void coreChange(final Context context, final int index, final int remove, final List<Node> add) {
 		int visualIndex = index;
 		int visualRemove = remove;
 		int visualAdd = add.size();
@@ -68,20 +132,6 @@ public abstract class VisualArray extends VisualGroup {
 				children.get(0).changeTags(context, new Visual.TagsChange().remove(new Visual.PartTag("first")));
 			if (retagLast)
 				last(children).changeTags(context, new Visual.TagsChange().remove(new Visual.PartTag("last")));
-		}
-
-		// Prep to fix selection if deep under an element
-		Integer fixDeepSelectionIndex = null;
-		if (context.selection != null) {
-			VisualParent parent = context.selection.getVisual().parent();
-			while (parent != null) {
-				final Visual visual = parent.getTarget();
-				if (visual == this) {
-					fixDeepSelectionIndex = ((ArrayVisualParent) parent).index;
-					break;
-				}
-				parent = visual.parent();
-			}
 		}
 
 		// Remove
@@ -186,42 +236,6 @@ public abstract class VisualArray extends VisualGroup {
 				children.get(0).changeTags(context, new Visual.TagsChange().add(new Visual.PartTag("first")));
 			if (retagLast)
 				last(children).changeTags(context, new Visual.TagsChange().add(new Visual.PartTag("last")));
-		}
-		if (hoverable != null) {
-			if (hoverable.index > visualIndex + visualRemove) {
-				hoverable.setIndex(context, hoverable.index - visualRemove + visualAdd);
-			} else if (hoverable.index >= visualIndex) {
-				context.clearHover();
-			}
-		}
-		if (selection != null) {
-			if (children.isEmpty())
-				parent.selectUp(context);
-			else {
-				if (selection.beginIndex > visualIndex + visualRemove)
-					selection.setBegin(context, selection.beginIndex - visualRemove + visualAdd);
-				else if (selection.beginIndex >= visualIndex)
-					selection.setBegin(context, Math.min(children.size() - 1, (visualIndex + visualAdd + 1) / 2 * 2));
-				if (selection.endIndex > visualIndex + visualRemove)
-					selection.setEnd(context, selection.endIndex - visualRemove + visualAdd);
-				else if (selection.endIndex >= visualIndex)
-					selection.setEnd(context, Math.min(children.size() - 1, (visualIndex + visualAdd + 1) / 2 * 2));
-			}
-		} else if (fixDeepSelectionIndex != null) {
-			if (children.isEmpty())
-				parent.selectUp(context);
-			else {
-				final Integer newIndex;
-				if (fixDeepSelectionIndex > visualIndex + visualRemove)
-					newIndex = selection.beginIndex - visualRemove + visualAdd;
-				else if (fixDeepSelectionIndex >= visualIndex)
-					newIndex = Math.min(children.size() - 1, (visualIndex + visualAdd + 1) / 2 * 2);
-				else
-					newIndex = null;
-				if (newIndex != null) {
-					select(context, newIndex, newIndex);
-				}
-			}
 		}
 	}
 

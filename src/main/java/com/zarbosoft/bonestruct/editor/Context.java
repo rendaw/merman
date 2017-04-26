@@ -23,6 +23,8 @@ import com.zarbosoft.bonestruct.syntax.modules.Module;
 import com.zarbosoft.bonestruct.syntax.style.Style;
 import com.zarbosoft.bonestruct.wall.Brick;
 import com.zarbosoft.bonestruct.wall.Wall;
+import com.zarbosoft.luxem.read.Parse;
+import com.zarbosoft.luxem.write.RawWriter;
 import javafx.animation.Interpolator;
 import javafx.animation.Transition;
 import javafx.geometry.Bounds;
@@ -33,9 +35,12 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Pane;
 import org.pcollections.TreePVector;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public class Context {
 	public final History history;
@@ -49,10 +54,31 @@ public class Context {
 	public Set<Visual.Tag> globalTags = new HashSet<>();
 	public List<KeyListener> keyListeners = new ArrayList<>();
 	public Map<Object, List<Action>> actions = new HashMap<>();
+	public ClipboardEngine clipboardEngine;
 
 	@FunctionalInterface
 	public interface KeyListener {
 		boolean handleKey(Context context, KeyEvent event);
+	}
+
+	public void copy(final List<com.zarbosoft.bonestruct.document.Node> nodes) {
+		final ByteArrayOutputStream stream = new ByteArrayOutputStream();
+		final RawWriter writer = new RawWriter(stream);
+		for (final com.zarbosoft.bonestruct.document.Node node : nodes) {
+			Document.write(node, writer);
+		}
+		clipboardEngine.set(stream.toByteArray());
+	}
+
+	public List<com.zarbosoft.bonestruct.document.Node> uncopy(final String type) {
+		final byte[] bytes = clipboardEngine.get();
+		if (bytes == null)
+			return ImmutableList.of();
+		return new Parse<com.zarbosoft.bonestruct.document.Node>()
+				.grammar(syntax.getGrammar())
+				.node(type)
+				.parse(new ByteArrayInputStream(bytes))
+				.collect(Collectors.toList());
 	}
 
 	public void changeGlobalTags(final Visual.TagsChange change) {
@@ -176,14 +202,24 @@ public class Context {
 		return new com.zarbosoft.bonestruct.editor.visual.Vector(converse, transverse);
 	}
 
+	public Object locateLong(final Path path) {
+		return locate(path, true);
+	}
+
+	public Object locateShort(final Path path) {
+		return locate(path, false);
+	}
+
 	/**
-	 * Locate a Node or MiddleElement.Value from a path.  If the path ends between those two, the last valid value
+	 * Locate a Node or Value from a path.  If the path ends between those two, the last valid value
 	 * is returned.  If the path references an invalid location InvalidPath is thrown.
+	 * <p>
+	 * If goLong is true, find the deepest element that resolves with this path.  If false, the shallowest.
 	 *
 	 * @param path
 	 * @return
 	 */
-	public Object locate(final Path path) {
+	public Object locate(final Path path, final boolean goLong) {
 		int pathIndex = -1;
 		final List<String> segments = ImmutableList.copyOf(path.segments);
 		// Either (value) or (node & part) are always set
@@ -254,6 +290,8 @@ public class Context {
 						return node;
 				}
 				value = node.data.get(middle);
+				if (!goLong && pathIndex + 1 == segments.size())
+					return value;
 				part = null;
 				node = null;
 			} else {
@@ -274,6 +312,8 @@ public class Context {
 								segment,
 								new Path(TreePVector.from(segments.subList(0, tempPathIndex)))
 						)));
+						if (!goLong && pathIndex + 1 == segments.size())
+							return node;
 						part = node.type.back().get(1);
 					} else if (((ValueArray) value).middle() instanceof MiddleArray) {
 						final int index;
@@ -293,6 +333,8 @@ public class Context {
 								index,
 								new Path(TreePVector.from(segments.subList(0, tempPathIndex)))
 						)));
+						if (!goLong && pathIndex + 1 == segments.size())
+							return node;
 						part = node.type.back().get(index - ((ValueArray.ArrayParent) node.parent).actualIndex);
 					}
 				} else if (value instanceof ValueNode) {

@@ -246,7 +246,7 @@ public class Syntax {
 		suffixGap.finish(this, allTypes, scalarTypes);
 	}
 
-	private Grammar getGrammar() {
+	public Grammar getGrammar() {
 		if (grammar == null) {
 			grammar = new Grammar();
 			types.forEach(t -> grammar.add(t.id, t.buildBackRule(this)));

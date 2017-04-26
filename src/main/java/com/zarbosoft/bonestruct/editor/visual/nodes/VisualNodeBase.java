@@ -1,5 +1,6 @@
 package com.zarbosoft.bonestruct.editor.visual.nodes;
 
+import com.google.common.collect.ImmutableList;
 import com.zarbosoft.bonestruct.document.Node;
 import com.zarbosoft.bonestruct.document.values.Value;
 import com.zarbosoft.bonestruct.editor.*;
@@ -11,6 +12,7 @@ import com.zarbosoft.bonestruct.wall.Brick;
 import com.zarbosoft.rendaw.common.DeadCode;
 import com.zarbosoft.rendaw.common.Pair;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -32,6 +34,10 @@ public abstract class VisualNodeBase extends VisualPart {
 	}
 
 	protected abstract void nodeSet(Context context, Node value);
+
+	protected abstract Node nodeGet();
+
+	protected abstract String nodeType();
 
 	protected abstract Value value();
 
@@ -172,7 +178,7 @@ public abstract class VisualNodeBase extends VisualPart {
 		}, new Action() {
 			@Override
 			public void run(final Context context) {
-
+				context.copy(ImmutableList.of(nodeGet()));
 			}
 
 			@Override
@@ -182,7 +188,8 @@ public abstract class VisualNodeBase extends VisualPart {
 		}, new Action() {
 			@Override
 			public void run(final Context context) {
-
+				context.copy(ImmutableList.of(nodeGet()));
+				nodeSet(context, context.syntax.gap.create());
 			}
 
 			@Override
@@ -192,7 +199,10 @@ public abstract class VisualNodeBase extends VisualPart {
 		}, new Action() {
 			@Override
 			public void run(final Context context) {
-
+				final List<Node> nodes = context.uncopy(nodeType());
+				if (nodes.size() != 1)
+					return;
+				nodeSet(context, nodes.get(0));
 			}
 
 			@Override
@@ -272,6 +282,14 @@ public abstract class VisualNodeBase extends VisualPart {
 				parent = visual.parent();
 			}
 		}
+
+		coreSet(context, data);
+
+		if (fixDeepSelection)
+			select(context);
+	}
+
+	protected void coreSet(final Context context, final Node data) {
 		if (body != null)
 			body.destroy(context);
 		this.body = data.createVisual(context);
@@ -285,8 +303,6 @@ public abstract class VisualNodeBase extends VisualPart {
 		if (adapter != null) {
 			adapter.setBase(context, body);
 		}
-		if (fixDeepSelection)
-			select(context);
 	}
 
 	private class NestedParent extends VisualParent {

@@ -10,6 +10,7 @@ import com.zarbosoft.bonestruct.document.values.Value;
 import com.zarbosoft.bonestruct.document.values.ValueArray;
 import com.zarbosoft.bonestruct.document.values.ValueNode;
 import com.zarbosoft.bonestruct.document.values.ValuePrimitive;
+import com.zarbosoft.bonestruct.editor.ClipboardEngine;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.visual.VisualPart;
 import com.zarbosoft.bonestruct.history.History;
@@ -20,15 +21,46 @@ import com.zarbosoft.bonestruct.syntax.back.*;
 import com.zarbosoft.bonestruct.syntax.front.*;
 import com.zarbosoft.bonestruct.syntax.middle.*;
 import com.zarbosoft.luxem.write.RawWriter;
+import com.zarbosoft.rendaw.common.DeadCode;
 import org.junit.ComparisonFailure;
 
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
+import static com.zarbosoft.rendaw.common.Common.uncheck;
 import static com.zarbosoft.rendaw.common.Common.zip;
 
 public class Builders {
+	public static void dump(final Value value, final RawWriter writer) {
+		uncheck(() -> {
+			if (value.getClass() == ValueArray.class) {
+				writer.arrayBegin();
+				((ValueArray) value).get().stream().forEach(element -> dump(element, writer));
+				writer.arrayEnd();
+			} else if (value.getClass() == ValueNode.class) {
+				dump(((ValueNode) value).get(), writer);
+			} else if (value.getClass() == ValuePrimitive.class) {
+				writer.quotedPrimitive(((ValuePrimitive) value).get().getBytes(StandardCharsets.UTF_8));
+			} else
+				throw new DeadCode();
+		});
+	}
+
+	private static void dump(final Node value, final RawWriter writer) {
+		uncheck(() -> {
+			writer.type(value.type.id.getBytes(StandardCharsets.UTF_8));
+			writer.recordBegin();
+			value.data
+					.keySet()
+					.forEach(k -> dump(value.data.get(k),
+							uncheck(() -> writer.key(k.getBytes(StandardCharsets.UTF_8)))
+					));
+			writer.recordEnd();
+		});
+	}
+
 	public static void dump(final Value value) {
-		Document.write(value, new RawWriter(System.out, (byte) ' ', 4));
+		dump(value, new RawWriter(System.out, (byte) ' ', 4));
 		System.out.write('\n');
 		System.out.flush();
 	}
@@ -404,6 +436,19 @@ public class Builders {
 	public static Context buildDoc(final Syntax syntax, final Node... root) {
 		final Document doc = new Document(syntax, new ValueArray(syntax.root, Arrays.asList(root)));
 		final Context context = new Context(syntax, doc, null, null, new History());
+		context.clipboardEngine = new ClipboardEngine() {
+			byte[] data = null;
+
+			@Override
+			public void set(final byte[] bytes) {
+				data = bytes;
+			}
+
+			@Override
+			public byte[] get() {
+				return data;
+			}
+		};
 		final VisualPart visual =
 				syntax.rootFront.createVisual(context, ImmutableMap.of("value", doc.top), ImmutableSet.of());
 		visual.selectDown(context);

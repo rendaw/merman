@@ -7,6 +7,7 @@ import com.zarbosoft.bonestruct.document.values.ValueArray;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.Path;
 import com.zarbosoft.bonestruct.history.changes.ChangeArray;
+import com.zarbosoft.bonestruct.syntax.middle.MiddleArrayBase;
 
 import java.util.List;
 import java.util.Set;
@@ -27,13 +28,23 @@ public class VisualNodeFromArray extends VisualNodeBase {
 			}
 		};
 		value.addListener(dataListener);
-		set(context, value.get().get(0));
+		coreSet(context, value.get().get(0));
 		value.visual = this;
 	}
 
 	@Override
 	protected void nodeSet(final Context context, final Node node) {
 		context.history.apply(context, new ChangeArray(value, 0, 1, ImmutableList.of(node)));
+	}
+
+	@Override
+	protected Node nodeGet() {
+		return value.get().get(0);
+	}
+
+	@Override
+	protected String nodeType() {
+		return ((MiddleArrayBase) value.middle()).type;
 	}
 
 	@Override

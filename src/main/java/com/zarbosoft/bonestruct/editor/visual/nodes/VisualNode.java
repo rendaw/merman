@@ -6,6 +6,7 @@ import com.zarbosoft.bonestruct.document.values.ValueNode;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.Path;
 import com.zarbosoft.bonestruct.history.changes.ChangeNodeSet;
+import com.zarbosoft.bonestruct.syntax.middle.MiddleNode;
 
 import java.util.Set;
 
@@ -25,13 +26,23 @@ public class VisualNode extends VisualNodeBase {
 			}
 		};
 		value.addListener(dataListener);
-		set(context, value.get());
+		coreSet(context, value.get());
 		value.visual = this;
 	}
 
 	@Override
 	protected void nodeSet(final Context context, final Node node) {
-		context.history.apply(context, new ChangeNodeSet(this.value, context.syntax.gap.create()));
+		context.history.apply(context, new ChangeNodeSet(this.value, node));
+	}
+
+	@Override
+	protected Node nodeGet() {
+		return value.get();
+	}
+
+	@Override
+	protected String nodeType() {
+		return ((MiddleNode) value.middle()).type;
 	}
 
 	@Override

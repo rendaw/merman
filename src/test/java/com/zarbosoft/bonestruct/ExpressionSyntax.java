@@ -7,6 +7,7 @@ import static com.zarbosoft.bonestruct.Builders.buildBackDataNode;
 
 public class ExpressionSyntax {
 	final static FreeNodeType infinity;
+	final static FreeNodeType factorial;
 	final static FreeNodeType plus;
 	final static FreeNodeType minus;
 	final static FreeNodeType multiply;
@@ -19,6 +20,13 @@ public class ExpressionSyntax {
 		infinity = new Builders.TypeBuilder("infinity")
 				.back(Builders.buildBackPrimitive("infinity"))
 				.front(new Builders.FrontMarkBuilder("infinity").build())
+				.autoComplete(99)
+				.build();
+		factorial = new Builders.TypeBuilder("factorial")
+				.middleNode("value", "any")
+				.back(new Builders.BackRecordBuilder().add("value", buildBackDataNode("value")).build())
+				.frontDataNode("value")
+				.frontMark("!")
 				.autoComplete(99)
 				.build();
 		plus = new Builders.TypeBuilder("plus")
@@ -107,6 +115,7 @@ public class ExpressionSyntax {
 				.build();
 		syntax = new Builders.SyntaxBuilder("any")
 				.type(infinity)
+				.type(factorial)
 				.type(plus)
 				.type(minus)
 				.type(multiply)
@@ -117,6 +126,7 @@ public class ExpressionSyntax {
 				.group(
 						"any",
 						new Builders.GroupBuilder()
+								.type(factorial)
 								.type(plus)
 								.type(minus)
 								.type(multiply)

@@ -164,7 +164,7 @@ public class TestDocumentGap {
 						.addArray("value", new Builders.TreeBuilder(MiscSyntax.one).build())
 						.build(),
 				context -> {
-					((ValuePrimitive) context.locate(new Path("0", "gap"))).getVisual().selectDown(context);
+					((ValuePrimitive) context.locateLong(new Path("0", "gap"))).getVisual().selectDown(context);
 					context.selection.receiveText(context, "x");
 					context.selection.receiveText(context, "13");
 				},
@@ -183,7 +183,7 @@ public class TestDocumentGap {
 						.addArray("value", new Builders.TreeBuilder(MiscSyntax.one).build())
 						.build(),
 				context -> {
-					((ValuePrimitive) context.locate(new Path("0", "gap"))).getVisual().selectDown(context);
+					((ValuePrimitive) context.locateLong(new Path("0", "gap"))).getVisual().selectDown(context);
 					context.selection.receiveText(context, "#");
 					context.selection.receiveText(context, "e");
 				},
@@ -210,7 +210,9 @@ public class TestDocumentGap {
 						)
 						.build(),
 				context -> {
-					((ValuePrimitive) context.locate(new Path("0", "second", "gap"))).getVisual().selectDown(context);
+					((ValuePrimitive) context.locateLong(new Path("0", "second", "gap")))
+							.getVisual()
+							.selectDown(context);
 					context.selection.receiveText(context, "*");
 				},
 				new Builders.TreeBuilder(ExpressionSyntax.plus)
@@ -236,7 +238,9 @@ public class TestDocumentGap {
 						)
 						.build(),
 				context -> {
-					((ValuePrimitive) context.locate(new Path("0", "second", "gap"))).getVisual().selectDown(context);
+					((ValuePrimitive) context.locateLong(new Path("0", "second", "gap")))
+							.getVisual()
+							.selectDown(context);
 					context.selection.receiveText(context, "+");
 				},
 				new Builders.TreeBuilder(ExpressionSyntax.plus)
@@ -262,7 +266,9 @@ public class TestDocumentGap {
 						)
 						.build(),
 				context -> {
-					((ValuePrimitive) context.locate(new Path("0", "second", "gap"))).getVisual().selectDown(context);
+					((ValuePrimitive) context.locateLong(new Path("0", "second", "gap")))
+							.getVisual()
+							.selectDown(context);
 					context.selection.receiveText(context, "-");
 				},
 				new Builders.TreeBuilder(ExpressionSyntax.minus).add("first",
@@ -285,7 +291,9 @@ public class TestDocumentGap {
 						)
 						.build(),
 				context -> {
-					((ValuePrimitive) context.locate(new Path("0", "second", "gap"))).getVisual().selectDown(context);
+					((ValuePrimitive) context.locateLong(new Path("0", "second", "gap")))
+							.getVisual()
+							.selectDown(context);
 					context.selection.receiveText(context, "+");
 				},
 				new Builders.TreeBuilder(ExpressionSyntax.plus).add("first",
@@ -308,7 +316,9 @@ public class TestDocumentGap {
 						)
 						.build(),
 				context -> {
-					((ValuePrimitive) context.locate(new Path("0", "second", "gap"))).getVisual().selectDown(context);
+					((ValuePrimitive) context.locateLong(new Path("0", "second", "gap")))
+							.getVisual()
+							.selectDown(context);
 					context.selection.receiveText(context, "+");
 				},
 				new Builders.TreeBuilder(ExpressionSyntax.plus).add("first",
@@ -331,7 +341,9 @@ public class TestDocumentGap {
 						)
 						.build(),
 				context -> {
-					((ValuePrimitive) context.locate(new Path("0", "second", "gap"))).getVisual().selectDown(context);
+					((ValuePrimitive) context.locateLong(new Path("0", "second", "gap")))
+							.getVisual()
+							.selectDown(context);
 					context.selection.receiveText(context, "+");
 				},
 				new Builders.TreeBuilder(ExpressionSyntax.inclusiveRange)
@@ -353,9 +365,8 @@ public class TestDocumentGap {
 		innerTestTransform(MiscSyntax.syntax,
 				new Builders.TreeBuilder(MiscSyntax.array).addArray("value", MiscSyntax.syntax.gap.create()).build(),
 				context -> {
-					((ValuePrimitive) context.locate(new Path("0", "0"))).getVisual().selectDown(context);
+					((ValuePrimitive) context.locateLong(new Path("0", "0"))).getVisual().selectDown(context);
 					context.selection.getVisual().parent().selectUp(context);
-					//((ValueArray) context.locate(new Path("0"))).getVisual().selectDown(context);
 				},
 				new Builders.TreeBuilder(MiscSyntax.array).addArray("value").build()
 		);
@@ -366,9 +377,9 @@ public class TestDocumentGap {
 		innerTestTransform(MiscSyntax.syntax,
 				new Builders.TreeBuilder(MiscSyntax.array).addArray("value", MiscSyntax.syntax.gap.create()).build(),
 				context -> {
-					((ValuePrimitive) context.locate(new Path("0", "0"))).getVisual().selectDown(context);
+					((ValuePrimitive) context.locateLong(new Path("0", "0"))).getVisual().selectDown(context);
 					context.selection.receiveText(context, "urt");
-					((ValueArray) context.locate(new Path("0"))).getVisual().selectDown(context);
+					((ValueArray) context.locateLong(new Path("0"))).getVisual().selectDown(context);
 				},
 				new Builders.TreeBuilder(MiscSyntax.array)
 						.addArray("value", new TreeBuilder(MiscSyntax.syntax.gap).add("gap", "urt").build())
@@ -381,8 +392,8 @@ public class TestDocumentGap {
 		innerTestTransform(MiscSyntax.syntax,
 				MiscSyntax.syntax.suffixGap.create(true, new TreeBuilder(MiscSyntax.infinity).build()),
 				context -> {
-					((ValuePrimitive) context.locate(new Path("0", "gap"))).getVisual().selectDown(context);
-					((Node) context.locate(new Path("0"))).getVisual().selectDown(context);
+					((ValuePrimitive) context.locateLong(new Path("0", "gap"))).getVisual().selectDown(context);
+					((Node) context.locateLong(new Path("0"))).getVisual().selectDown(context);
 				},
 				new Builders.TreeBuilder(MiscSyntax.infinity).build()
 		);
@@ -393,8 +404,8 @@ public class TestDocumentGap {
 		innerTestTransform(MiscSyntax.syntax,
 				MiscSyntax.syntax.prefixGap.create(new TreeBuilder(MiscSyntax.infinity).build()),
 				context -> {
-					((ValuePrimitive) context.locate(new Path("0", "gap"))).getVisual().selectDown(context);
-					((Node) context.locate(new Path("0"))).getVisual().selectDown(context);
+					((ValuePrimitive) context.locateLong(new Path("0", "gap"))).getVisual().selectDown(context);
+					((Node) context.locateLong(new Path("0"))).getVisual().selectDown(context);
 				},
 				new Builders.TreeBuilder(MiscSyntax.infinity).build()
 		);
@@ -408,7 +419,7 @@ public class TestDocumentGap {
 		innerTestTransform(MiscSyntax.syntax,
 				new Builders.TreeBuilder(MiscSyntax.array).addArray("value").build(),
 				context -> {
-					((ValueArray) context.locate(new Path("0"))).getVisual().selectDown(context);
+					((ValueArray) context.locateLong(new Path("0"))).getVisual().selectDown(context);
 				},
 				new Builders.TreeBuilder(MiscSyntax.array).addArray("value", MiscSyntax.syntax.gap.create()).build()
 		);

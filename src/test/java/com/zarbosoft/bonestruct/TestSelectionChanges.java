@@ -34,7 +34,7 @@ public class TestSelectionChanges {
 		final Context context = buildDoc(syntax, begin);
 
 		// Initial selection and double checking
-		final Node found = (Node) context.locate(selectBegin);
+		final Node found = (Node) context.locateLong(selectBegin);
 		found.getVisual().parent().selectUp(context);
 		assertThat(context.selection.getPath(), equalTo(selectBegin));
 
@@ -170,7 +170,7 @@ public class TestSelectionChanges {
 						.build(),
 				new Builders.TreeBuilder(MiscSyntax.infinity).build()
 		).build(), new Path("0", "1", "0"), (context, selected) -> {
-			((Value) context.locate(new Path("0", "1"))).parent.node().parent.delete(context);
+			((Value) context.locateLong(new Path("0", "1"))).parent.node().parent.delete(context);
 		}, new Builders.TreeBuilder(MiscSyntax.array).addArray("value",
 				new Builders.TreeBuilder(MiscSyntax.infinity).build(),
 				new Builders.TreeBuilder(MiscSyntax.infinity).build()
@@ -204,7 +204,7 @@ public class TestSelectionChanges {
 				).build(),
 				new Path("0", "value", "0"),
 				(context, selected) -> {
-					((ValueArray) context.locate(new Path("0", "value"))).parent.node().parent.delete(context);
+					((ValueArray) context.locateLong(new Path("0", "value"))).parent.node().parent.delete(context);
 				},
 				new Builders.TreeBuilder(MiscSyntax.snooze).add("value", MiscSyntax.syntax.gap.create()).build(),
 				new Path("0", "value")
