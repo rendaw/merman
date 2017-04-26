@@ -1,21 +1,52 @@
 package com.zarbosoft.bonestruct.history;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import com.zarbosoft.bonestruct.editor.Context;
+import com.zarbosoft.bonestruct.editor.SelectionState;
 
 import java.io.Closeable;
 import java.io.IOException;
 import java.time.Instant;
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
+
+import static com.zarbosoft.rendaw.common.Common.last;
 
 public class History {
 	boolean locked = false;
 	private Instant pastEnd;
-	private final Deque<ChangeGroup> past = new ArrayDeque<>();
-	private final Deque<ChangeGroup> future = new ArrayDeque<>();
+	private final Deque<Level> past = new ArrayDeque<>();
+	private final Deque<Level> future = new ArrayDeque<>();
+
+	private static class Level extends Change {
+		public final List<Change> subchanges = new ArrayList<>();
+		private SelectionState select;
+
+		@Override
+		public boolean merge(final Change other) {
+			if (subchanges.isEmpty()) {
+				subchanges.add(other);
+			} else if (last(subchanges).merge(other)) {
+			} else
+				subchanges.add(other);
+			return true;
+		}
+
+		@Override
+		public Change apply(final Context context) {
+			final Level out = new Level();
+			out.select = context.selection.saveState();
+			for (final Change change : Lists.reverse(subchanges)) {
+				out.subchanges.add(change.apply(context));
+			}
+			select.select(context);
+			return out;
+		}
+
+		public boolean isEmpty() {
+			return subchanges.isEmpty();
+		}
+	}
 
 	public static abstract class Listener {
 		public abstract void applied(Context context, Change change);
@@ -41,8 +72,8 @@ public class History {
 		};
 	}
 
-	private ChangeGroup applyGroup(final Context context, final ChangeGroup group) {
-		final ChangeGroup out = (ChangeGroup) group.apply(context);
+	private Level applyLevel(final Context context, final Level group) {
+		final Level out = (Level) group.apply(context);
 		for (final Listener listener : listeners)
 			listener.applied(context, group);
 		return out;
@@ -52,7 +83,7 @@ public class History {
 		try (Closeable lock = lock()) {
 			if (past.isEmpty())
 				return;
-			future.addLast(applyGroup(context, past.pollLast()));
+			future.addLast(applyLevel(context, past.pollLast()));
 		} catch (final IOException e) {
 		}
 		if (past.isEmpty())
@@ -64,18 +95,18 @@ public class History {
 		try (Closeable lock = lock()) {
 			if (future.isEmpty())
 				return;
-			past.addLast(applyGroup(context, future.pollLast()));
+			past.addLast(applyLevel(context, future.pollLast()));
 		} catch (final IOException e) {
 		}
 		if (!wasModified)
 			modifiedStateListeners.forEach(l -> l.changed(true));
 	}
 
-	public void finishChange() {
+	public void finishChange(final Context context) {
 		try (Closeable lock = lock()) {
 			if (past.peekLast().isEmpty())
 				return;
-			past.addLast(new ChangeGroup());
+			past.addLast(new Level());
 		} catch (final IOException e) {
 		}
 	}
@@ -84,10 +115,16 @@ public class History {
 		final boolean wasModified = isModified();
 		try (Closeable lock = lock()) {
 			future.clear();
-			if (past.isEmpty())
-				past.addLast(new ChangeGroup());
+			final Level reverseLevel;
+			if (past.isEmpty()) {
+				reverseLevel = new Level();
+				past.addLast(reverseLevel);
+			} else
+				reverseLevel = past.peek();
+			if (reverseLevel.select == null)
+				reverseLevel.select = context.selection.saveState();
 			final Change reverse = change.apply(context);
-			past.peekLast().merge(reverse);
+			reverseLevel.merge(reverse);
 			for (final Listener listener : ImmutableList.copyOf(listeners))
 				listener.applied(context, change);
 		} catch (final IOException e) {
@@ -97,6 +134,8 @@ public class History {
 	}
 
 	public boolean isModified() {
+		if (past.isEmpty())
+			return false;
 		return past.size() > 1 || !past.peekLast().isEmpty();
 	}
 

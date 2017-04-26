@@ -4,11 +4,10 @@ import com.google.common.collect.ImmutableList;
 import com.zarbosoft.bonestruct.document.Node;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.Path;
-import com.zarbosoft.bonestruct.history.changes.ChangeArrayAdd;
-import com.zarbosoft.bonestruct.history.changes.ChangeArrayRemove;
+import com.zarbosoft.bonestruct.history.changes.ChangeArray;
 import com.zarbosoft.bonestruct.syntax.middle.MiddleArrayBase;
 import com.zarbosoft.bonestruct.syntax.middle.MiddleElement;
-import com.zarbosoft.rendaw.common.Common;
+import com.zarbosoft.rendaw.common.Pair;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -16,6 +15,7 @@ import java.util.List;
 import java.util.Set;
 
 import static com.zarbosoft.rendaw.common.Common.enumerate;
+import static com.zarbosoft.rendaw.common.Common.iterable;
 import static java.util.Collections.unmodifiableList;
 
 public class ValueArray extends Value {
@@ -23,45 +23,33 @@ public class ValueArray extends Value {
 	public final List<Node> data = new ArrayList<>();
 	public final Set<Listener> listeners = new HashSet<>();
 
-	public MiddleElement data() {
+	public MiddleElement middle() {
 		return middle;
 	}
 
 	public static abstract class Listener {
-		public abstract void added(Context context, int index, List<Node> nodes);
 
-		public abstract void removed(Context context, int index, int count);
+		public abstract void changed(Context context, int index, int remove, List<Node> add);
 	}
 
-	public class ArrayParent extends Node.Parent {
+	public class ArrayParent extends Parent {
 		public int index = 0;
 		public int actualIndex = 0;
 
 		@Override
 		public void replace(final Context context, final Node node) {
 			final int index = this.index;
-			context.history.apply(context, new ChangeArrayRemove(ValueArray.this, index, 1));
-			context.history.apply(context, new ChangeArrayAdd(ValueArray.this, index, ImmutableList.of(node)));
+			context.history.apply(context, new ChangeArray(ValueArray.this, index, 1, ImmutableList.of(node)));
 		}
 
 		@Override
 		public void delete(final Context context) {
-			context.history.apply(context, new ChangeArrayRemove(ValueArray.this, index, 1));
+			context.history.apply(context, new ChangeArray(ValueArray.this, index, 1, ImmutableList.of()));
 		}
 
 		@Override
 		public String childType() {
 			return middle.type;
-		}
-
-		@Override
-		public Value value() {
-			return ValueArray.this;
-		}
-
-		@Override
-		public String id() {
-			return middle.id;
 		}
 
 		@Override
@@ -88,13 +76,20 @@ public class ValueArray extends Value {
 	}
 
 	public void renumber(final int from) {
-		final Common.Mutable<Integer> sum = new Common.Mutable<>(0);
-		enumerate(data.stream().skip(from), from).forEach(p -> {
+		int sum;
+		if (from == 0) {
+			sum = 0;
+		} else {
+			final Node prior = data.get(from - 1);
+			final ArrayParent parent = (ArrayParent) prior.parent;
+			sum = parent.actualIndex + prior.type.back().size();
+		}
+		for (final Pair<Integer, Node> p : iterable(enumerate(data.stream().skip(from), from))) {
 			final ArrayParent parent = ((ArrayParent) p.second.parent);
 			parent.index = p.first;
-			parent.actualIndex = sum.value;
-			sum.value += p.second.type.back().size();
-		});
+			parent.actualIndex = sum;
+			sum += p.second.type.back().size();
+		}
 	}
 
 	public ValueArray(final MiddleArrayBase middle) {

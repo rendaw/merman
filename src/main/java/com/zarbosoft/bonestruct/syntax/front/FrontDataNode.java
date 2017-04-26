@@ -4,6 +4,7 @@ import com.zarbosoft.bonestruct.document.values.Value;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.VisualPart;
+import com.zarbosoft.bonestruct.editor.visual.nodes.VisualNode;
 import com.zarbosoft.bonestruct.syntax.NodeType;
 import com.zarbosoft.bonestruct.syntax.hid.grammar.Node;
 import com.zarbosoft.bonestruct.syntax.middle.MiddleNode;
@@ -34,7 +35,7 @@ public class FrontDataNode extends FrontPart {
 	public VisualPart createVisual(
 			final Context context, final Map<String, Value> data, final Set<Visual.Tag> tags
 	) {
-		return new com.zarbosoft.bonestruct.editor.visual.nodes.Visual(
+		return new VisualNode(
 				context,
 				dataType.get(data),
 				HashTreePSet

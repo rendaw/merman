@@ -1,6 +1,7 @@
 package com.zarbosoft.bonestruct.editor.visual;
 
 import com.google.common.collect.Iterators;
+import com.zarbosoft.bonestruct.document.values.Value;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.wall.Brick;
 import com.zarbosoft.interface1.Configuration;
@@ -21,7 +22,11 @@ public abstract class Visual {
 
 	public abstract VisualParent parent();
 
-	public abstract boolean select(Context context);
+	public abstract boolean selectDown(Context context);
+
+	public abstract void select(Context context);
+
+	public abstract void selectUp(Context context);
 
 	public abstract Brick createFirstBrick(Context context);
 
@@ -64,6 +69,8 @@ public abstract class Visual {
 	public abstract void rootAlignments(Context context, Map<String, Alignment> alignments);
 
 	public abstract void destroy(Context context);
+
+	public abstract boolean isAt(Value value);
 
 	@Configuration
 	public interface Tag {

@@ -2,6 +2,7 @@ package com.zarbosoft.bonestruct.editor.visual.nodes;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
+import com.zarbosoft.bonestruct.document.values.Value;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.Hoverable;
 import com.zarbosoft.bonestruct.editor.IdleTask;
@@ -11,6 +12,7 @@ import com.zarbosoft.bonestruct.editor.visual.VisualParent;
 import com.zarbosoft.bonestruct.editor.visual.VisualPart;
 import com.zarbosoft.bonestruct.syntax.NodeType;
 import com.zarbosoft.bonestruct.wall.Brick;
+import com.zarbosoft.rendaw.common.DeadCode;
 import com.zarbosoft.rendaw.common.Pair;
 import org.pcollections.HashTreePMap;
 import org.pcollections.PMap;
@@ -40,12 +42,24 @@ public class VisualGroup extends VisualPart {
 	}
 
 	@Override
-	public boolean select(final Context context) {
+	public boolean selectDown(final Context context) {
 		for (final VisualPart child : children) {
-			if (child.select(context))
+			if (child.selectDown(context))
 				return true;
 		}
 		return false;
+	}
+
+	@Override
+	public void select(final Context context) {
+		throw new DeadCode();
+	}
+
+	@Override
+	public void selectUp(final Context context) {
+		if (parent == null)
+			return;
+		parent.getTarget().selectUp(context);
 	}
 
 	@Override
@@ -182,6 +196,11 @@ public class VisualGroup extends VisualPart {
 	public void destroy(final Context context) {
 		for (final VisualPart child : children)
 			child.destroy(context);
+	}
+
+	@Override
+	public boolean isAt(final Value value) {
+		return false;
 	}
 
 	@Override

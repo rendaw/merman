@@ -1,39 +1,37 @@
 package com.zarbosoft.bonestruct.editor.visual.nodes;
 
-import com.google.common.collect.ImmutableList;
 import com.zarbosoft.bonestruct.document.Node;
 import com.zarbosoft.bonestruct.document.values.Value;
-import com.zarbosoft.bonestruct.document.values.ValueArray;
+import com.zarbosoft.bonestruct.document.values.ValueNode;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.Path;
-import com.zarbosoft.bonestruct.history.changes.ChangeArray;
+import com.zarbosoft.bonestruct.history.changes.ChangeNodeSet;
 
-import java.util.List;
 import java.util.Set;
 
-public class VisualNodeFromArray extends VisualNodeBase {
-	final ValueArray value;
-	private final ValueArray.Listener dataListener;
+public class VisualNode extends VisualNodeBase {
+	final ValueNode value;
+	final private ValueNode.Listener dataListener;
 
-	public VisualNodeFromArray(
-			final Context context, final ValueArray value, final Set<Tag> tags
+	public VisualNode(
+			final Context context, final ValueNode value, final Set<Tag> tags
 	) {
 		super(tags);
 		this.value = value;
-		dataListener = new ValueArray.Listener() {
+		dataListener = new ValueNode.Listener() {
 			@Override
-			public void changed(final Context context, final int index, final int remove, final List<Node> add) {
-				set(context, add.get(0));
+			public void set(final Context context, final Node node) {
+				VisualNode.this.set(context, node);
 			}
 		};
 		value.addListener(dataListener);
-		set(context, value.get().get(0));
+		set(context, value.get());
 		value.visual = this;
 	}
 
 	@Override
 	protected void nodeSet(final Context context, final Node node) {
-		context.history.apply(context, new ChangeArray(value, 0, 1, ImmutableList.of(node)));
+		context.history.apply(context, new ChangeNodeSet(this.value, context.syntax.gap.create()));
 	}
 
 	@Override

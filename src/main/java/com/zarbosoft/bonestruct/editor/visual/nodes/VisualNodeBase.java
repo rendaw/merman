@@ -1,12 +1,9 @@
 package com.zarbosoft.bonestruct.editor.visual.nodes;
 
 import com.zarbosoft.bonestruct.document.Node;
-import com.zarbosoft.bonestruct.editor.Action;
-import com.zarbosoft.bonestruct.editor.Context;
-import com.zarbosoft.bonestruct.editor.Hoverable;
-import com.zarbosoft.bonestruct.editor.Selection;
+import com.zarbosoft.bonestruct.document.values.Value;
+import com.zarbosoft.bonestruct.editor.*;
 import com.zarbosoft.bonestruct.editor.visual.*;
-import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.attachments.BorderAttachment;
 import com.zarbosoft.bonestruct.editor.visual.attachments.VisualAttachmentAdapter;
 import com.zarbosoft.bonestruct.syntax.NodeType;
@@ -35,6 +32,10 @@ public abstract class VisualNodeBase extends VisualPart {
 	}
 
 	protected abstract void nodeSet(Context context, Node value);
+
+	protected abstract Value value();
+
+	protected abstract Path getSelectionPath();
 
 	@Override
 	public void setParent(final VisualParent parent) {
@@ -110,24 +111,36 @@ public abstract class VisualNodeBase extends VisualPart {
 	}
 
 	@Override
-	public boolean select(final Context context) {
+	public boolean selectDown(final Context context) {
+		select(context);
+		return true;
+	}
+
+	@Override
+	public void select(final Context context) {
 		if (selected)
-			throw new AssertionError("Already selected");
+			return;
 		else if (border != null) {
 			context.clearHover();
 		}
 		selected = true;
-		border = new BorderAttachment(context, context.syntax.selectStyle);
-		createAdapter(context);
+		if (context.display != null) {
+			border = new BorderAttachment(context, context.syntax.selectStyle);
+			createAdapter(context);
+		}
 		context.setSelection(new NestedSelection(context));
-		return true;
+	}
+
+	@Override
+	public void selectUp(final Context context) {
+		select(context);
 	}
 
 	protected Stream<Action> getActions(final Context context) {
 		return Stream.of(new Action() {
 			@Override
 			public void run(final Context context) {
-				body.select(context);
+				body.selectDown(context);
 			}
 
 			@Override
@@ -196,10 +209,12 @@ public abstract class VisualNodeBase extends VisualPart {
 
 		@Override
 		public void clear(final Context context) {
-			border.destroy(context);
-			border = null;
-			adapter.destroy(context);
-			adapter = null;
+			if (context.display != null) {
+				border.destroy(context);
+				border = null;
+				adapter.destroy(context);
+				adapter = null;
+			}
 			selected = false;
 			context.actions.remove(this);
 		}
@@ -207,6 +222,16 @@ public abstract class VisualNodeBase extends VisualPart {
 		@Override
 		public VisualPart getVisual() {
 			return VisualNodeBase.this;
+		}
+
+		@Override
+		public SelectionState saveState() {
+			return new VisualNodeSelectionState(value());
+		}
+
+		@Override
+		public Path getPath() {
+			return getSelectionPath();
 		}
 
 		@Override
@@ -221,7 +246,32 @@ public abstract class VisualNodeBase extends VisualPart {
 		}
 	}
 
+	private static class VisualNodeSelectionState implements SelectionState {
+		private final Value value;
+
+		private VisualNodeSelectionState(final Value value) {
+			this.value = value;
+		}
+
+		@Override
+		public void select(final Context context) {
+			((VisualNodeBase) value.visual).select(context);
+		}
+	}
+
 	protected void set(final Context context, final Node data) {
+		boolean fixDeepSelection = false;
+		if (context.selection != null) {
+			VisualParent parent = context.selection.getVisual().parent();
+			while (parent != null) {
+				final Visual visual = parent.getTarget();
+				if (visual == this) {
+					fixDeepSelection = true;
+					break;
+				}
+				parent = visual.parent();
+			}
+		}
 		if (body != null)
 			body.destroy(context);
 		this.body = data.createVisual(context);
@@ -235,12 +285,14 @@ public abstract class VisualNodeBase extends VisualPart {
 		if (adapter != null) {
 			adapter.setBase(context, body);
 		}
+		if (fixDeepSelection)
+			select(context);
 	}
 
 	private class NestedParent extends VisualParent {
 		@Override
 		public void selectUp(final Context context) {
-			select(context);
+			selectDown(context);
 		}
 
 		@Override
@@ -325,7 +377,7 @@ public abstract class VisualNodeBase extends VisualPart {
 
 				@Override
 				public void click(final Context context) {
-					select(context);
+					selectDown(context);
 				}
 
 				@Override

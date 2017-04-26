@@ -9,7 +9,7 @@ import com.zarbosoft.bonestruct.document.values.ValueArray;
 import com.zarbosoft.bonestruct.document.values.ValueNode;
 import com.zarbosoft.bonestruct.document.values.ValuePrimitive;
 import com.zarbosoft.bonestruct.editor.Context;
-import com.zarbosoft.bonestruct.history.changes.ChangeArrayAdd;
+import com.zarbosoft.bonestruct.history.changes.ChangeArray;
 import com.zarbosoft.bonestruct.history.changes.ChangeNodeSet;
 import com.zarbosoft.bonestruct.syntax.alignments.AlignmentDefinition;
 import com.zarbosoft.bonestruct.syntax.back.*;
@@ -58,12 +58,12 @@ public class SuffixGapNodeType extends NodeType {
 			final FrontDataArrayAsNode value = new FrontDataArrayAsNode();
 			value.middle = "value";
 			final FrontGapBase gap = new FrontGapBase() {
-				private Pair<Node.Parent, Node> findReplacementPoint(
-						final Context context, final Node.Parent start, final FreeNodeType type
+				private Pair<Value.Parent, Node> findReplacementPoint(
+						final Context context, final Value.Parent start, final FreeNodeType type
 				) {
-					Node.Parent parent = null;
+					Value.Parent parent = null;
 					Node child = null;
-					Node.Parent test = start;
+					Value.Parent test = start;
 					//Node testNode = test.value().parent().node();
 					Node testNode = null;
 					while (test != null) {
@@ -107,7 +107,7 @@ public class SuffixGapNodeType extends NodeType {
 					return new Pair<>(parent, child);
 				}
 
-				private int getIndexOfData(final Node.Parent parent, final Node node) {
+				private int getIndexOfData(final Value.Parent parent, final Node node) {
 					return Common.enumerate(node.type.front().stream()).filter(pair -> {
 						FrontPart front = pair.second;
 						String id = null;
@@ -140,25 +140,25 @@ public class SuffixGapNodeType extends NodeType {
 							final SuffixGapNode suffixSelf = (SuffixGapNode) self;
 
 							Node root;
-							Node.Parent rootPlacement;
+							Value.Parent rootPlacement;
 							Node child;
 							final Value childPlacement;
 							Node child2 = null;
-							Node.Parent child2Placement = null;
+							Value.Parent child2Placement = null;
 
 							// Parse text into node as possible
 							final GapKey.ParseResult parsed = key.parse(context, type, string);
 							final Node node = parsed.node;
 							final String remainder = parsed.remainder;
 							root = node;
-							child = ((ValueArray) suffixSelf.data("value")).get().get(0);
-							childPlacement = node.data(node.type.front().get(key.indexBefore).middle());
-							final Node.Parent valuePlacementPoint2 = null;
+							child = ((ValueArray) suffixSelf.data.get("value")).get().get(0);
+							childPlacement = node.data.get(node.type.front().get(key.indexBefore).middle());
+							final Value.Parent valuePlacementPoint2 = null;
 
 							// Find the new node placement point
 							rootPlacement = suffixSelf.parent;
 							if (suffixSelf.raise) {
-								final Pair<Node.Parent, Node> found =
+								final Pair<Value.Parent, Node> found =
 										findReplacementPoint(context, rootPlacement, (FreeNodeType) parsed.node.type);
 								if (found.first != rootPlacement) {
 									// Raising new node up; the value will be placed at the original parent
@@ -175,32 +175,32 @@ public class SuffixGapNodeType extends NodeType {
 								if (key.indexAfter == -1) {
 									// No such place exists - wrap the placement node in a suffix gap
 									root = context.syntax.suffixGap.create(true, node);
-									selectNext = (ValuePrimitive) root.data("gap");
+									selectNext = (ValuePrimitive) root.data.get("gap");
 								} else {
-									final Value nextNode = node.data(type.front.get(key.indexAfter).middle());
+									final Value nextNode = node.data.get(type.front.get(key.indexAfter).middle());
 									if (nextNode instanceof ValueNode) {
-										selectNext = (ValuePrimitive) ((ValueNode) nextNode).get().data("gap");
+										selectNext = (ValuePrimitive) ((ValueNode) nextNode).get().data.get("gap");
 									} else if (nextNode instanceof ValueArray) {
 										final Node gap = context.syntax.gap.create();
 										context.history.apply(context,
-												new ChangeArrayAdd((ValueArray) nextNode, 0, ImmutableList.of(gap))
+												new ChangeArray((ValueArray) nextNode, 0, 0, ImmutableList.of(gap))
 										);
-										selectNext = (ValuePrimitive) gap.data("gap");
+										selectNext = (ValuePrimitive) gap.data.get("gap");
 									} else
 										throw new DeadCode();
 								}
 							} else if (parsed.nextInput instanceof FrontDataPrimitive) {
-								selectNext = (ValuePrimitive) node.data(parsed.nextInput.middle());
+								selectNext = (ValuePrimitive) node.data.get(parsed.nextInput.middle());
 							} else if (parsed.nextInput instanceof FrontDataNode) {
-								final ValueNode value1 = (ValueNode) node.data(parsed.nextInput.middle());
+								final ValueNode value1 = (ValueNode) node.data.get(parsed.nextInput.middle());
 								final Node newGap = context.syntax.gap.create();
 								context.history.apply(context, new ChangeNodeSet(value1, newGap));
-								selectNext = (ValuePrimitive) newGap.data("gap");
+								selectNext = (ValuePrimitive) newGap.data.get("gap");
 							} else if (parsed.nextInput instanceof FrontDataArrayBase) {
-								final ValueArray value1 = (ValueArray) node.data(parsed.nextInput.middle());
+								final ValueArray value1 = (ValueArray) node.data.get(parsed.nextInput.middle());
 								final Node newGap = context.syntax.gap.create();
-								context.history.apply(context, new ChangeArrayAdd(value1, 0, ImmutableList.of(newGap)));
-								selectNext = (ValuePrimitive) newGap.data("gap");
+								context.history.apply(context, new ChangeArray(value1, 0, 0, ImmutableList.of(newGap)));
+								selectNext = (ValuePrimitive) newGap.data.get("gap");
 							} else
 								throw new DeadCode();
 
@@ -210,7 +210,7 @@ public class SuffixGapNodeType extends NodeType {
 								context.history.apply(context, new ChangeNodeSet((ValueNode) childPlacement, child));
 							else if (childPlacement instanceof ValueArray)
 								context.history.apply(context,
-										new ChangeArrayAdd((ValueArray) childPlacement, 0, ImmutableList.of(child))
+										new ChangeArray((ValueArray) childPlacement, 0, 0, ImmutableList.of(child))
 								);
 							else
 								throw new DeadCode();
@@ -228,7 +228,7 @@ public class SuffixGapNodeType extends NodeType {
 					final Grammar grammar = store.get(() -> {
 						final Union union = new Union();
 						for (final FreeNodeType type : context.syntax.types) {
-							final Pair<Node.Parent, Node> replacementPoint =
+							final Pair<Value.Parent, Node> replacementPoint =
 									findReplacementPoint(context, self.parent, type);
 							if (replacementPoint.first == null)
 								continue;
@@ -276,8 +276,8 @@ public class SuffixGapNodeType extends NodeType {
 				protected void deselect(
 						final Context context, final Node self, final String string, final Common.UserData userData
 				) {
-					if (string.isEmpty()) {
-						self.parent.replace(context, ((ValueArray) self.data("value")).get().get(0));
+					if (self.getVisual() != null && string.isEmpty()) {
+						self.parent.replace(context, ((ValueArray) self.data.get("value")).get().get(0));
 					}
 				}
 			};

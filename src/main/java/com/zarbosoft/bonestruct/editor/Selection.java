@@ -11,6 +11,10 @@ public abstract class Selection {
 
 	public abstract VisualPart getVisual();
 
+	public abstract SelectionState saveState();
+
+	public abstract Path getPath();
+
 	public abstract class VisualListener {
 
 	}

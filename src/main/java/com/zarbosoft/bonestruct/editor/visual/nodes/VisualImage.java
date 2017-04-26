@@ -1,11 +1,13 @@
 package com.zarbosoft.bonestruct.editor.visual.nodes;
 
 import com.google.common.collect.Iterables;
+import com.zarbosoft.bonestruct.document.values.Value;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.visual.VisualParent;
 import com.zarbosoft.bonestruct.editor.visual.VisualPart;
 import com.zarbosoft.bonestruct.wall.Brick;
 import com.zarbosoft.bonestruct.wall.bricks.BrickImage;
+import com.zarbosoft.rendaw.common.DeadCode;
 import com.zarbosoft.rendaw.common.Pair;
 
 import java.util.Arrays;
@@ -30,8 +32,18 @@ public class VisualImage extends VisualPart {
 	}
 
 	@Override
-	public boolean select(final Context context) {
+	public boolean selectDown(final Context context) {
 		return false;
+	}
+
+	@Override
+	public void select(final Context context) {
+		throw new DeadCode();
+	}
+
+	@Override
+	public void selectUp(final Context context) {
+		throw new DeadCode();
 	}
 
 	@Override
@@ -79,6 +91,11 @@ public class VisualImage extends VisualPart {
 	public void destroy(final Context context) {
 		if (brick != null)
 			brick.destroy(context);
+	}
+
+	@Override
+	public boolean isAt(final Value value) {
+		return false;
 	}
 
 }

@@ -13,7 +13,6 @@ import com.zarbosoft.bonestruct.document.values.ValuePrimitive;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.visual.VisualPart;
 import com.zarbosoft.bonestruct.history.History;
-import com.zarbosoft.bonestruct.history.changes.ChangeArrayAdd;
 import com.zarbosoft.bonestruct.syntax.FreeNodeType;
 import com.zarbosoft.bonestruct.syntax.NodeType;
 import com.zarbosoft.bonestruct.syntax.Syntax;
@@ -344,8 +343,8 @@ public class Builders {
 					got.type,
 					got.getPath()
 			));
-		final Set<String> expectedKeys = expected.dataKeys();
-		final Set<String> gotKeys = got.dataKeys();
+		final Set<String> expectedKeys = expected.data.keySet();
+		final Set<String> gotKeys = got.data.keySet();
 		{
 			final Set<String> missing = Sets.difference(expectedKeys, gotKeys);
 			if (!missing.isEmpty())
@@ -357,7 +356,7 @@ public class Builders {
 				throw new AssertionError(String.format("Unknown fields: %s\nAt: %s", extra, got.getPath()));
 		}
 		for (final String key : Sets.intersection(expectedKeys, gotKeys)) {
-			assertTreeEqual(expected.data(key), got.data(key));
+			assertTreeEqual(expected.data.get(key), got.data.get(key));
 		}
 	}
 
@@ -403,13 +402,11 @@ public class Builders {
 	}
 
 	public static Context buildDoc(final Syntax syntax, final Node... root) {
-		final Document doc = syntax.create();
+		final Document doc = new Document(syntax, new ValueArray(syntax.root, Arrays.asList(root)));
 		final Context context = new Context(syntax, doc, null, null, new History());
-		context.history.apply(context, new ChangeArrayAdd(doc.top, 0, Arrays.asList(root)));
-		context.history.finishChange();
 		final VisualPart visual =
 				syntax.rootFront.createVisual(context, ImmutableMap.of("value", doc.top), ImmutableSet.of());
-		visual.select(context);
+		visual.selectDown(context);
 		return context;
 	}
 

@@ -147,22 +147,22 @@ public abstract class FrontGapBase extends FrontPart {
 	) {
 		for (final FrontPart front : node.type.front()) {
 			if (front instanceof FrontDataPrimitive) {
-				return (ValuePrimitive) node.data(((FrontDataPrimitive) front).middle);
+				return (ValuePrimitive) node.data.get(((FrontDataPrimitive) front).middle);
 			} else if (front instanceof FrontGapBase) {
-				return (ValuePrimitive) node.data(middle());
+				return (ValuePrimitive) node.data.get(middle());
 			} else if (front instanceof FrontDataNode) {
 				if (skipFirstNode) {
 					skipFirstNode = false;
 				} else {
 					final ValuePrimitive found =
-							findSelectNext(((ValueNode) node.data(((FrontDataNode) front).middle)).get(),
+							findSelectNext(((ValueNode) node.data.get(((FrontDataNode) front).middle)).get(),
 									skipFirstNode
 							);
 					if (found != null)
 						return found;
 				}
 			} else if (front instanceof FrontDataArray) {
-				final ValueArray array = (ValueArray) node.data(((FrontDataArray) front).middle);
+				final ValueArray array = (ValueArray) node.data.get(((FrontDataArray) front).middle);
 				for (final Node element : array.get()) {
 					if (skipFirstNode) {
 						skipFirstNode = false;
@@ -178,7 +178,7 @@ public abstract class FrontGapBase extends FrontPart {
 	}
 
 	protected void select(final Context context, final ValuePrimitive value) {
-		value.parent.node().getVisual().frontToData.get(value.middle.id).select(context);
+		value.parent.node().getVisual().frontToData.get(value.middle.id).selectDown(context);
 	}
 
 	@Override

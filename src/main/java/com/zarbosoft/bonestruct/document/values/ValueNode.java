@@ -19,10 +19,15 @@ public class ValueNode extends Value {
 		public abstract void set(Context context, Node node);
 	}
 
-	public class NodeParent extends Node.Parent {
+	public class NodeParent extends Parent {
 		@Override
 		public void replace(final Context context, final Node node) {
 			context.history.apply(context, new ChangeNodeSet(ValueNode.this, node));
+		}
+
+		@Override
+		public void delete(final Context context) {
+			context.history.apply(context, new ChangeNodeSet(ValueNode.this, context.syntax.gap.create()));
 		}
 
 		@Override
@@ -66,7 +71,7 @@ public class ValueNode extends Value {
 	}
 
 	@Override
-	public MiddleElement data() {
+	public MiddleElement middle() {
 		return middle;
 	}
 }

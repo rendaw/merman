@@ -8,7 +8,7 @@ import com.zarbosoft.bonestruct.document.values.ValueArray;
 import com.zarbosoft.bonestruct.document.values.ValueNode;
 import com.zarbosoft.bonestruct.document.values.ValuePrimitive;
 import com.zarbosoft.bonestruct.editor.Context;
-import com.zarbosoft.bonestruct.history.changes.ChangeArrayAdd;
+import com.zarbosoft.bonestruct.history.changes.ChangeArray;
 import com.zarbosoft.bonestruct.history.changes.ChangeNodeSet;
 import com.zarbosoft.bonestruct.syntax.alignments.AlignmentDefinition;
 import com.zarbosoft.bonestruct.syntax.back.*;
@@ -82,14 +82,15 @@ public class PrefixGapNodeType extends NodeType {
 							self.parent.replace(context, node);
 
 							// Wrap the value in a prefix gap and place
-							final Node value = ((ValueArray) self.data("value")).get().get(0);
+							final Node value = ((ValueArray) self.data.get("value")).get().get(0);
 							final Node inner =
 									parsed.nextInput == null ? context.syntax.prefixGap.create(value) : value;
 							type.front().get(key.indexAfter).dispatch(new NodeOnlyDispatchHandler() {
 								@Override
 								public void handle(final FrontDataArrayBase front) {
 									context.history.apply(context,
-											new ChangeArrayAdd((ValueArray) node.data(front.middle()),
+											new ChangeArray((ValueArray) node.data.get(front.middle()),
+													0,
 													0,
 													ImmutableList.of(inner)
 											)
@@ -99,16 +100,16 @@ public class PrefixGapNodeType extends NodeType {
 								@Override
 								public void handle(final FrontDataNode front) {
 									context.history.apply(context,
-											new ChangeNodeSet((ValueNode) node.data(front.middle), inner)
+											new ChangeNodeSet((ValueNode) node.data.get(front.middle), inner)
 									);
 								}
 							});
 
 							// Select the next input after the key
 							if (parsed.nextInput != null)
-								node.data(parsed.nextInput.middle()).getVisual().select(context);
+								node.data.get(parsed.nextInput.middle()).getVisual().selectDown(context);
 							else
-								inner.getVisual().select(context);
+								inner.getVisual().selectDown(context);
 						}
 					}
 
@@ -160,8 +161,8 @@ public class PrefixGapNodeType extends NodeType {
 				protected void deselect(
 						final Context context, final Node self, final String string, final Common.UserData userData
 				) {
-					if (string.isEmpty()) {
-						self.parent.replace(context, ((ValueArray) self.data("value")).get().get(0));
+					if (self.getVisual() != null && string.isEmpty()) {
+						self.parent.replace(context, ((ValueArray) self.data.get("value")).get().get(0));
 					}
 				}
 			};

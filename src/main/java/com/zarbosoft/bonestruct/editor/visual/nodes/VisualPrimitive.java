@@ -2,11 +2,9 @@ package com.zarbosoft.bonestruct.editor.visual.nodes;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import com.zarbosoft.bonestruct.document.values.Value;
 import com.zarbosoft.bonestruct.document.values.ValuePrimitive;
-import com.zarbosoft.bonestruct.editor.Action;
-import com.zarbosoft.bonestruct.editor.Context;
-import com.zarbosoft.bonestruct.editor.Hoverable;
-import com.zarbosoft.bonestruct.editor.Selection;
+import com.zarbosoft.bonestruct.editor.*;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.editor.visual.VisualParent;
@@ -21,6 +19,7 @@ import com.zarbosoft.bonestruct.syntax.style.Style;
 import com.zarbosoft.bonestruct.wall.Brick;
 import com.zarbosoft.bonestruct.wall.bricks.LineBrick;
 import com.zarbosoft.rendaw.common.Common;
+import com.zarbosoft.rendaw.common.DeadCode;
 import com.zarbosoft.rendaw.common.Pair;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
@@ -94,10 +93,20 @@ public class VisualPrimitive extends VisualPart {
 	}
 
 	@Override
-	public boolean select(final Context context) {
+	public boolean selectDown(final Context context) {
+		select(context);
+		return true;
+	}
+
+	@Override
+	public void select(final Context context) {
 		selection = createSelection(context, 0, 0);
 		context.setSelection(selection);
-		return true;
+	}
+
+	@Override
+	public void selectUp(final Context context) {
+		throw new DeadCode();
 	}
 
 	@Override
@@ -408,13 +417,13 @@ public class VisualPrimitive extends VisualPart {
 			}, new Action() {
 				@Override
 				public void run(final Context context) {
-					context.history.finishChange();
+					context.history.finishChange(context);
 					if (range.beginOffset != range.endOffset)
 						context.history.apply(context,
 								data.changeRemove(range.beginOffset, range.endOffset - range.beginOffset)
 						);
 					context.history.apply(context, data.changeAdd(range.beginOffset, "\n"));
-					context.history.finishChange();
+					context.history.finishChange(context);
 				}
 
 				@Override
@@ -426,18 +435,18 @@ public class VisualPrimitive extends VisualPart {
 				public void run(final Context context) {
 					if (range.beginOffset == range.endOffset) {
 						if (range.beginLine.index + 1 < lines.size()) {
-							context.history.finishChange();
+							context.history.finishChange(context);
 							context.history.apply(context,
 									data.changeRemove(lines.get(range.beginLine.index + 1).offset - 1, 1)
 							);
 						}
-						context.history.finishChange();
+						context.history.finishChange(context);
 					} else {
-						context.history.finishChange();
+						context.history.finishChange(context);
 						for (int index = range.beginLine.index + 1; index <= range.endLine.index; ++index) {
 							context.history.apply(context, data.changeRemove(lines.get(index).offset - 1, 1));
 						}
-						context.history.finishChange();
+						context.history.finishChange(context);
 					}
 				}
 
@@ -463,7 +472,7 @@ public class VisualPrimitive extends VisualPart {
 					final ClipboardContent content = new ClipboardContent();
 					content.putString(data.get().substring(range.beginOffset, range.endOffset));
 					Clipboard.getSystemClipboard().setContent(content);
-					context.history.finishChange();
+					context.history.finishChange(context);
 					context.history.apply(context, data.changeRemove(range.beginOffset, range.endOffset));
 				}
 
@@ -476,7 +485,7 @@ public class VisualPrimitive extends VisualPart {
 				public void run(final Context context) {
 					final String value = Clipboard.getSystemClipboard().getString();
 					if (value != null) {
-						context.history.finishChange();
+						context.history.finishChange(context);
 						if (range.beginOffset != range.endOffset)
 							context.history.apply(context,
 									data.changeRemove(range.beginOffset, range.endOffset - range.beginOffset)
@@ -554,8 +563,40 @@ public class VisualPrimitive extends VisualPart {
 			return VisualPrimitive.this;
 		}
 
+		@Override
+		public SelectionState saveState() {
+			return new PrimitiveSelectionState(data, range.beginOffset, range.endOffset);
+		}
+
+		@Override
+		public Path getPath() {
+			return data.getPath().add(String.valueOf(range.beginOffset));
+		}
+
 		private void reset(final Context context) {
 			range.setOffsets(context, range.beginOffset);
+		}
+	}
+
+	public static class PrimitiveSelectionState implements SelectionState {
+
+		private final ValuePrimitive value;
+		private final int beginOffset;
+		private final int endOffset;
+
+		public PrimitiveSelectionState(final ValuePrimitive value, final int beginOffset, final int endOffset) {
+			this.value = value;
+			this.beginOffset = beginOffset;
+			this.endOffset = endOffset;
+		}
+
+		@Override
+		public void select(final Context context) {
+			final VisualPrimitive visual = (VisualPrimitive) value.visual;
+			if (visual.selection != null) {
+				visual.selection.range.setOffsets(context, beginOffset, endOffset);
+			} else
+				context.setSelection(visual.new PrimitiveSelection(context, beginOffset, endOffset));
 		}
 	}
 
@@ -902,6 +943,11 @@ public class VisualPrimitive extends VisualPart {
 		data.removeListener(dataListener);
 		data.visual = null;
 		clear(context);
+	}
+
+	@Override
+	public boolean isAt(final Value value) {
+		return data == value;
 	}
 
 }

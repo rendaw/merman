@@ -102,8 +102,8 @@ public abstract class NodeType {
 		});
 	}
 
-	public NodeTypeVisual createVisual(final Context context, final Map<String, Value> data) {
-		return new NodeTypeVisual(context, data);
+	public NodeTypeVisual createVisual(final Context context, final Node node) {
+		return new NodeTypeVisual(context, node);
 	}
 
 	public abstract String name();
@@ -147,12 +147,14 @@ public abstract class NodeType {
 
 	public class NodeTypeVisual extends Visual {
 		private final VisualGroup body;
+		private final Node node;
 		private boolean compact;
 		private VisualParent parent;
 		public Map<String, VisualPart> frontToData = new HashMap<>();
 
-		public NodeTypeVisual(final Context context, final Map<String, Value> data) {
+		public NodeTypeVisual(final Context context, final Node node) {
 			super(HashTreePSet.<Tag>empty().plus(new TypeTag(id)).plus(new PartTag("node")));
+			this.node = node;
 			final PSet<Tag> tags = HashTreePSet.singleton(new TypeTag(id));
 			compact = false;
 			body = new VisualGroup(ImmutableSet.of());
@@ -160,7 +162,7 @@ public abstract class NodeType {
 				body.alignments.put(entry.getKey(), entry.getValue().create());
 			}
 			enumerate(stream(front())).forEach(pair -> {
-				final VisualPart visual = pair.second.createVisual(context, data, tags);
+				final VisualPart visual = pair.second.createVisual(context, node.data, tags);
 				frontToData.put(pair.second.middle(), visual);
 				body.add(context, visual);
 			});
@@ -219,6 +221,7 @@ public abstract class NodeType {
 					return parent.hover(context, point);
 				}
 			});
+			node.visual = this;
 		}
 
 		@Override
@@ -232,8 +235,20 @@ public abstract class NodeType {
 		}
 
 		@Override
-		public boolean select(final Context context) {
-			return body.select(context);
+		public boolean selectDown(final Context context) {
+			return body.selectDown(context);
+		}
+
+		@Override
+		public void select(final Context context) {
+			throw new DeadCode();
+		}
+
+		@Override
+		public void selectUp(final Context context) {
+			if (parent == null)
+				return;
+			parent.selectUp(context);
 		}
 
 		@Override
@@ -299,7 +314,13 @@ public abstract class NodeType {
 
 		@Override
 		public void destroy(final Context context) {
+			node.visual = null;
 			body.destroy(context);
+		}
+
+		@Override
+		public boolean isAt(final Value value) {
+			return false;
 		}
 
 		@Override

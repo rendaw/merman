@@ -253,7 +253,7 @@ public class Context {
 					} else
 						return node;
 				}
-				value = node.data(middle);
+				value = node.data.get(middle);
 				part = null;
 				node = null;
 			} else {
@@ -264,9 +264,9 @@ public class Context {
 						return value;
 					final int tempPathIndex = pathIndex;
 					final String segment = segments.get(pathIndex);
-					if (((ValueArray) value).data() instanceof MiddleRecord) {
+					if (((ValueArray) value).middle() instanceof MiddleRecord) {
 						node = ((ValueArray) value).get().stream().filter(child -> (
-								(ValuePrimitive) child.data((
+								(ValuePrimitive) child.data.get((
 										(BackDataKey) child.type.back().get(0)
 								).middle)
 						).get().equals(segment)).findFirst().orElseThrow(() -> new InvalidPath(String.format(
@@ -275,7 +275,7 @@ public class Context {
 								new Path(TreePVector.from(segments.subList(0, tempPathIndex)))
 						)));
 						part = node.type.back().get(1);
-					} else if (((ValueArray) value).data() instanceof MiddleArray) {
+					} else if (((ValueArray) value).middle() instanceof MiddleArray) {
 						final int index;
 						try {
 							index = Integer.parseInt(segment);
@@ -425,9 +425,7 @@ public class Context {
 	public IdleTask idleClick = null;
 
 	public void setSelection(final Selection selection) {
-		if (this.selection != null) {
-			this.selection.clear(this);
-		}
+		final Selection oldSelection = this.selection;
 		this.selection = selection;
 
 		final VisualPart visual = this.selection.getVisual();
@@ -464,6 +462,9 @@ public class Context {
 			fillFromStartBrick(display.cornerstone);
 
 			selectionTagsChanged();
+		}
+		if (oldSelection != null) {
+			oldSelection.clear(this);
 		}
 	}
 

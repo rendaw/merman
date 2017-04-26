@@ -109,7 +109,7 @@ public class Editor {
 				scrollVisible(context);
 			}
 		});
-		root.select(context);
+		root.selectDown(context);
 		visual.setFocusTraversable(true);
 		visual.setOnMouseExited(event -> {
 			if (context.hoverIdle != null) {

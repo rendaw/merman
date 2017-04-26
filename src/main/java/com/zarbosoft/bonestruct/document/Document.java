@@ -54,9 +54,11 @@ public class Document {
 		uncheck(() -> {
 			writer.type(value.type.id.getBytes(StandardCharsets.UTF_8));
 			writer.recordBegin();
-			value
-					.dataKeys()
-					.forEach(k -> write(value.data(k), uncheck(() -> writer.key(k.getBytes(StandardCharsets.UTF_8)))));
+			value.data
+					.keySet()
+					.forEach(k -> write(value.data.get(k),
+							uncheck(() -> writer.key(k.getBytes(StandardCharsets.UTF_8)))
+					));
 			writer.recordEnd();
 		});
 	}

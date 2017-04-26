@@ -37,7 +37,7 @@ public class ValuePrimitive extends com.zarbosoft.bonestruct.document.values.Val
 	}
 
 	@Override
-	public MiddleElement data() {
+	public MiddleElement middle() {
 		return middle;
 	}
 

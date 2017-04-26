@@ -23,13 +23,13 @@ public class TestDocumentPaths {
 				new TreeBuilder(MiscSyntax.multiback).add("a", "").add("b", "").build(),
 				new TreeBuilder(MiscSyntax.quoted).add("value", "").build()
 		);
-		final Value value1 = context.document.top.get().get(0).data("value");
+		final Value value1 = context.document.top.get().get(0).data.get("value");
 		assertThat(value1.getPath().toList(), equalTo(ImmutableList.of("0")));
 		assertThat(context.locate(value1.getPath()), equalTo(value1));
-		final Value value2 = context.document.top.get().get(1).data("b");
+		final Value value2 = context.document.top.get().get(1).data.get("b");
 		assertThat(value2.getPath().toList(), equalTo(ImmutableList.of("2")));
 		assertThat(context.locate(value2.getPath()), equalTo(value2));
-		final Value value3 = context.document.top.get().get(2).data("value");
+		final Value value3 = context.document.top.get().get(2).data.get("value");
 		assertThat(value3.getPath().toList(), equalTo(ImmutableList.of("3")));
 		assertThat(context.locate(value3.getPath()), equalTo(value3));
 	}
@@ -45,7 +45,7 @@ public class TestDocumentPaths {
 				.group("any", ImmutableSet.of("base"))
 				.build();
 		final Context context = buildDoc(syntax, new Builders.TreeBuilder(syntax.types.get(0)).add("a", "").build());
-		final Value value1 = context.document.top.get().get(0).data("a");
+		final Value value1 = context.document.top.get().get(0).data.get("a");
 		assertThat(value1.getPath().toList(), equalTo(ImmutableList.of("0", "a")));
 		assertThat(context.locate(value1.getPath()), equalTo(value1));
 	}
@@ -61,7 +61,7 @@ public class TestDocumentPaths {
 				.group("any", ImmutableSet.of("base"))
 				.build();
 		final Context context = buildDoc(syntax, new Builders.TreeBuilder(syntax.types.get(0)).add("a", "").build());
-		final Value value1 = context.document.top.get().get(0).data("a");
+		final Value value1 = context.document.top.get().get(0).data.get("a");
 		assertThat(value1.getPath().toList(), equalTo(ImmutableList.of("0", "0")));
 		assertThat(context.locate(value1.getPath()), equalTo(value1));
 	}
@@ -86,7 +86,7 @@ public class TestDocumentPaths {
 						.add("a", new Builders.TreeBuilder(syntax.types.get(1)).add("b", ""))
 						.build()
 		);
-		final Value value1 = ((ValueNode) context.document.top.get().get(0).data("a")).get().data("b");
+		final Value value1 = ((ValueNode) context.document.top.get().get(0).data.get("a")).get().data.get("b");
 		assertThat(value1.getPath().toList(), equalTo(ImmutableList.of("0")));
 		assertThat(context.locate(value1.getPath()), equalTo(value1));
 	}
@@ -106,12 +106,15 @@ public class TestDocumentPaths {
 						.build())
 				.group("any", ImmutableSet.of("base"))
 				.build();
-		final Context context = buildDoc(syntax, new Builders.TreeBuilder(syntax.types.get(0))
-				.addArray("a",
-						ImmutableList.of(new Builders.TreeBuilder(syntax.types.get(1)).add("b", "").build())
-				)
-				.build());
-		final Value value1 = ((ValueArray) context.document.top.get().get(0).data("a")).get().get(0).data("b");
+		final Context context = buildDoc(
+				syntax,
+				new Builders.TreeBuilder(syntax.types.get(0))
+						.addArray("a",
+								ImmutableList.of(new Builders.TreeBuilder(syntax.types.get(1)).add("b", "").build())
+						)
+						.build()
+		);
+		final Value value1 = ((ValueArray) context.document.top.get().get(0).data.get("a")).get().get(0).data.get("b");
 		assertThat(value1.getPath().toList(), equalTo(ImmutableList.of("0", "0")));
 		assertThat(context.locate(value1.getPath()), equalTo(value1));
 	}
@@ -134,12 +137,15 @@ public class TestDocumentPaths {
 						.build())
 				.group("any", ImmutableSet.of("base"))
 				.build();
-		final Context context = buildDoc(syntax, new Builders.TreeBuilder(syntax.types.get(0))
-				.addRecord("a",
-						new Builders.TreeBuilder(syntax.types.get(1)).add("k", "K").add("v", "V").build()
-				)
-				.build());
-		final Value value1 = ((ValueArray) context.document.top.get().get(0).data("a")).get().get(0).data("v");
+		final Context context = buildDoc(
+				syntax,
+				new Builders.TreeBuilder(syntax.types.get(0))
+						.addRecord("a",
+								new Builders.TreeBuilder(syntax.types.get(1)).add("k", "K").add("v", "V").build()
+						)
+						.build()
+		);
+		final Value value1 = ((ValueArray) context.document.top.get().get(0).data.get("a")).get().get(0).data.get("v");
 		assertThat(value1.getPath().toList(), equalTo(ImmutableList.of("0", "K")));
 		assertThat(context.locate(value1.getPath()), equalTo(value1));
 	}
@@ -152,13 +158,13 @@ public class TestDocumentPaths {
 				new TreeBuilder(MiscSyntax.quoted).add("value", "").build()
 		);
 		final Path path0 = new Path("0");
-		assertThat(context.locate(path0), equalTo(context.document.top.get().get(0).data("value")));
+		assertThat(context.locate(path0), equalTo(context.document.top.get().get(0).data.get("value")));
 		final Path path1 = new Path("1");
-		assertThat(context.locate(path1), equalTo(context.document.top.get().get(1).data("a")));
+		assertThat(context.locate(path1), equalTo(context.document.top.get().get(1).data.get("a")));
 		final Path path2 = new Path("2");
-		assertThat(context.locate(path2), equalTo(context.document.top.get().get(1).data("b")));
+		assertThat(context.locate(path2), equalTo(context.document.top.get().get(1).data.get("b")));
 		final Path path3 = new Path("3");
-		assertThat(context.locate(path3), equalTo(context.document.top.get().get(2).data("value")));
+		assertThat(context.locate(path3), equalTo(context.document.top.get().get(2).data.get("value")));
 	}
 
 	@Test
@@ -171,7 +177,7 @@ public class TestDocumentPaths {
 	public void testLocatePrimitive() {
 		final Context context =
 				buildDoc(MiscSyntax.syntax, new TreeBuilder(MiscSyntax.quoted).add("value", "").build());
-		assertThat(context.locate(new Path("0")), equalTo(context.document.top.get().get(0).data("value")));
+		assertThat(context.locate(new Path("0")), equalTo(context.document.top.get().get(0).data.get("value")));
 	}
 
 	@Test
@@ -184,10 +190,10 @@ public class TestDocumentPaths {
 		);
 		assertThat(context.locate(new Path("0")), equalTo(context.document.top.get().get(0)));
 		assertThat(context.locate(new Path("0", "first")),
-				equalTo(((ValueNode) context.document.top.get().get(0).data("first")).get())
+				equalTo(((ValueNode) context.document.top.get().get(0).data.get("first")).get())
 		);
 		assertThat(context.locate(new Path("0", "second")),
-				equalTo(((ValueNode) context.document.top.get().get(0).data("second")).get())
+				equalTo(((ValueNode) context.document.top.get().get(0).data.get("second")).get())
 		);
 	}
 
@@ -196,8 +202,12 @@ public class TestDocumentPaths {
 		final Context context = buildDoc(MiscSyntax.syntax,
 				new Builders.TreeBuilder(MiscSyntax.ratio).add("first", "").add("second", "").build()
 		);
-		assertThat(context.locate(new Path("0", "first")), equalTo(context.document.top.get().get(0).data("first")));
-		assertThat(context.locate(new Path("0", "second")), equalTo(context.document.top.get().get(0).data("second")));
+		assertThat(context.locate(new Path("0", "first")),
+				equalTo(context.document.top.get().get(0).data.get("first"))
+		);
+		assertThat(context.locate(new Path("0", "second")),
+				equalTo(context.document.top.get().get(0).data.get("second"))
+		);
 	}
 
 	@Test
@@ -209,10 +219,10 @@ public class TestDocumentPaths {
 						.build()
 		);
 		assertThat(context.locate(new Path("0", "0")),
-				equalTo(((ValueNode) context.document.top.get().get(0).data("first")).get())
+				equalTo(((ValueNode) context.document.top.get().get(0).data.get("first")).get())
 		);
 		assertThat(context.locate(new Path("0", "1")),
-				equalTo(((ValueNode) context.document.top.get().get(0).data("second")).get())
+				equalTo(((ValueNode) context.document.top.get().get(0).data.get("second")).get())
 		);
 	}
 
@@ -230,29 +240,28 @@ public class TestDocumentPaths {
 						.build()
 		).build());
 		assertThat(context.locate(new Path("0", "first")), equalTo((
-				(ValueNode) ((ValueArray) context.document.top.get().get(0).data("value")).get().get(0).data("value")
+				(ValueNode) ((ValueArray) context.document.top.get().get(0).data.get("value")).get().get(0).data.get(
+						"value")
 		).get()));
 		assertThat(context.locate(new Path("0", "second")), equalTo((
-				(ValueNode) ((ValueArray) context.document.top.get().get(0).data("value")).get().get(1).data("value")
+				(ValueNode) ((ValueArray) context.document.top.get().get(0).data.get("value")).get().get(1).data.get(
+						"value")
 		).get()));
 	}
 
 	@Test
 	public void testLocateDataArrayElement() {
-		final Context context = buildDoc(
-				MiscSyntax.syntax,
-				new Builders.TreeBuilder(MiscSyntax.array)
-						.addArray("value",
-								new TreeBuilder(MiscSyntax.one).build(),
-								new TreeBuilder(MiscSyntax.one).build()
-						)
-						.build()
-		);
+		final Context context = buildDoc(MiscSyntax.syntax, new Builders.TreeBuilder(MiscSyntax.array)
+				.addArray("value",
+						new TreeBuilder(MiscSyntax.one).build(),
+						new TreeBuilder(MiscSyntax.one).build()
+				)
+				.build());
 		assertThat(context.locate(new Path("0", "0")),
-				equalTo(((ValueArray) context.document.top.get().get(0).data("value")).get().get(0))
+				equalTo(((ValueArray) context.document.top.get().get(0).data.get("value")).get().get(0))
 		);
 		assertThat(context.locate(new Path("0", "1")),
-				equalTo(((ValueArray) context.document.top.get().get(0).data("value")).get().get(1))
+				equalTo(((ValueArray) context.document.top.get().get(0).data.get("value")).get().get(1))
 		);
 	}
 }
