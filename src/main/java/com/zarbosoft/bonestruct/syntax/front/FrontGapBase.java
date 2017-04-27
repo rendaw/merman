@@ -277,6 +277,16 @@ public abstract class FrontGapBase extends FrontPart {
 		}
 	}
 
+	private static boolean checkCondition(final ConditionType condition) {
+		if (condition instanceof ConditionNode &&
+				((ConditionNode) condition).is == ConditionNode.Is.PRECEDENT &&
+				!condition.invert)
+			return false;
+		else if (condition instanceof ConditionValue && ((ConditionValue) condition).is == ConditionValue.Is.EMPTY)
+			return false;
+		return true;
+	}
+
 	protected static List<GapKey> gapKeys(final FreeNodeType type) {
 		final List<GapKey> out = new ArrayList<>();
 		final Common.Mutable<GapKey> top = new Common.Mutable<>(new GapKey());
@@ -299,11 +309,15 @@ public abstract class FrontGapBase extends FrontPart {
 
 				@Override
 				public void handle(final FrontImage front) {
+					if (!checkCondition(front.condition))
+						return;
 					top.value.keyParts.add(front);
 				}
 
 				@Override
 				public void handle(final FrontMark front) {
+					if (!checkCondition(front.condition))
+						return;
 					top.value.keyParts.add(front);
 				}
 
