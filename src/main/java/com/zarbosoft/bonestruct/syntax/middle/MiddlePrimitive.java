@@ -5,7 +5,7 @@ import com.zarbosoft.bonestruct.history.Change;
 import com.zarbosoft.bonestruct.history.changes.ChangePrimitiveAdd;
 import com.zarbosoft.bonestruct.history.changes.ChangePrimitiveRemove;
 import com.zarbosoft.bonestruct.syntax.Syntax;
-import com.zarbosoft.bonestruct.syntax.hid.grammar.Node;
+import com.zarbosoft.bonestruct.syntax.modules.hotkeys.grammar.Node;
 import com.zarbosoft.interface1.Configuration;
 
 import java.util.Map;

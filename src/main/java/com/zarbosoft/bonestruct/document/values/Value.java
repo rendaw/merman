@@ -19,10 +19,6 @@ public abstract class Value {
 		this.parent = parent;
 	}
 
-	public Node.Parent parent() {
-		return parent;
-	}
-
 	public abstract MiddleElement middle();
 
 	final public Path getPath() {

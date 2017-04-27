@@ -1,13 +1,12 @@
 package com.zarbosoft.bonestruct.syntax.front;
 
-import com.zarbosoft.bonestruct.document.values.Value;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.VisualPart;
 import com.zarbosoft.bonestruct.editor.visual.nodes.VisualNodeFromArray;
 import com.zarbosoft.bonestruct.syntax.NodeType;
-import com.zarbosoft.bonestruct.syntax.hid.grammar.Node;
 import com.zarbosoft.bonestruct.syntax.middle.MiddleArray;
+import com.zarbosoft.bonestruct.syntax.modules.hotkeys.grammar.Node;
 import com.zarbosoft.interface1.Configuration;
 import org.pcollections.HashTreePSet;
 
@@ -32,11 +31,11 @@ public class FrontDataArrayAsNode extends FrontPart {
 
 	@Override
 	public VisualPart createVisual(
-			final Context context, final Map<String, Value> data, final Set<Visual.Tag> tags
+			final Context context, final com.zarbosoft.bonestruct.document.Node node, final Set<Visual.Tag> tags
 	) {
 		return new VisualNodeFromArray(
 				context,
-				dataType.get(data),
+				dataType.get(node.data),
 				HashTreePSet
 						.from(tags)
 						.plus(new Visual.PartTag("nested"))

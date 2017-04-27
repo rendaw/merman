@@ -72,6 +72,15 @@ public abstract class Visual {
 
 	public abstract boolean isAt(Value value);
 
+	public void suggestCreateBricks(final Context context) {
+		if (context.display == null)
+			return;
+		final Brick previousBrick = parent() == null ? null : parent().getPreviousBrick(context);
+		final Brick nextBrick = parent() == null ? null : parent().getNextBrick(context);
+		if (previousBrick != null && nextBrick != null)
+			context.fillFromEndBrick(previousBrick);
+	}
+
 	@Configuration
 	public interface Tag {
 	}

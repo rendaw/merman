@@ -1,6 +1,6 @@
 package com.zarbosoft.bonestruct.syntax.front;
 
-import com.zarbosoft.bonestruct.document.values.Value;
+import com.zarbosoft.bonestruct.document.Node;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.VisualPart;
@@ -9,7 +9,6 @@ import com.zarbosoft.interface1.Configuration;
 import com.zarbosoft.rendaw.common.DeadCode;
 
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 @Configuration
@@ -19,7 +18,7 @@ public abstract class FrontPart {
 	public Set<String> tags = new HashSet<>();
 
 	public abstract VisualPart createVisual(
-			Context context, Map<String, Value> data, Set<Visual.Tag> tags
+			Context context, Node node, Set<Visual.Tag> tags
 	);
 
 	public void finish(final NodeType nodeType, final Set<String> middleUsed) {

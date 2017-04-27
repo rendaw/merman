@@ -449,8 +449,8 @@ public class Builders {
 				return data;
 			}
 		};
-		final VisualPart visual =
-				syntax.rootFront.createVisual(context, ImmutableMap.of("value", doc.top), ImmutableSet.of());
+		final Node rootNode = new Node(ImmutableMap.of("value", doc.top));
+		final VisualPart visual = syntax.rootFront.createVisual(context, rootNode, ImmutableSet.of());
 		visual.selectDown(context);
 		return context;
 	}

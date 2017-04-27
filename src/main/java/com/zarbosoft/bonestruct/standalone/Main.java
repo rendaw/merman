@@ -88,19 +88,32 @@ public class Main extends Application {
 		stage = primaryStage;
 		/*
 		TODO
-		add mouse scroll buttons to input patterns
-		button down + up hotkey events
-		details
+		//add mouse scroll buttons to input patterns
+		//	make select_hovered an action
+		//button down + up hotkey events
+		//details
 		editing, actions for everythinga
 		//save
 		//modes (global) - modules can create too
 		//	ex: nav/edit, edit, nav, debug, refactor
 		//	style/tag based on mode
-		order of operations, conditional front elements
+		//order of operations, conditional front elements
+		windowing, depth indicator
+			window nodes, not values (except root valuearray)
+			atom, core, mote, basis; node -> core?
+			actually, window visuals, so the above 2 lines moot probably
+		ellipsis with depth score type param
+		primitive compact/expand
+		comment toc with jumps (plugin?)
+		gap preview details styling
+			columns: 1:preview 2:type id
+		hotkey preview details
+			columns: 1:rule 2:action name
+
+		sed (led) substitution
 
 		plugin add colored bar to side if dirty
 		banner background
-		windowing
 		persistent history
 		selection history
 		modules from dir

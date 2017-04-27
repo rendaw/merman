@@ -762,10 +762,7 @@ public class VisualPrimitive extends VisualPart {
 							Math.max(0, Math.min(newValue.length(), selection.range.beginOffset))
 					);
 				}
-				final Brick previousBrick = parent == null ? null : parent.getPreviousBrick(context);
-				final Brick nextBrick = parent == null ? null : parent.getNextBrick(context);
-				if (previousBrick != null && nextBrick != null)
-					context.fillFromEndBrick(previousBrick);
+				suggestCreateBricks(context);
 			}
 
 			@Override

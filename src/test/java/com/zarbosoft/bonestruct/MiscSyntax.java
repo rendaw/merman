@@ -17,10 +17,8 @@ public class MiscSyntax {
 	final static FreeNodeType snooze;
 	final static FreeNodeType multiplier;
 	final static FreeNodeType array;
-	final static FreeNodeType openArray;
 	final static FreeNodeType record;
 	final static FreeNodeType recordElement;
-	final static FreeNodeType openRecord;
 	final static FreeNodeType pair;
 	final static FreeNodeType ratio;
 	final static Syntax syntax;
@@ -120,13 +118,6 @@ public class MiscSyntax {
 				.frontMark(">")
 				.autoComplete(99)
 				.build();
-		openArray = new Builders.TypeBuilder("open_array")
-				.middleArray("value", "any")
-				.back(buildBackDataArray("value"))
-				.front(new FrontDataArrayBuilder("value").addSeparator(new FrontMarkBuilder(",,").build()).build())
-				.frontDataArray("value")
-				.autoComplete(99)
-				.build();
 		record = new Builders.TypeBuilder("record")
 				.middleRecord("value", "record_element")
 				.back(buildBackDataRecord("value"))
@@ -143,14 +134,6 @@ public class MiscSyntax {
 				.frontDataPrimitive("key")
 				.frontMark(": ")
 				.frontDataNode("value")
-				.autoComplete(99)
-				.build();
-		openRecord = new Builders.TypeBuilder("open_record")
-				.middleRecord("value", "record_element")
-				.back(buildBackDataRecord("value"))
-				.front(new Builders.FrontDataArrayBuilder("value")
-						.addSeparator(new Builders.FrontMarkBuilder(",,").build())
-						.build())
 				.autoComplete(99)
 				.build();
 		pair = new Builders.TypeBuilder("pair")
@@ -192,10 +175,8 @@ public class MiscSyntax {
 				.type(snooze)
 				.type(multiplier)
 				.type(array)
-				.type(openArray)
 				.type(record)
 				.type(recordElement)
-				.type(openRecord)
 				.type(pair)
 				.type(ratio)
 				.group(
@@ -221,9 +202,7 @@ public class MiscSyntax {
 								.type(snooze)
 								.type(multiplier)
 								.type(array)
-								.type(openArray)
 								.type(record)
-								.type(openRecord)
 								.type(pair)
 								.type(ratio)
 								.build()

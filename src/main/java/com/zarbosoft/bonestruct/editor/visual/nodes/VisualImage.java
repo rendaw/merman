@@ -5,6 +5,7 @@ import com.zarbosoft.bonestruct.document.values.Value;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.visual.VisualParent;
 import com.zarbosoft.bonestruct.editor.visual.VisualPart;
+import com.zarbosoft.bonestruct.editor.visual.condition.ConditionAttachment;
 import com.zarbosoft.bonestruct.wall.Brick;
 import com.zarbosoft.bonestruct.wall.bricks.BrickImage;
 import com.zarbosoft.rendaw.common.DeadCode;
@@ -13,12 +14,26 @@ import com.zarbosoft.rendaw.common.Pair;
 import java.util.Arrays;
 import java.util.Set;
 
-public class VisualImage extends VisualPart {
+public class VisualImage extends VisualPart implements ConditionAttachment.Listener {
 	public VisualParent parent;
 	public BrickImage brick = null;
+	public ConditionAttachment condition = null;
 
-	public VisualImage(final Set<Tag> tags) {
+	public VisualImage(final Set<Tag> tags, final ConditionAttachment condition) {
 		super(tags);
+		if (condition != null) {
+			this.condition = condition;
+			condition.register(this);
+		}
+	}
+
+	@Override
+	public void conditionChanged(final Context context, final boolean show) {
+		if (show) {
+			suggestCreateBricks(context);
+		} else if (brick != null) {
+			brick.destroy(context);
+		}
 	}
 
 	@Override

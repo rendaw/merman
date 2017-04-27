@@ -52,6 +52,49 @@ public class SuffixGapNodeType extends NodeType {
 	private final List<BackPart> back;
 	private final Map<String, MiddleElement> middle;
 
+	/**
+	 * @param type
+	 * @param test
+	 * @param allowed type is allowed to be placed here. Only for sliding suffix gaps.
+	 * @return
+	 */
+	public static boolean isPrecedent(final FreeNodeType type, final Value.Parent test, final boolean allowed) {
+		final Node testNode = test.value().parent.node();
+
+		// Can't move up if current level is bounded by any other front parts
+		final int index = getIndexOfData(test, testNode);
+		final List<FrontPart> front = testNode.type.front();
+		if (index != front.size() - 1)
+			return false;
+		final FrontPart frontNext = front.get(index);
+		if (frontNext instanceof FrontDataArray && !((FrontDataArray) frontNext).suffix.isEmpty())
+			return false;
+
+		if (allowed) {
+			// Can't move up if next level has lower precedence
+			if (testNode.type.precedence() < type.precedence)
+				return false;
+
+			// Can't move up if next level has same precedence and parent is forward-associative
+			if (testNode.type.precedence() == type.precedence && !testNode.type.frontAssociative())
+				return false;
+		}
+
+		return true;
+	}
+
+	private static int getIndexOfData(final Value.Parent parent, final Node node) {
+		return Common.enumerate(node.type.front().stream()).filter(pair -> {
+			FrontPart front = pair.second;
+			String id = null;
+			if (front instanceof FrontDataNode)
+				id = ((FrontDataNode) front).middle;
+			else if (front instanceof FrontDataArray)
+				id = ((FrontDataArray) front).middle;
+			return parent.id().equals(id);
+		}).map(pair -> pair.first).findFirst().get();
+	}
+
 	public SuffixGapNodeType() {
 		id = "__suffix_gap";
 		{
@@ -79,44 +122,16 @@ public class SuffixGapNodeType extends NodeType {
 							allowed = true;
 						}
 
-						if (test.value().parent() == null)
+						if (test.value().parent == null)
 							break;
-						testNode = test.value().parent().node();
+						testNode = test.value().parent.node();
 
-						// Can't move up if current level is bounded by any other front parts
-						final int index = getIndexOfData(test, testNode);
-						final List<FrontPart> front = testNode.type.front();
-						if (index != front.size() - 1)
+						if (!isPrecedent(type, test, allowed))
 							break;
-						final FrontPart frontNext = front.get(index);
-						if (frontNext instanceof FrontDataArray && !((FrontDataArray) frontNext).suffix.isEmpty())
-							break;
-
-						if (allowed) {
-							// Can't move up if next level has lower precedence
-							if (testNode.type.precedence() < type.precedence)
-								break;
-
-							// Can't move up if next level has same precedence and parent is forward-associative
-							if (testNode.type.precedence() == type.precedence && !testNode.type.frontAssociative())
-								break;
-						}
 
 						test = testNode.parent;
 					}
 					return new Pair<>(parent, child);
-				}
-
-				private int getIndexOfData(final Value.Parent parent, final Node node) {
-					return Common.enumerate(node.type.front().stream()).filter(pair -> {
-						FrontPart front = pair.second;
-						String id = null;
-						if (front instanceof FrontDataNode)
-							id = ((FrontDataNode) front).middle;
-						else if (front instanceof FrontDataArray)
-							id = ((FrontDataArray) front).middle;
-						return parent.id().equals(id);
-					}).map(pair -> pair.first).findFirst().get();
 				}
 
 				@Override

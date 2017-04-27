@@ -27,9 +27,9 @@ public class ValueArray extends Value {
 		return middle;
 	}
 
-	public static abstract class Listener {
+	public interface Listener {
 
-		public abstract void changed(Context context, int index, int remove, List<Node> add);
+		void changed(Context context, int index, int remove, List<Node> add);
 	}
 
 	public class ArrayParent extends Parent {

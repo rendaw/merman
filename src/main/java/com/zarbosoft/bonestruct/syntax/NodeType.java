@@ -162,7 +162,7 @@ public abstract class NodeType {
 				body.alignments.put(entry.getKey(), entry.getValue().create());
 			}
 			enumerate(stream(front())).forEach(pair -> {
-				final VisualPart visual = pair.second.createVisual(context, node.data, tags);
+				final VisualPart visual = pair.second.createVisual(context, node, tags);
 				frontToData.put(pair.second.middle(), visual);
 				body.add(context, visual);
 			});

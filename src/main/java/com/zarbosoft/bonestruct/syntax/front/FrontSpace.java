@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 
 @Configuration(name = "space")
 public class FrontSpace extends FrontConstantPart {
+
 	@Override
 	public void dispatch(final DispatchHandler handler) {
 		handler.handle(this);

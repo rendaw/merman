@@ -29,8 +29,8 @@ public class TestDocumentGap {
 		final Document doc =
 				new Document(MiscSyntax.syntax, new ValueArray(MiscSyntax.syntax.root, Arrays.asList(gap)));
 		final Context context = new Context(MiscSyntax.syntax, doc, null, null, new History());
-		final VisualPart visual =
-				MiscSyntax.syntax.rootFront.createVisual(context, ImmutableMap.of("value", doc.top), ImmutableSet.of());
+		final Node rootNode = new Node(ImmutableMap.of("value", doc.top));
+		final VisualPart visual = MiscSyntax.syntax.rootFront.createVisual(context, rootNode, ImmutableSet.of());
 		gap.getVisual().selectDown(context);
 		return context;
 	}

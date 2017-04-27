@@ -4,18 +4,20 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.zarbosoft.bonestruct.document.Document;
+import com.zarbosoft.bonestruct.document.Node;
 import com.zarbosoft.bonestruct.editor.banner.Banner;
 import com.zarbosoft.bonestruct.editor.details.Details;
+import com.zarbosoft.bonestruct.editor.hid.HIDEvent;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.editor.visual.VisualPart;
 import com.zarbosoft.bonestruct.editor.visual.attachments.TransverseExtentsAdapter;
 import com.zarbosoft.bonestruct.history.History;
 import com.zarbosoft.bonestruct.syntax.Syntax;
+import com.zarbosoft.bonestruct.syntax.modules.hotkeys.Key;
 import com.zarbosoft.bonestruct.wall.Wall;
 import javafx.beans.value.ChangeListener;
 import javafx.scene.Group;
 import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.Pane;
@@ -37,6 +39,7 @@ public class Editor {
 	int scrollStartBeddingBefore;
 	int scrollStartBeddingAfter;
 	private int scroll;
+	boolean keyIgnore = false;
 
 	public Editor(
 			final EditorGlobal global, final Consumer<IdleTask> addIdle, final Path path, final History history
@@ -70,20 +73,50 @@ public class Editor {
 			public String getName() {
 				return "redo";
 			}
+		}, new Action() {
+			@Override
+			public void run(final Context context) {
+				if (context.hover != null)
+					context.hover.click(context);
+			}
+
+			@Override
+			public String getName() {
+				return "click_hovered";
+			}
 		}));
 		context.display.background = new Group();
 		context.display.banner = new Banner(context);
 		context.display.details = new Details(context);
 		context.modules = doc.syntax.modules.stream().map(p -> p.initialize(context)).collect(Collectors.toList());
 		this.visual = new Pane();
-		visual.setOnKeyPressed(event -> {
-			handleKey(event);
+		visual.setOnKeyPressed(e -> {
+			final HIDEvent event = new HIDEvent(Key.fromJFX(e.getCode()), true);
+			if (context.keyListeners.stream().map(l -> l.handleKey(context, event)).findFirst().orElse(false))
+				return;
+			keyIgnore = true;
+		});
+		visual.setOnKeyReleased(e -> {
+			final HIDEvent event = new HIDEvent(Key.fromJFX(e.getCode()), false);
+			if (context.keyListeners.stream().map(l -> l.handleKey(context, event)).findFirst().orElse(false))
+				return;
+			keyIgnore = true;
+		});
+		visual.setOnKeyTyped(e -> {
+			if (keyIgnore) {
+				keyIgnore = false;
+				return;
+			}
+			if (e.getCode() == KeyCode.ENTER)
+				context.selection.receiveText(context, "\n");
+			else
+				context.selection.receiveText(context, e.getText());
 		});
 		visual.setBackground(new Background(new BackgroundFill(context.syntax.background.get(), null, null)));
 		visual.getChildren().add(context.display.background);
 		visual.getChildren().add(wall.visual);
-		final VisualPart root =
-				context.syntax.rootFront.createVisual(context, ImmutableMap.of("value", doc.top), ImmutableSet.of());
+		final Node rootNode = new Node(ImmutableMap.of("value", doc.top));
+		final VisualPart root = context.syntax.rootFront.createVisual(context, rootNode, ImmutableSet.of());
 		context.selectionExtentsAdapter.addListener(context, new TransverseExtentsAdapter.Listener() {
 			@Override
 			public void transverseChanged(final Context context, final int transverse) {
@@ -129,29 +162,20 @@ public class Editor {
 					.sceneToVector(visual, event.getX(), event.getY())
 					.add(new Vector(-context.syntax.padConverse, scroll));
 		});
-		visual.setOnMouseClicked(event -> {
+		visual.setOnMousePressed(e -> {
 			visual.requestFocus();
-			if (context.idleClick == null) {
-				context.idleClick = new IdleTask() {
-					@Override
-					public void runImplementation() {
-						if (context.hover != null)
-							context.hover.click(context);
-						context.idleClick = null;
-					}
-
-					@Override
-					protected void destroyed() {
-						context.idleClick = null;
-					}
-
-					@Override
-					protected int priority() {
-						return 490;
-					}
-				};
-				addIdle.accept(context.idleClick);
-			}
+			final HIDEvent event = new HIDEvent(Key.fromJFX(e.getButton()), true);
+			context.keyListeners.stream().map(l -> l.handleKey(context, event)).findFirst();
+		});
+		visual.setOnMouseReleased(e -> {
+			visual.requestFocus();
+			final HIDEvent event = new HIDEvent(Key.fromJFX(e.getButton()), false);
+			context.keyListeners.stream().map(l -> l.handleKey(context, event)).findFirst();
+		});
+		visual.setOnScroll(e -> {
+			visual.requestFocus();
+			final HIDEvent event = new HIDEvent(e.getDeltaY() > 0 ? Key.MOUSE_SCROLL_DOWN : Key.MOUSE_SCROLL_UP, true);
+			context.keyListeners.stream().map(l -> l.handleKey(context, event)).findFirst();
 		});
 		final ChangeListener<Number> converseSizeListener = (observable, oldValue, newValue) -> {
 			final int newValue2 = (int) newValue.doubleValue();
@@ -211,15 +235,6 @@ public class Editor {
 
 	public Pane getVisual() {
 		return visual;
-	}
-
-	public void handleKey(final KeyEvent event) {
-		if (context.keyListeners.stream().map(l -> l.handleKey(context, event)).findFirst().orElse(false))
-			return;
-		if (event.getCode() == KeyCode.ENTER)
-			context.selection.receiveText(context, "\n");
-		else
-			context.selection.receiveText(context, event.getText());
 	}
 
 	public void destroy() {

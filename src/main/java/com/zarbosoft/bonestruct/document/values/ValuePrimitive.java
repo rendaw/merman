@@ -49,12 +49,12 @@ public class ValuePrimitive extends com.zarbosoft.bonestruct.document.values.Val
 		return new ChangePrimitiveAdd(this, begin, text);
 	}
 
-	public abstract static class Listener {
-		public abstract void set(Context context, String value);
+	public interface Listener {
+		void set(Context context, String value);
 
-		public abstract void added(Context context, int index, String value);
+		void added(Context context, int index, String value);
 
-		public abstract void removed(Context context, int index, int count);
+		void removed(Context context, int index, int count);
 	}
 
 }

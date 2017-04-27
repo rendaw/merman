@@ -10,6 +10,7 @@ import com.zarbosoft.bonestruct.document.values.ValueNode;
 import com.zarbosoft.bonestruct.document.values.ValuePrimitive;
 import com.zarbosoft.bonestruct.editor.banner.Banner;
 import com.zarbosoft.bonestruct.editor.details.Details;
+import com.zarbosoft.bonestruct.editor.hid.HIDEvent;
 import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.VisualPart;
 import com.zarbosoft.bonestruct.editor.visual.attachments.TransverseExtentsAdapter;
@@ -31,7 +32,6 @@ import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.scene.Group;
 import javafx.scene.Node;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Pane;
 import org.pcollections.TreePVector;
 
@@ -58,7 +58,7 @@ public class Context {
 
 	@FunctionalInterface
 	public interface KeyListener {
-		boolean handleKey(Context context, KeyEvent event);
+		boolean handleKey(Context context, HIDEvent event);
 	}
 
 	public void copy(final List<com.zarbosoft.bonestruct.document.Node> nodes) {

@@ -1,10 +1,22 @@
 package com.zarbosoft.bonestruct.syntax.modules.hotkeys;
 
 import com.zarbosoft.interface1.Configuration;
+import com.zarbosoft.rendaw.common.DeadCode;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.MouseButton;
 
 @Configuration
 public enum Key {
+	@Configuration(name = "mouse1")
+	MOUSE_1,
+	@Configuration(name = "mouse2")
+	MOUSE_2,
+	@Configuration(name = "mouse3")
+	MOUSE_3,
+	@Configuration(name = "mouse_scroll_up")
+	MOUSE_SCROLL_UP,
+	@Configuration(name = "mouse_scroll_down")
+	MOUSE_SCROLL_DOWN,
 	@Configuration(name = "enter")
 	ENTER,
 
@@ -1352,7 +1364,7 @@ public enum Key {
 				return SHORTCUT;
 
 		}
-		throw new AssertionError(String.format("Unknown key code %s", code));
+		throw new DeadCode();
 	}
 
 	public static Key fromChar(final char at) {
@@ -1415,5 +1427,20 @@ public enum Key {
 				return COLON;
 		}
 		throw new IllegalArgumentException();
+	}
+
+	public static Key fromJFX(final MouseButton button) {
+		switch (button) {
+
+			case NONE:
+				throw new DeadCode();
+			case PRIMARY:
+				return MOUSE_1;
+			case MIDDLE:
+				return MOUSE_3;
+			case SECONDARY:
+				return MOUSE_2;
+		}
+		throw new DeadCode();
 	}
 }

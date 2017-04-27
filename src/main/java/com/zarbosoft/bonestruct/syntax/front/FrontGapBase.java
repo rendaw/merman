@@ -42,9 +42,9 @@ public abstract class FrontGapBase extends FrontPart {
 
 	@Override
 	public VisualPart createVisual(
-			final Context context, final Map<String, Value> data, final Set<Visual.Tag> tags
+			final Context context, final Node node, final Set<Visual.Tag> tags
 	) {
-		return new GapVisualPrimitive(context, data, tags);
+		return new GapVisualPrimitive(context, node, tags);
 	}
 
 	@Override
@@ -61,10 +61,10 @@ public abstract class FrontGapBase extends FrontPart {
 		private final Map<String, Value> data;
 
 		public GapVisualPrimitive(
-				final Context context, final Map<String, Value> data, final Set<Tag> tags
+				final Context context, final Node node, final Set<Tag> tags
 		) {
 			super(context,
-					FrontGapBase.this.dataType.get(data),
+					FrontGapBase.this.dataType.get(node.data),
 					HashTreePSet
 							.from(tags)
 							.plus(new PartTag("gap"))
@@ -73,7 +73,7 @@ public abstract class FrontGapBase extends FrontPart {
 									.map(s -> new FreeTag(s))
 									.collect(Collectors.toSet()))
 			);
-			this.data = data;
+			this.data = node.data;
 		}
 
 		@Override

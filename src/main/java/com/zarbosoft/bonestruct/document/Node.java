@@ -27,6 +27,16 @@ public class Node {
 		});
 	}
 
+	/**
+	 * Only for document root.
+	 *
+	 * @param data
+	 */
+	public Node(final Map<String, Value> data) {
+		this.type = null;
+		this.data = data;
+	}
+
 	public Path getPath() {
 		if (parent == null)
 			return new Path();

@@ -2,11 +2,12 @@ package com.zarbosoft.bonestruct.syntax.modules.hotkeys;
 
 import com.zarbosoft.bonestruct.editor.Action;
 import com.zarbosoft.bonestruct.editor.Context;
-import com.zarbosoft.bonestruct.editor.Keyboard;
 import com.zarbosoft.bonestruct.editor.details.DetailsPage;
+import com.zarbosoft.bonestruct.editor.hid.HIDEvent;
 import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.raw.RawText;
 import com.zarbosoft.bonestruct.syntax.modules.Module;
+import com.zarbosoft.bonestruct.syntax.modules.hotkeys.grammar.Node;
 import com.zarbosoft.bonestruct.syntax.style.Style;
 import com.zarbosoft.interface1.Configuration;
 import com.zarbosoft.pidgoon.InvalidStream;
@@ -16,7 +17,6 @@ import com.zarbosoft.pidgoon.events.Operator;
 import com.zarbosoft.pidgoon.events.Parse;
 import com.zarbosoft.pidgoon.nodes.Union;
 import javafx.scene.Group;
-import javafx.scene.input.KeyEvent;
 import org.pcollections.HashTreePSet;
 import org.pcollections.PSet;
 
@@ -45,7 +45,8 @@ public class Hotkeys extends Module {
 			final Group group = new Group();
 			this.node = group;
 			final PSet tags = HashTreePSet.from(context.globalTags);
-			final RawText first = new RawText(context,
+			final RawText first = new RawText(
+					context,
 					context.getStyle(tags
 							.plus(new Visual.PartTag("details_prompt"))
 							.plus(new Visual.PartTag("details")))
@@ -67,7 +68,7 @@ public class Hotkeys extends Module {
 
 	@Override
 	public State initialize(final Context context) {
-		context.addKeyListener(this::handleKey);
+		context.addKeyListener(this::handleEvent);
 		context.addTagsChangeListener(new Context.TagsListener() {
 			@Override
 			public void tagsChanged(final Context context, final Set<Visual.Tag> tags) {
@@ -88,7 +89,7 @@ public class Hotkeys extends Module {
 						.stream()
 						.flatMap(e -> e.getValue().stream()))) {
 					if (hotkeys.hotkeys.containsKey(action.getName())) {
-						for (final com.zarbosoft.bonestruct.syntax.hid.grammar.Node hotkey : hotkeys.hotkeys.get(action.getName())) {
+						for (final Node hotkey : hotkeys.hotkeys.get(action.getName())) {
 							System.out.format("action [%s] adding hotkey [%s]\n", action.getName(), hotkey);
 							union.add(new Operator(hotkey.build(), store -> store.pushStack(action)));
 						}
@@ -105,22 +106,17 @@ public class Hotkeys extends Module {
 		};
 	}
 
-	public boolean handleKey(final Context context, final KeyEvent event) {
+	public boolean handleEvent(final Context context, final HIDEvent event) {
 		if (hotkeyParse == null) {
 			hotkeyParse = new Parse<Action>().grammar(hotkeyGrammar).parse();
 		}
-		final Keyboard.Event keyEvent = new Keyboard.Event(Key.fromJFX(event.getCode()),
-				event.isControlDown(),
-				event.isAltDown(),
-				event.isShiftDown()
-		);
 		if (hotkeySequence.isEmpty())
-			hotkeySequence += keyEvent.toString();
+			hotkeySequence += event.toString();
 		else
-			hotkeySequence += " " + keyEvent.toString();
+			hotkeySequence += " " + event.toString();
 		final boolean clean = false;
 		try {
-			hotkeyParse = hotkeyParse.push(keyEvent, hotkeySequence);
+			hotkeyParse = hotkeyParse.push(event, hotkeySequence);
 			if (hotkeyParse.ended()) {
 				final Action action = hotkeyParse.finish();
 				clean(context);

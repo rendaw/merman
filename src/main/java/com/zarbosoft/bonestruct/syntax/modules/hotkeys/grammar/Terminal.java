@@ -1,4 +1,4 @@
-package com.zarbosoft.bonestruct.syntax.hid.grammar;
+package com.zarbosoft.bonestruct.syntax.modules.hotkeys.grammar;
 
 import com.zarbosoft.interface1.Configuration;
 import com.zarbosoft.pidgoon.events.Event;
