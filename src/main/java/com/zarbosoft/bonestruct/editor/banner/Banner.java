@@ -1,12 +1,11 @@
 package com.zarbosoft.bonestruct.editor.banner;
 
+import com.zarbosoft.bonestruct.display.Text;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.IdleTask;
 import com.zarbosoft.bonestruct.editor.Selection;
 import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.attachments.VisualAttachmentAdapter;
-import com.zarbosoft.bonestruct.editor.visual.raw.RawText;
-import com.zarbosoft.bonestruct.editor.visual.raw.RawTextUtils;
 import com.zarbosoft.bonestruct.syntax.style.Style;
 import com.zarbosoft.bonestruct.wall.Attachment;
 import com.zarbosoft.bonestruct.wall.Bedding;
@@ -20,7 +19,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class Banner {
-	public RawText text;
+	public Text text;
 	private final PriorityQueue<BannerMessage> queue =
 			new PriorityQueue<>(11, new ChainComparator<BannerMessage>().greaterFirst(m -> m.priority).build());
 	private BannerMessage current;
@@ -68,7 +67,7 @@ public class Banner {
 		protected void runImplementation() {
 			if (text != null) {
 				text.setTransverse(context,
-						Math.max(scroll, Banner.this.transverse - (int) RawTextUtils.getDescent(text.getFont())),
+						Math.max(scroll, Banner.this.transverse - (int) text.font().getDescent()),
 						false
 				);
 			}
@@ -117,12 +116,12 @@ public class Banner {
 
 	public void addMessage(final Context context, final BannerMessage message) {
 		if (queue.isEmpty()) {
-			text = new RawText(context, getStyle(context));
-			context.display.background.getChildren().add(text.getVisual());
-			text.setTransverse(context,
-					Math.max(scroll, transverse - (int) RawTextUtils.getDescent(text.getFont())),
-					false
-			);
+			text = context.display.text();
+			final Style.Baked style = getStyle(context);
+			text.setFont(context, style.getFont(context));
+			text.setColor(context, style.color);
+			context.background.add(text);
+			text.setTransverse(context, Math.max(scroll, transverse - text.font().getDescent()), false);
 			bedding = new Bedding(text.transverseSpan(context), 0);
 			brick.addBedding(context, bedding);
 		}
@@ -137,13 +136,15 @@ public class Banner {
 	private void updateStyle(final Context context) {
 		if (text == null)
 			return;
-		text.setStyle(getStyle(context));
+		final Style.Baked style = getStyle(context);
+		text.setFont(context, style.getFont(context));
+		text.setColor(context, style.color);
 	}
 
 	private void update(final Context context) {
 		if (queue.isEmpty()) {
 			if (text != null) {
-				context.display.background.getChildren().remove(text.getVisual());
+				context.background.remove(text);
 				text = null;
 				brick.removeBedding(context, bedding);
 				bedding = null;

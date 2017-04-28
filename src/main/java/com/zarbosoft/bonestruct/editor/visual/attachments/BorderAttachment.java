@@ -66,8 +66,8 @@ public class BorderAttachment {
 	public BorderAttachment(final Context context, final ObboxStyle style) {
 		final ObboxStyle.Baked baked = new ObboxStyle.Baked();
 		baked.merge(style);
-		border = Obbox.fromSettings(baked);
-		context.display.background.getChildren().add(border);
+		border = Obbox.fromSettings(context, baked);
+		context.background.add(border.drawing);
 	}
 
 	public void setFirst(final Context context, final Brick first) {
@@ -93,7 +93,7 @@ public class BorderAttachment {
 			this.first.removeAttachment(context, this.firstAttachment);
 		if (last != null)
 			this.last.removeAttachment(context, this.lastAttachment);
-		context.display.background.getChildren().remove(border);
+		context.background.remove(border.drawing);
 	}
 
 	public void redraw(final Context context) {

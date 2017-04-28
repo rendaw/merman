@@ -1,5 +1,6 @@
 package com.zarbosoft.bonestruct.editor.details;
 
+import com.zarbosoft.bonestruct.display.Group;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.IdleTask;
 import com.zarbosoft.bonestruct.editor.Selection;
@@ -9,7 +10,6 @@ import com.zarbosoft.bonestruct.wall.Attachment;
 import com.zarbosoft.bonestruct.wall.Bedding;
 import com.zarbosoft.bonestruct.wall.Brick;
 import com.zarbosoft.rendaw.common.ChainComparator;
-import javafx.scene.Group;
 
 import java.util.PriorityQueue;
 
@@ -107,17 +107,16 @@ public class Details {
 	}
 
 	private void translateGroup(final Context context) {
-		context.translate(current.node,
-				new Vector(0, Math.min(context.transverseEdge - context.sceneGetTransverseSpan(current.node),
-						transverse + transverseSpan - documentScroll
-				))
-		);
+		current.node.setPosition(context, new Vector(0, Math.min(
+				context.transverseEdge - current.node.converseSpan(context),
+				transverse + transverseSpan - documentScroll
+		)), false);
 	}
 
 	public void addPage(final Context context, final DetailsPage page) {
 		if (queue.isEmpty()) {
-			group = new Group();
-			context.display.background.getChildren().add(group);
+			group = context.display.group();
+			context.background.add(group);
 		}
 		queue.add(page);
 		update(context);
@@ -126,19 +125,19 @@ public class Details {
 	private void update(final Context context) {
 		if (queue.isEmpty()) {
 			if (group != null) {
-				context.display.background.getChildren().remove(group);
+				context.background.remove(group);
 				group = null;
 				brick.removeBedding(context, bedding);
 				bedding = null;
 			}
 		} else if (queue.peek() != current) {
 			current = queue.peek();
-			group.getChildren().clear();
-			group.getChildren().add(current.node);
+			group.clear();
+			group.add(current.node);
 			if (bedding != null) {
 				brick.removeBedding(context, bedding);
 			}
-			bedding = new Bedding(0, context.sceneGetTransverseSpan(current.node));
+			bedding = new Bedding(0, current.node.transverseSpan(context));
 			brick.addBedding(context, bedding);
 		}
 	}

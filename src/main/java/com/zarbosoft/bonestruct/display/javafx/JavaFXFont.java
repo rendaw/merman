@@ -1,27 +1,44 @@
-package com.zarbosoft.bonestruct.editor.visual.raw;
+package com.zarbosoft.bonestruct.display.javafx;
 
+import com.zarbosoft.bonestruct.display.Font;
 import javafx.geometry.Bounds;
-import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextBoundsType;
 
-public class RawTextUtils {
+public class JavaFXFont implements Font {
+	javafx.scene.text.Font font;
+
 	static final Text helper = new Text();
 	static final double DEFAULT_WRAPPING_WIDTH = helper.getWrappingWidth();
 	static final double DEFAULT_LINE_SPACING = helper.getLineSpacing();
 	static final String DEFAULT_TEXT = helper.getText();
 	static final TextBoundsType DEFAULT_BOUNDS_TYPE = helper.getBoundsType();
 
-	public static double getAscent(final Font font) {
+	public JavaFXFont(
+			final String font, final int size
+	) {
+		if (font == null)
+			this.font = javafx.scene.text.Font.font(size);
+		else
+			this.font = javafx.scene.text.Font.font(font, size);
+	}
+
+	public JavaFXFont(final javafx.scene.text.Font font) {
+		this.font = font;
+	}
+
+	@Override
+	public int getAscent() {
 		helper.setFont(font);
 		helper.setBoundsType(DEFAULT_BOUNDS_TYPE);
 		final double ascent = helper.getBaselineOffset();
 		// RESTORE STATE
 		helper.setBoundsType(DEFAULT_BOUNDS_TYPE);
-		return ascent;
+		return (int) ascent;
 	}
 
-	public static double getDescent(final Font font) {
+	@Override
+	public int getDescent() {
 		helper.setFont(font);
 		helper.setBoundsType(DEFAULT_BOUNDS_TYPE);
 		final double ascent = helper.getBaselineOffset();
@@ -29,10 +46,11 @@ public class RawTextUtils {
 		final double height = bounds.getMaxY() - bounds.getMinY();
 		// RESTORE STATE
 		helper.setBoundsType(DEFAULT_BOUNDS_TYPE);
-		return height - ascent;
+		return (int) (height - ascent);
 	}
 
-	public static double computeTextWidth(final Font font, final String text) {
+	@Override
+	public int getWidth(final String text) {
 		helper.setText(text);
 		helper.setFont(font);
 		// Note that the wrapping width needs to be set to zero before
@@ -46,6 +64,6 @@ public class RawTextUtils {
 		helper.setWrappingWidth(DEFAULT_WRAPPING_WIDTH);
 		helper.setLineSpacing(DEFAULT_LINE_SPACING);
 		helper.setText(DEFAULT_TEXT);
-		return w;
+		return (int) w;
 	}
 }

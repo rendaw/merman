@@ -3,6 +3,7 @@ package com.zarbosoft.bonestruct;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.zarbosoft.bonestruct.display.MockeryDisplay;
 import com.zarbosoft.bonestruct.document.Document;
 import com.zarbosoft.bonestruct.document.Node;
 import com.zarbosoft.bonestruct.document.values.ValueArray;
@@ -28,7 +29,8 @@ public class TestDocumentGap {
 		final Node gap = MiscSyntax.syntax.gap.create();
 		final Document doc =
 				new Document(MiscSyntax.syntax, new ValueArray(MiscSyntax.syntax.root, Arrays.asList(gap)));
-		final Context context = new Context(MiscSyntax.syntax, doc, null, null, new History());
+		final Context context = new Context(MiscSyntax.syntax, doc, new MockeryDisplay(), idleTask -> {
+		}, new History());
 		final Node rootNode = new Node(ImmutableMap.of("value", doc.top));
 		final VisualPart visual = MiscSyntax.syntax.rootFront.createVisual(context, rootNode, ImmutableSet.of());
 		gap.getVisual().selectDown(context);

@@ -5,8 +5,11 @@ import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.FileAppender;
 import com.google.common.collect.ImmutableList;
+import com.zarbosoft.bonestruct.display.javafx.JavaFXDisplay;
+import com.zarbosoft.bonestruct.document.Document;
 import com.zarbosoft.bonestruct.editor.*;
 import com.zarbosoft.bonestruct.history.History;
+import com.zarbosoft.bonestruct.syntax.Syntax;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
@@ -38,9 +41,11 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import static com.zarbosoft.rendaw.common.Common.last;
 import static com.zarbosoft.rendaw.common.Common.uncheck;
 
 public class Main extends Application {
+
 	public static void main(final String[] args) {
 		launch(args);
 	}
@@ -52,6 +57,7 @@ public class Main extends Application {
 	private final PriorityQueue<IdleTask> idleQueue = new PriorityQueue<>();
 	private Path filename;
 	private Stage stage;
+	private JavaFXDisplay display;
 
 	@FunctionalInterface
 	private interface Wrappable {
@@ -112,6 +118,7 @@ public class Main extends Application {
 
 		sed (led) substitution
 
+		exit primitive when next mark key; escaping (?)
 		plugin add colored bar to side if dirty
 		banner background
 		persistent history
@@ -144,8 +151,16 @@ public class Main extends Application {
 		filename = Paths.get(getParameters().getUnnamed().get(0));
 		stage.setTitle(filename.getFileName().toString());
 		final History history = new History();
-		final Editor editor =
-				new Editor(global, this::addIdle, Paths.get(getParameters().getUnnamed().get(0)), history);
+		final Path path = Paths.get(getParameters().getUnnamed().get(0));
+		final String extension = last(path.getFileName().toString().split("\\."));
+		final Syntax syntax = global.getSyntax(extension);
+		final Document doc;
+		if (Files.exists(path))
+			doc = uncheck(() -> syntax.load(path));
+		else
+			doc = syntax.create();
+		this.display = new JavaFXDisplay(syntax);
+		final Editor editor = new Editor(syntax, doc, display, this::addIdle, path, history);
 		editor.addActions(this, ImmutableList.of(new Action() {
 			@Override
 			public void run(final Context context) {
@@ -211,7 +226,7 @@ public class Main extends Application {
 			public void handle(final ActionEvent event) {
 				wrap(stage.getOwner(), () -> {
 					editor.save(filename);
-					editor.getVisual().requestFocus();
+					editor.focus();
 				});
 			}
 		});
@@ -227,7 +242,7 @@ public class Main extends Application {
 					filename = Paths.get(filenameEntry.getText());
 					stage.setTitle(filename.getFileName().toString());
 					alignFilesystemLayout.changed(null, null, filename.toString());
-					editor.getVisual().requestFocus();
+					editor.focus();
 				});
 			}
 		});
@@ -242,7 +257,7 @@ public class Main extends Application {
 					stage.setTitle(filename.getFileName().toString());
 					editor.save(dest);
 					alignFilesystemLayout.changed(null, null, filename.toString());
-					editor.getVisual().requestFocus();
+					editor.focus();
 				});
 			}
 		});
@@ -255,14 +270,14 @@ public class Main extends Application {
 						return;
 					editor.save(dest);
 					filenameEntry.setText(filename.toString());
-					editor.getVisual().requestFocus();
+					editor.focus();
 				});
 			}
 		});
 		final VBox mainLayout = new VBox();
 		mainLayout.getChildren().add(filesystemLayout);
-		mainLayout.getChildren().add(editor.getVisual());
-		VBox.setVgrow(editor.getVisual(), Priority.ALWAYS);
+		mainLayout.getChildren().add(display.node);
+		VBox.setVgrow(display.node, Priority.ALWAYS);
 		final Scene scene = new Scene(mainLayout, 300, 275);
 		stage.setScene(scene);
 		stage.setOnCloseRequest(new EventHandler<>() {
@@ -289,7 +304,7 @@ public class Main extends Application {
 			}
 		});
 		stage.show();
-		editor.getVisual().requestFocus();
+		editor.focus();
 	}
 
 	private void addIdle(final IdleTask task) {

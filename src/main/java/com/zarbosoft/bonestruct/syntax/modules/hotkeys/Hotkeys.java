@@ -1,11 +1,12 @@
 package com.zarbosoft.bonestruct.syntax.modules.hotkeys;
 
+import com.zarbosoft.bonestruct.display.Group;
+import com.zarbosoft.bonestruct.display.Text;
 import com.zarbosoft.bonestruct.editor.Action;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.details.DetailsPage;
 import com.zarbosoft.bonestruct.editor.hid.HIDEvent;
 import com.zarbosoft.bonestruct.editor.visual.Visual;
-import com.zarbosoft.bonestruct.editor.visual.raw.RawText;
 import com.zarbosoft.bonestruct.syntax.modules.Module;
 import com.zarbosoft.bonestruct.syntax.modules.hotkeys.grammar.Node;
 import com.zarbosoft.bonestruct.syntax.style.Style;
@@ -16,7 +17,6 @@ import com.zarbosoft.pidgoon.events.Grammar;
 import com.zarbosoft.pidgoon.events.Operator;
 import com.zarbosoft.pidgoon.events.Parse;
 import com.zarbosoft.pidgoon.nodes.Union;
-import javafx.scene.Group;
 import org.pcollections.HashTreePSet;
 import org.pcollections.PSet;
 
@@ -42,24 +42,26 @@ public class Hotkeys extends Module {
 
 	private class HotkeyDetails extends DetailsPage {
 		public HotkeyDetails(final Context context) {
-			final Group group = new Group();
+			final Group group = context.display.group();
 			this.node = group;
 			final PSet tags = HashTreePSet.from(context.globalTags);
-			final RawText first = new RawText(
-					context,
-					context.getStyle(tags
-							.plus(new Visual.PartTag("details_prompt"))
-							.plus(new Visual.PartTag("details")))
-			);
-			group.getChildren().add(first.getVisual());
+			final Text first = context.display.text();
+			final Style.Baked firstStyle = context.getStyle(tags
+					.plus(new Visual.PartTag("details_prompt"))
+					.plus(new Visual.PartTag("details")));
+			first.setColor(context, firstStyle.color);
+			first.setFont(context, firstStyle.getFont(context));
+			group.add(first);
 			final Style.Baked lineStyle =
 					context.getStyle(tags.plus(new Visual.PartTag("details_line")).plus(new Visual.PartTag("details")));
 			first.setText(context, hotkeySequence);
 			int transverse = first.transverseSpan(context);
 			for (final com.zarbosoft.pidgoon.internal.State leaf : hotkeyParse.context().leaves) {
-				final RawText line = new RawText(context, lineStyle);
+				final Text line = context.display.text();
+				line.setColor(context, lineStyle.color);
+				line.setFont(context, lineStyle.getFont(context));
 				line.setText(context, ((Action) leaf.color()).getName());
-				group.getChildren().add(line.getVisual());
+				group.add(line);
 				line.setTransverse(context, transverse);
 				transverse += line.transverseSpan(context);
 			}
@@ -125,9 +127,9 @@ public class Hotkeys extends Module {
 			} else {
 				if (showDetails && context.display != null) {
 					if (hotkeyDetails != null)
-						context.display.details.removePage(context, hotkeyDetails);
+						context.details.removePage(context, hotkeyDetails);
 					hotkeyDetails = new HotkeyDetails(context);
-					context.display.details.addPage(context, hotkeyDetails);
+					context.details.addPage(context, hotkeyDetails);
 				}
 			}
 			System.out.format("key consumed\n");
@@ -142,7 +144,7 @@ public class Hotkeys extends Module {
 		hotkeySequence = "";
 		hotkeyParse = null;
 		if (hotkeyDetails != null) {
-			context.display.details.removePage(context, hotkeyDetails);
+			context.details.removePage(context, hotkeyDetails);
 			hotkeyDetails = null;
 		}
 	}

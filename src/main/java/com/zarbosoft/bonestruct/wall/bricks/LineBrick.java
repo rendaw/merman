@@ -19,10 +19,12 @@ public class LineBrick extends BrickText {
 	private final VisualPrimitive.BrickStyle style;
 
 	public LineBrick(
+			final Context context,
 			final VisualPrimitive visualPrimitive,
 			final VisualPrimitive.Line line,
 			final VisualPrimitive.BrickStyle style
 	) {
+		super(context);
 		this.visualPrimitive = visualPrimitive;
 		this.line = line;
 		this.style = style;
@@ -40,7 +42,7 @@ public class LineBrick extends BrickText {
 		final Set<Visual.Tag> tags = new HashSet<>(line.hard ? visualPrimitive.hardTags : visualPrimitive.softTags);
 		tags.removeAll(change.remove);
 		tags.addAll(change.add);
-		return properties(context.getStyle(tags));
+		return properties(context, context.getStyle(tags));
 	}
 
 	@Override

@@ -1,18 +1,20 @@
 package com.zarbosoft.bonestruct.editor.visual.raw;
 
+import com.zarbosoft.bonestruct.display.Drawing;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
+import com.zarbosoft.bonestruct.syntax.style.ModelColor;
 import com.zarbosoft.bonestruct.syntax.style.ObboxStyle;
-import javafx.geometry.Point2D;
-import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.paint.Color;
-import javafx.scene.transform.Affine;
 
-public abstract class Obbox extends Canvas {
+public abstract class Obbox {
+	public final Drawing drawing;
 
-	public static Obbox fromSettings(final ObboxStyle.Baked settings) {
-		return new Obbox() {
+	public Obbox(final Context context) {
+		drawing = context.display.drawing();
+	}
+
+	public static Obbox fromSettings(final Context context, final ObboxStyle.Baked settings) {
+		return new Obbox(context) {
 			@Override
 			public int padding() {
 				return settings.padding;
@@ -54,8 +56,8 @@ public abstract class Obbox extends Canvas {
 			}
 
 			@Override
-			public Color lineColor() {
-				return settings.lineColor.get();
+			public ModelColor lineColor() {
+				return settings.lineColor;
 			}
 
 			@Override
@@ -69,8 +71,8 @@ public abstract class Obbox extends Canvas {
 			}
 
 			@Override
-			public Color fillColor() {
-				return settings.fillColor.get();
+			public ModelColor fillColor() {
+				return settings.fillColor;
 			}
 		};
 	}
@@ -93,19 +95,19 @@ public abstract class Obbox extends Canvas {
 
 	public abstract boolean line();
 
-	public abstract Color lineColor();
+	public abstract ModelColor lineColor();
 
 	public abstract double lineThickness();
 
 	public abstract boolean fill();
 
-	public abstract Color fillColor();
+	public abstract ModelColor fillColor();
 
 	public void setSize(
 			final Context context, int sc, int st, int ste, int ec, int et, int ete
 	) {
 		final boolean oneLine = st == et;
-		clear();
+		drawing.clear();
 		sc -= padding();
 		st -= padding();
 		ste = oneLine ? ste + padding() : ste - padding();
@@ -115,39 +117,30 @@ public abstract class Obbox extends Canvas {
 		radius = roundRadius();
 		//radius = Math.min(roundRadius(), Math.min(ste - st, ete - et));
 		final int buffer = (int) (lineThickness() + 1);
-		final Point2D wh =
-				context.toScreenSpan(new Vector(context.edge + padding() * 2 + buffer * 2, ete - st + buffer * 2));
-		setWidth(wh.getX());
-		setHeight(wh.getY());
-		context.translate(this, new Vector(-(buffer + padding()), st - buffer));
-		final GraphicsContext gc = this.getGraphicsContext2D();
+		final Vector wh = new Vector(context.edge + padding() * 2 + buffer * 2, ete - st + buffer * 2);
+		drawing.resize(context, wh);
+		drawing.setPosition(context, new Vector(-(buffer + padding()), st - buffer), false);
+		final Drawing.DrawingContext gc = drawing.begin(context);
 		gc.translate(buffer + padding(), buffer);
 		ste -= st;
 		et -= st;
 		ete -= st;
 		st = 0;
 		if (fill()) {
-			gc.setFill(fillColor());
-			path(context, gc, oneLine, -padding(), context.edge + padding(), sc, st, ste, ec, et, ete);
+			gc.setFillColor(fillColor());
+			path(gc, oneLine, -padding(), context.edge + padding(), sc, st, ste, ec, et, ete);
 			gc.fill();
 		}
 		if (line()) {
-			gc.setStroke(lineColor());
-			gc.setLineWidth(lineThickness());
-			path(context, gc, oneLine, -padding(), context.edge + padding(), sc, st, ste, ec, et, ete);
+			gc.setLineColor(lineColor());
+			gc.setLineThickness(lineThickness());
+			path(gc, oneLine, -padding(), context.edge + padding(), sc, st, ste, ec, et, ete);
 			gc.stroke();
 		}
 	}
 
-	private void clear() {
-		final GraphicsContext gc = this.getGraphicsContext2D();
-		gc.setTransform(new Affine());
-		gc.clearRect(0, 0, getWidth(), getHeight());
-	}
-
 	private void path(
-			final Context context,
-			final GraphicsContext gc,
+			final Drawing.DrawingContext gc,
 			final boolean oneLine,
 			final int converseZero,
 			final int converseEdge,
@@ -160,9 +153,8 @@ public abstract class Obbox extends Canvas {
 	) {
 		if (oneLine) {
 			gc.beginPath();
-			moveTo(context, gc, startConverse, (startTransverse + startTransverseEdge) / 2);
+			moveTo(gc, startConverse, (startTransverse + startTransverseEdge) / 2);
 			cornerTo(
-					context,
 					gc,
 					roundStart(),
 					startConverse,
@@ -171,7 +163,6 @@ public abstract class Obbox extends Canvas {
 					startTransverse
 			);
 			cornerTo(
-					context,
 					gc,
 					roundOuterEdges(),
 					endConverse,
@@ -180,7 +171,6 @@ public abstract class Obbox extends Canvas {
 					(startTransverse + startTransverseEdge) / 2
 			);
 			cornerTo(
-					context,
 					gc,
 					roundEnd(),
 					endConverse,
@@ -189,7 +179,6 @@ public abstract class Obbox extends Canvas {
 					startTransverseEdge
 			);
 			cornerTo(
-					context,
 					gc,
 					roundOuterEdges(),
 					startConverse,
@@ -200,9 +189,8 @@ public abstract class Obbox extends Canvas {
 			gc.closePath();
 		} else {
 			gc.beginPath();
-			moveTo(context, gc, startConverse, (startTransverse + startTransverseEdge) / 2);
+			moveTo(gc, startConverse, (startTransverse + startTransverseEdge) / 2);
 			cornerTo(
-					context,
 					gc,
 					roundStart(),
 					startConverse,
@@ -211,7 +199,6 @@ public abstract class Obbox extends Canvas {
 					startTransverse
 			);
 			cornerTo(
-					context,
 					gc,
 					roundOuterEdges(),
 					converseEdge,
@@ -221,7 +208,6 @@ public abstract class Obbox extends Canvas {
 			);
 			if (endConverse == converseEdge) {
 				cornerTo(
-						context,
 						gc,
 						roundInnerEdges(),
 						converseEdge,
@@ -231,7 +217,6 @@ public abstract class Obbox extends Canvas {
 				);
 			} else {
 				cornerTo(
-						context,
 						gc,
 						roundInnerEdges(),
 						converseEdge,
@@ -240,7 +225,6 @@ public abstract class Obbox extends Canvas {
 						endTransverse
 				);
 				cornerTo(
-						context,
 						gc,
 						roundConcave(),
 						endConverse,
@@ -249,7 +233,6 @@ public abstract class Obbox extends Canvas {
 						(endTransverse + endTransverseEdge) / 2
 				);
 				cornerTo(
-						context,
 						gc,
 						roundEnd(),
 						endConverse,
@@ -260,7 +243,6 @@ public abstract class Obbox extends Canvas {
 			}
 			if (startConverse == converseZero) {
 				cornerTo(
-						context,
 						gc,
 						roundOuterEdges(),
 						converseZero,
@@ -270,7 +252,6 @@ public abstract class Obbox extends Canvas {
 				);
 			} else {
 				cornerTo(
-						context,
 						gc,
 						roundOuterEdges(),
 						converseZero,
@@ -279,7 +260,6 @@ public abstract class Obbox extends Canvas {
 						(startTransverseEdge + endTransverseEdge) / 2
 				);
 				cornerTo(
-						context,
 						gc,
 						roundInnerEdges(),
 						converseZero,
@@ -288,7 +268,6 @@ public abstract class Obbox extends Canvas {
 						startTransverseEdge
 				);
 				cornerTo(
-						context,
 						gc,
 						roundConcave(),
 						startConverse,
@@ -301,27 +280,18 @@ public abstract class Obbox extends Canvas {
 		}
 	}
 
-	private void moveTo(final Context context, final GraphicsContext gc, final int c, final int t) {
-		final Point2D point = context.toScreen(new Vector(c, t));
-		gc.moveTo(point.getX(), point.getY());
+	private void moveTo(final Drawing.DrawingContext gc, final int c, final int t) {
+		gc.moveTo(c, t);
 	}
 
 	private void cornerTo(
-			final Context context,
-			final GraphicsContext gc,
-			final boolean round,
-			final int c,
-			final int t,
-			final int c2,
-			final int t2
+			final Drawing.DrawingContext gc, final boolean round, final int c, final int t, final int c2, final int t2
 	) {
-		final Point2D point = context.toScreen(new Vector(c, t));
-		final Point2D point2 = context.toScreen(new Vector(c2, t2));
 		if (round) {
-			gc.arcTo(point.getX(), point.getY(), point2.getX(), point2.getY(), radius);
+			gc.arcTo(c, t, c2, t2, radius);
 		} else {
-			gc.lineTo(point.getX(), point.getY());
-			gc.lineTo(point2.getX(), point2.getY());
+			gc.lineTo(c, t);
+			gc.lineTo(c2, t2);
 		}
 	}
 

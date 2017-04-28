@@ -1,8 +1,8 @@
 package com.zarbosoft.bonestruct.editor.details;
 
-import javafx.scene.Node;
+import com.zarbosoft.bonestruct.display.DisplayNode;
 
 public class DetailsPage {
 	public int priority = 0;
-	public Node node;
+	public DisplayNode node;
 }

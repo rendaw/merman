@@ -1,5 +1,7 @@
 package com.zarbosoft.bonestruct.syntax.front;
 
+import com.zarbosoft.bonestruct.display.Group;
+import com.zarbosoft.bonestruct.display.Text;
 import com.zarbosoft.bonestruct.document.Node;
 import com.zarbosoft.bonestruct.document.values.Value;
 import com.zarbosoft.bonestruct.document.values.ValueArray;
@@ -10,7 +12,6 @@ import com.zarbosoft.bonestruct.editor.details.DetailsPage;
 import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.VisualPart;
 import com.zarbosoft.bonestruct.editor.visual.nodes.VisualPrimitive;
-import com.zarbosoft.bonestruct.editor.visual.raw.RawText;
 import com.zarbosoft.bonestruct.syntax.FreeNodeType;
 import com.zarbosoft.bonestruct.syntax.NodeType;
 import com.zarbosoft.bonestruct.syntax.middle.MiddlePrimitive;
@@ -25,7 +26,6 @@ import com.zarbosoft.pidgoon.nodes.Wildcard;
 import com.zarbosoft.rendaw.common.Common;
 import com.zarbosoft.rendaw.common.DeadCode;
 import com.zarbosoft.rendaw.common.Pair;
-import javafx.scene.Group;
 import org.pcollections.HashTreePSet;
 import org.pcollections.PSet;
 
@@ -92,7 +92,7 @@ public abstract class FrontGapBase extends FrontPart {
 
 			private class GapDetails extends DetailsPage {
 				public GapDetails(final Context context, final List<String> choices) {
-					final Group group = new Group();
+					final Group group = context.display.group();
 					this.node = group;
 					final PSet tags = HashTreePSet.from(context.globalTags);
 					final Style.Baked lineStyle = context.getStyle(tags
@@ -100,9 +100,11 @@ public abstract class FrontGapBase extends FrontPart {
 							.plus(new PartTag("details")));
 					int transverse = 0;
 					for (final String choice : choices) {
-						final RawText line = new RawText(context, lineStyle);
+						final Text line = context.display.text();
+						line.setColor(context, lineStyle.color);
+						line.setFont(context, lineStyle.getFont(context));
 						line.setText(context, choice);
-						group.getChildren().add(line.getVisual());
+						group.add(line);
 						line.setTransverse(context, transverse);
 						transverse += line.transverseSpan(context);
 					}
@@ -122,9 +124,9 @@ public abstract class FrontGapBase extends FrontPart {
 				final List<String> choices = process(context, self.parent.node(), self.get(), userData);
 				if (!choices.isEmpty() && context.display != null) {
 					if (gapDetails != null)
-						context.display.details.removePage(context, gapDetails);
+						context.details.removePage(context, gapDetails);
 					gapDetails = new GapDetails(context, choices);
-					context.display.details.addPage(context, gapDetails);
+					context.details.addPage(context, gapDetails);
 				}
 			}
 
@@ -133,7 +135,7 @@ public abstract class FrontGapBase extends FrontPart {
 				super.clear(context);
 				deselect(context, self.parent.node(), self.get(), userData);
 				if (gapDetails != null) {
-					context.display.details.removePage(context, gapDetails);
+					context.details.removePage(context, gapDetails);
 					gapDetails = null;
 				}
 			}

@@ -54,10 +54,10 @@ public class HoverType extends Module {
 							text.append(temp);
 					}
 					message.text = text.toString();
-					context.display.banner.addMessage(context, message);
+					context.banner.addMessage(context, message);
 				}
 				if (oldMessage != null) {
-					context.display.banner.removeMessage(context, oldMessage); // TODO oldMessage callback on finish?
+					context.banner.removeMessage(context, oldMessage); // TODO oldMessage callback on finish?
 					oldMessage = null;
 				}
 			}

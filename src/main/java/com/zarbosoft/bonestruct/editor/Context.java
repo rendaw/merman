@@ -3,6 +3,8 @@ package com.zarbosoft.bonestruct.editor;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.zarbosoft.bonestruct.display.Display;
+import com.zarbosoft.bonestruct.display.Group;
 import com.zarbosoft.bonestruct.document.Document;
 import com.zarbosoft.bonestruct.document.values.Value;
 import com.zarbosoft.bonestruct.document.values.ValueArray;
@@ -27,12 +29,6 @@ import com.zarbosoft.bonestruct.wall.Wall;
 import com.zarbosoft.luxem.read.Parse;
 import com.zarbosoft.luxem.write.RawWriter;
 import javafx.animation.Interpolator;
-import javafx.animation.Transition;
-import javafx.geometry.Bounds;
-import javafx.geometry.Point2D;
-import javafx.scene.Group;
-import javafx.scene.Node;
-import javafx.scene.layout.Pane;
 import org.pcollections.TreePVector;
 
 import java.io.ByteArrayInputStream;
@@ -55,6 +51,14 @@ public class Context {
 	public List<KeyListener> keyListeners = new ArrayList<>();
 	public Map<Object, List<Action>> actions = new HashMap<>();
 	public ClipboardEngine clipboardEngine;
+	public final Wall wall;
+	public Group background;
+	public Brick cornerstone;
+	public int cornerstoneTransverse;
+	public int scrollTransverse;
+	public Banner banner;
+	public Details details;
+	public final Display display;
 
 	@FunctionalInterface
 	public interface KeyListener {
@@ -85,121 +89,13 @@ public class Context {
 		globalTags.removeAll(change.remove);
 		globalTags.addAll(change.add);
 		selectionTagsChanged();
-		if (display != null) {
-			display.wall.children.forEach(course -> course.children.forEach(brick -> brick
-					.getVisual()
-					.tagsChanged(this)));
-		}
+		wall.children.forEach(course -> course.children.forEach(brick -> brick.getVisual().tagsChanged(this)));
 	}
 
 	public void selectionTagsChanged() {
 		if (selection == null)
 			return;
 		tagsChangeListeners.forEach(listener -> listener.tagsChanged(this, selection.getVisual().tags(this)));
-	}
-
-	public static class Display {
-
-		public final Wall wall;
-		public Group background;
-		public Brick cornerstone;
-		public int cornerstoneTransverse;
-		public int scrollTransverse;
-		public Banner banner;
-		public Details details;
-
-		public Display(final Wall wall) {
-			this.wall = wall;
-		}
-	}
-
-	public Display display = null;
-
-	public int sceneGetConverseSpan(final Node node) {
-		switch (syntax.converseDirection) {
-			case UP:
-			case DOWN:
-				return (int) node.getLayoutBounds().getHeight();
-			case LEFT:
-			case RIGHT:
-				return (int) node.getLayoutBounds().getWidth();
-		}
-		throw new AssertionError("DEAD CODE");
-	}
-
-	public int sceneGetTransverseSpan(final Node node) {
-		switch (syntax.transverseDirection) {
-			case UP:
-			case DOWN:
-				return (int) node.getLayoutBounds().getHeight();
-			case LEFT:
-			case RIGHT:
-				return (int) node.getLayoutBounds().getWidth();
-		}
-		throw new AssertionError("DEAD CODE");
-	}
-
-	public int sceneGetConverse(final Node node) {
-		switch (syntax.converseDirection) {
-			case UP:
-				return edge - (int) node.getLayoutY() + (int) node.getLayoutBounds().getWidth();
-			case DOWN:
-				return (int) node.getLayoutY();
-			case LEFT:
-				return edge - (int) node.getLayoutX() + (int) node.getLayoutBounds().getWidth();
-			case RIGHT:
-				return (int) node.getLayoutX();
-		}
-		throw new AssertionError("DEAD CODE");
-	}
-
-	public int sceneGetTransverse(final Node node) {
-		switch (syntax.transverseDirection) {
-			case UP:
-				return transverseEdge - (int) node.getLayoutY() + (int) node.getLayoutBounds().getWidth();
-			case DOWN:
-				return (int) node.getLayoutY();
-			case LEFT:
-				return transverseEdge - (int) node.getLayoutX() + (int) node.getLayoutBounds().getWidth();
-			case RIGHT:
-				return (int) node.getLayoutX();
-		}
-		throw new AssertionError("DEAD CODE");
-	}
-
-	public com.zarbosoft.bonestruct.editor.visual.Vector sceneGet(final Node node) {
-		final Bounds bounds = node.getLayoutBounds();
-		int converse = 0;
-		int transverse = 0;
-		switch (syntax.converseDirection) {
-			case UP:
-				converse = edge - (int) node.getLayoutY() + (int) bounds.getWidth();
-				break;
-			case DOWN:
-				converse = (int) node.getLayoutY();
-				break;
-			case LEFT:
-				converse = edge - (int) node.getLayoutX() + (int) bounds.getWidth();
-				break;
-			case RIGHT:
-				converse = (int) node.getLayoutX();
-				break;
-		}
-		switch (syntax.transverseDirection) {
-			case UP:
-				transverse = transverseEdge - (int) node.getLayoutY() + (int) bounds.getWidth();
-				break;
-			case DOWN:
-				transverse = (int) node.getLayoutY();
-				break;
-			case LEFT:
-				transverse = transverseEdge - (int) node.getLayoutX() + (int) bounds.getWidth();
-				break;
-			case RIGHT:
-				transverse = (int) node.getLayoutX();
-				break;
-		}
-		return new com.zarbosoft.bonestruct.editor.visual.Vector(converse, transverse);
 	}
 
 	public Object locateLong(final Path path) {
@@ -477,34 +373,32 @@ public class Context {
 			// TODO set depth indicator
 		}
 
-		if (display != null) {
-			final Brick newCornerstone = visual.getFirstBrick(this);
-			if (newCornerstone == null) {
-				display.cornerstone = visual.createFirstBrick(this);
-				display.cornerstoneTransverse = 0;
-			} else {
-				display.cornerstone = newCornerstone;
-				display.cornerstoneTransverse = newCornerstone.parent.transverseStart;
-			}
-			selection.addBrickListener(this, new VisualAttachmentAdapter.BoundsListener() {
-				@Override
-				public void firstChanged(final Context context, final Brick brick) {
-					display.wall.setCornerstone(context, brick);
-				}
-
-				@Override
-				public void lastChanged(final Context context, final Brick brick) {
-
-				}
-			});
-			ImmutableSet.copyOf(selectionListeners).forEach(l -> l.selectionChanged(this, selection));
-			selection.addBrickListener(this, selectionExtentsAdapter.boundsListener);
-
-			fillFromEndBrick(display.cornerstone);
-			fillFromStartBrick(display.cornerstone);
-
-			selectionTagsChanged();
+		final Brick newCornerstone = visual.getFirstBrick(this);
+		if (newCornerstone == null) {
+			cornerstone = visual.createFirstBrick(this);
+			cornerstoneTransverse = 0;
+		} else {
+			cornerstone = newCornerstone;
+			cornerstoneTransverse = newCornerstone.parent.transverseStart;
 		}
+		selection.addBrickListener(this, new VisualAttachmentAdapter.BoundsListener() {
+			@Override
+			public void firstChanged(final Context context, final Brick brick) {
+				wall.setCornerstone(context, brick);
+			}
+
+			@Override
+			public void lastChanged(final Context context, final Brick brick) {
+
+			}
+		});
+		ImmutableSet.copyOf(selectionListeners).forEach(l -> l.selectionChanged(this, selection));
+		selection.addBrickListener(this, selectionExtentsAdapter.boundsListener);
+
+		fillFromEndBrick(cornerstone);
+		fillFromStartBrick(cornerstone);
+
+		selectionTagsChanged();
 		if (oldSelection != null) {
 			oldSelection.clear(this);
 		}
@@ -543,9 +437,9 @@ public class Context {
 		public HoverIdle(final Context context) {
 			this.context = context;
 			at = hoverBrick == null ? (
-					context.display.wall.children.get(0).children.isEmpty() ?
+					context.wall.children.get(0).children.isEmpty() ?
 							null :
-							context.display.wall.children.get(0).children.get(0)
+							context.wall.children.get(0).children.get(0)
 			) : hoverBrick;
 		}
 
@@ -565,10 +459,10 @@ public class Context {
 				return;
 			}
 			if (point.transverse < at.parent.transverseStart && at.parent.index > 0) {
-				at = context.display.wall.children.get(at.parent.index - 1).children.get(0);
+				at = context.wall.children.get(at.parent.index - 1).children.get(0);
 			} else if (point.transverse > at.parent.transverseEdge(context) &&
-					at.parent.index < display.wall.children.size() - 1) {
-				at = context.display.wall.children.get(at.parent.index + 1).children.get(0);
+					at.parent.index < wall.children.size() - 1) {
+				at = context.wall.children.get(at.parent.index + 1).children.get(0);
 			} else {
 				while (point.converse < at.getConverse(context) && at.index > 0) {
 					at = at.parent.children.get(at.index - 1);
@@ -608,16 +502,18 @@ public class Context {
 	public Context(
 			final Syntax syntax,
 			final Document document,
+			final Display display,
 			final Consumer<IdleTask> addIdle,
-			final Wall wall,
 			final History history
 	) {
 		this.syntax = syntax;
 		this.document = document;
+		this.display = display;
+		background = display.group();
+		banner = new Banner(this);
+		details = new Details(this);
 		this.addIdle = addIdle;
-		if (wall != null) {
-			display = new Display(wall);
-		}
+		this.wall = new Wall(this);
 		this.history = history;
 	}
 
@@ -640,215 +536,4 @@ public class Context {
 
 	public static TheInterpolator interpolator = new TheInterpolator();
 
-	public com.zarbosoft.bonestruct.editor.visual.Vector sceneToVector(
-			final Pane scene, final double x, final double y
-	) {
-		int converse = 0;
-		int transverse = 0;
-		switch (syntax.converseDirection) {
-			case UP:
-				converse = (int) (scene.heightProperty().doubleValue() - y);
-				break;
-			case DOWN:
-				converse = (int) y;
-				break;
-			case LEFT:
-				converse = (int) (scene.widthProperty().doubleValue() - x);
-				break;
-			case RIGHT:
-				converse = (int) x;
-				break;
-		}
-		switch (syntax.transverseDirection) {
-			case UP:
-				transverse = (int) (scene.heightProperty().doubleValue() - x);
-				break;
-			case DOWN:
-				transverse = (int) y;
-				break;
-			case LEFT:
-				transverse = (int) (scene.widthProperty().doubleValue() - x);
-				break;
-			case RIGHT:
-				transverse = (int) x;
-				break;
-		}
-		return new com.zarbosoft.bonestruct.editor.visual.Vector(converse, transverse);
-	}
-
-	public Point2D toScreen(final com.zarbosoft.bonestruct.editor.visual.Vector source) {
-		double x = 0, y = 0;
-		switch (syntax.converseDirection) {
-			case UP:
-				y = edge - source.converse;
-				break;
-			case DOWN:
-				y = source.converse;
-				break;
-			case LEFT:
-				x = edge - source.converse;
-				break;
-			case RIGHT:
-				x = source.converse;
-				break;
-		}
-		switch (syntax.transverseDirection) {
-			case UP:
-				y = transverseEdge - source.transverse;
-				break;
-			case DOWN:
-				y = source.transverse;
-				break;
-			case LEFT:
-				x = transverseEdge - source.transverse;
-				break;
-			case RIGHT:
-				x = source.transverse;
-				break;
-		}
-		return new Point2D(x, y);
-	}
-
-	public Point2D toScreenSpan(final com.zarbosoft.bonestruct.editor.visual.Vector source) {
-		double x = 0, y = 0;
-		switch (syntax.converseDirection) {
-			case UP:
-			case DOWN:
-				x = source.transverse;
-				y = source.converse;
-				break;
-			case LEFT:
-			case RIGHT:
-				x = source.converse;
-				y = source.transverse;
-				break;
-		}
-		return new Point2D(x, y);
-	}
-
-	public void translate(final javafx.scene.Node node, final com.zarbosoft.bonestruct.editor.visual.Vector vector) {
-		translate(node, vector, false);
-	}
-
-	private class TransitionSmoothOut extends Transition {
-		private final Node node;
-		private final Double diffX;
-		private final Double diffY;
-
-		{
-			setCycleDuration(javafx.util.Duration.millis(200));
-		}
-
-		private TransitionSmoothOut(final Node node, final Double diffX, final Double diffY) {
-			this.node = node;
-			this.diffX = diffX;
-			this.diffY = diffY;
-		}
-
-		@Override
-		protected void interpolate(final double frac) {
-			final double frac2 = Math.pow(1 - frac, 3);
-			if (diffX != null)
-				node.setTranslateX(-frac2 * diffX);
-			if (diffY != null)
-				node.setTranslateY(-frac2 * diffY);
-		}
-	}
-
-	public void translateTransverse(final javafx.scene.Node node, final int transverse, final boolean animate) {
-		Integer x = null;
-		Integer y = null;
-		switch (syntax.transverseDirection) {
-			case UP:
-				y = (int) node.getLayoutBounds().getHeight() + transverse;
-				break;
-			case DOWN:
-				y = transverse;
-				break;
-			case LEFT:
-				x = (int) node.getLayoutBounds().getWidth() + transverse;
-				break;
-			case RIGHT:
-				x = transverse;
-				break;
-		}
-		if (x != null) {
-			if (animate)
-				new TransitionSmoothOut(node, x - node.getLayoutX(), null).play();
-			node.setLayoutX(x);
-		} else {
-			if (animate)
-				new TransitionSmoothOut(node, null, y - node.getLayoutY()).play();
-			node.setLayoutY(y);
-		}
-	}
-
-	public void translateConverse(final javafx.scene.Node node, final int converse, final boolean animate) {
-		Integer x = null;
-		Integer y = null;
-		switch (syntax.converseDirection) {
-			case UP:
-				y = (int) node.getLayoutBounds().getHeight() + converse;
-				break;
-			case DOWN:
-				y = converse;
-				break;
-			case LEFT:
-				x = (int) node.getLayoutBounds().getWidth() + converse;
-				break;
-			case RIGHT:
-				x = converse;
-				break;
-		}
-		if (x != null) {
-			if (animate)
-				new TransitionSmoothOut(node, x - node.getLayoutX(), null).play();
-			node.setLayoutX(x);
-		} else {
-			if (animate)
-				new TransitionSmoothOut(node, null, y - node.getLayoutY()).play();
-			node.setLayoutY(y);
-		}
-	}
-
-	public void translate(
-			final javafx.scene.Node node,
-			final com.zarbosoft.bonestruct.editor.visual.Vector vector,
-			final boolean animate
-	) {
-		int x = 0;
-		int y = 0;
-		switch (syntax.converseDirection) {
-			case UP:
-				y = (int) node.getLayoutBounds().getHeight() + vector.converse;
-				break;
-			case DOWN:
-				y = vector.converse;
-				break;
-			case LEFT:
-				x = (int) node.getLayoutBounds().getWidth() + vector.converse;
-				break;
-			case RIGHT:
-				x = vector.converse;
-				break;
-		}
-		switch (syntax.transverseDirection) {
-			case UP:
-				y = (int) node.getLayoutBounds().getHeight() + vector.transverse;
-				break;
-			case DOWN:
-				y = vector.transverse;
-				break;
-			case LEFT:
-				x = (int) node.getLayoutBounds().getWidth() + vector.transverse;
-				break;
-			case RIGHT:
-				x = vector.transverse;
-				break;
-		}
-		if (animate)
-			new TransitionSmoothOut(node, x - node.getLayoutX(), y - node.getLayoutY()).play();
-		node.setLayoutX(x);
-		node.setLayoutY(y);
-	}
 }

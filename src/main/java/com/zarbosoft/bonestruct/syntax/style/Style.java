@@ -1,8 +1,9 @@
 package com.zarbosoft.bonestruct.syntax.style;
 
+import com.zarbosoft.bonestruct.display.Font;
+import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.interface1.Configuration;
-import javafx.scene.text.Font;
 
 import java.lang.reflect.Field;
 import java.util.HashSet;
@@ -108,10 +109,10 @@ public class Style {
 			}
 		}
 
-		public Font getFont() {
+		public Font getFont(final Context context) {
 			if (font == null)
-				return new Font(fontSize);
-			return new Font(font, fontSize);
+				return context.display.font(null, fontSize);
+			return context.display.font(font, fontSize);
 		}
 	}
 }

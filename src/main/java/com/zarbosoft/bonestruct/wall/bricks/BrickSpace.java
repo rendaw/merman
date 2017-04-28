@@ -1,12 +1,12 @@
 package com.zarbosoft.bonestruct.wall.bricks;
 
+import com.zarbosoft.bonestruct.display.Blank;
+import com.zarbosoft.bonestruct.display.DisplayNode;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.visual.*;
 import com.zarbosoft.bonestruct.editor.visual.nodes.VisualSpace;
 import com.zarbosoft.bonestruct.syntax.style.Style;
 import com.zarbosoft.bonestruct.wall.Brick;
-import javafx.scene.Node;
-import javafx.scene.layout.Region;
 import org.pcollections.HashTreePSet;
 
 import java.util.HashSet;
@@ -17,12 +17,13 @@ public class BrickSpace extends Brick implements AlignmentListener {
 	private int converse = 0;
 	private Style.Baked style;
 	private Alignment alignment;
-	private final Region visual = new Region();
+	private final Blank visual;
 	private int minConverse;
 
 	public BrickSpace(final VisualSpace spaceVisual, final Context context) {
 		this.spaceVisual = spaceVisual;
 		setStyle(context);
+		visual = context.display.blank();
 	}
 
 	public void setStyle(final Context context) {
@@ -54,7 +55,7 @@ public class BrickSpace extends Brick implements AlignmentListener {
 	}
 
 	@Override
-	public Properties properties() {
+	public Properties properties(final Context context) {
 		return properties(style);
 	}
 
@@ -69,7 +70,7 @@ public class BrickSpace extends Brick implements AlignmentListener {
 	}
 
 	@Override
-	public Node getRawVisual() {
+	public DisplayNode getRawVisual() {
 		return visual;
 	}
 
@@ -77,7 +78,7 @@ public class BrickSpace extends Brick implements AlignmentListener {
 	public void setConverse(final Context context, final int minConverse, final int converse) {
 		this.minConverse = minConverse;
 		this.converse = converse;
-		context.translate(visual, new Vector(converse, 0));
+		visual.setPosition(context, new Vector(converse, 0), false);
 	}
 
 	@Override

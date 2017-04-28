@@ -17,6 +17,7 @@ public class BrickMark extends BrickText {
 	private Alignment alignment;
 
 	public BrickMark(final VisualMark markVisual, final Context context) {
+		super(context);
 		this.markVisual = markVisual;
 		setStyle(context);
 	}
@@ -29,7 +30,7 @@ public class BrickMark extends BrickText {
 		if (alignment != null)
 			alignment.addListener(context, this);
 		changed(context);
-		super.setStyle(style);
+		super.setStyle(context, style);
 	}
 
 	@Override
@@ -71,6 +72,6 @@ public class BrickMark extends BrickText {
 		final Set<Visual.Tag> tags = new HashSet<>(markVisual.tags(context));
 		tags.removeAll(change.remove);
 		tags.addAll(change.add);
-		return properties(context.getStyle(tags));
+		return properties(context, context.getStyle(tags));
 	}
 }

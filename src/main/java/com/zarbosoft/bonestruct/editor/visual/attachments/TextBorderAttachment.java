@@ -70,8 +70,8 @@ public class TextBorderAttachment {
 	public TextBorderAttachment(
 			final Context context, final ObboxStyle.Baked style
 	) {
-		border = Obbox.fromSettings(style);
-		context.display.background.getChildren().add(border);
+		border = Obbox.fromSettings(context, style);
+		context.background.add(border.drawing);
 	}
 
 	public void setFirst(final Context context, final BrickText first) {
@@ -107,7 +107,7 @@ public class TextBorderAttachment {
 			first.removeAttachment(context, this.firstAttachment);
 		if (last != null)
 			last.removeAttachment(context, this.lastAttachment);
-		context.display.background.getChildren().remove(border);
+		context.background.remove(border.drawing);
 	}
 
 	public void redraw(final Context context) {

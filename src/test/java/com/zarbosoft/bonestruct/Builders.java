@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
+import com.zarbosoft.bonestruct.display.MockeryDisplay;
 import com.zarbosoft.bonestruct.document.Document;
 import com.zarbosoft.bonestruct.document.Node;
 import com.zarbosoft.bonestruct.document.values.Value;
@@ -435,7 +436,8 @@ public class Builders {
 
 	public static Context buildDoc(final Syntax syntax, final Node... root) {
 		final Document doc = new Document(syntax, new ValueArray(syntax.root, Arrays.asList(root)));
-		final Context context = new Context(syntax, doc, null, null, new History());
+		final Context context = new Context(syntax, doc, new MockeryDisplay(), idleTask -> {
+		}, new History());
 		context.clipboardEngine = new ClipboardEngine() {
 			byte[] data = null;
 

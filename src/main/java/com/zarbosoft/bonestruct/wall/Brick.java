@@ -2,13 +2,13 @@ package com.zarbosoft.bonestruct.wall;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.zarbosoft.bonestruct.display.DisplayNode;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.Hoverable;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.VisualPart;
-import javafx.scene.Node;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -85,9 +85,9 @@ public abstract class Brick {
 		}
 	}
 
-	public abstract Properties properties();
+	public abstract Properties properties(Context context);
 
-	public abstract Node getRawVisual();
+	public abstract DisplayNode getRawVisual();
 
 	public abstract void setConverse(Context context, int minConverse, int converse);
 
@@ -100,7 +100,7 @@ public abstract class Brick {
 	public abstract void allocateTransverse(Context context, int ascent, int descent);
 
 	public void addAfter(final Context context, final Brick brick) {
-		if (brick.properties().broken) {
+		if (brick.properties(context).broken) {
 			parent.breakCourse(context, index + 1).add(context, 0, ImmutableList.of(brick));
 		} else
 			parent.add(context, index + 1, ImmutableList.of(brick));
@@ -109,7 +109,7 @@ public abstract class Brick {
 
 	public void addBefore(final Context context, final Brick brick) {
 		if (index == 0) {
-			if (brick.properties().broken || (parent.index == 0 && properties().broken)) {
+			if (brick.properties(context).broken || (parent.index == 0 && properties(context).broken)) {
 				parent.add(context, 0, ImmutableList.of(brick));
 				parent.breakCourse(context, 1);
 			} else if (parent.index == 0) {
@@ -119,7 +119,7 @@ public abstract class Brick {
 				previousCourse.add(context, previousCourse.children.size(), ImmutableList.of(brick));
 			}
 		} else {
-			if (brick.properties().broken) {
+			if (brick.properties(context).broken) {
 				parent.breakCourse(context, index).add(context, 0, ImmutableList.of(brick));
 			} else
 				parent.add(context, index, ImmutableList.of(brick));

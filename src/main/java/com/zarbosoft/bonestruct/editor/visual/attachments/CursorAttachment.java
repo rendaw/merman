@@ -1,17 +1,15 @@
 package com.zarbosoft.bonestruct.editor.visual.attachments;
 
+import com.zarbosoft.bonestruct.display.Drawing;
+import com.zarbosoft.bonestruct.display.Font;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
-import com.zarbosoft.bonestruct.editor.visual.raw.RawTextUtils;
 import com.zarbosoft.bonestruct.syntax.style.ObboxStyle;
 import com.zarbosoft.bonestruct.wall.Attachment;
 import com.zarbosoft.bonestruct.wall.bricks.BrickText;
-import javafx.geometry.Point2D;
-import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.shape.StrokeLineCap;
 
-public class CursorAttachment extends Canvas {
+public class CursorAttachment {
+	Drawing drawing;
 	private final ObboxStyle.Baked style;
 	private final Attachment attachment = new Attachment() {
 		@Override
@@ -42,22 +40,24 @@ public class CursorAttachment extends Canvas {
 	private void place(final Context context) {
 		if (offset == null)
 			return;
-		final Point2D screen = context.toScreen(new Vector(startConverse + brick.getConverseOffset(index),
-				startTransverse + transverseAscent
-		));
-		setLayoutX(screen.getX() + offset.getX());
-		setLayoutY(screen.getY() + offset.getY());
+		drawing.setPosition(
+				context,
+				new Vector(startConverse + brick.getConverseOffset(index), startTransverse + transverseAscent).add(
+						offset),
+				false
+		);
 	}
 
-	Point2D offset;
+	Vector offset;
 	private int startConverse;
 	private int startTransverse;
 	private int transverseAscent;
 	private BrickText brick;
 
 	public CursorAttachment(final Context context, final ObboxStyle.Baked style) {
+		drawing = context.display.drawing();
 		this.style = style;
-		context.display.background.getChildren().add(this);
+		context.display.add(drawing);
 	}
 
 	public void setPosition(final Context context, final BrickText brick, final int index) {
@@ -77,23 +77,27 @@ public class CursorAttachment extends Canvas {
 	}
 
 	private void redraw(final Context context) {
-		final int ascent = (int) (RawTextUtils.getAscent(brick.getFont()) * 1.8);
-		final int descent = (int) (RawTextUtils.getDescent(brick.getFont()) * 1.8);
+		final Font font = brick.getFont();
+		final int ascent = (int) (font.getAscent() * 1.8);
+		final int descent = (int) (font.getDescent() * 1.8);
 		final int halfBuffer = (int) (style.lineThickness / 2 + 0.5);
 		final int buffer = halfBuffer * 2;
-		final Point2D size = context.toScreenSpan(new Vector(buffer + 1, ascent + (style.roundStart ? buffer : 0)));
-		final GraphicsContext gc = getGraphicsContext2D();
-		gc.clearRect(0, 0, getWidth(), getHeight());
-		setWidth(size.getX());
-		setHeight(size.getY());
-		gc.setLineWidth(style.lineThickness);
-		gc.setLineCap(style.roundStart ? StrokeLineCap.ROUND : StrokeLineCap.BUTT);
-		gc.setStroke(style.lineColor.get());
+		final Vector size = new Vector(buffer + 1, ascent + (style.roundStart ? buffer : 0));
+		drawing.clear();
+		drawing.resize(context, size);
+		final Drawing.DrawingContext gc = drawing.begin(context);
+		gc.setLineThickness(style.lineThickness);
+		if (style.roundStart)
+			gc.setLineCapRound();
+		else
+			gc.setLineCapFlat();
+		gc.setLineColor(style.lineColor);
 		gc.beginPath();
 		gc.moveTo(halfBuffer, halfBuffer);
-		gc.lineTo(size.getX() - halfBuffer - 1, size.getY() - halfBuffer - 1);
+		gc.lineTo(size.converse - halfBuffer - 1, size.transverse - halfBuffer - 1);
 		gc.closePath();
 		gc.stroke();
+		/*
 		switch (context.syntax.converseDirection) {
 			case UP:
 				switch (context.syntax.transverseDirection) {
@@ -122,11 +126,13 @@ public class CursorAttachment extends Canvas {
 				offset = new Point2D(halfBuffer, -ascent + descent - (style.roundStart ? halfBuffer : 0));
 				break;
 		}
+		*/
+		offset = new Vector(halfBuffer, -ascent + descent - (style.roundStart ? halfBuffer : 0));
 	}
 
 	public void destroy(final Context context) {
 		if (brick != null)
 			brick.removeAttachment(context, this.attachment);
-		context.display.background.getChildren().remove(this);
+		context.background.remove(drawing);
 	}
 }

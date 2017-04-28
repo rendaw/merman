@@ -2,13 +2,13 @@ package com.zarbosoft.bonestruct.wall;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.zarbosoft.bonestruct.display.Group;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.IdleTask;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.rendaw.common.ChainComparator;
 import com.zarbosoft.rendaw.common.Pair;
-import javafx.scene.Group;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -19,8 +19,8 @@ import static com.zarbosoft.rendaw.common.Common.stream;
 public class Course {
 
 	public int index;
-	Group visual = new Group();
-	Group brickVisual = new Group();
+	final Group visual;
+	final Group brickVisual;
 	Wall parent;
 	private IdlePlaceTask idlePlace;
 	private IdleCompactTask idleCompact;
@@ -34,7 +34,9 @@ public class Course {
 	int beddingAfter = 0;
 
 	Course(final Context context) {
-		visual.getChildren().add(0, brickVisual);
+		visual = context.display.group();
+		brickVisual = context.display.group();
+		visual.add(0, brickVisual);
 	}
 
 	public int transverseEdge(final Context context) {
@@ -44,7 +46,7 @@ public class Course {
 
 	void setTransverse(final Context context, final int transverse) {
 		transverseStart = transverse + beddingBefore;
-		context.translate(visual,
+		visual.setPosition(context,
 				new com.zarbosoft.bonestruct.editor.visual.Vector(0, transverseStart),
 				context.syntax.animateCoursePlacement
 		);
@@ -59,7 +61,7 @@ public class Course {
 
 	void changed(final Context context, final int at) {
 		final Brick brick = children.get(at);
-		final Brick.Properties properties = brick.properties();
+		final Brick.Properties properties = brick.properties(context);
 		if (at > 0 && properties.broken) {
 			breakCourse(context, at);
 			return;
@@ -73,7 +75,7 @@ public class Course {
 	}
 
 	private void joinPreviousCourse(final Context context) {
-		visual.getChildren().clear();
+		visual.clear();
 		final Course previous = parent.children.get(this.index - 1);
 		previous.add(context, previous.children.size(), children);
 		destroyInner(context);
@@ -89,14 +91,14 @@ public class Course {
 			boolean beddingChanged = false;
 			getIdlePlace(context);
 			for (final Brick brick : transplant) {
-				idlePlace.removeMaxAscent = Math.max(idlePlace.removeMaxAscent, brick.properties().ascent);
-				idlePlace.removeMaxDescent = Math.max(idlePlace.removeMaxDescent, brick.properties().descent);
+				idlePlace.removeMaxAscent = Math.max(idlePlace.removeMaxAscent, brick.properties(context).ascent);
+				idlePlace.removeMaxDescent = Math.max(idlePlace.removeMaxDescent, brick.properties(context).descent);
 				idlePlace.changed.remove(brick);
 				if (!brick.getBeddings(context).isEmpty())
 					beddingChanged = true;
 			}
 			children.subList(index, children.size()).clear();
-			visual.getChildren().remove(index, visual.getChildren().size());
+			visual.remove(index, visual.size() - index);
 			next.add(context, 0, transplant);
 			if (beddingChanged)
 				beddingChanged(context);
@@ -115,7 +117,7 @@ public class Course {
 				beddingChanged = true;
 		}
 		renumber(at);
-		visual.getChildren().addAll(at, bricks.stream().map(c -> c.getRawVisual()).collect(Collectors.toList()));
+		visual.addAll(at, bricks.stream().map(c -> c.getRawVisual()).collect(Collectors.toList()));
 		getIdlePlace(context);
 		idlePlace.at(at);
 		idlePlace.changed.addAll(bricks);
@@ -134,11 +136,11 @@ public class Course {
 			} else {
 				if (!brick.getBeddings(context).isEmpty())
 					beddingChanged(context);
-				visual.getChildren().remove(at);
+				visual.remove(at);
 				getIdlePlace(context);
 				idlePlace.at(at);
-				idlePlace.removeMaxAscent = Math.max(idlePlace.removeMaxAscent, brick.properties().ascent);
-				idlePlace.removeMaxDescent = Math.max(idlePlace.removeMaxDescent, brick.properties().descent);
+				idlePlace.removeMaxAscent = Math.max(idlePlace.removeMaxAscent, brick.properties(context).ascent);
+				idlePlace.removeMaxDescent = Math.max(idlePlace.removeMaxDescent, brick.properties(context).descent);
 				idlePlace.changed.remove(brick);
 			}
 		}
@@ -236,7 +238,7 @@ public class Course {
 			// Update transverse space
 			boolean newAscent = false, newDescent = false;
 			for (final Brick brick : changed) {
-				final Brick.Properties properties = brick.properties();
+				final Brick.Properties properties = brick.properties(context);
 				if (properties.ascent > ascent) {
 					ascent = properties.ascent;
 					newAscent = true;
@@ -251,7 +253,7 @@ public class Course {
 				descent = 0;
 				{
 					for (final Brick brick : children) {
-						final Brick.Properties properties = brick.properties();
+						final Brick.Properties properties = brick.properties(context);
 						ascent = Math.max(ascent, properties.ascent);
 						descent = Math.max(descent, properties.descent);
 					}
@@ -277,7 +279,7 @@ public class Course {
 					at == 0 ? 0 : (at >= children.size() ? last(children) : children.get(at - 1)).converseEdge(context);
 			for (int index = at; index < children.size(); ++index) {
 				final Brick brick = children.get(index);
-				final Brick.Properties properties = brick.properties();
+				final Brick.Properties properties = brick.properties(context);
 				final int minConverse = converse;
 				if (properties.alignment != null && !seenAlignments.contains(properties.alignment)) {
 					seenAlignments.add(properties.alignment);
@@ -401,7 +403,7 @@ public class Course {
 					seen.add(at);
 					properties = lookup.get(at);
 				} else
-					properties = at.properties();
+					properties = at.properties(context);
 				if (properties.alignment != null) {
 					converse = Math.max(converse, properties.alignment.converse);
 				}

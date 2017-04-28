@@ -690,7 +690,7 @@ public class VisualPrimitive extends VisualPart {
 				style = new BrickStyle(context);
 				brickStyle = new WeakReference<>(style);
 			}
-			brick = new LineBrick(VisualPrimitive.this, this, style);
+			brick = new LineBrick(context, VisualPrimitive.this, this, style);
 			brick.setText(context, text);
 			if (selection != null && (selection.range.beginLine == Line.this || selection.range.endLine == Line.this))
 				selection.range.nudge(context);

@@ -1,9 +1,9 @@
 package com.zarbosoft.bonestruct.wall;
 
 import com.google.common.collect.ImmutableList;
+import com.zarbosoft.bonestruct.display.Group;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.IdleTask;
-import javafx.scene.Group;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,12 +12,16 @@ import java.util.stream.Collectors;
 import static com.zarbosoft.rendaw.common.Common.last;
 
 public class Wall {
-	public Group visual = new Group();
+	public final Group visual;
 	public List<Course> children = new ArrayList<>();
 	private IdleAdjustTask idleAdjust;
 	private IdleCompactTask idleCompact;
 	private IdleExpandTask idleExpand;
 	private Course cornerstoneCourse;
+
+	public Wall(final Context context) {
+		visual = context.display.group();
+	}
 
 	public void clear(final Context context) {
 		while (!children.isEmpty())
@@ -48,7 +52,7 @@ public class Wall {
 		children.addAll(at, courses);
 		courses.stream().forEach(l -> l.parent = this);
 		renumber(at);
-		visual.getChildren().addAll(at, courses.stream().map(l -> l.visual).collect(Collectors.toList()));
+		visual.addAll(at, courses.stream().map(l -> l.visual).collect(Collectors.toList()));
 		getIdle(context);
 		if (children.size() > 1) {
 			if (idleAdjust.backward >= at)
@@ -62,7 +66,7 @@ public class Wall {
 	void remove(final Context context, final int at) {
 		final boolean adjustForward = at > cornerstoneCourse.index;
 		children.remove(at);
-		visual.getChildren().remove(at);
+		visual.remove(at);
 		if (at < children.size()) {
 			renumber(at);
 			getIdle(context);
