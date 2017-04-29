@@ -3,7 +3,7 @@ package com.zarbosoft.bonestruct;
 import com.zarbosoft.bonestruct.syntax.FreeNodeType;
 import com.zarbosoft.bonestruct.syntax.Syntax;
 
-import static com.zarbosoft.bonestruct.Builders.buildBackDataNode;
+import static com.zarbosoft.bonestruct.Helper.buildBackDataNode;
 
 public class ExpressionSyntax {
 	final static FreeNodeType infinity;
@@ -17,22 +17,22 @@ public class ExpressionSyntax {
 	final static Syntax syntax;
 
 	static {
-		infinity = new Builders.TypeBuilder("infinity")
-				.back(Builders.buildBackPrimitive("infinity"))
-				.front(new Builders.FrontMarkBuilder("infinity").build())
+		infinity = new Helper.TypeBuilder("infinity")
+				.back(Helper.buildBackPrimitive("infinity"))
+				.front(new Helper.FrontMarkBuilder("infinity").build())
 				.autoComplete(99)
 				.build();
-		factorial = new Builders.TypeBuilder("factorial")
+		factorial = new Helper.TypeBuilder("factorial")
 				.middleNode("value", "any")
-				.back(new Builders.BackRecordBuilder().add("value", buildBackDataNode("value")).build())
+				.back(new Helper.BackRecordBuilder().add("value", buildBackDataNode("value")).build())
 				.frontDataNode("value")
 				.frontMark("!")
 				.autoComplete(99)
 				.build();
-		plus = new Builders.TypeBuilder("plus")
+		plus = new Helper.TypeBuilder("plus")
 				.middleNode("first", "any")
 				.middleNode("second", "any")
-				.back(new Builders.BackRecordBuilder()
+				.back(new Helper.BackRecordBuilder()
 						.add("first", buildBackDataNode("first"))
 						.add("second", buildBackDataNode("second"))
 						.build())
@@ -43,10 +43,10 @@ public class ExpressionSyntax {
 				.associateAfter()
 				.autoComplete(99)
 				.build();
-		minus = new Builders.TypeBuilder("minus")
+		minus = new Helper.TypeBuilder("minus")
 				.middleNode("first", "any")
 				.middleNode("second", "any")
-				.back(new Builders.BackRecordBuilder()
+				.back(new Helper.BackRecordBuilder()
 						.add("first", buildBackDataNode("first"))
 						.add("second", buildBackDataNode("second"))
 						.build())
@@ -57,10 +57,10 @@ public class ExpressionSyntax {
 				.associateBefore()
 				.autoComplete(99)
 				.build();
-		multiply = new Builders.TypeBuilder("multiply")
+		multiply = new Helper.TypeBuilder("multiply")
 				.middleNode("first", "any")
 				.middleNode("second", "any")
-				.back(new Builders.BackRecordBuilder()
+				.back(new Helper.BackRecordBuilder()
 						.add("first", buildBackDataNode("first"))
 						.add("second", buildBackDataNode("second"))
 						.build())
@@ -71,10 +71,10 @@ public class ExpressionSyntax {
 				.associateAfter()
 				.autoComplete(99)
 				.build();
-		divide = new Builders.TypeBuilder("divide")
+		divide = new Helper.TypeBuilder("divide")
 				.middleNode("first", "any")
 				.middleNode("second", "any")
-				.back(new Builders.BackRecordBuilder()
+				.back(new Helper.BackRecordBuilder()
 						.add("first", buildBackDataNode("first"))
 						.add("second", buildBackDataNode("second"))
 						.build())
@@ -85,10 +85,10 @@ public class ExpressionSyntax {
 				.associateAfter()
 				.autoComplete(99)
 				.build();
-		subscript = new Builders.TypeBuilder("subscript")
+		subscript = new Helper.TypeBuilder("subscript")
 				.middleNode("first", "name")
 				.middleNode("second", "name")
-				.back(new Builders.BackRecordBuilder()
+				.back(new Helper.BackRecordBuilder()
 						.add("first", buildBackDataNode("first"))
 						.add("second", buildBackDataNode("second"))
 						.build())
@@ -98,10 +98,10 @@ public class ExpressionSyntax {
 				.precedence(0)
 				.autoComplete(99)
 				.build();
-		inclusiveRange = new Builders.TypeBuilder("inclusiveRange")
+		inclusiveRange = new Helper.TypeBuilder("inclusiveRange")
 				.middleNode("first", "any")
 				.middleNode("second", "any")
-				.back(new Builders.BackRecordBuilder()
+				.back(new Helper.BackRecordBuilder()
 						.add("first", buildBackDataNode("first"))
 						.add("second", buildBackDataNode("second"))
 						.build())
@@ -113,7 +113,7 @@ public class ExpressionSyntax {
 				.precedence(50)
 				.autoComplete(99)
 				.build();
-		syntax = new Builders.SyntaxBuilder("any")
+		syntax = new Helper.SyntaxBuilder("any")
 				.type(infinity)
 				.type(factorial)
 				.type(plus)
@@ -122,10 +122,10 @@ public class ExpressionSyntax {
 				.type(divide)
 				.type(subscript)
 				.type(inclusiveRange)
-				.group("name", new Builders.GroupBuilder().type(infinity).type(subscript).build())
+				.group("name", new Helper.GroupBuilder().type(infinity).type(subscript).build())
 				.group(
 						"any",
-						new Builders.GroupBuilder()
+						new Helper.GroupBuilder()
 								.type(factorial)
 								.type(plus)
 								.type(minus)

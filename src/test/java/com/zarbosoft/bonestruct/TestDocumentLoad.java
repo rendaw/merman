@@ -9,7 +9,7 @@ import org.junit.Test;
 
 import java.util.List;
 
-import static com.zarbosoft.bonestruct.Builders.buildBackPrimitive;
+import static com.zarbosoft.bonestruct.Helper.buildBackPrimitive;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.IsNot.not;
 import static org.junit.Assert.assertThat;
@@ -19,10 +19,10 @@ public class TestDocumentLoad {
 	static Syntax syntax;
 
 	static {
-		type1 = new Builders.TypeBuilder("1").back(buildBackPrimitive("#1")).build();
-		syntax = new Builders.SyntaxBuilder("any")
+		type1 = new Helper.TypeBuilder("1").back(buildBackPrimitive("#1")).build();
+		syntax = new Helper.SyntaxBuilder("any")
 				.type(type1)
-				.group("any", new Builders.GroupBuilder().type(type1).build())
+				.group("any", new Helper.GroupBuilder().type(type1).build())
 				.build();
 	}
 

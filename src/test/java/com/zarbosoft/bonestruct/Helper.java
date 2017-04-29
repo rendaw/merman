@@ -11,6 +11,7 @@ import com.zarbosoft.bonestruct.document.values.Value;
 import com.zarbosoft.bonestruct.document.values.ValueArray;
 import com.zarbosoft.bonestruct.document.values.ValueNode;
 import com.zarbosoft.bonestruct.document.values.ValuePrimitive;
+import com.zarbosoft.bonestruct.editor.Action;
 import com.zarbosoft.bonestruct.editor.ClipboardEngine;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.visual.VisualPart;
@@ -28,10 +29,9 @@ import org.junit.ComparisonFailure;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
-import static com.zarbosoft.rendaw.common.Common.uncheck;
-import static com.zarbosoft.rendaw.common.Common.zip;
+import static com.zarbosoft.rendaw.common.Common.*;
 
-public class Builders {
+public class Helper {
 	public static void dump(final Value value, final RawWriter writer) {
 		uncheck(() -> {
 			if (value.getClass() == ValueArray.class) {
@@ -64,6 +64,16 @@ public class Builders {
 		dump(value, new RawWriter(System.out, (byte) ' ', 4));
 		System.out.write('\n');
 		System.out.flush();
+	}
+
+	public static void act(final Context context, final String name) {
+		for (final Action action : iterable(context.actions.entrySet().stream().flatMap(e -> e.getValue().stream()))) {
+			if (action.getName().equals(name)) {
+				action.run(context);
+				return;
+			}
+		}
+		throw new AssertionError(String.format("No action named [%s]", name));
 	}
 
 	static class SyntaxBuilder {

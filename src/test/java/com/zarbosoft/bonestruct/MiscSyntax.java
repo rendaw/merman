@@ -3,11 +3,15 @@ package com.zarbosoft.bonestruct;
 import com.zarbosoft.bonestruct.syntax.FreeNodeType;
 import com.zarbosoft.bonestruct.syntax.Syntax;
 
-import static com.zarbosoft.bonestruct.Builders.*;
+import static com.zarbosoft.bonestruct.Helper.*;
 
 public class MiscSyntax {
 	final static FreeNodeType infinity;
 	final static FreeNodeType one;
+	final static FreeNodeType two;
+	final static FreeNodeType three;
+	final static FreeNodeType four;
+	final static FreeNodeType five;
 	final static FreeNodeType multiback;
 	final static FreeNodeType quoted;
 	final static FreeNodeType binaryBang;
@@ -24,16 +28,32 @@ public class MiscSyntax {
 	final static Syntax syntax;
 
 	static {
-		infinity = new Builders.TypeBuilder("infinity")
-				.back(Builders.buildBackPrimitive("infinity"))
-				.front(new Builders.FrontMarkBuilder("infinity").build())
+		infinity = new Helper.TypeBuilder("infinity")
+				.back(Helper.buildBackPrimitive("infinity"))
+				.front(new Helper.FrontMarkBuilder("infinity").build())
 				.autoComplete(99)
 				.build();
-		one = new Builders.TypeBuilder("one")
-				.back(Builders.buildBackPrimitive("one"))
-				.front(new Builders.FrontMarkBuilder("one").build())
+		one = new Helper.TypeBuilder("one")
+				.back(Helper.buildBackPrimitive("one"))
+				.front(new Helper.FrontMarkBuilder("one").build())
 				.build();
-		multiback = new Builders.TypeBuilder("multiback")
+		two = new Helper.TypeBuilder("two")
+				.back(Helper.buildBackPrimitive("two"))
+				.front(new Helper.FrontMarkBuilder("two").build())
+				.build();
+		three = new Helper.TypeBuilder("three")
+				.back(Helper.buildBackPrimitive("three"))
+				.front(new Helper.FrontMarkBuilder("three").build())
+				.build();
+		four = new Helper.TypeBuilder("four")
+				.back(Helper.buildBackPrimitive("four"))
+				.front(new Helper.FrontMarkBuilder("four").build())
+				.build();
+		five = new Helper.TypeBuilder("five")
+				.back(Helper.buildBackPrimitive("five"))
+				.front(new Helper.FrontMarkBuilder("five").build())
+				.build();
+		multiback = new Helper.TypeBuilder("multiback")
 				.back(buildBackDataPrimitive("a"))
 				.back(buildBackDataPrimitive("b"))
 				.middlePrimitive("a")
@@ -42,18 +62,18 @@ public class MiscSyntax {
 				.frontMark("^")
 				.frontDataPrimitive("b")
 				.build();
-		quoted = new Builders.TypeBuilder("quoted")
+		quoted = new Helper.TypeBuilder("quoted")
 				.middlePrimitive("value")
 				.back(buildBackDataPrimitive("value"))
-				.front(new Builders.FrontMarkBuilder("\"").build())
+				.front(new Helper.FrontMarkBuilder("\"").build())
 				.frontDataPrimitive("value")
-				.front(new Builders.FrontMarkBuilder("\"").build())
+				.front(new Helper.FrontMarkBuilder("\"").build())
 				.autoComplete(99)
 				.build();
-		plus = new Builders.TypeBuilder("plus")
+		plus = new Helper.TypeBuilder("plus")
 				.middleNode("first", "any")
 				.middleNode("second", "any")
-				.back(new Builders.BackRecordBuilder()
+				.back(new Helper.BackRecordBuilder()
 						.add("first", buildBackDataNode("first"))
 						.add("second", buildBackDataNode("second"))
 						.build())
@@ -61,10 +81,10 @@ public class MiscSyntax {
 				.frontMark("+")
 				.frontDataNode("second")
 				.build();
-		plusEqual = new Builders.TypeBuilder("plusequal")
+		plusEqual = new Helper.TypeBuilder("plusequal")
 				.middleNode("first", "any")
 				.middleNode("second", "any")
-				.back(new Builders.BackRecordBuilder()
+				.back(new Helper.BackRecordBuilder()
 						.add("first", buildBackDataNode("first"))
 						.add("second", buildBackDataNode("second"))
 						.build())
@@ -72,10 +92,10 @@ public class MiscSyntax {
 				.frontMark("+=")
 				.frontDataNode("second")
 				.build();
-		binaryBang = new Builders.TypeBuilder("bang")
+		binaryBang = new Helper.TypeBuilder("bang")
 				.middleNode("first", "any")
 				.middleNode("second", "any")
-				.back(new Builders.BackRecordBuilder()
+				.back(new Helper.BackRecordBuilder()
 						.add("first", buildBackDataNode("first"))
 						.add("second", buildBackDataNode("second"))
 						.build())
@@ -84,24 +104,24 @@ public class MiscSyntax {
 				.frontDataNode("second")
 				.autoComplete(99)
 				.build();
-		waddle = new Builders.TypeBuilder("waddle")
+		waddle = new Helper.TypeBuilder("waddle")
 				.middleNode("first", "any")
-				.back(new Builders.BackRecordBuilder().add("first", buildBackDataNode("first")).build())
+				.back(new Helper.BackRecordBuilder().add("first", buildBackDataNode("first")).build())
 				.frontDataNode("first")
 				.frontMark("?")
 				.autoComplete(99)
 				.build();
-		snooze = new Builders.TypeBuilder("snooze")
+		snooze = new Helper.TypeBuilder("snooze")
 				.middleNode("value", "any")
-				.back(new Builders.BackRecordBuilder().add("value", buildBackDataNode("value")).build())
+				.back(new Helper.BackRecordBuilder().add("value", buildBackDataNode("value")).build())
 				.frontMark("#")
 				.frontDataNode("value")
 				.autoComplete(99)
 				.build();
-		multiplier = new Builders.TypeBuilder("multiplier")
+		multiplier = new Helper.TypeBuilder("multiplier")
 				.middlePrimitive("text")
 				.middleNode("value", "any")
-				.back(new Builders.BackRecordBuilder()
+				.back(new Helper.BackRecordBuilder()
 						.add("value", buildBackDataNode("value"))
 						.add("text", buildBackDataPrimitive("text"))
 						.build())
@@ -110,7 +130,7 @@ public class MiscSyntax {
 				.frontDataNode("value")
 				.autoComplete(99)
 				.build();
-		array = new Builders.TypeBuilder("array")
+		array = new Helper.TypeBuilder("array")
 				.middleArray("value", "any")
 				.back(buildBackDataArray("value"))
 				.frontMark("<")
@@ -118,7 +138,7 @@ public class MiscSyntax {
 				.frontMark(">")
 				.autoComplete(99)
 				.build();
-		record = new Builders.TypeBuilder("record")
+		record = new Helper.TypeBuilder("record")
 				.middleRecord("value", "record_element")
 				.back(buildBackDataRecord("value"))
 				.frontMark("{")
@@ -126,7 +146,7 @@ public class MiscSyntax {
 				.frontMark("}")
 				.autoComplete(99)
 				.build();
-		recordElement = new Builders.TypeBuilder("record_element")
+		recordElement = new Helper.TypeBuilder("record_element")
 				.middleRecordKey("key")
 				.middleNode("value", "any")
 				.back(buildBackDataKey("key"))
@@ -136,10 +156,10 @@ public class MiscSyntax {
 				.frontDataNode("value")
 				.autoComplete(99)
 				.build();
-		pair = new Builders.TypeBuilder("pair")
+		pair = new Helper.TypeBuilder("pair")
 				.middleNode("first", "any")
 				.middleNode("second", "any")
-				.back(new Builders.BackArrayBuilder()
+				.back(new Helper.BackArrayBuilder()
 						.add(buildBackDataNode("first"))
 						.add(buildBackDataNode("second"))
 						.build())
@@ -150,7 +170,7 @@ public class MiscSyntax {
 				.frontMark(">")
 				.autoComplete(99)
 				.build();
-		ratio = new Builders.TypeBuilder("ratio")
+		ratio = new Helper.TypeBuilder("ratio")
 				.middlePrimitive("first")
 				.middlePrimitive("second")
 				.back(new BackRecordBuilder()
@@ -163,9 +183,13 @@ public class MiscSyntax {
 				.frontDataPrimitive("second")
 				.frontMark(">")
 				.build();
-		syntax = new Builders.SyntaxBuilder("any")
+		syntax = new Helper.SyntaxBuilder("any")
 				.type(infinity)
 				.type(one)
+				.type(two)
+				.type(three)
+				.type(four)
+				.type(five)
 				.type(multiback)
 				.type(quoted)
 				.type(plus)
@@ -181,19 +205,23 @@ public class MiscSyntax {
 				.type(ratio)
 				.group(
 						"test_group_1",
-						new Builders.GroupBuilder()
+						new Helper.GroupBuilder()
 								.type(infinity)
 								.type(MiscSyntax.one)
 								.type(MiscSyntax.multiback)
 								.group("test_group_2")
 								.build()
 				)
-				.group("test_group_2", new Builders.GroupBuilder().type(quoted).build())
+				.group("test_group_2", new Helper.GroupBuilder().type(quoted).build())
 				.group(
 						"any",
-						new Builders.GroupBuilder()
+						new Helper.GroupBuilder()
 								.type(infinity)
 								.type(one)
+								.type(two)
+								.type(three)
+								.type(four)
+								.type(five)
 								.type(quoted)
 								.type(plus)
 								.type(plusEqual)
@@ -207,7 +235,7 @@ public class MiscSyntax {
 								.type(ratio)
 								.build()
 				)
-				.group("arrayChildren", new Builders.GroupBuilder().type(one).type(MiscSyntax.multiback).build())
+				.group("arrayChildren", new Helper.GroupBuilder().type(one).type(MiscSyntax.multiback).build())
 				.build();
 	}
 }
