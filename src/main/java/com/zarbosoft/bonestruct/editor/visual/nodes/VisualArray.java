@@ -392,6 +392,7 @@ public abstract class VisualArray extends VisualGroup {
 			context.actions.put(this, ImmutableList.of(new Action() {
 				@Override
 				public void run(final Context context) {
+					context.history.finishChange(context);
 					children.get(beginIndex).selectDown(context);
 				}
 
@@ -402,6 +403,7 @@ public abstract class VisualArray extends VisualGroup {
 			}, new Action() {
 				@Override
 				public void run(final Context context) {
+					context.history.finishChange(context);
 					parent.selectUp(context);
 				}
 
@@ -412,7 +414,8 @@ public abstract class VisualArray extends VisualGroup {
 			}, new Action() {
 				@Override
 				public void run(final Context context) {
-					setPosition(context, Math.min(data.get().size() - 1, beginIndex + 1));
+					context.history.finishChange(context);
+					setPosition(context, Math.min(data.get().size() - 1, endIndex + 1));
 				}
 
 				@Override
@@ -422,6 +425,7 @@ public abstract class VisualArray extends VisualGroup {
 			}, new Action() {
 				@Override
 				public void run(final Context context) {
+					context.history.finishChange(context);
 					setPosition(context, Math.max(0, beginIndex - 1));
 				}
 
@@ -478,10 +482,12 @@ public abstract class VisualArray extends VisualGroup {
 			}, new Action() {
 				@Override
 				public void run(final Context context) {
+					context.history.finishChange(context);
 					context.copy(data.get().subList(beginIndex, endIndex + 1));
 					context.history.apply(context,
 							new ChangeArray(data, beginIndex, endIndex - beginIndex + 1, ImmutableList.of())
 					);
+					context.history.finishChange(context);
 				}
 
 				@Override
@@ -491,10 +497,12 @@ public abstract class VisualArray extends VisualGroup {
 			}, new Action() {
 				@Override
 				public void run(final Context context) {
+					context.history.finishChange(context);
 					final List<Node> nodes = context.uncopy(((MiddleArray) data.middle()).type);
 					if (nodes.isEmpty())
 						return;
 					context.history.apply(context, new ChangeArray(data, beginIndex, endIndex - beginIndex + 1, nodes));
+					context.history.finishChange(context);
 				}
 
 				@Override
@@ -504,16 +512,7 @@ public abstract class VisualArray extends VisualGroup {
 			}, new Action() {
 				@Override
 				public void run(final Context context) {
-					setEnd(context, beginIndex);
-				}
-
-				@Override
-				public String getName() {
-					return "reset_selection";
-				}
-			}, new Action() {
-				@Override
-				public void run(final Context context) {
+					context.history.finishChange(context);
 					setEnd(context, Math.min(data.get().size() - 1, endIndex + 1));
 				}
 
@@ -524,6 +523,7 @@ public abstract class VisualArray extends VisualGroup {
 			}, new Action() {
 				@Override
 				public void run(final Context context) {
+					context.history.finishChange(context);
 					setEnd(context, Math.max(beginIndex, endIndex - 1));
 				}
 
@@ -534,6 +534,7 @@ public abstract class VisualArray extends VisualGroup {
 			}, new Action() {
 				@Override
 				public void run(final Context context) {
+					context.history.finishChange(context);
 					setBegin(context, Math.max(0, beginIndex - 1));
 				}
 
@@ -544,6 +545,7 @@ public abstract class VisualArray extends VisualGroup {
 			}, new Action() {
 				@Override
 				public void run(final Context context) {
+					context.history.finishChange(context);
 					setBegin(context, Math.min(endIndex, beginIndex + 1));
 				}
 
@@ -678,6 +680,11 @@ public abstract class VisualArray extends VisualGroup {
 			selection.setBegin(context, start);
 			selection.setEnd(context, end);
 		}
+	}
+
+	@Override
+	public void select(final Context context) {
+		select(context, 0, 0);
 	}
 
 	private class ArrayVisualParent extends Parent {

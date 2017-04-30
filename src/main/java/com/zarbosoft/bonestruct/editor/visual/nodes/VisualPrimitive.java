@@ -21,8 +21,6 @@ import com.zarbosoft.bonestruct.wall.bricks.LineBrick;
 import com.zarbosoft.rendaw.common.Common;
 import com.zarbosoft.rendaw.common.DeadCode;
 import com.zarbosoft.rendaw.common.Pair;
-import javafx.scene.input.Clipboard;
-import javafx.scene.input.ClipboardContent;
 import org.pcollections.HashTreePSet;
 import org.pcollections.PSet;
 
@@ -100,8 +98,7 @@ public class VisualPrimitive extends VisualPart {
 
 	@Override
 	public void select(final Context context) {
-		selection = createSelection(context, 0, 0);
-		context.setSelection(selection);
+		select(context, 0, 0);
 	}
 
 	@Override
@@ -133,13 +130,13 @@ public class VisualPrimitive extends VisualPart {
 
 	public PrimitiveSelection selection;
 
-	private class RangeAttachment {
+	public class RangeAttachment {
 		TextBorderAttachment border;
 		CursorAttachment cursor;
 		Line beginLine;
 		Line endLine;
-		int beginOffset;
-		int endOffset;
+		public int beginOffset;
+		public int endOffset;
 		private final ObboxStyle.Baked style;
 		Set<VisualAttachmentAdapter.BoundsListener> listeners = new HashSet<>();
 
@@ -152,12 +149,10 @@ public class VisualPrimitive extends VisualPart {
 			this.beginOffset = Math.max(0, Math.min(data.length(), beginOffset));
 			this.endOffset = Math.max(beginOffset, Math.min(data.length(), endOffset));
 			if (beginOffset == endOffset) {
-				if (context.display != null) {
-					if (border != null)
-						border.destroy(context);
-					if (cursor == null) {
-						cursor = new CursorAttachment(context, style);
-					}
+				if (border != null)
+					border.destroy(context);
+				if (cursor == null) {
+					cursor = new CursorAttachment(context, style);
 				}
 				final int index = findContaining(beginOffset);
 				beginLine = endLine = lines.get(index);
@@ -173,12 +168,10 @@ public class VisualPrimitive extends VisualPart {
 					beginLine = null;
 					endLine = null;
 				}
-				if (context.display != null) {
-					if (cursor != null)
-						cursor.destroy(context);
-					if (border == null) {
-						border = new TextBorderAttachment(context, style);
-					}
+				if (cursor != null)
+					cursor.destroy(context);
+				if (border == null) {
+					border = new TextBorderAttachment(context, style);
 				}
 				final int beginIndex = findContaining(beginOffset);
 				if (beginLine == null || beginLine.index != beginIndex) {
@@ -190,7 +183,7 @@ public class VisualPrimitive extends VisualPart {
 						});
 					}
 				}
-				border.setFirstIndex(context, beginIndex - beginLine.offset);
+				border.setFirstIndex(context, beginOffset - beginLine.offset);
 				final int endIndex = findContaining(endOffset);
 				if (endLine == null || endLine.index != endIndex) {
 					endLine = lines.get(endIndex);
@@ -201,8 +194,7 @@ public class VisualPrimitive extends VisualPart {
 						});
 					}
 				}
-				if (context.display != null)
-					border.setLastIndex(context, endIndex - endLine.offset);
+				border.setLastIndex(context, endOffset - endLine.offset);
 			}
 		}
 
@@ -242,8 +234,8 @@ public class VisualPrimitive extends VisualPart {
 		}
 	}
 
-	protected class PrimitiveSelection extends Selection {
-		final RangeAttachment range;
+	public class PrimitiveSelection extends Selection {
+		public final RangeAttachment range;
 		final BreakIterator clusterIterator = BreakIterator.getCharacterInstance();
 		private final ValuePrimitive.Listener clusterListener = new ValuePrimitive.Listener() {
 			@Override
@@ -262,6 +254,44 @@ public class VisualPrimitive extends VisualPart {
 			}
 		};
 
+		private int preceding(final BreakIterator iter, final int offset) {
+			int to = iter.preceding(offset);
+			if (to == BreakIterator.DONE)
+				to = 0;
+			return Math.max(0, to);
+		}
+
+		private int preceding(final BreakIterator iter) {
+			return preceding(iter, range.beginOffset);
+		}
+
+		private int preceding(final int offset) {
+			return preceding(clusterIterator, offset);
+		}
+
+		private int preceding() {
+			return preceding(clusterIterator, range.beginOffset);
+		}
+
+		private int following(final BreakIterator iter, final int offset) {
+			int to = iter.following(offset);
+			if (to == BreakIterator.DONE)
+				to = data.length();
+			return Math.min(data.length(), to);
+		}
+
+		private int following(final int offset) {
+			return following(clusterIterator, offset);
+		}
+
+		private int following(final BreakIterator iter) {
+			return following(iter, range.endOffset);
+		}
+
+		private int following() {
+			return following(clusterIterator, range.endOffset);
+		}
+
 		public PrimitiveSelection(
 				final Context context, final int beginOffset, final int endOffset
 		) {
@@ -274,6 +304,7 @@ public class VisualPrimitive extends VisualPart {
 			context.actions.put(this, Stream.concat(Stream.of(new Action() {
 				@Override
 				public void run(final Context context) {
+					context.history.finishChange(context);
 					if (parent != null) {
 						parent.selectUp(context);
 					}
@@ -286,9 +317,8 @@ public class VisualPrimitive extends VisualPart {
 			}, new Action() {
 				@Override
 				public void run(final Context context) {
-					if (range.beginOffset < data.length()) {
-						range.setOffsets(context, clusterIterator.following(range.beginOffset));
-					}
+					context.history.finishChange(context);
+					range.setOffsets(context, following());
 				}
 
 				@Override
@@ -298,9 +328,8 @@ public class VisualPrimitive extends VisualPart {
 			}, new Action() {
 				@Override
 				public void run(final Context context) {
-					if (range.beginOffset > 0) {
-						range.setOffsets(context, clusterIterator.preceding(range.beginOffset));
-					}
+					context.history.finishChange(context);
+					range.setOffsets(context, preceding());
 				}
 
 				@Override
@@ -310,9 +339,10 @@ public class VisualPrimitive extends VisualPart {
 			}, new Action() {
 				@Override
 				public void run(final Context context) {
+					context.history.finishChange(context);
 					final BreakIterator iter = BreakIterator.getWordInstance();
 					iter.setText(data.get());
-					range.setOffsets(context, iter.following(range.beginOffset));
+					range.setOffsets(context, following(iter));
 				}
 
 				@Override
@@ -322,9 +352,10 @@ public class VisualPrimitive extends VisualPart {
 			}, new Action() {
 				@Override
 				public void run(final Context context) {
+					context.history.finishChange(context);
 					final BreakIterator iter = BreakIterator.getWordInstance();
 					iter.setText(data.get());
-					range.setOffsets(context, iter.preceding(range.beginOffset));
+					range.setOffsets(context, preceding(iter));
 				}
 
 				@Override
@@ -334,6 +365,7 @@ public class VisualPrimitive extends VisualPart {
 			}, new Action() {
 				@Override
 				public void run(final Context context) {
+					context.history.finishChange(context);
 					range.setOffsets(context, range.beginLine.offset);
 				}
 
@@ -344,6 +376,7 @@ public class VisualPrimitive extends VisualPart {
 			}, new Action() {
 				@Override
 				public void run(final Context context) {
+					context.history.finishChange(context);
 					range.setOffsets(context, range.beginLine.offset + range.beginLine.text.length());
 				}
 
@@ -354,8 +387,13 @@ public class VisualPrimitive extends VisualPart {
 			}, new Action() {
 				@Override
 				public void run(final Context context) {
-					if (range.beginLine.index < lines.size()) {
-						range.setOffsets(context, lines.get(range.beginLine.index + 1).offset);
+					context.history.finishChange(context);
+					if (range.endLine.index + 1 < lines.size()) {
+						final Line nextLine = lines.get(range.endLine.index + 1);
+						range.setOffsets(context,
+								nextLine.offset +
+										Math.min(nextLine.text.length(), range.endOffset - range.endLine.offset)
+						);
 					}
 				}
 
@@ -366,8 +404,13 @@ public class VisualPrimitive extends VisualPart {
 			}, new Action() {
 				@Override
 				public void run(final Context context) {
+					context.history.finishChange(context);
 					if (range.beginLine.index > 0) {
-						range.setOffsets(context, lines.get(range.beginLine.index - 1).offset);
+						final Line previousLine = lines.get(range.beginLine.index - 1);
+						range.setOffsets(context,
+								previousLine.offset +
+										Math.min(previousLine.text.length(), range.beginOffset - range.beginLine.offset)
+						);
 					}
 				}
 
@@ -380,7 +423,7 @@ public class VisualPrimitive extends VisualPart {
 				public void run(final Context context) {
 					if (range.beginOffset == range.endOffset) {
 						if (range.beginOffset > 0) {
-							final int preceding = clusterIterator.preceding(range.beginOffset);
+							final int preceding = preceding();
 							context.history.apply(context, data.changeRemove(preceding, range.beginOffset - preceding));
 						}
 					} else
@@ -398,7 +441,7 @@ public class VisualPrimitive extends VisualPart {
 				public void run(final Context context) {
 					if (range.beginOffset == range.endOffset) {
 						if (range.endOffset < data.length()) {
-							final int following = clusterIterator.following(range.beginOffset);
+							final int following = following();
 							context.history.apply(context,
 									data.changeRemove(range.beginOffset, following - range.beginOffset)
 							);
@@ -435,18 +478,33 @@ public class VisualPrimitive extends VisualPart {
 				public void run(final Context context) {
 					if (range.beginOffset == range.endOffset) {
 						if (range.beginLine.index + 1 < lines.size()) {
+							final int select = range.endLine.offset + range.endLine.text.length();
 							context.history.finishChange(context);
 							context.history.apply(context,
 									data.changeRemove(lines.get(range.beginLine.index + 1).offset - 1, 1)
 							);
+							context.history.finishChange(context);
+							select(context, select, select);
 						}
-						context.history.finishChange(context);
 					} else {
-						context.history.finishChange(context);
-						for (int index = range.beginLine.index + 1; index <= range.endLine.index; ++index) {
-							context.history.apply(context, data.changeRemove(lines.get(index).offset - 1, 1));
+						if (range.beginLine != range.endLine) {
+							context.history.finishChange(context);
+							final StringBuilder replace = new StringBuilder();
+							replace.append(range.beginLine.text.substring(range.beginOffset - range.beginLine.offset));
+							final int selectBegin = range.beginOffset;
+							int selectEnd = range.endOffset - 1;
+							for (int index = range.beginLine.index + 1; index <= range.endLine.index - 1; ++index) {
+								replace.append(lines.get(index).text);
+								selectEnd -= 1;
+							}
+							replace.append(range.endLine.text.substring(0, range.endOffset - range.endLine.offset));
+							context.history.apply(context,
+									data.changeRemove(range.beginOffset, range.endOffset - range.beginOffset)
+							);
+							context.history.apply(context, data.changeAdd(range.beginOffset, replace.toString()));
+							context.history.finishChange(context);
+							select(context, selectBegin, selectEnd);
 						}
-						context.history.finishChange(context);
 					}
 				}
 
@@ -457,9 +515,8 @@ public class VisualPrimitive extends VisualPart {
 			}, new Action() {
 				@Override
 				public void run(final Context context) {
-					final ClipboardContent content = new ClipboardContent();
-					content.putString(data.get().substring(range.beginOffset, range.endOffset));
-					Clipboard.getSystemClipboard().setContent(content);
+					context.history.finishChange(context);
+					context.copy(data.get().substring(range.beginOffset, range.endOffset));
 				}
 
 				@Override
@@ -469,11 +526,13 @@ public class VisualPrimitive extends VisualPart {
 			}, new Action() {
 				@Override
 				public void run(final Context context) {
-					final ClipboardContent content = new ClipboardContent();
-					content.putString(data.get().substring(range.beginOffset, range.endOffset));
-					Clipboard.getSystemClipboard().setContent(content);
 					context.history.finishChange(context);
-					context.history.apply(context, data.changeRemove(range.beginOffset, range.endOffset));
+					context.copy(data.get().substring(range.beginOffset, range.endOffset));
+					context.history.finishChange(context);
+					context.history.apply(context,
+							data.changeRemove(range.beginOffset, range.endOffset - range.beginOffset)
+					);
+					context.history.finishChange(context);
 				}
 
 				@Override
@@ -483,7 +542,8 @@ public class VisualPrimitive extends VisualPart {
 			}, new Action() {
 				@Override
 				public void run(final Context context) {
-					final String value = Clipboard.getSystemClipboard().getString();
+					context.history.finishChange(context);
+					final String value = context.uncopyString();
 					if (value != null) {
 						context.history.finishChange(context);
 						if (range.beginOffset != range.endOffset)
@@ -492,6 +552,7 @@ public class VisualPrimitive extends VisualPart {
 							);
 						context.history.apply(context, data.changeAdd(range.beginOffset, value));
 					}
+					context.history.finishChange(context);
 				}
 
 				@Override
@@ -501,17 +562,8 @@ public class VisualPrimitive extends VisualPart {
 			}, new Action() {
 				@Override
 				public void run(final Context context) {
-					reset(context);
-				}
-
-				@Override
-				public String getName() {
-					return "reset_selection";
-				}
-			}, new Action() {
-				@Override
-				public void run(final Context context) {
-					range.setEndOffset(context, clusterIterator.following(range.endOffset));
+					context.history.finishChange(context);
+					range.setEndOffset(context, following());
 				}
 
 				@Override
@@ -521,12 +573,35 @@ public class VisualPrimitive extends VisualPart {
 			}, new Action() {
 				@Override
 				public void run(final Context context) {
-					range.setBeginOffset(context, clusterIterator.preceding(range.beginOffset));
+					context.history.finishChange(context);
+					range.setEndOffset(context, Math.max(range.beginOffset, preceding(range.endOffset)));
+				}
+
+				@Override
+				public String getName() {
+					return "release_next";
+				}
+			}, new Action() {
+				@Override
+				public void run(final Context context) {
+					context.history.finishChange(context);
+					range.setBeginOffset(context, preceding());
 				}
 
 				@Override
 				public String getName() {
 					return "gather_previous";
+				}
+			}, new Action() {
+				@Override
+				public void run(final Context context) {
+					context.history.finishChange(context);
+					range.setBeginOffset(context, Math.min(range.endOffset, following(range.beginOffset)));
+				}
+
+				@Override
+				public String getName() {
+					return "release_previous";
 				}
 			}), VisualPrimitive.this.getActions(context)).collect(Collectors.toList()));
 		}
@@ -572,10 +647,6 @@ public class VisualPrimitive extends VisualPart {
 		public Path getPath() {
 			return data.getPath().add(String.valueOf(range.beginOffset));
 		}
-
-		private void reset(final Context context) {
-			range.setOffsets(context, range.beginOffset);
-		}
 	}
 
 	public static class PrimitiveSelectionState implements SelectionState {
@@ -592,11 +663,16 @@ public class VisualPrimitive extends VisualPart {
 
 		@Override
 		public void select(final Context context) {
-			final VisualPrimitive visual = (VisualPrimitive) value.visual;
-			if (visual.selection != null) {
-				visual.selection.range.setOffsets(context, beginOffset, endOffset);
-			} else
-				context.setSelection(visual.new PrimitiveSelection(context, beginOffset, endOffset));
+			((VisualPrimitive) value.visual).select(context, beginOffset, endOffset);
+		}
+	}
+
+	public void select(final Context context, final int beginOffset, final int endOffset) {
+		if (selection != null) {
+			selection.range.setOffsets(context, beginOffset, endOffset);
+		} else {
+			selection = createSelection(context, beginOffset, endOffset);
+			context.setSelection(selection);
 		}
 	}
 
@@ -625,12 +701,7 @@ public class VisualPrimitive extends VisualPart {
 
 		@Override
 		public void click(final Context context) {
-			if (selection == null) {
-				selection = createSelection(context, range.beginOffset, range.endOffset);
-				context.setSelection(selection);
-			} else {
-				selection.range.setOffsets(context, range.beginOffset, range.endOffset);
-			}
+			select(context, range.beginOffset, range.endOffset);
 		}
 
 		@Override
@@ -839,52 +910,54 @@ public class VisualPrimitive extends VisualPart {
 			@Override
 			public void removed(final Context context, final int offset, final int count) {
 				int remaining = count;
-				int index = findContaining(offset);
-				final Line base = lines.get(index);
-				int movingOffset = offset;
+				final Line base = lines.get(findContaining(offset));
+
+				// Remove text from first line
+				{
+					final int exciseStart = offset - base.offset;
+					final int exciseEnd = Math.min(exciseStart + remaining, base.text.length());
+					final String newText = base.text.substring(0, exciseStart) + base.text.substring(exciseEnd);
+					base.setText(context, newText);
+					remaining -= exciseEnd - exciseStart;
+				}
+
+				// Remove text from subsequent lines
+				final int index = base.index + 1;
+				int removeLines = 0;
 				while (remaining > 0) {
 					final Line line = lines.get(index);
-					line.offset -= count - remaining;
-					if (line != base && line.hard && movingOffset == line.offset - 1) {
+					if (line.hard) {
 						remaining -= 1;
-						movingOffset += 1;
 					}
-					final int exciseStart = movingOffset - line.offset;
-					final int exciseEnd = Math.min(movingOffset - line.offset + remaining, line.text.length());
-					final String newText = line.text.substring(0, exciseStart) + line.text.substring(exciseEnd);
-					if (line == base) {
-						base.setText(context, newText);
-					} else {
-						if (!newText.isEmpty())
-							base.setText(context, base.text + newText);
-						line.destroy(context);
-						lines.remove(index);
-					}
-					movingOffset = line.offset + line.text.length();
-					remaining -= exciseEnd - exciseStart;
-					index += 1;
+					final int exciseEnd = Math.min(remaining, line.text.length());
+					base.setText(context, base.text + line.text.substring(exciseEnd));
+					remaining -= exciseEnd;
+					line.destroy(context);
+					removeLines += 1;
 				}
+				lines.subList(base.index + 1, base.index + 1 + removeLines).clear();
 				enumerate(lines.stream().skip(base.index + 1)).forEach(pair -> {
 					pair.second.index = base.index + 1 + pair.first;
 					pair.second.offset -= count;
 				});
-				if (hoverable != null)
-					hoverable.clear(context);
+				if (hoverable != null) {
+					if (hoverable.range.beginOffset >= offset + count) {
+						hoverable.range.setOffsets(context, hoverable.range.beginOffset - (offset + count));
+					} else if (hoverable.range.beginOffset >= index || hoverable.range.endOffset >= index) {
+						context.clearHover();
+					}
+				}
 				if (selection != null) {
-					final int newBegin;
-					final int newEnd;
-					if (selection.range.beginOffset < offset)
-						newBegin = selection.range.beginOffset;
-					else if (selection.range.beginOffset < offset + count)
+					int newBegin = selection.range.beginOffset;
+					int newEnd = selection.range.endOffset;
+					if (newBegin >= offset + count)
+						newBegin = newBegin - count;
+					else if (newBegin >= offset)
 						newBegin = offset;
-					else
-						newBegin = selection.range.beginOffset - count;
-					if (selection.range.endOffset < offset)
-						newEnd = selection.range.endOffset;
-					else if (selection.range.endOffset < offset + count)
+					if (newEnd >= offset + count)
+						newEnd = newEnd - count;
+					else if (newEnd >= offset)
 						newEnd = offset;
-					else
-						newEnd = selection.range.endOffset - count;
 					selection.range.setOffsets(context, newBegin, newEnd);
 				}
 			}

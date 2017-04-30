@@ -19,6 +19,13 @@ public class SimpleClipboardEngine extends ClipboardEngine {
 	}
 
 	@Override
+	public void setString(final String string) {
+		final ClipboardContent content = new ClipboardContent();
+		content.putString(string);
+		clipboard.setContent(content);
+	}
+
+	@Override
 	public byte[] get() {
 		byte[] out = (byte[]) clipboard.getContent(dataFormat);
 		if (out == null) {
@@ -28,5 +35,10 @@ public class SimpleClipboardEngine extends ClipboardEngine {
 			}
 		}
 		return out;
+	}
+
+	@Override
+	public String getString() {
+		return clipboard.getString();
 	}
 }

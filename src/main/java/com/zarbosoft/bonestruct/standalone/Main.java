@@ -98,7 +98,7 @@ public class Main extends Application {
 		//	make select_hovered an action
 		//button down + up hotkey events
 		//details
-		editing, actions for everythinga
+		//editing, actions for everythinga
 		//save
 		//modes (global) - modules can create too
 		//	ex: nav/edit, edit, nav, debug, refactor
@@ -110,14 +110,16 @@ public class Main extends Application {
 			actually, window visuals, so the above 2 lines moot probably
 		ellipsis with depth score type param
 		primitive compact/expand
-		comment toc with jumps (plugin?)
 		gap preview details styling
 			columns: 1:preview 2:type id
 		hotkey preview details
 			columns: 1:rule 2:action name
+		test merging changes; finishing history on actions
+		test brick layout
 
 		sed (led) substitution
 
+		comment toc with jumps (plugin?)
 		exit primitive when next mark key; escaping (?)
 		plugin add colored bar to side if dirty
 		banner background

@@ -104,7 +104,7 @@ public class History {
 
 	public void finishChange(final Context context) {
 		try (Closeable lock = lock()) {
-			if (past.peekLast().isEmpty())
+			if (!past.isEmpty() && past.peekLast().isEmpty())
 				return;
 			past.addLast(new Level());
 		} catch (final IOException e) {

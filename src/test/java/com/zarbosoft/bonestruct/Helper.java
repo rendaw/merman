@@ -450,6 +450,7 @@ public class Helper {
 		}, new History());
 		context.clipboardEngine = new ClipboardEngine() {
 			byte[] data = null;
+			String string = null;
 
 			@Override
 			public void set(final byte[] bytes) {
@@ -457,8 +458,18 @@ public class Helper {
 			}
 
 			@Override
+			public void setString(final String string) {
+				this.string = string;
+			}
+
+			@Override
 			public byte[] get() {
 				return data;
+			}
+
+			@Override
+			public String getString() {
+				return string;
 			}
 		};
 		final Node rootNode = new Node(ImmutableMap.of("value", doc.top));

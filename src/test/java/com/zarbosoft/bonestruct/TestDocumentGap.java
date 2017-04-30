@@ -395,7 +395,7 @@ public class TestDocumentGap {
 				MiscSyntax.syntax.suffixGap.create(true, new TreeBuilder(MiscSyntax.infinity).build()),
 				context -> {
 					((ValuePrimitive) context.locateLong(new Path("0", "gap"))).getVisual().selectDown(context);
-					((Node) context.locateLong(new Path("0"))).getVisual().selectDown(context);
+					context.selection.getVisual().parent().selectUp(context);
 				},
 				new Helper.TreeBuilder(MiscSyntax.infinity).build()
 		);
@@ -407,7 +407,7 @@ public class TestDocumentGap {
 				MiscSyntax.syntax.prefixGap.create(new TreeBuilder(MiscSyntax.infinity).build()),
 				context -> {
 					((ValuePrimitive) context.locateLong(new Path("0", "gap"))).getVisual().selectDown(context);
-					((Node) context.locateLong(new Path("0"))).getVisual().selectDown(context);
+					context.selection.getVisual().parent().selectUp(context);
 				},
 				new Helper.TreeBuilder(MiscSyntax.infinity).build()
 		);

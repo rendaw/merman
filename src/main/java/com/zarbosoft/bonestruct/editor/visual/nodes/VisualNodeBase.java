@@ -130,10 +130,8 @@ public abstract class VisualNodeBase extends VisualPart {
 			context.clearHover();
 		}
 		selected = true;
-		if (context.display != null) {
-			border = new BorderAttachment(context, context.syntax.selectStyle);
-			createAdapter(context);
-		}
+		border = new BorderAttachment(context, context.syntax.selectStyle);
+		createAdapter(context);
 		context.setSelection(new NestedSelection(context));
 	}
 
@@ -146,6 +144,7 @@ public abstract class VisualNodeBase extends VisualPart {
 		return Stream.of(new Action() {
 			@Override
 			public void run(final Context context) {
+				context.history.finishChange(context);
 				body.selectDown(context);
 			}
 
@@ -156,6 +155,7 @@ public abstract class VisualNodeBase extends VisualPart {
 		}, new Action() {
 			@Override
 			public void run(final Context context) {
+				context.history.finishChange(context);
 				if (parent != null) {
 					parent.selectUp(context);
 				}
@@ -178,6 +178,7 @@ public abstract class VisualNodeBase extends VisualPart {
 		}, new Action() {
 			@Override
 			public void run(final Context context) {
+				context.history.finishChange(context);
 				context.copy(ImmutableList.of(nodeGet()));
 			}
 
@@ -188,6 +189,7 @@ public abstract class VisualNodeBase extends VisualPart {
 		}, new Action() {
 			@Override
 			public void run(final Context context) {
+				context.history.finishChange(context);
 				context.copy(ImmutableList.of(nodeGet()));
 				nodeSet(context, context.syntax.gap.create());
 			}
@@ -199,10 +201,12 @@ public abstract class VisualNodeBase extends VisualPart {
 		}, new Action() {
 			@Override
 			public void run(final Context context) {
+				context.history.finishChange(context);
 				final List<Node> nodes = context.uncopy(nodeType());
 				if (nodes.size() != 1)
 					return;
 				nodeSet(context, nodes.get(0));
+				context.history.finishChange(context);
 			}
 
 			@Override
@@ -219,12 +223,10 @@ public abstract class VisualNodeBase extends VisualPart {
 
 		@Override
 		public void clear(final Context context) {
-			if (context.display != null) {
-				border.destroy(context);
-				border = null;
-				adapter.destroy(context);
-				adapter = null;
-			}
+			border.destroy(context);
+			border = null;
+			adapter.destroy(context);
+			adapter = null;
 			selected = false;
 			context.actions.remove(this);
 		}

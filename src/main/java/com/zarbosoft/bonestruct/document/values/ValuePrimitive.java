@@ -55,6 +55,7 @@ public class ValuePrimitive extends com.zarbosoft.bonestruct.document.values.Val
 		void added(Context context, int index, String value);
 
 		void removed(Context context, int index, int count);
+
 	}
 
 }

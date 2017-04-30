@@ -125,7 +125,7 @@ public class Hotkeys extends Module {
 				System.out.format("running [%s]\n", action.getName());
 				action.run(context);
 			} else {
-				if (showDetails && context.display != null) {
+				if (showDetails) {
 					if (hotkeyDetails != null)
 						context.details.removePage(context, hotkeyDetails);
 					hotkeyDetails = new HotkeyDetails(context);

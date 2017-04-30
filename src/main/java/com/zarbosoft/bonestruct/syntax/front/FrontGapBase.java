@@ -122,7 +122,7 @@ public abstract class FrontGapBase extends FrontPart {
 			public void receiveText(final Context context, final String text) {
 				super.receiveText(context, text);
 				final List<String> choices = process(context, self.parent.node(), self.get(), userData);
-				if (!choices.isEmpty() && context.display != null) {
+				if (!choices.isEmpty()) {
 					if (gapDetails != null)
 						context.details.removePage(context, gapDetails);
 					gapDetails = new GapDetails(context, choices);

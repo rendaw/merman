@@ -84,6 +84,8 @@ public class TextBorderAttachment {
 	}
 
 	public void setFirstIndex(final Context context, final int index) {
+		if (index < 0)
+			throw new AssertionError();
 		firstIndex = index;
 		redraw(context);
 	}
@@ -98,6 +100,8 @@ public class TextBorderAttachment {
 	}
 
 	public void setLastIndex(final Context context, final int index) {
+		if (index < 0)
+			throw new AssertionError();
 		lastIndex = index;
 		redraw(context);
 	}

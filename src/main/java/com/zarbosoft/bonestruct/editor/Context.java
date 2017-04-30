@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableSet;
 import com.zarbosoft.bonestruct.display.Display;
 import com.zarbosoft.bonestruct.display.Group;
 import com.zarbosoft.bonestruct.document.Document;
+import com.zarbosoft.bonestruct.document.InvalidDocument;
 import com.zarbosoft.bonestruct.document.values.Value;
 import com.zarbosoft.bonestruct.document.values.ValueArray;
 import com.zarbosoft.bonestruct.document.values.ValueNode;
@@ -26,6 +27,7 @@ import com.zarbosoft.bonestruct.syntax.modules.Module;
 import com.zarbosoft.bonestruct.syntax.style.Style;
 import com.zarbosoft.bonestruct.wall.Brick;
 import com.zarbosoft.bonestruct.wall.Wall;
+import com.zarbosoft.luxem.read.InvalidStream;
 import com.zarbosoft.luxem.read.Parse;
 import com.zarbosoft.luxem.write.RawWriter;
 import javafx.animation.Interpolator;
@@ -74,15 +76,30 @@ public class Context {
 		clipboardEngine.set(stream.toByteArray());
 	}
 
+	public void copy(final String string) {
+		clipboardEngine.setString(string);
+	}
+
 	public List<com.zarbosoft.bonestruct.document.Node> uncopy(final String type) {
 		final byte[] bytes = clipboardEngine.get();
 		if (bytes == null)
 			return ImmutableList.of();
-		return new Parse<com.zarbosoft.bonestruct.document.Node>()
-				.grammar(syntax.getGrammar())
-				.node(type)
-				.parse(new ByteArrayInputStream(bytes))
-				.collect(Collectors.toList());
+		try {
+			return new Parse<com.zarbosoft.bonestruct.document.Node>()
+					.grammar(syntax.getGrammar())
+					.node(type)
+					.parse(new ByteArrayInputStream(bytes))
+					.collect(Collectors.toList());
+		} catch (final InvalidStream e) {
+
+		} catch (final InvalidDocument e) {
+
+		}
+		return ImmutableList.of();
+	}
+
+	public String uncopyString() {
+		return clipboardEngine.getString();
 	}
 
 	public void changeGlobalTags(final Visual.TagsChange change) {
