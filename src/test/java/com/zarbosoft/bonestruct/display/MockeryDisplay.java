@@ -78,7 +78,6 @@ public class MockeryDisplay implements Display {
 
 	@Override
 	public void addConverseEdgeListener(final IntListener listener) {
-		System.out.format("x\n");
 		converseEdgeListeners.add(listener);
 	}
 

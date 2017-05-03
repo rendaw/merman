@@ -109,7 +109,7 @@ public class Main extends Application {
 			atom, core, mote, basis; node -> core?
 			actually, window visuals, so the above 2 lines moot probably
 		ellipsis with depth score type param
-		primitive compact/expand
+		//primitive compact/expand
 		gap preview details styling
 			columns: 1:preview 2:type id
 		hotkey preview details

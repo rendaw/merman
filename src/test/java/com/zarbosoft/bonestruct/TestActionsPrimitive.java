@@ -127,7 +127,7 @@ public class TestActionsPrimitive {
 		final Context context = build("12");
 		visual(context).select(context, 1, 1);
 		Helper.act(context, "next_line");
-		assertSelection(context, 1, 1);
+		assertSelection(context, 2, 2);
 	}
 
 	@Test
@@ -167,7 +167,7 @@ public class TestActionsPrimitive {
 		final Context context = build("12");
 		visual(context).select(context, 1, 1);
 		Helper.act(context, "previous_line");
-		assertSelection(context, 1, 1);
+		assertSelection(context, 0, 0);
 	}
 
 	@Test
@@ -283,11 +283,59 @@ public class TestActionsPrimitive {
 	}
 
 	@Test
+	public void testGatherNextWord() {
+		final Context context = build("dog hat chair");
+		visual(context).select(context, 3, 4);
+		Helper.act(context, "gather_next_word");
+		assertSelection(context, 3, 7);
+	}
+
+	@Test
+	public void testGatherNextLineEnd() {
+		final Context context = build("dog hat\n chair");
+		visual(context).select(context, 3, 3);
+		Helper.act(context, "gather_next_line_end");
+		assertSelection(context, 3, 7);
+	}
+
+	@Test
+	public void testGatherNextLine() {
+		final Context context = build("dog hat\n chair");
+		visual(context).select(context, 3, 3);
+		Helper.act(context, "gather_next_line");
+		assertSelection(context, 3, 11);
+	}
+
+	@Test
 	public void testGatherPrevious() {
 		final Context context = buildFive();
 		visual(context).select(context, 2, 2);
 		Helper.act(context, "gather_previous");
 		assertSelection(context, 1, 2);
+	}
+
+	@Test
+	public void testGatherPreviousWord() {
+		final Context context = build("chair hat pan");
+		visual(context).select(context, 9, 9);
+		Helper.act(context, "gather_previous_word");
+		assertSelection(context, 6, 9);
+	}
+
+	@Test
+	public void testGatherPreviousLineStart() {
+		final Context context = build("chair\nhat pan");
+		visual(context).select(context, 9, 9);
+		Helper.act(context, "gather_previous_line_start");
+		assertSelection(context, 6, 9);
+	}
+
+	@Test
+	public void testGatherPreviousLine() {
+		final Context context = build("chair\nhat pan");
+		visual(context).select(context, 9, 9);
+		Helper.act(context, "gather_previous_line");
+		assertSelection(context, 3, 9);
 	}
 
 	@Test
@@ -315,6 +363,30 @@ public class TestActionsPrimitive {
 	}
 
 	@Test
+	public void testReleaseNextWord() {
+		final Context context = build("kettle rubarb");
+		visual(context).select(context, 6, 13);
+		Helper.act(context, "release_next_word");
+		assertSelection(context, 6, 7);
+	}
+
+	@Test
+	public void testReleaseNextLineEnd() {
+		final Context context = build("one\ntwo three");
+		visual(context).select(context, 1, 8);
+		Helper.act(context, "release_next_line_end");
+		assertSelection(context, 1, 4);
+	}
+
+	@Test
+	public void testReleaseNextLine() {
+		final Context context = build("one\ntwo three");
+		visual(context).select(context, 1, 7);
+		Helper.act(context, "release_next_line");
+		assertSelection(context, 1, 3);
+	}
+
+	@Test
 	public void testReleasePrevious() {
 		final Context context = buildFive();
 		visual(context).select(context, 1, 2);
@@ -328,6 +400,30 @@ public class TestActionsPrimitive {
 		visual(context).select(context, 2, 2);
 		Helper.act(context, "release_previous");
 		assertSelection(context, 2, 2);
+	}
+
+	@Test
+	public void testReleasePreviousWord() {
+		final Context context = build("truck frypan");
+		visual(context).select(context, 0, 10);
+		Helper.act(context, "release_previous_word");
+		assertSelection(context, 5, 10);
+	}
+
+	@Test
+	public void testReleasePreviousLineStart() {
+		final Context context = build("no\nyes");
+		visual(context).select(context, 0, 5);
+		Helper.act(context, "release_previous_line_start");
+		assertSelection(context, 2, 5);
+	}
+
+	@Test
+	public void testReleasePreviousLine() {
+		final Context context = build("no\nyes");
+		visual(context).select(context, 0, 5);
+		Helper.act(context, "release_previous_line");
+		assertSelection(context, 3, 5);
 	}
 
 	@Test

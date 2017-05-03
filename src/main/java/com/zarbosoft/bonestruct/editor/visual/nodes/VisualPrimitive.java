@@ -293,6 +293,42 @@ public class VisualPrimitive extends VisualPart {
 			return following(clusterIterator, range.endOffset);
 		}
 
+		private int nextWord(final int source) {
+			final BreakIterator iter = BreakIterator.getWordInstance();
+			iter.setText(data.get());
+			return following(iter, source);
+		}
+
+		private int previousWord(final int source) {
+			final BreakIterator iter = BreakIterator.getWordInstance();
+			iter.setText(data.get());
+			return preceding(iter, source);
+		}
+
+		private int nextLine(final Line sourceLine, final int source) {
+			if (sourceLine.index + 1 < lines.size()) {
+				final Line nextLine = lines.get(sourceLine.index + 1);
+				return nextLine.offset + Math.min(nextLine.text.length(), source - sourceLine.offset);
+			} else
+				return sourceLine.offset + sourceLine.text.length();
+		}
+
+		private int previousLine(final Line sourceLine, final int source) {
+			if (sourceLine.index > 0) {
+				final Line previousLine = lines.get(sourceLine.index - 1);
+				return previousLine.offset + Math.min(previousLine.text.length(), source - sourceLine.offset);
+			} else
+				return sourceLine.offset;
+		}
+
+		private int endOfLine(final Line sourceLine) {
+			return sourceLine.offset + sourceLine.text.length();
+		}
+
+		private int startOfLine(final Line sourceLine) {
+			return sourceLine.offset;
+		}
+
 		public PrimitiveSelection(
 				final Context context, final int beginOffset, final int endOffset
 		) {
@@ -341,9 +377,7 @@ public class VisualPrimitive extends VisualPart {
 				@Override
 				public void run(final Context context) {
 					context.history.finishChange(context);
-					final BreakIterator iter = BreakIterator.getWordInstance();
-					iter.setText(data.get());
-					range.setOffsets(context, following(iter));
+					range.setOffsets(context, nextWord(range.endOffset));
 				}
 
 				@Override
@@ -354,9 +388,7 @@ public class VisualPrimitive extends VisualPart {
 				@Override
 				public void run(final Context context) {
 					context.history.finishChange(context);
-					final BreakIterator iter = BreakIterator.getWordInstance();
-					iter.setText(data.get());
-					range.setOffsets(context, preceding(iter));
+					range.setOffsets(context, previousWord(range.beginOffset));
 				}
 
 				@Override
@@ -367,7 +399,7 @@ public class VisualPrimitive extends VisualPart {
 				@Override
 				public void run(final Context context) {
 					context.history.finishChange(context);
-					range.setOffsets(context, range.beginLine.offset);
+					range.setOffsets(context, startOfLine(range.beginLine));
 				}
 
 				@Override
@@ -378,7 +410,7 @@ public class VisualPrimitive extends VisualPart {
 				@Override
 				public void run(final Context context) {
 					context.history.finishChange(context);
-					range.setOffsets(context, range.beginLine.offset + range.beginLine.text.length());
+					range.setOffsets(context, endOfLine(range.endLine));
 				}
 
 				@Override
@@ -389,13 +421,7 @@ public class VisualPrimitive extends VisualPart {
 				@Override
 				public void run(final Context context) {
 					context.history.finishChange(context);
-					if (range.endLine.index + 1 < lines.size()) {
-						final Line nextLine = lines.get(range.endLine.index + 1);
-						range.setOffsets(context,
-								nextLine.offset +
-										Math.min(nextLine.text.length(), range.endOffset - range.endLine.offset)
-						);
-					}
+					range.setOffsets(context, nextLine(range.endLine, range.endOffset));
 				}
 
 				@Override
@@ -406,13 +432,7 @@ public class VisualPrimitive extends VisualPart {
 				@Override
 				public void run(final Context context) {
 					context.history.finishChange(context);
-					if (range.beginLine.index > 0) {
-						final Line previousLine = lines.get(range.beginLine.index - 1);
-						range.setOffsets(context,
-								previousLine.offset +
-										Math.min(previousLine.text.length(), range.beginOffset - range.beginLine.offset)
-						);
-					}
+					range.setOffsets(context, previousLine(range.beginLine, range.beginOffset));
 				}
 
 				@Override
@@ -575,12 +595,80 @@ public class VisualPrimitive extends VisualPart {
 				@Override
 				public void run(final Context context) {
 					context.history.finishChange(context);
+					range.setEndOffset(context, nextWord(range.endOffset));
+				}
+
+				@Override
+				public String getName() {
+					return "gather_next_word";
+				}
+			}, new Action() {
+				@Override
+				public void run(final Context context) {
+					context.history.finishChange(context);
+					range.setEndOffset(context, endOfLine(range.endLine));
+				}
+
+				@Override
+				public String getName() {
+					return "gather_next_line_end";
+				}
+			}, new Action() {
+				@Override
+				public void run(final Context context) {
+					context.history.finishChange(context);
+					range.setEndOffset(context, nextLine(range.endLine, range.endOffset));
+				}
+
+				@Override
+				public String getName() {
+					return "gather_next_line";
+				}
+			}, new Action() {
+				@Override
+				public void run(final Context context) {
+					context.history.finishChange(context);
 					range.setEndOffset(context, Math.max(range.beginOffset, preceding(range.endOffset)));
 				}
 
 				@Override
 				public String getName() {
 					return "release_next";
+				}
+			}, new Action() {
+				@Override
+				public void run(final Context context) {
+					context.history.finishChange(context);
+					range.setEndOffset(context, Math.max(range.beginOffset, previousWord(range.endOffset)));
+				}
+
+				@Override
+				public String getName() {
+					return "release_next_word";
+				}
+			}, new Action() {
+				@Override
+				public void run(final Context context) {
+					context.history.finishChange(context);
+					range.setEndOffset(context, Math.max(range.beginOffset, startOfLine(range.endLine)));
+				}
+
+				@Override
+				public String getName() {
+					return "release_next_line_end";
+				}
+			}, new Action() {
+				@Override
+				public void run(final Context context) {
+					context.history.finishChange(context);
+					range.setEndOffset(context,
+							Math.max(range.beginOffset, previousLine(range.endLine, range.endOffset))
+					);
+				}
+
+				@Override
+				public String getName() {
+					return "release_next_line";
 				}
 			}, new Action() {
 				@Override
@@ -597,12 +685,80 @@ public class VisualPrimitive extends VisualPart {
 				@Override
 				public void run(final Context context) {
 					context.history.finishChange(context);
+					range.setBeginOffset(context, previousWord(range.beginOffset));
+				}
+
+				@Override
+				public String getName() {
+					return "gather_previous_word";
+				}
+			}, new Action() {
+				@Override
+				public void run(final Context context) {
+					context.history.finishChange(context);
+					range.setBeginOffset(context, startOfLine(range.beginLine));
+				}
+
+				@Override
+				public String getName() {
+					return "gather_previous_line_start";
+				}
+			}, new Action() {
+				@Override
+				public void run(final Context context) {
+					context.history.finishChange(context);
+					range.setBeginOffset(context, previousLine(range.beginLine, range.beginOffset));
+				}
+
+				@Override
+				public String getName() {
+					return "gather_previous_line";
+				}
+			}, new Action() {
+				@Override
+				public void run(final Context context) {
+					context.history.finishChange(context);
 					range.setBeginOffset(context, Math.min(range.endOffset, following(range.beginOffset)));
 				}
 
 				@Override
 				public String getName() {
 					return "release_previous";
+				}
+			}, new Action() {
+				@Override
+				public void run(final Context context) {
+					context.history.finishChange(context);
+					range.setBeginOffset(context, Math.min(range.endOffset, nextWord(range.beginOffset)));
+				}
+
+				@Override
+				public String getName() {
+					return "release_previous_word";
+				}
+			}, new Action() {
+				@Override
+				public void run(final Context context) {
+					context.history.finishChange(context);
+					range.setBeginOffset(context, Math.min(range.endOffset, endOfLine(range.beginLine)));
+				}
+
+				@Override
+				public String getName() {
+					return "release_previous_line_start";
+				}
+			}, new Action() {
+				@Override
+				public void run(final Context context) {
+					context.history.finishChange(context);
+					range.setBeginOffset(context,
+							Math.min(range.endOffset, nextLine(range.beginLine, range.beginOffset))
+					);
+				}
+
+				@Override
+				public String getName() {
+					return "release_previous_line";
 				}
 			}), VisualPrimitive.this.getActions(context)).collect(Collectors.toList()));
 		}
