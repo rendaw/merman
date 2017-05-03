@@ -4,7 +4,7 @@ import com.zarbosoft.bonestruct.syntax.middle.MiddleArray;
 import com.zarbosoft.interface1.Configuration;
 
 @Configuration
-public class RootFrontDataArray extends FrontDataArrayBase {
+public class FrontDataRootArray extends FrontDataArrayBase {
 	@Override
 	public String middle() {
 		return "value";

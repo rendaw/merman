@@ -39,9 +39,13 @@ public interface Display {
 
 	void addConverseEdgeListener(IntListener listener);
 
+	void removeConverseEdgeListener(IntListener listener);
+
 	int transverseEdge(Context context);
 
 	void addTransverseEdgeListener(IntListener listener);
+
+	void removeTransverseEdgeListener(IntListener listener);
 
 	void add(int index, DisplayNode node);
 

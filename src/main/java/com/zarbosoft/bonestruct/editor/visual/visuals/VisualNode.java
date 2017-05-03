@@ -1,4 +1,4 @@
-package com.zarbosoft.bonestruct.editor.visual.nodes;
+package com.zarbosoft.bonestruct.editor.visual.visuals;
 
 import com.zarbosoft.bonestruct.document.Node;
 import com.zarbosoft.bonestruct.document.values.Value;

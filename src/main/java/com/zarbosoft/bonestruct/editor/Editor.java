@@ -104,7 +104,8 @@ public class Editor {
 		});
 		visual.setBackgroundColor(context.syntax.background);
 		visual.add(context.background);
-		visual.add(context.wall.visual);
+		visual.add(context.midground);
+		visual.add(context.foreground.visual);
 		final Node rootNode = new Node(ImmutableMap.of("value", doc.top));
 		final VisualPart root = context.syntax.rootFront.createVisual(context, rootNode, ImmutableSet.of());
 		context.selectionExtentsAdapter.addListener(context, new TransverseExtentsAdapter.Listener() {
@@ -146,7 +147,7 @@ public class Editor {
 			newScroll = scroll + maxDiff;
 		}
 		if (newScroll != null) {
-			context.wall.visual.setPosition(context,
+			context.foreground.visual.setPosition(context,
 					new Vector(context.syntax.padConverse, -newScroll),
 					context.syntax.animateCoursePlacement
 			);
@@ -163,7 +164,7 @@ public class Editor {
 	public void destroy() {
 		context.modules.forEach(p -> p.destroy(context));
 		context.banner.destroy(context);
-		context.wall.clear(context);
+		context.foreground.clear(context);
 	}
 
 	public void save(final Path dest) {

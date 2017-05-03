@@ -4,7 +4,7 @@ import com.zarbosoft.bonestruct.document.Node;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.VisualPart;
-import com.zarbosoft.bonestruct.editor.visual.nodes.VisualImage;
+import com.zarbosoft.bonestruct.editor.visual.visuals.VisualImage;
 import com.zarbosoft.interface1.Configuration;
 import org.pcollections.HashTreePSet;
 

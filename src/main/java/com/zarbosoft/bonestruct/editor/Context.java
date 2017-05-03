@@ -4,9 +4,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.zarbosoft.bonestruct.display.Display;
+import com.zarbosoft.bonestruct.display.Drawing;
 import com.zarbosoft.bonestruct.display.Group;
 import com.zarbosoft.bonestruct.document.Document;
 import com.zarbosoft.bonestruct.document.InvalidDocument;
+import com.zarbosoft.bonestruct.document.Node;
 import com.zarbosoft.bonestruct.document.values.Value;
 import com.zarbosoft.bonestruct.document.values.ValueArray;
 import com.zarbosoft.bonestruct.document.values.ValueNode;
@@ -14,6 +16,7 @@ import com.zarbosoft.bonestruct.document.values.ValuePrimitive;
 import com.zarbosoft.bonestruct.editor.banner.Banner;
 import com.zarbosoft.bonestruct.editor.details.Details;
 import com.zarbosoft.bonestruct.editor.hid.HIDEvent;
+import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.VisualPart;
 import com.zarbosoft.bonestruct.editor.visual.attachments.TransverseExtentsAdapter;
@@ -43,7 +46,7 @@ import java.util.stream.Collectors;
 public class Context {
 	public final History history;
 	public WeakHashMap<Set<Visual.Tag>, WeakReference<Style.Baked>> styleCache = new WeakHashMap<>();
-	public VisualPart window;
+	public Visual window;
 	private final Set<SelectionListener> selectionListeners = new HashSet<>();
 	private final Set<HoverListener> hoverListeners = new HashSet<>();
 	private final Set<TagsListener> tagsChangeListeners = new HashSet<>();
@@ -53,7 +56,8 @@ public class Context {
 	public List<KeyListener> keyListeners = new ArrayList<>();
 	public Map<Object, List<Action>> actions = new HashMap<>();
 	public ClipboardEngine clipboardEngine;
-	public final Wall wall;
+	public final Wall foreground;
+	public Group midground;
 	public Group background;
 	public Brick cornerstone;
 	public int cornerstoneTransverse;
@@ -112,7 +116,7 @@ public class Context {
 		globalTags.removeAll(change.remove);
 		globalTags.addAll(change.add);
 		selectionTagsChanged();
-		wall.children.forEach(course -> course.children.forEach(brick -> brick.getVisual().tagsChanged(this)));
+		foreground.children.forEach(course -> course.children.forEach(brick -> brick.getVisual().tagsChanged(this)));
 	}
 
 	public void selectionTagsChanged() {
@@ -383,7 +387,111 @@ public class Context {
 
 	public IdleFill idleFill = null;
 
+	public class IdleClear extends IdleTask {
+		public Brick end = null;
+		public Brick start = null;
+
+		@Override
+		protected int priority() {
+			return 105;
+		}
+
+		@Override
+		protected boolean runImplementation() {
+			if (end != null) {
+				final Brick current = end;
+				end = current.next();
+				current.destroy(Context.this);
+			}
+			if (start != null) {
+				final Brick current = start;
+				start = current.previous();
+				current.destroy(Context.this);
+			}
+			if (end == null && start == null) {
+				idleClear = null;
+				return false;
+			} else
+				return true;
+		}
+
+		@Override
+		protected void destroyed() {
+			idleClear = null;
+		}
+	}
+
+	public IdleClear idleClear = null;
+
 	public IdleTask idleClick = null;
+
+	public static class WindowMark {
+		private final Context context;
+		Drawing drawing;
+
+		Display.IntListener displayListener = new Display.IntListener() {
+			@Override
+			public void changed(final int oldValue, final int newValue) {
+				drawing.setPosition(context, new Vector(0, context.transverseEdge * 60 / 100), false);
+			}
+		};
+
+		public WindowMark(final Context context) {
+			this.context = context;
+			drawing = context.display.drawing();
+			drawing.resize(context, new Vector(20, 60));
+			final Drawing.DrawingContext gc = drawing.begin(context);
+			gc.beginPath();
+			gc.moveTo(2, 2);
+			gc.arcTo(18, 30, 2, 58, 8);
+			gc.stroke();
+			context.midground.add(0, drawing);
+			drawing.setPosition(context, new Vector(0, 0), false);
+			context.display.addConverseEdgeListener(displayListener);
+			context.display.addTransverseEdgeListener(displayListener);
+		}
+
+		public void destroy(final Context context) {
+			context.midground.remove(drawing);
+			context.display.removeConverseEdgeListener(displayListener);
+			context.display.removeTransverseEdgeListener(displayListener);
+		}
+	}
+
+	private WindowMark windowMark;
+
+	private void window(Visual visual) {
+		if (visual == null) {
+			visual = document.top.visual;
+			if (windowMark != null) {
+				windowMark.destroy(this);
+				windowMark = null;
+			}
+		} else {
+			if (windowMark == null) {
+				windowMark = new WindowMark(this);
+			}
+		}
+		final Brick first = visual.getFirstBrick(this);
+		final Brick last = visual.getLastBrick(this);
+		if (first != null || last != null) {
+			if (idleClear == null) {
+				idleClear = new IdleClear();
+				addIdle(idleClear);
+			}
+			if (first != null)
+				idleClear.start = first.previous();
+			if (last != null)
+				idleClear.end = last.next();
+		}
+		window = visual;
+		window.rootAlignments(this, ImmutableMap.of());
+	}
+
+	public void window(final Node node) {
+		window(node.getVisual());
+		node.getVisual().selectDown(this);
+	}
 
 	public void setSelection(final Selection selection) {
 		final Selection oldSelection = this.selection;
@@ -391,9 +499,13 @@ public class Context {
 
 		final VisualPart visual = this.selection.getVisual();
 		if (!visual.isAncestor(window)) {
-			window = visual;
-			window.rootAlignments(this, ImmutableMap.of());
-			// TODO set depth indicator
+			window(visual.parent().getNodeVisual());
+			final Brick firstBrick = window.getFirstBrick(this);
+			final Brick lastBrick = window.getLastBrick(this);
+			if (firstBrick != null && lastBrick != null) {
+				fillFromStartBrick(firstBrick);
+				fillFromEndBrick(lastBrick);
+			}
 		}
 
 		final Brick newCornerstone = visual.getFirstBrick(this);
@@ -407,7 +519,7 @@ public class Context {
 		selection.addBrickListener(this, new VisualAttachmentAdapter.BoundsListener() {
 			@Override
 			public void firstChanged(final Context context, final Brick brick) {
-				wall.setCornerstone(context, brick);
+				foreground.setCornerstone(context, brick);
 			}
 
 			@Override
@@ -460,9 +572,9 @@ public class Context {
 		public HoverIdle(final Context context) {
 			this.context = context;
 			at = hoverBrick == null ? (
-					context.wall.children.get(0).children.isEmpty() ?
+					context.foreground.children.get(0).children.isEmpty() ?
 							null :
-							context.wall.children.get(0).children.get(0)
+							context.foreground.children.get(0).children.get(0)
 			) : hoverBrick;
 		}
 
@@ -482,10 +594,10 @@ public class Context {
 				return false;
 			}
 			if (point.transverse < at.parent.transverseStart && at.parent.index > 0) {
-				at = context.wall.children.get(at.parent.index - 1).children.get(0);
+				at = context.foreground.children.get(at.parent.index - 1).children.get(0);
 			} else if (point.transverse > at.parent.transverseEdge(context) &&
-					at.parent.index < wall.children.size() - 1) {
-				at = context.wall.children.get(at.parent.index + 1).children.get(0);
+					at.parent.index < foreground.children.size() - 1) {
+				at = context.foreground.children.get(at.parent.index + 1).children.get(0);
 			} else {
 				while (point.converse < at.getConverse(context) && at.index > 0) {
 					at = at.parent.children.get(at.index - 1);
@@ -529,21 +641,35 @@ public class Context {
 			final Consumer<IdleTask> addIdle,
 			final History history
 	) {
+		actions.put(this, ImmutableList.of(new Action() {
+			@Override
+			public void run(final Context context) {
+				if (window == document.top.getVisual())
+					return;
+				window(document.top.getVisual());
+			}
+
+			@Override
+			public String getName() {
+				return "window_clear";
+			}
+		}));
 		this.syntax = syntax;
 		this.document = document;
 		this.display = display;
 		background = display.group();
+		midground = display.group();
 		banner = new Banner(this);
 		details = new Details(this);
 		this.addIdle = addIdle;
-		this.wall = new Wall(this);
+		this.foreground = new Wall(this);
 		this.history = history;
 		display.addConverseEdgeListener((oldValue, newValue) -> {
 			edge = Math.max(0, newValue - document.syntax.padConverse * 2);
 			if (newValue < oldValue) {
-				wall.idleCompact(this);
+				foreground.idleCompact(this);
 			} else if (newValue > oldValue) {
-				wall.idleExpand(this);
+				foreground.idleExpand(this);
 			}
 		});
 	}

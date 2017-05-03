@@ -4,7 +4,7 @@ import com.zarbosoft.bonestruct.display.Blank;
 import com.zarbosoft.bonestruct.display.DisplayNode;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.visual.*;
-import com.zarbosoft.bonestruct.editor.visual.nodes.VisualSpace;
+import com.zarbosoft.bonestruct.editor.visual.visuals.VisualSpace;
 import com.zarbosoft.bonestruct.syntax.style.Style;
 import com.zarbosoft.bonestruct.wall.Brick;
 import org.pcollections.HashTreePSet;

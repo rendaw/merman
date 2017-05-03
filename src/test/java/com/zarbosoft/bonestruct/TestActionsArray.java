@@ -5,7 +5,7 @@ import com.zarbosoft.bonestruct.document.Node;
 import com.zarbosoft.bonestruct.document.values.ValueArray;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.Path;
-import com.zarbosoft.bonestruct.editor.visual.nodes.VisualArray;
+import com.zarbosoft.bonestruct.editor.visual.visuals.VisualArray;
 import org.junit.Test;
 
 import static com.zarbosoft.bonestruct.Helper.assertTreeEqual;

@@ -82,6 +82,11 @@ public class MockeryDisplay implements Display {
 	}
 
 	@Override
+	public void removeConverseEdgeListener(final IntListener listener) {
+		converseEdgeListeners.remove(listener);
+	}
+
+	@Override
 	public int transverseEdge(final Context context) {
 		return transverseEdge;
 	}
@@ -89,6 +94,11 @@ public class MockeryDisplay implements Display {
 	@Override
 	public void addTransverseEdgeListener(final IntListener listener) {
 		transverseEdgeListeners.add(listener);
+	}
+
+	@Override
+	public void removeTransverseEdgeListener(final IntListener listener) {
+		transverseEdgeListeners.remove(listener);
 	}
 
 	@Override

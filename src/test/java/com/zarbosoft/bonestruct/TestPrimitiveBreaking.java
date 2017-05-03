@@ -3,7 +3,7 @@ package com.zarbosoft.bonestruct;
 import com.zarbosoft.bonestruct.display.MockeryDisplay;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.IdleTask;
-import com.zarbosoft.bonestruct.editor.visual.nodes.VisualPrimitive;
+import com.zarbosoft.bonestruct.editor.visual.visuals.VisualPrimitive;
 import org.junit.Test;
 
 import java.util.PriorityQueue;

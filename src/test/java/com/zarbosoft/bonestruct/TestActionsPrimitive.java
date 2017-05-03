@@ -1,8 +1,8 @@
 package com.zarbosoft.bonestruct;
 
 import com.zarbosoft.bonestruct.editor.Context;
-import com.zarbosoft.bonestruct.editor.visual.nodes.VisualArray;
-import com.zarbosoft.bonestruct.editor.visual.nodes.VisualPrimitive;
+import com.zarbosoft.bonestruct.editor.visual.visuals.VisualArray;
+import com.zarbosoft.bonestruct.editor.visual.visuals.VisualPrimitive;
 import org.junit.Test;
 
 import static com.zarbosoft.bonestruct.Helper.assertTreeEqual;

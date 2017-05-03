@@ -1,4 +1,4 @@
-package com.zarbosoft.bonestruct.editor.visual.nodes;
+package com.zarbosoft.bonestruct.editor.visual.visuals;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -14,11 +14,10 @@ import com.zarbosoft.bonestruct.editor.visual.attachments.CursorAttachment;
 import com.zarbosoft.bonestruct.editor.visual.attachments.TextBorderAttachment;
 import com.zarbosoft.bonestruct.editor.visual.attachments.VisualAttachmentAdapter;
 import com.zarbosoft.bonestruct.editor.visual.raw.Obbox;
-import com.zarbosoft.bonestruct.syntax.NodeType;
 import com.zarbosoft.bonestruct.syntax.style.ObboxStyle;
 import com.zarbosoft.bonestruct.syntax.style.Style;
 import com.zarbosoft.bonestruct.wall.Brick;
-import com.zarbosoft.bonestruct.wall.bricks.LineBrick;
+import com.zarbosoft.bonestruct.wall.bricks.BrickLine;
 import com.zarbosoft.rendaw.common.Common;
 import com.zarbosoft.rendaw.common.DeadCode;
 import com.zarbosoft.rendaw.common.Pair;
@@ -862,7 +861,7 @@ public class VisualPrimitive extends VisualPart {
 		}
 
 		@Override
-		public NodeType.NodeTypeVisual node() {
+		public VisualNodeType node() {
 			if (VisualPrimitive.this.parent == null)
 				return null;
 			return VisualPrimitive.this.parent.getNodeVisual();
@@ -901,7 +900,7 @@ public class VisualPrimitive extends VisualPart {
 
 		public final boolean hard;
 		public String text;
-		public LineBrick brick;
+		public BrickLine brick;
 		public int index;
 
 		public void setIndex(final Context context, final int index) {
@@ -918,7 +917,7 @@ public class VisualPrimitive extends VisualPart {
 				style = new BrickStyle(context);
 				brickStyle = new WeakReference<>(style);
 			}
-			brick = new LineBrick(context, VisualPrimitive.this, this, style);
+			brick = new BrickLine(context, VisualPrimitive.this, this, style);
 			brick.setText(context, text);
 			if (selection != null && (selection.range.beginLine == Line.this || selection.range.endLine == Line.this))
 				selection.range.nudge(context);

@@ -13,6 +13,8 @@ import com.zarbosoft.bonestruct.editor.visual.VisualPart;
 import java.util.HashSet;
 import java.util.Set;
 
+import static com.zarbosoft.rendaw.common.Common.last;
+
 public abstract class Brick {
 	public Course parent;
 	public int index;
@@ -120,6 +122,26 @@ public abstract class Brick {
 				parent.add(context, index, ImmutableList.of(brick));
 		}
 		ImmutableList.copyOf(attachments).forEach(a -> a.addBefore(context, brick));
+	}
+
+	public Brick previous() {
+		if (index == 0) {
+			if (parent.index == 0) {
+				return null;
+			}
+			return last(parent.parent.children.get(parent.index - 1).children);
+		}
+		return parent.children.get(index - 1);
+	}
+
+	public Brick next() {
+		if (index + 1 == parent.children.size()) {
+			if (parent.index + 1 == parent.parent.children.size()) {
+				return null;
+			}
+			return parent.parent.children.get(parent.index + 1).children.get(0);
+		}
+		return parent.children.get(index + 1);
 	}
 
 	/**

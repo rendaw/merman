@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableSet;
 import com.zarbosoft.bonestruct.document.Document;
 import com.zarbosoft.bonestruct.document.Node;
 import com.zarbosoft.bonestruct.document.values.ValueArray;
-import com.zarbosoft.bonestruct.syntax.front.RootFrontDataArray;
+import com.zarbosoft.bonestruct.syntax.front.FrontDataRootArray;
 import com.zarbosoft.bonestruct.syntax.middle.MiddleArray;
 import com.zarbosoft.bonestruct.syntax.modules.Module;
 import com.zarbosoft.bonestruct.syntax.style.ModelColor;
@@ -99,7 +99,7 @@ public class Syntax {
 	public MiddleArray root;
 
 	@Configuration(optional = true, description = "Root front-end configuration.")
-	public RootFrontDataArray rootFront = new RootFrontDataArray();
+	public FrontDataRootArray rootFront = new FrontDataRootArray();
 
 	@Configuration(optional = true, name = "animate_course_placement")
 	public boolean animateCoursePlacement = false;

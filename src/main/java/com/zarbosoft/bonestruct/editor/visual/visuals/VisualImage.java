@@ -1,4 +1,4 @@
-package com.zarbosoft.bonestruct.editor.visual.nodes;
+package com.zarbosoft.bonestruct.editor.visual.visuals;
 
 import com.google.common.collect.Iterables;
 import com.zarbosoft.bonestruct.document.values.Value;
@@ -6,24 +6,21 @@ import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.visual.VisualParent;
 import com.zarbosoft.bonestruct.editor.visual.VisualPart;
 import com.zarbosoft.bonestruct.editor.visual.condition.ConditionAttachment;
-import com.zarbosoft.bonestruct.syntax.front.FrontMark;
 import com.zarbosoft.bonestruct.wall.Brick;
-import com.zarbosoft.bonestruct.wall.bricks.BrickMark;
+import com.zarbosoft.bonestruct.wall.bricks.BrickImage;
 import com.zarbosoft.rendaw.common.DeadCode;
 import com.zarbosoft.rendaw.common.Pair;
 
 import java.util.Arrays;
 import java.util.Set;
 
-public class VisualMark extends VisualPart implements ConditionAttachment.Listener {
-	private final FrontMark frontMark;
+public class VisualImage extends VisualPart implements ConditionAttachment.Listener {
 	public VisualParent parent;
-	public BrickMark brick = null;
+	public BrickImage brick = null;
 	public ConditionAttachment condition = null;
 
-	public VisualMark(final FrontMark frontMark, final Set<Tag> tags, final ConditionAttachment condition) {
+	public VisualImage(final Set<Tag> tags, final ConditionAttachment condition) {
 		super(tags);
-		this.frontMark = frontMark;
 		if (condition != null) {
 			this.condition = condition;
 			condition.register(this);
@@ -37,11 +34,6 @@ public class VisualMark extends VisualPart implements ConditionAttachment.Listen
 		} else if (brick != null) {
 			brick.destroy(context);
 		}
-	}
-
-	public void setText(final Context context, final String value) {
-		if (brick != null)
-			brick.setText(context, value);
 	}
 
 	@Override
@@ -72,11 +64,8 @@ public class VisualMark extends VisualPart implements ConditionAttachment.Listen
 	@Override
 	public Brick createFirstBrick(final Context context) {
 		if (brick != null)
-			return null;
-		if (condition != null && !condition.show())
-			return null;
-		brick = new BrickMark(this, context);
-		brick.setText(context, frontMark.value);
+			throw new AssertionError("Brick should be initially empty or cleared after being deleted");
+		brick = new BrickImage(this, context);
 		return brick;
 	}
 
@@ -117,8 +106,6 @@ public class VisualMark extends VisualPart implements ConditionAttachment.Listen
 	public void destroy(final Context context) {
 		if (brick != null)
 			brick.destroy(context);
-		if (condition != null)
-			condition.destroy(context);
 	}
 
 	@Override
@@ -126,13 +113,4 @@ public class VisualMark extends VisualPart implements ConditionAttachment.Listen
 		return false;
 	}
 
-	@Override
-	public boolean canCompact() {
-		return false;
-	}
-
-	@Override
-	public boolean canExpand() {
-		return false;
-	}
 }

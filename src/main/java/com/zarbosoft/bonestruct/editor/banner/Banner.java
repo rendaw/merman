@@ -121,7 +121,7 @@ public class Banner {
 			final Style.Baked style = getStyle(context);
 			text.setFont(context, style.getFont(context));
 			text.setColor(context, style.color);
-			context.background.add(text);
+			context.midground.add(text);
 			text.setTransverse(context, Math.max(scroll, transverse - text.font().getDescent()), false);
 			bedding = new Bedding(text.transverseSpan(context), 0);
 			brick.addBedding(context, bedding);
@@ -145,7 +145,7 @@ public class Banner {
 	private void update(final Context context) {
 		if (queue.isEmpty()) {
 			if (text != null) {
-				context.background.remove(text);
+				context.midground.remove(text);
 				text = null;
 				brick.removeBedding(context, bedding);
 				bedding = null;

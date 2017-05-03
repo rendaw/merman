@@ -213,7 +213,7 @@ public class PrefixGapNodeType extends NodeType {
 	}
 
 	@Override
-	protected Map<String, AlignmentDefinition> alignments() {
+	public Map<String, AlignmentDefinition> alignments() {
 		return ImmutableMap.of();
 	}
 

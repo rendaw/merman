@@ -6,19 +6,19 @@ import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.VisualPart;
-import com.zarbosoft.bonestruct.editor.visual.nodes.VisualPrimitive;
+import com.zarbosoft.bonestruct.editor.visual.visuals.VisualPrimitive;
 import com.zarbosoft.bonestruct.syntax.style.Style;
 import com.zarbosoft.bonestruct.wall.Brick;
 
 import java.util.HashSet;
 import java.util.Set;
 
-public class LineBrick extends BrickText {
+public class BrickLine extends BrickText {
 	private final VisualPrimitive visualPrimitive;
 	private final VisualPrimitive.Line line;
 	private final VisualPrimitive.BrickStyle style;
 
-	public LineBrick(
+	public BrickLine(
 			final Context context,
 			final VisualPrimitive visualPrimitive,
 			final VisualPrimitive.Line line,

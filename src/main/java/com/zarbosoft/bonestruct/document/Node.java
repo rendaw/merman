@@ -4,6 +4,7 @@ import com.zarbosoft.bonestruct.document.values.Value;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.Path;
 import com.zarbosoft.bonestruct.editor.visual.Visual;
+import com.zarbosoft.bonestruct.editor.visual.visuals.VisualNodeType;
 import com.zarbosoft.bonestruct.syntax.NodeType;
 
 import java.util.Map;
@@ -12,7 +13,7 @@ public class Node {
 	public Value.Parent parent;
 	public NodeType type;
 	public final Map<String, Value> data;
-	public NodeType.NodeTypeVisual visual;
+	public VisualNodeType visual;
 
 	public Node(final NodeType type, final Map<String, Value> data) {
 		this.type = type;
@@ -53,7 +54,7 @@ public class Node {
 		this.parent = parent;
 	}
 
-	public NodeType.NodeTypeVisual getVisual() {
+	public VisualNodeType getVisual() {
 		return visual;
 	}
 

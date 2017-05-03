@@ -36,7 +36,7 @@ public abstract class Visual {
 
 	public abstract Brick getLastBrick(Context context);
 
-	public boolean isAncestor(final VisualPart node) {
+	public boolean isAncestor(final Visual node) {
 		if (parent() == null)
 			return false;
 		return parent().getTarget().isAncestor(node);

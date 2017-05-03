@@ -3,7 +3,7 @@ package com.zarbosoft.bonestruct.syntax.front;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.VisualPart;
-import com.zarbosoft.bonestruct.editor.visual.nodes.VisualSpace;
+import com.zarbosoft.bonestruct.editor.visual.visuals.VisualSpace;
 import com.zarbosoft.interface1.Configuration;
 import org.pcollections.HashTreePSet;
 

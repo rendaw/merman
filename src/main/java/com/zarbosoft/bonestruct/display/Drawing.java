@@ -24,9 +24,9 @@ public interface Drawing extends DisplayNode {
 
 		void beginPath();
 
-		void moveTo(int halfBuffer, int halfBuffer1);
+		void moveTo(int c, int t);
 
-		void lineTo(int i, int i1);
+		void lineTo(int c, int t);
 
 		void closePath();
 

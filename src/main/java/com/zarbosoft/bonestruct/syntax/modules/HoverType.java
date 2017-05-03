@@ -3,10 +3,10 @@ package com.zarbosoft.bonestruct.syntax.modules;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.Hoverable;
 import com.zarbosoft.bonestruct.editor.banner.BannerMessage;
-import com.zarbosoft.bonestruct.editor.visual.nodes.VisualArray;
-import com.zarbosoft.bonestruct.editor.visual.nodes.VisualNode;
-import com.zarbosoft.bonestruct.editor.visual.nodes.VisualPrimitive;
-import com.zarbosoft.bonestruct.syntax.NodeType;
+import com.zarbosoft.bonestruct.editor.visual.visuals.VisualArray;
+import com.zarbosoft.bonestruct.editor.visual.visuals.VisualNode;
+import com.zarbosoft.bonestruct.editor.visual.visuals.VisualNodeType;
+import com.zarbosoft.bonestruct.editor.visual.visuals.VisualPrimitive;
 import com.zarbosoft.interface1.Configuration;
 
 @Configuration(name = "hover_type", description = "Shows the type of the element being hovered in the banner.")
@@ -31,7 +31,7 @@ public class HoverType extends Module {
 					message.priority = 100;
 					final StringBuilder text = new StringBuilder();
 					if (node) {
-						final NodeType.NodeTypeVisual nodeType = hoverable.node();
+						final VisualNodeType nodeType = hoverable.node();
 						if (nodeType == null)
 							text.append("Root Element");
 						else

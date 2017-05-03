@@ -1,4 +1,4 @@
-package com.zarbosoft.bonestruct.editor.visual.nodes;
+package com.zarbosoft.bonestruct.editor.visual.visuals;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -16,7 +16,6 @@ import com.zarbosoft.bonestruct.editor.visual.attachments.VisualAttachmentAdapte
 import com.zarbosoft.bonestruct.editor.visual.attachments.VisualBorderAttachment;
 import com.zarbosoft.bonestruct.history.changes.ChangeArray;
 import com.zarbosoft.bonestruct.syntax.FreeNodeType;
-import com.zarbosoft.bonestruct.syntax.NodeType;
 import com.zarbosoft.bonestruct.syntax.front.FrontConstantPart;
 import com.zarbosoft.bonestruct.syntax.middle.MiddleArray;
 import com.zarbosoft.bonestruct.syntax.middle.MiddleArrayBase;
@@ -346,7 +345,7 @@ public abstract class VisualArray extends VisualGroup {
 		}
 
 		@Override
-		public NodeType.NodeTypeVisual node() {
+		public VisualNodeType node() {
 			if (VisualArray.this.parent == null)
 				return null;
 			return VisualArray.this.parent.getNodeVisual();
@@ -588,6 +587,16 @@ public abstract class VisualArray extends VisualGroup {
 				@Override
 				public String getName() {
 					return "move_after";
+				}
+			}, new Action() {
+				@Override
+				public void run(final Context context) {
+					context.window(data.data.get(beginIndex));
+				}
+
+				@Override
+				public String getName() {
+					return "window";
 				}
 			}));
 		}

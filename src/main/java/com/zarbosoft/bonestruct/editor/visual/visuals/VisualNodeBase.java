@@ -1,4 +1,4 @@
-package com.zarbosoft.bonestruct.editor.visual.nodes;
+package com.zarbosoft.bonestruct.editor.visual.visuals;
 
 import com.google.common.collect.ImmutableList;
 import com.zarbosoft.bonestruct.document.Node;
@@ -7,7 +7,6 @@ import com.zarbosoft.bonestruct.editor.*;
 import com.zarbosoft.bonestruct.editor.visual.*;
 import com.zarbosoft.bonestruct.editor.visual.attachments.BorderAttachment;
 import com.zarbosoft.bonestruct.editor.visual.attachments.VisualAttachmentAdapter;
-import com.zarbosoft.bonestruct.syntax.NodeType;
 import com.zarbosoft.bonestruct.wall.Brick;
 import com.zarbosoft.rendaw.common.DeadCode;
 import com.zarbosoft.rendaw.common.Pair;
@@ -213,6 +212,16 @@ public abstract class VisualNodeBase extends VisualPart {
 			public String getName() {
 				return "paste";
 			}
+		}, new Action() {
+			@Override
+			public void run(final Context context) {
+				context.window(nodeGet());
+			}
+
+			@Override
+			public String getName() {
+				return "window";
+			}
 		});
 	}
 
@@ -319,7 +328,7 @@ public abstract class VisualNodeBase extends VisualPart {
 		}
 
 		@Override
-		public NodeType.NodeTypeVisual getNodeVisual() {
+		public VisualNodeType getNodeVisual() {
 			throw new DeadCode();
 		}
 
@@ -399,7 +408,7 @@ public abstract class VisualNodeBase extends VisualPart {
 				}
 
 				@Override
-				public NodeType.NodeTypeVisual node() {
+				public VisualNodeType node() {
 					if (VisualNodeBase.this.parent == null)
 						return null;
 					return VisualNodeBase.this.parent.getNodeVisual();

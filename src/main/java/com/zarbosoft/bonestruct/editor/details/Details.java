@@ -117,7 +117,7 @@ public class Details {
 	public void addPage(final Context context, final DetailsPage page) {
 		if (queue.isEmpty()) {
 			group = context.display.group();
-			context.background.add(group);
+			context.midground.add(group);
 		}
 		queue.add(page);
 		update(context);
@@ -126,7 +126,7 @@ public class Details {
 	private void update(final Context context) {
 		if (queue.isEmpty()) {
 			if (group != null) {
-				context.background.remove(group);
+				context.midground.remove(group);
 				group = null;
 				brick.removeBedding(context, bedding);
 				bedding = null;

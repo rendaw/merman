@@ -1,4 +1,4 @@
-package com.zarbosoft.bonestruct.editor.visual.nodes;
+package com.zarbosoft.bonestruct.editor.visual.visuals;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
@@ -10,7 +10,6 @@ import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.VisualParent;
 import com.zarbosoft.bonestruct.editor.visual.VisualPart;
-import com.zarbosoft.bonestruct.syntax.NodeType;
 import com.zarbosoft.bonestruct.wall.Brick;
 import com.zarbosoft.rendaw.common.DeadCode;
 import com.zarbosoft.rendaw.common.Pair;
@@ -248,7 +247,7 @@ public class VisualGroup extends VisualPart {
 		}
 
 		@Override
-		public NodeType.NodeTypeVisual getNodeVisual() {
+		public VisualNodeType getNodeVisual() {
 			if (target.parent == null)
 				return null;
 			return target.parent.getNodeVisual();

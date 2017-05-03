@@ -3,7 +3,7 @@ package com.zarbosoft.bonestruct.syntax.front;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.VisualPart;
-import com.zarbosoft.bonestruct.editor.visual.nodes.VisualNode;
+import com.zarbosoft.bonestruct.editor.visual.visuals.VisualNode;
 import com.zarbosoft.bonestruct.syntax.NodeType;
 import com.zarbosoft.bonestruct.syntax.middle.MiddleNode;
 import com.zarbosoft.bonestruct.syntax.modules.hotkeys.grammar.Node;
