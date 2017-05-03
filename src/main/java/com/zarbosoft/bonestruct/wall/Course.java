@@ -272,7 +272,7 @@ public class Course {
 					b.getAttachments(context).forEach(a -> a.setTransverseSpan(context, ascent, descent));
 				});
 
-			// Do getConverse placement
+			// Do converse placement
 			final Set<Alignment> seenAlignments = new HashSet<>();
 			final int at = first;
 			int converse =
@@ -315,25 +315,29 @@ public class Course {
 	}
 
 	boolean compact(final Context context) {
+		System.out.format("COMPACT l %d\n", index);
 		final PriorityQueue<Visual> priorities =
 				new PriorityQueue<>(11, new ChainComparator<Visual>().greaterFirst(Visual::spacePriority).build());
 		int converse = 0;
 		for (int index = 0; index < children.size(); ++index) {
 			final Brick brick = children.get(index);
-			final Visual node = brick.getNode();
-			if (node.canCompact())
-				priorities.add(node);
+			final Visual visual = brick.getVisual();
+			if (visual.canCompact())
+				priorities.add(visual);
 			converse = brick.converseEdge(context);
 			if (!priorities.isEmpty() && converse > context.edge)
 				break;
 		}
-		if (converse < context.edge) {
+		System.out.format("\tconv %s vs %s\n", converse, context.edge);
+		if (converse <= context.edge) {
 			lastExpandCheckConverse = converse;
 			return false;
 		}
+		System.out.format("\ta\n", converse);
 		if (priorities.isEmpty()) {
 			return false;
 		}
+		System.out.format("\tb\n", converse);
 		priorities.poll().compact(context);
 		return true;
 	}
@@ -366,13 +370,14 @@ public class Course {
 	}
 
 	boolean expand(final Context context) {
+		System.out.format("EXPAND l %d\n", index);
 		final PriorityQueue<Visual> priorities =
 				new PriorityQueue<>(11, new ChainComparator<Visual>().lesserFirst(Visual::spacePriority).build());
 		for (int index = 0; index < children.size(); ++index) {
 			final Brick brick = children.get(index);
-			final Visual node = brick.getNode();
-			if (node.canExpand())
-				priorities.add(node);
+			final Visual visual = brick.getVisual();
+			if (visual.canExpand())
+				priorities.add(visual);
 		}
 		if (priorities.isEmpty())
 			return false;

@@ -46,6 +46,13 @@ public class LineBrick extends BrickText {
 	}
 
 	@Override
+	public Properties properties(final Context context, final Style.Baked style) {
+		if (line.index > 0)
+			style.broken = true;
+		return super.properties(context, style);
+	}
+
+	@Override
 	public Brick createNext(final Context context) {
 		return line.createNextBrick(context);
 	}

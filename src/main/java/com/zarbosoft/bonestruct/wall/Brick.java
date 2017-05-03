@@ -22,12 +22,6 @@ public abstract class Brick {
 
 	public abstract int converseEdge(final Context context);
 
-	public final Visual getNode() { // Temp final
-		if (getVisual().parent() == null)
-			return null;
-		return getVisual().parent().getNodeVisual();
-	}
-
 	public abstract VisualPart getVisual();
 
 	public abstract Properties getPropertiesForTagsChange(Context context, Visual.TagsChange change);
@@ -100,7 +94,8 @@ public abstract class Brick {
 	public abstract void allocateTransverse(Context context, int ascent, int descent);
 
 	public void addAfter(final Context context, final Brick brick) {
-		if (brick.properties(context).broken) {
+		final Properties properties = brick.properties(context);
+		if (properties.broken) {
 			parent.breakCourse(context, index + 1).add(context, 0, ImmutableList.of(brick));
 		} else
 			parent.add(context, index + 1, ImmutableList.of(brick));

@@ -62,6 +62,12 @@ public class Context {
 	public Details details;
 	public final Display display;
 
+	public void suggestCreateBricksBetween(final Brick previousBrick, final Brick nextBrick) {
+		if (previousBrick == null || nextBrick == null)
+			return;
+		fillFromEndBrick(previousBrick);
+	}
+
 	@FunctionalInterface
 	public interface KeyListener {
 		boolean handleKey(Context context, HIDEvent event);
@@ -509,7 +515,7 @@ public class Context {
 
 	public final Syntax syntax;
 	public final Document document;
-	public int edge = 0;
+	public int edge = Integer.MAX_VALUE;
 	public int transverseEdge = 0;
 	public Brick hoverBrick;
 	public Hoverable hover;
@@ -532,6 +538,14 @@ public class Context {
 		this.addIdle = addIdle;
 		this.wall = new Wall(this);
 		this.history = history;
+		display.addConverseEdgeListener((oldValue, newValue) -> {
+			edge = Math.max(0, newValue - document.syntax.padConverse * 2);
+			if (newValue < oldValue) {
+				wall.idleCompact(this);
+			} else if (newValue > oldValue) {
+				wall.idleExpand(this);
+			}
+		});
 	}
 
 	private final Consumer<IdleTask> addIdle;

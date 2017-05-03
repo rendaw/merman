@@ -2,6 +2,7 @@ package com.zarbosoft.bonestruct.editor.visual.nodes;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import com.zarbosoft.bonestruct.display.Font;
 import com.zarbosoft.bonestruct.document.values.Value;
 import com.zarbosoft.bonestruct.document.values.ValuePrimitive;
 import com.zarbosoft.bonestruct.editor.*;
@@ -30,17 +31,17 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.zarbosoft.rendaw.common.Common.enumerate;
-import static com.zarbosoft.rendaw.common.Common.last;
+import static com.zarbosoft.rendaw.common.Common.*;
 
 public class VisualPrimitive extends VisualPart {
 	// INVARIANT: Leaf nodes must always create at least one brick
 	// TODO index line offsets for faster insert/remove
-	// TODO compact/expand
 	private final ValuePrimitive.Listener dataListener;
 	private final Obbox border = null;
 	private final ValuePrimitive data;
 	public VisualParent parent;
+	private boolean canExpand = false;
+	private boolean canCompact = true;
 
 	public class BrickStyle {
 		public Alignment softAlignment;
@@ -743,7 +744,7 @@ public class VisualPrimitive extends VisualPart {
 		}
 
 		public final boolean hard;
-		String text;
+		public String text;
 		public LineBrick brick;
 		public int index;
 
@@ -880,22 +881,14 @@ public class VisualPrimitive extends VisualPart {
 						final Brick nextBrick = index + 1 >= lines.size() ?
 								(parent == null ? null : parent.getNextBrick(context)) :
 								lines.get(index + 1).brick;
-						if (previousBrick != null && nextBrick != null)
-							context.fillFromEndBrick(previousBrick);
+						context.suggestCreateBricksBetween(previousBrick, nextBrick);
 					}
 				}
 				if (remainder != null)
 					line.setText(context, line.text + remainder);
 
 				// Renumber/adjust offset of following lines
-				for (; index < lines.size(); ++index) {
-					line = lines.get(index);
-					if (line.hard)
-						movingOffset += 1;
-					line.index = index;
-					line.offset = movingOffset;
-					movingOffset += line.text.length();
-				}
+				renumber(context, index, movingOffset);
 
 				if (selection != null) {
 					final int newBegin;
@@ -943,7 +936,7 @@ public class VisualPrimitive extends VisualPart {
 				if (hoverable != null) {
 					if (hoverable.range.beginOffset >= offset + count) {
 						hoverable.range.setOffsets(context, hoverable.range.beginOffset - (offset + count));
-					} else if (hoverable.range.beginOffset >= index || hoverable.range.endOffset >= index) {
+					} else if (hoverable.range.beginOffset >= offset || hoverable.range.endOffset >= offset) {
 						context.clearHover();
 					}
 				}
@@ -1020,4 +1013,236 @@ public class VisualPrimitive extends VisualPart {
 		return data == value;
 	}
 
+	@Override
+	public boolean canCompact() {
+		return canCompact;
+	}
+
+	@Override
+	public boolean canExpand() {
+		return canExpand;
+	}
+
+	@Override
+	public void compact(final Context context) {
+		final RebreakResult result = new RebreakResult();
+		int hardlineCount = 0;
+		boolean rebreak = false;
+		for (int i = lines.size() - 1; i >= 0; --i) {
+			final Line line = lines.get(i);
+			if (line.hard)
+				hardlineCount += 1;
+			if (line.brick == null)
+				continue;
+			final int edge = line.brick.converseEdge(context);
+			if (!rebreak && edge > context.edge) {
+				rebreak = true;
+			}
+			if (line.hard && rebreak) {
+				result.merge(rebreak(context, i));
+				rebreak = false;
+			}
+		}
+		canCompact = !result.compactLimit;
+		final boolean oldCanExpand = canExpand;
+		canExpand = hardlineCount < lines.size();
+		if (canExpand && !oldCanExpand) {
+			super.compact(context);
+		}
+	}
+
+	@Override
+	public void expand(final Context context) {
+		boolean expanded = false;
+		int hardlineCount = 0;
+		boolean rebreak = true;
+		for (int i = lines.size() - 1; i >= 0; --i) {
+			final Line line = lines.get(i);
+			if (line.hard)
+				hardlineCount += 1;
+			if (line.brick == null)
+				continue;
+			if (!rebreak && line.brick.converseEdge(context) * 1.25 > context.edge) {
+				rebreak = false;
+			}
+			if (line.hard && rebreak) {
+				expanded = expanded || rebreak(context, i).changed;
+				rebreak = true;
+			}
+		}
+		canExpand = hardlineCount < lines.size();
+		if (!canExpand) {
+			super.expand(context);
+		}
+		if (expanded)
+			canCompact = true;
+	}
+
+	private static class RebreakResult {
+		boolean changed = false;
+		boolean compactLimit = false;
+
+		public void merge(final RebreakResult other) {
+			changed = changed || other.changed;
+			compactLimit = compactLimit || other.compactLimit;
+		}
+	}
+
+	private RebreakResult rebreak(final Context context, final int i) {
+		final RebreakResult result = new RebreakResult();
+		class Builder {
+			String text;
+			int offset;
+
+			public boolean hasText() {
+				return !text.isEmpty();
+			}
+
+			public RebreakResult build(final Line line, final Font font, final int converse) {
+				final RebreakResult result = new RebreakResult();
+				final int width = font.getWidth(text);
+				final int edge = converse + width;
+				int split;
+				if (converse < context.edge && edge > context.edge) {
+					final BreakIterator lineIter = BreakIterator.getLineInstance();
+					lineIter.setText(text);
+					final int edgeOffset = context.edge - converse;
+					final int under = font.getUnder(text, edgeOffset);
+					if (under == text.length())
+						split = under;
+					else {
+						split = lineIter.preceding(under + 1);
+						if (split == 0 || split == BreakIterator.DONE) {
+							final BreakIterator clusterIter = BreakIterator.getCharacterInstance();
+							clusterIter.setText(text);
+							split = clusterIter.preceding(under + 1);
+						}
+						if (split < 4 || split == BreakIterator.DONE) {
+							split = text.length();
+							result.compactLimit = true;
+						}
+					}
+				} else {
+					split = text.length();
+				}
+
+				line.setText(context, text.substring(0, split));
+				if (line.offset == offset)
+					result.changed = false;
+				else
+					result.changed = true;
+				line.offset = offset;
+				text = text.substring(split);
+				offset += split;
+				return result;
+			}
+		}
+		final Builder build = new Builder();
+		final int modifiedOffsetStart = lines.get(i).offset;
+		build.offset = modifiedOffsetStart;
+
+		int endIndex = i;
+		final int modifiedLength;
+
+		// Get the full unwrapped text
+		{
+			final StringBuilder sum = new StringBuilder();
+			for (int j = i; j < lines.size(); ++j, ++endIndex) {
+				final Line line = lines.get(j);
+				if (j > i && line.hard)
+					break;
+				sum.append(line.text);
+			}
+			build.text = sum.toString();
+			modifiedLength = build.text.length();
+		}
+
+		final BrickStyle brickStyle = this.brickStyle.get();
+		int j = i;
+
+		// Wrap text into existing lines
+		for (; j < endIndex; ++j) {
+			final Line line = lines.get(j);
+			if (!build.hasText())
+				break;
+			final Font font;
+			final int converse;
+			if (line.brick == null) {
+				final Style.Baked style =
+						j == 0 ? brickStyle.firstStyle : j == i ? brickStyle.hardStyle : brickStyle.softStyle;
+				font = style.getFont(context);
+				final Alignment alignment = getAlignment(style.alignment);
+				if (alignment == null)
+					converse = 0;
+				else
+					converse = alignment.converse;
+			} else {
+				font = line.brick.getFont();
+				converse = line.brick.getConverse(context);
+			}
+			result.merge(build.build(line, font, converse));
+		}
+
+		// If text remains, make new lines
+		if (build.hasText()) {
+			final Brick priorBrick = lines.get(j - 1).brick;
+
+			while (build.hasText()) {
+				final Line line = new Line(false);
+				line.setIndex(context, j);
+				final Style.Baked style = brickStyle.softStyle;
+				final Font font = style.getFont(context);
+				final Alignment alignment = getAlignment(style.alignment);
+				final int converse;
+				if (alignment == null)
+					converse = 0;
+				else
+					converse = alignment.converse;
+				build.build(line, font, converse);
+				lines.add(j, line);
+				++j;
+			}
+
+			final Brick followingBrick = j == lines.size() ? parent.getNextBrick(context) : lines.get(j).brick;
+			context.suggestCreateBricksBetween(priorBrick, followingBrick);
+		}
+
+		// If ran out of text early, delete following soft lines
+		if (j + 1 < endIndex) {
+			result.changed = true;
+			for (final Line line : iterable(lines.stream().skip(j))) {
+				line.destroy(context);
+			}
+			lines.subList(j, endIndex).clear();
+		}
+
+		// Cleanup
+		renumber(context, j, build.offset);
+
+		// Adjust hover/selection
+		if (hoverable != null) {
+			if (hoverable.range.beginOffset >= modifiedOffsetStart + modifiedLength) {
+				hoverable.range.nudge(context);
+			} else if (hoverable.range.beginOffset >= modifiedOffsetStart ||
+					hoverable.range.endOffset >= modifiedOffsetStart) {
+				context.clearHover();
+			}
+		}
+		if (selection != null) {
+			selection.range.nudge(context);
+		}
+
+		return result;
+	}
+
+	private void renumber(final Context context, int index, int offset) {
+		for (; index < lines.size(); ++index) {
+			final Line line = lines.get(index);
+			if (line.hard)
+				offset += 1;
+			line.index = index;
+			line.offset = offset;
+			offset += line.text.length();
+		}
+	}
 }

@@ -6,4 +6,6 @@ public interface Font {
 	int getDescent();
 
 	int getWidth(String text);
+
+	int getUnder(String text, int converse);
 }

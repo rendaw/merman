@@ -1,5 +1,7 @@
 return {
     name = 'luxem',
+    pad_converse = 5,
+    pad_transverse = 60,
     background = rgb { r = 74 / 255, g = 60 / 255, b = 89 / 255 },
     animate_course_placement = true,
     hover_style = {

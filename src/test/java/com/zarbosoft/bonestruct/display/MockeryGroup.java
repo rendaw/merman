@@ -15,7 +15,7 @@ public class MockeryGroup extends MockeryDisplayNode implements Group {
 
 	@Override
 	public void addAll(final int index, final List<DisplayNode> nodes) {
-		nodes.addAll(index, nodes);
+		this.nodes.addAll(index, nodes);
 	}
 
 	@Override

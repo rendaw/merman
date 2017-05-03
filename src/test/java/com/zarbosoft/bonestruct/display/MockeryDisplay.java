@@ -10,8 +10,8 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public class MockeryDisplay implements Display {
-	int edge;
-	int transverseEdge;
+	int edge = 10000;
+	int transverseEdge = 10000;
 	List<IntListener> converseEdgeListeners = new ArrayList<>();
 	List<IntListener> transverseEdgeListeners = new ArrayList<>();
 	List<DisplayNode> nodes = new ArrayList<>();
@@ -78,6 +78,7 @@ public class MockeryDisplay implements Display {
 
 	@Override
 	public void addConverseEdgeListener(final IntListener listener) {
+		System.out.format("x\n");
 		converseEdgeListeners.add(listener);
 	}
 
@@ -109,5 +110,17 @@ public class MockeryDisplay implements Display {
 	@Override
 	public void setBackgroundColor(final ModelColor color) {
 
+	}
+
+	public void setConverseEdge(final Context context, final int converse) {
+		final int oldEdge = edge;
+		edge = converse;
+		converseEdgeListeners.forEach(listener -> listener.changed(oldEdge, converse));
+	}
+
+	public void setTransverseEdge(final Context context, final int transverse) {
+		final int oldEdge = transverseEdge;
+		transverseEdge = transverse;
+		transverseEdgeListeners.forEach(listener -> listener.changed(oldEdge, transverse));
 	}
 }

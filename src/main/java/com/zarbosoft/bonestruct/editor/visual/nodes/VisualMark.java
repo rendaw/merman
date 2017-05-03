@@ -126,4 +126,13 @@ public class VisualMark extends VisualPart implements ConditionAttachment.Listen
 		return false;
 	}
 
+	@Override
+	public boolean canCompact() {
+		return false;
+	}
+
+	@Override
+	public boolean canExpand() {
+		return false;
+	}
 }

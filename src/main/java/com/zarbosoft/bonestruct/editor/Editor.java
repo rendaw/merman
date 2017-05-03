@@ -98,22 +98,10 @@ public class Editor {
 			}
 			context.hoverIdle.point = vector.add(new Vector(-context.syntax.padConverse, scroll));
 		});
-		display.addConverseEdgeListener((
-				(oldValue, newValue) -> {
-					context.edge = Math.max(0, newValue - doc.syntax.padConverse * 2);
-					if (newValue < oldValue) {
-						context.wall.idleCompact(context);
-					} else if (newValue > oldValue) {
-						context.wall.idleExpand(context);
-					}
-				}
-		));
-		display.addTransverseEdgeListener((
-				(oldValue, newValue) -> {
-					context.transverseEdge = Math.max(0, newValue - doc.syntax.padTransverse * 2);
-					scrollVisible(context);
-				}
-		));
+		display.addTransverseEdgeListener((oldValue, newValue) -> {
+			context.transverseEdge = Math.max(0, newValue - doc.syntax.padTransverse * 2);
+			scrollVisible(context);
+		});
 		visual.setBackgroundColor(context.syntax.background);
 		visual.add(context.background);
 		visual.add(context.wall.visual);

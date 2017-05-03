@@ -47,11 +47,11 @@ public class Syntax {
 
 	@Configuration(optional = true, name = "pad_converse",
 			description = "Pad the converse edge of the document by this many pixels.")
-	public int padConverse = 5;
+	public int padConverse = 0;
 
 	@Configuration(optional = true, name = "pad_transverse",
 			description = "Pad the transverse edge of the document by this many pixels.")
-	public int padTransverse = 60;
+	public int padTransverse = 0;
 
 	@Configuration(optional = true, description =
 			"If the path to a writable document does not yet exist, a new document will be created " +

@@ -2,6 +2,7 @@ package com.zarbosoft.bonestruct.display.javafx;
 
 import com.zarbosoft.bonestruct.display.Font;
 import javafx.geometry.Bounds;
+import javafx.geometry.Point2D;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextBoundsType;
 
@@ -65,5 +66,23 @@ public class JavaFXFont implements Font {
 		helper.setLineSpacing(DEFAULT_LINE_SPACING);
 		helper.setText(DEFAULT_TEXT);
 		return (int) w;
+	}
+
+	@Override
+	public int getUnder(final String text, final int converse) {
+		helper.setText(text);
+		helper.setFont(font);
+		// Note that the wrapping width needs to be set to zero before
+		// getting the text's real preferred width.
+		helper.setWrappingWidth(0);
+		helper.setLineSpacing(0);
+		final double w = helper.prefWidth(-1);
+		helper.setWrappingWidth((int) Math.ceil(w));
+		final int offset = helper.hitTest(new Point2D(converse, 0)).getInsertionIndex();
+		// RESTORE STATE
+		helper.setWrappingWidth(DEFAULT_WRAPPING_WIDTH);
+		helper.setLineSpacing(DEFAULT_LINE_SPACING);
+		helper.setText(DEFAULT_TEXT);
+		return offset;
 	}
 }

@@ -14,6 +14,7 @@ import com.zarbosoft.bonestruct.document.values.ValuePrimitive;
 import com.zarbosoft.bonestruct.editor.Action;
 import com.zarbosoft.bonestruct.editor.ClipboardEngine;
 import com.zarbosoft.bonestruct.editor.Context;
+import com.zarbosoft.bonestruct.editor.IdleTask;
 import com.zarbosoft.bonestruct.editor.visual.VisualPart;
 import com.zarbosoft.bonestruct.history.History;
 import com.zarbosoft.bonestruct.syntax.FreeNodeType;
@@ -28,6 +29,7 @@ import org.junit.ComparisonFailure;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.function.Consumer;
 
 import static com.zarbosoft.rendaw.common.Common.*;
 
@@ -445,9 +447,13 @@ public class Helper {
 	}
 
 	public static Context buildDoc(final Syntax syntax, final Node... root) {
+		return buildDoc(idleTask -> {
+		}, syntax, root);
+	}
+
+	public static Context buildDoc(final Consumer<IdleTask> idleAdd, final Syntax syntax, final Node... root) {
 		final Document doc = new Document(syntax, new ValueArray(syntax.root, Arrays.asList(root)));
-		final Context context = new Context(syntax, doc, new MockeryDisplay(), idleTask -> {
-		}, new History());
+		final Context context = new Context(syntax, doc, new MockeryDisplay(), idleAdd, new History());
 		context.clipboardEngine = new ClipboardEngine() {
 			byte[] data = null;
 			String string = null;
