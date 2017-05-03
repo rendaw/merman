@@ -234,7 +234,7 @@ public class Course {
 		}
 
 		@Override
-		public void runImplementation() {
+		public boolean runImplementation() {
 			// Update transverse space
 			boolean newAscent = false, newDescent = false;
 			for (final Brick brick : changed) {
@@ -301,6 +301,8 @@ public class Course {
 				parent.adjust(context, index);
 
 			idlePlace = null;
+
+			return false;
 		}
 
 		@Override
@@ -315,7 +317,6 @@ public class Course {
 	}
 
 	boolean compact(final Context context) {
-		System.out.format("COMPACT l %d\n", index);
 		final PriorityQueue<Visual> priorities =
 				new PriorityQueue<>(11, new ChainComparator<Visual>().greaterFirst(Visual::spacePriority).build());
 		int converse = 0;
@@ -328,16 +329,13 @@ public class Course {
 			if (!priorities.isEmpty() && converse > context.edge)
 				break;
 		}
-		System.out.format("\tconv %s vs %s\n", converse, context.edge);
 		if (converse <= context.edge) {
 			lastExpandCheckConverse = converse;
 			return false;
 		}
-		System.out.format("\ta\n", converse);
 		if (priorities.isEmpty()) {
 			return false;
 		}
-		System.out.format("\tb\n", converse);
 		priorities.poll().compact(context);
 		return true;
 	}
@@ -355,11 +353,12 @@ public class Course {
 		}
 
 		@Override
-		public void runImplementation() {
+		public boolean runImplementation() {
 			if (compact(context)) {
-				context.addIdle(this);
+				return true;
 			} else {
 				idleCompact = null;
+				return false;
 			}
 		}
 
@@ -369,60 +368,9 @@ public class Course {
 		}
 	}
 
-	boolean expand(final Context context) {
-		System.out.format("EXPAND l %d\n", index);
-		final PriorityQueue<Visual> priorities =
-				new PriorityQueue<>(11, new ChainComparator<Visual>().lesserFirst(Visual::spacePriority).build());
-		for (int index = 0; index < children.size(); ++index) {
-			final Brick brick = children.get(index);
-			final Visual visual = brick.getVisual();
-			if (visual.canExpand())
-				priorities.add(visual);
-		}
-		if (priorities.isEmpty())
-			return false;
-		final Visual top = priorities.poll();
-		final Iterable<Pair<Brick, Brick.Properties>> brickProperties = top.getPropertiesForTagsChange(context,
-				new Visual.TagsChange(ImmutableSet.of(new Visual.StateTag("expanded")),
-						ImmutableSet.of(new Visual.StateTag("compact"))
-				)
-		);
-		final Map<Brick, Brick.Properties> lookup =
-				stream(brickProperties.iterator()).collect(Collectors.toMap(p -> p.first, p -> p.second));
-		final Set<Brick> seen = new HashSet<>();
-		int converse = 0;
-		Course course = null;
-		for (final Pair<Brick, Brick.Properties> pair : brickProperties) {
-			final Brick brick = pair.first;
-			if (seen.contains(brick))
-				continue;
-			if (course == null) {
-			} else if (brick.parent.index == course.index + 1 && !pair.second.broken && brick.index == 0) {
-			} else {
-				converse = 0;
-			}
-			course = brick.parent;
-			for (final Brick at : course.children) {
-				final Brick.Properties properties;
-				if (lookup.containsKey(at)) {
-					seen.add(at);
-					properties = lookup.get(at);
-				} else
-					properties = at.properties(context);
-				if (properties.alignment != null) {
-					converse = Math.max(converse, properties.alignment.converse);
-				}
-				converse += properties.converseSpan;
-				if (converse >= context.edge)
-					return false;
-			}
-		}
-		top.expand(context);
-		return true;
-	}
-
 	class IdleExpandTask extends IdleTask {
 		private final Context context;
+		private Visual lastTarget = null;
 
 		IdleExpandTask(final Context context) {
 			this.context = context;
@@ -434,12 +382,67 @@ public class Course {
 		}
 
 		@Override
-		public void runImplementation() {
+		public boolean runImplementation() {
 			if (expand(context)) {
-				context.addIdle(this);
+				return true;
 			} else {
 				idleExpand = null;
+				return false;
 			}
+		}
+
+		private boolean expand(final Context context) {
+			final PriorityQueue<Visual> priorities =
+					new PriorityQueue<>(11, new ChainComparator<Visual>().lesserFirst(Visual::spacePriority).build());
+			for (int index = 0; index < children.size(); ++index) {
+				final Brick brick = children.get(index);
+				final Visual visual = brick.getVisual();
+				if (visual.canExpand())
+					priorities.add(visual);
+			}
+			if (priorities.isEmpty())
+				return false;
+			final Visual top = priorities.poll();
+			if (top == lastTarget)
+				return false;
+			lastTarget = top;
+			final Iterable<Pair<Brick, Brick.Properties>> brickProperties = top.getPropertiesForTagsChange(context,
+					new Visual.TagsChange(ImmutableSet.of(new Visual.StateTag("expanded")),
+							ImmutableSet.of(new Visual.StateTag("compact"))
+					)
+			);
+			final Map<Brick, Brick.Properties> lookup =
+					stream(brickProperties.iterator()).collect(Collectors.toMap(p -> p.first, p -> p.second));
+			final Set<Brick> seen = new HashSet<>();
+			int converse = 0;
+			Course course = null;
+			for (final Pair<Brick, Brick.Properties> pair : brickProperties) {
+				final Brick brick = pair.first;
+				if (seen.contains(brick))
+					continue;
+				if (course == null) {
+				} else if (brick.parent.index == course.index + 1 && !pair.second.broken && brick.index == 0) {
+				} else {
+					converse = 0;
+				}
+				course = brick.parent;
+				for (final Brick at : course.children) {
+					final Brick.Properties properties;
+					if (lookup.containsKey(at)) {
+						seen.add(at);
+						properties = lookup.get(at);
+					} else
+						properties = at.properties(context);
+					if (properties.alignment != null) {
+						converse = Math.max(converse, properties.alignment.converse);
+					}
+					converse += properties.converseSpan;
+					if (converse >= context.edge)
+						return false;
+				}
+			}
+			top.expand(context);
+			return true;
 		}
 
 		@Override

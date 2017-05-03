@@ -13,12 +13,12 @@ public abstract class IdleTask implements Comparable<IdleTask> {
 		return 0;
 	}
 
-	protected abstract void runImplementation();
+	protected abstract boolean runImplementation();
 
-	public void run() {
+	public boolean run() {
 		if (destroyed)
-			return;
-		runImplementation();
+			return false;
+		return runImplementation();
 	}
 
 	@Override

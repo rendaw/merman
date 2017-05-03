@@ -351,10 +351,10 @@ public class Context {
 		}
 
 		@Override
-		public void runImplementation() {
+		public boolean runImplementation() {
 			if (ends.isEmpty() && starts.isEmpty()) {
 				idleFill = null;
-				return;
+				return false;
 			}
 			if (!ends.isEmpty()) {
 				final Brick next = ends.pollLast();
@@ -372,7 +372,7 @@ public class Context {
 					starts.addLast(created);
 				}
 			}
-			Context.this.addIdle(this);
+			return true;
 		}
 
 		@Override
@@ -467,11 +467,11 @@ public class Context {
 		}
 
 		@Override
-		public void runImplementation() {
+		public boolean runImplementation() {
 			// TODO store indexes rather than brick ref
 			if (at == null) {
 				hoverIdle = null;
-				return;
+				return false;
 			}
 			if (point == null) {
 				if (hover != null) {
@@ -479,7 +479,7 @@ public class Context {
 				}
 				hoverBrick = null;
 				hoverIdle = null;
-				return;
+				return false;
 			}
 			if (point.transverse < at.parent.transverseStart && at.parent.index > 0) {
 				at = context.wall.children.get(at.parent.index - 1).children.get(0);
@@ -502,9 +502,9 @@ public class Context {
 				}
 				hoverBrick = at;
 				hoverIdle = null;
-				return;
+				return false;
 			}
-			addIdle(this);
+			return true;
 		}
 
 		@Override

@@ -64,7 +64,7 @@ public class Banner {
 		}
 
 		@Override
-		protected void runImplementation() {
+		protected boolean runImplementation() {
 			if (text != null) {
 				text.setTransverse(context,
 						Math.max(scroll, Banner.this.transverse - (int) text.font().getDescent()),
@@ -72,6 +72,7 @@ public class Banner {
 				);
 			}
 			idle = null;
+			return false;
 		}
 
 		@Override
@@ -160,9 +161,10 @@ public class Banner {
 						public void run() {
 							context.addIdle(new IdleTask() {
 								@Override
-								protected void runImplementation() {
+								protected boolean runImplementation() {
 									queue.poll();
 									update(context);
+									return false;
 								}
 
 								@Override

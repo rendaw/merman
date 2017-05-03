@@ -1208,7 +1208,7 @@ public class VisualPrimitive extends VisualPart {
 		}
 
 		// If ran out of text early, delete following soft lines
-		if (j + 1 < endIndex) {
+		if (j < endIndex) {
 			result.changed = true;
 			for (final Line line : iterable(lines.stream().skip(j))) {
 				line.destroy(context);

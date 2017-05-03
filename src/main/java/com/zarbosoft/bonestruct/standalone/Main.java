@@ -331,7 +331,8 @@ public class Main extends Application {
 									System.out.format("Idle stopping at %d\n", i);
 									break;
 								} else {
-									top.run();
+									if (top.run())
+										addIdle(top);
 								}
 							}
 							//System.out.format("Idle break at g i %d\n", idleCount);

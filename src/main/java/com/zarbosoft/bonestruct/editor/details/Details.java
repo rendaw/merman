@@ -65,11 +65,12 @@ public class Details {
 		}
 
 		@Override
-		protected void runImplementation() {
+		protected boolean runImplementation() {
 			if (current != null) {
 				translateGroup(context);
 			}
 			idle = null;
+			return false;
 		}
 
 		@Override

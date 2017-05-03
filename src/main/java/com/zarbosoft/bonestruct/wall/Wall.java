@@ -118,16 +118,16 @@ public class Wall {
 		}
 
 		@Override
-		public void runImplementation() {
+		public boolean runImplementation() {
 			if (at >= children.size()) {
 				idleCompact = null;
-				return;
+				return false;
 			}
 			if (children.get(at).compact(context)) {
 			} else {
 				at += 1;
 			}
-			context.addIdle(this);
+			return true;
 		}
 
 		@Override
@@ -138,6 +138,7 @@ public class Wall {
 
 	class IdleExpandTask extends IdleTask {
 		private final Context context;
+		Course.IdleExpandTask expandTask;
 		int at = 0;
 
 		IdleExpandTask(final Context context) {
@@ -150,16 +151,19 @@ public class Wall {
 		}
 
 		@Override
-		public void runImplementation() {
+		public boolean runImplementation() {
 			if (at >= children.size()) {
 				idleExpand = null;
-				return;
+				return false;
 			}
-			if (children.get(at).expand(context)) {
-			} else {
-				at += 1;
+			if (expandTask == null) {
+				expandTask = children.get(at).new IdleExpandTask(context);
+				at++;
 			}
-			context.addIdle(this);
+			if (!expandTask.run()) {
+				expandTask = null;
+			}
+			return true;
 		}
 
 		@Override
@@ -183,7 +187,7 @@ public class Wall {
 		}
 
 		@Override
-		public void runImplementation() {
+		public boolean runImplementation() {
 			boolean modified = false;
 			if (cornerstoneCourse.index <= backward || cornerstoneCourse.index >= forward) {
 				backward = cornerstoneCourse.index - 1;
@@ -208,8 +212,9 @@ public class Wall {
 			if (!modified) {
 				idleAdjust = null;
 			} else {
-				context.addIdle(this);
+				return true;
 			}
+			return false;
 		}
 
 		@Override

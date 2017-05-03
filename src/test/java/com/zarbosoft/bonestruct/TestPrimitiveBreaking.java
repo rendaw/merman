@@ -26,7 +26,8 @@ public class TestPrimitiveBreaking {
 				if (top == null) {
 					return;
 				} else {
-					top.run();
+					if (top.run())
+						idleAdd(top);
 				}
 			}
 			throw new AssertionError("Too much idle activity");
