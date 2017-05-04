@@ -7,6 +7,7 @@ import com.zarbosoft.bonestruct.editor.visual.visuals.VisualNode;
 import com.zarbosoft.bonestruct.syntax.NodeType;
 import com.zarbosoft.bonestruct.syntax.middle.MiddleNode;
 import com.zarbosoft.bonestruct.syntax.modules.hotkeys.grammar.Node;
+import com.zarbosoft.bonestruct.syntax.symbol.Symbol;
 import com.zarbosoft.interface1.Configuration;
 import org.pcollections.HashTreePSet;
 
@@ -30,6 +31,13 @@ public class FrontDataNode extends FrontPart {
 	@Configuration(optional = true)
 	public Map<String, Node> hotkeys = new HashMap<>();
 
+	@Configuration(name = "ellipsize_threshold", optional = true,
+			description = "Ellipsize this element if the nodes depth exceeds this threshold.")
+	public int ellipsizeThreshold = Integer.MAX_VALUE;
+
+	@Configuration(optional = true, description = "How to visualize the ellipsis.")
+	public Symbol ellipsis;
+
 	@Override
 	public VisualPart createVisual(
 			final Context context, final com.zarbosoft.bonestruct.document.Node node, final Set<Visual.Tag> tags
@@ -41,7 +49,18 @@ public class FrontDataNode extends FrontPart {
 						.from(tags)
 						.plus(new Visual.PartTag("nested"))
 						.plusAll(this.tags.stream().map(s -> new Visual.FreeTag(s)).collect(Collectors.toSet()))
-		);
+		) {
+
+			@Override
+			public int ellipsizeThreshold() {
+				return ellipsizeThreshold;
+			}
+
+			@Override
+			protected Symbol ellipsis() {
+				return ellipsis;
+			}
+		};
 	}
 
 	@Override

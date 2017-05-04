@@ -7,9 +7,13 @@ import com.zarbosoft.bonestruct.editor.*;
 import com.zarbosoft.bonestruct.editor.visual.*;
 import com.zarbosoft.bonestruct.editor.visual.attachments.BorderAttachment;
 import com.zarbosoft.bonestruct.editor.visual.attachments.VisualAttachmentAdapter;
+import com.zarbosoft.bonestruct.syntax.style.Style;
+import com.zarbosoft.bonestruct.syntax.symbol.Symbol;
 import com.zarbosoft.bonestruct.wall.Brick;
+import com.zarbosoft.bonestruct.wall.BrickInterface;
 import com.zarbosoft.rendaw.common.DeadCode;
 import com.zarbosoft.rendaw.common.Pair;
+import org.pcollections.HashTreePSet;
 
 import java.util.List;
 import java.util.Map;
@@ -25,6 +29,7 @@ public abstract class VisualNodeBase extends VisualPart {
 	private BorderAttachment border;
 	Hoverable hoverable;
 	private NestedSelection selection;
+	private Brick ellipsis = null;
 
 	public VisualNodeBase(
 			final Set<Tag> tags
@@ -41,6 +46,10 @@ public abstract class VisualNodeBase extends VisualPart {
 	protected abstract Value value();
 
 	protected abstract Path getSelectionPath();
+
+	public abstract int ellipsizeThreshold();
+
+	protected abstract Symbol ellipsis();
 
 	@Override
 	public void setParent(final VisualParent parent) {
@@ -63,8 +72,8 @@ public abstract class VisualNodeBase extends VisualPart {
 	}
 
 	@Override
-	public void rootAlignments(final Context context, final Map<String, Alignment> alignments) {
-		body.rootAlignments(context, alignments);
+	public void anchor(final Context context, final Map<String, Alignment> alignments, final int depth) {
+		body.anchor(context, alignments, depth);
 	}
 
 	@Override
@@ -79,24 +88,81 @@ public abstract class VisualNodeBase extends VisualPart {
 		return body.getPropertiesForTagsChange(context, change);
 	}
 
+	private Set<Tag> ellipsisTags(final Context context) {
+		return HashTreePSet.from(tags(context)).plus(new PartTag("ellipsis"));
+	}
+
+	private Brick createEllipsis(final Context context) {
+		if (ellipsis != null)
+			return null;
+		ellipsis = ellipsis().createBrick(context, new BrickInterface() {
+			@Override
+			public VisualPart getVisual() {
+				return VisualNodeBase.this;
+			}
+
+			@Override
+			public Brick createPrevious(final Context context) {
+				return parent.createPreviousBrick(context);
+			}
+
+			@Override
+			public Brick createNext(final Context context) {
+				return parent.createNextBrick(context);
+			}
+
+			@Override
+			public void destroyed(final Context context) {
+				ellipsis = null;
+			}
+
+			@Override
+			public Alignment getAlignment(final Style.Baked style) {
+				return VisualNodeBase.this.getAlignment(style.alignment);
+			}
+
+			@Override
+			public Set<Tag> getTags(final Context context) {
+				return ellipsisTags(context);
+			}
+		});
+		return ellipsis;
+	}
+
+	@Override
+	public void tagsChanged(final Context context) {
+		if (ellipsis != null) {
+			final Style.Baked style = context.getStyle(ellipsisTags(context));
+			ellipsis.setStyle(context, style);
+		}
+	}
+
 	@Override
 	public Brick createFirstBrick(final Context context) {
-		final Brick out = body.createFirstBrick(context);
-		if (adapter != null) {
-			adapter.setFirst(context, out);
-			adapter.notifySeedBrick(context, out);
+		if (nodeGet().getVisual().depth >= ellipsizeThreshold()) {
+			return createEllipsis(context);
+		} else {
+			final Brick out = body.createFirstBrick(context);
+			if (adapter != null) {
+				adapter.setFirst(context, out);
+				adapter.notifySeedBrick(context, out);
+			}
+			return out;
 		}
-		return out;
 	}
 
 	@Override
 	public Brick createLastBrick(final Context context) {
-		final Brick out = body.createLastBrick(context);
-		if (adapter != null) {
-			adapter.setLast(context, out);
-			adapter.notifySeedBrick(context, out);
+		if (nodeGet().getVisual().depth >= ellipsizeThreshold()) {
+			return createEllipsis(context);
+		} else {
+			final Brick out = body.createLastBrick(context);
+			if (adapter != null) {
+				adapter.setLast(context, out);
+				adapter.notifySeedBrick(context, out);
+			}
+			return out;
 		}
-		return out;
 	}
 
 	private void createAdapter(final Context context) {

@@ -104,12 +104,18 @@ public class Main extends Application {
 		//	ex: nav/edit, edit, nav, debug, refactor
 		//	style/tag based on mode
 		//order of operations, conditional front elements
-		windowing, depth indicator
-			window nodes, not values (except root valuearray)
-			atom, core, mote, basis; node -> core?
-			actually, window visuals, so the above 2 lines moot probably
-		ellipsis with depth score type param
+		//windowing, depth indicator
+		//	window nodes, not values (except root valuearray)
+		//	atom, core, mote, basis; node -> core?
+		//	actually, window visuals, so the above 2 lines moot probably
+		//ellipsis with depth score type param
+		//__ ellipsis is the opposite of windowing
+		//__ if selecting ellipsized visual, move the window until the ellipsis score is under the threshold
+		//__ change rootAlignments to just root, recursively update ellipsis values as well and stop after ellipsizement
 		//primitive compact/expand
+		//window indicator -> change global tags (state windowed/nonwindowed)
+		//indicators -> plugin that shows/hides indicators by tag
+		non printable & front array/node placeholder character as syntax param
 		gap preview details styling
 			columns: 1:preview 2:type id
 		hotkey preview details

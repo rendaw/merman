@@ -30,6 +30,7 @@ public class VisualNodeType extends Visual {
 	private boolean compact;
 	private VisualParent parent;
 	public Map<String, VisualPart> frontToData = new HashMap<>();
+	public int depth = 0;
 
 	public VisualNodeType(final NodeType nodeType, final Context context, final Node node) {
 		super(HashTreePSet.<Tag>empty().plus(new TypeTag(nodeType.id)).plus(new PartTag("node")));
@@ -194,10 +195,11 @@ public class VisualNodeType extends Visual {
 	}
 
 	@Override
-	public void rootAlignments(
-			final Context context, final Map<String, Alignment> alignments
+	public void anchor(
+			final Context context, final Map<String, Alignment> alignments, final int depth
 	) {
-		body.rootAlignments(context, alignments);
+		this.depth = depth;
+		body.anchor(context, alignments, depth + nodeType.depthScore);
 	}
 
 	@Override

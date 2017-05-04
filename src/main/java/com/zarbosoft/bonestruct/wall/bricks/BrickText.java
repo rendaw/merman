@@ -4,17 +4,18 @@ import com.zarbosoft.bonestruct.display.DisplayNode;
 import com.zarbosoft.bonestruct.display.Font;
 import com.zarbosoft.bonestruct.display.Text;
 import com.zarbosoft.bonestruct.editor.Context;
-import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.AlignmentListener;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.syntax.style.Style;
 import com.zarbosoft.bonestruct.wall.Brick;
+import com.zarbosoft.bonestruct.wall.BrickInterface;
 
 public abstract class BrickText extends Brick implements AlignmentListener {
 	Text text;
 	private int minConverse;
 
-	BrickText(final Context context) {
+	public BrickText(final Context context, final BrickInterface inter) {
+		super(inter);
 		text = context.display.text();
 	}
 
@@ -25,17 +26,17 @@ public abstract class BrickText extends Brick implements AlignmentListener {
 
 	public Properties properties(final Context context, final Style.Baked style) {
 		final Font font = style.getFont(context);
-		return new Properties(style.broken,
+		return new Properties(
+				style.broken,
 				font.getAscent(),
 				font.getDescent(),
-				getAlignment(style),
+				inter.getAlignment(style),
 				font.getWidth(text.text())
 		);
 	}
 
-	protected abstract Alignment getAlignment(Style.Baked style);
-
 	public void setStyle(final Context context, final Style.Baked style) {
+		this.style = style;
 		if (text != null) {
 			text.setColor(context, style.color);
 			text.setFont(context, style.getFont(context));
@@ -43,7 +44,7 @@ public abstract class BrickText extends Brick implements AlignmentListener {
 	}
 
 	@Override
-	public DisplayNode getRawVisual() {
+	public DisplayNode getDisplayNode() {
 		return text;
 	}
 
@@ -61,13 +62,6 @@ public abstract class BrickText extends Brick implements AlignmentListener {
 	public void setText(final Context context, final String text) {
 		this.text.setText(context, text.replaceAll("\\p{Cntrl}", "\u25A2"));
 		changed(context);
-	}
-
-	protected abstract Style.Baked getStyle();
-
-	@Override
-	public Properties properties(final Context context) {
-		return properties(context, getStyle());
 	}
 
 	@Override

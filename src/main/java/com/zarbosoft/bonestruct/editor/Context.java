@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.zarbosoft.bonestruct.display.Display;
-import com.zarbosoft.bonestruct.display.Drawing;
 import com.zarbosoft.bonestruct.display.Group;
 import com.zarbosoft.bonestruct.document.Document;
 import com.zarbosoft.bonestruct.document.InvalidDocument;
@@ -16,11 +15,14 @@ import com.zarbosoft.bonestruct.document.values.ValuePrimitive;
 import com.zarbosoft.bonestruct.editor.banner.Banner;
 import com.zarbosoft.bonestruct.editor.details.Details;
 import com.zarbosoft.bonestruct.editor.hid.HIDEvent;
-import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.editor.visual.Visual;
+import com.zarbosoft.bonestruct.editor.visual.VisualParent;
 import com.zarbosoft.bonestruct.editor.visual.VisualPart;
 import com.zarbosoft.bonestruct.editor.visual.attachments.TransverseExtentsAdapter;
 import com.zarbosoft.bonestruct.editor.visual.attachments.VisualAttachmentAdapter;
+import com.zarbosoft.bonestruct.editor.visual.visuals.VisualArray;
+import com.zarbosoft.bonestruct.editor.visual.visuals.VisualNodeBase;
+import com.zarbosoft.bonestruct.editor.visual.visuals.VisualNodeType;
 import com.zarbosoft.bonestruct.history.History;
 import com.zarbosoft.bonestruct.syntax.Syntax;
 import com.zarbosoft.bonestruct.syntax.back.*;
@@ -54,6 +56,8 @@ public class Context {
 	public List<Module.State> modules;
 	public Set<Visual.Tag> globalTags = new HashSet<>();
 	public List<KeyListener> keyListeners = new ArrayList<>();
+	List<ContextIntListener> converseEdgeListeners = new ArrayList<>();
+	List<ContextIntListener> transverseEdgeListeners = new ArrayList<>();
 	public Map<Object, List<Action>> actions = new HashMap<>();
 	public ClipboardEngine clipboardEngine;
 	public final Wall foreground;
@@ -65,6 +69,26 @@ public class Context {
 	public Banner banner;
 	public Details details;
 	public final Display display;
+
+	public static interface ContextIntListener {
+		void changed(Context context, int oldValue, int newValue);
+	}
+
+	public void addConverseEdgeListener(final ContextIntListener listener) {
+		converseEdgeListeners.add(listener);
+	}
+
+	public void removeConverseEdgeListener(final ContextIntListener listener) {
+		converseEdgeListeners.remove(listener);
+	}
+
+	public void addTransverseEdgeListener(final ContextIntListener listener) {
+		transverseEdgeListeners.add(listener);
+	}
+
+	public void removeTransverseEdgeListener(final ContextIntListener listener) {
+		transverseEdgeListeners.remove(listener);
+	}
 
 	public void suggestCreateBricksBetween(final Brick previousBrick, final Brick nextBrick) {
 		if (previousBrick == null || nextBrick == null)
@@ -425,52 +449,18 @@ public class Context {
 
 	public IdleTask idleClick = null;
 
-	public static class WindowMark {
-		private final Context context;
-		Drawing drawing;
-
-		Display.IntListener displayListener = new Display.IntListener() {
-			@Override
-			public void changed(final int oldValue, final int newValue) {
-				drawing.setPosition(context, new Vector(0, context.transverseEdge * 60 / 100), false);
-			}
-		};
-
-		public WindowMark(final Context context) {
-			this.context = context;
-			drawing = context.display.drawing();
-			drawing.resize(context, new Vector(20, 60));
-			final Drawing.DrawingContext gc = drawing.begin(context);
-			gc.beginPath();
-			gc.moveTo(2, 2);
-			gc.arcTo(18, 30, 2, 58, 8);
-			gc.stroke();
-			context.midground.add(0, drawing);
-			drawing.setPosition(context, new Vector(0, 0), false);
-			context.display.addConverseEdgeListener(displayListener);
-			context.display.addTransverseEdgeListener(displayListener);
-		}
-
-		public void destroy(final Context context) {
-			context.midground.remove(drawing);
-			context.display.removeConverseEdgeListener(displayListener);
-			context.display.removeTransverseEdgeListener(displayListener);
-		}
-	}
-
-	private WindowMark windowMark;
-
 	private void window(Visual visual) {
 		if (visual == null) {
 			visual = document.top.visual;
-			if (windowMark != null) {
-				windowMark.destroy(this);
-				windowMark = null;
-			}
+			changeGlobalTags(new Visual.TagsChange(
+					ImmutableSet.of(new Visual.StateTag("unwindowed")),
+					ImmutableSet.of(new Visual.StateTag("windowed"))
+			));
 		} else {
-			if (windowMark == null) {
-				windowMark = new WindowMark(this);
-			}
+			changeGlobalTags(new Visual.TagsChange(
+					ImmutableSet.of(new Visual.StateTag("windowed")),
+					ImmutableSet.of(new Visual.StateTag("unwindowed"))
+			));
 		}
 		final Brick first = visual.getFirstBrick(this);
 		final Brick last = visual.getLastBrick(this);
@@ -485,7 +475,7 @@ public class Context {
 				idleClear.end = last.next();
 		}
 		window = visual;
-		window.rootAlignments(this, ImmutableMap.of());
+		window.anchor(this, ImmutableMap.of(), 0);
 	}
 
 	public void window(final Node node) {
@@ -498,13 +488,40 @@ public class Context {
 		this.selection = selection;
 
 		final VisualPart visual = this.selection.getVisual();
-		if (!visual.isAncestor(window)) {
-			window(visual.parent().getNodeVisual());
-			final Brick firstBrick = window.getFirstBrick(this);
-			final Brick lastBrick = window.getLastBrick(this);
-			if (firstBrick != null && lastBrick != null) {
-				fillFromStartBrick(firstBrick);
-				fillFromEndBrick(lastBrick);
+		{
+			boolean inWindow = false;
+			Visual mostDistantWindowableAncestor = null;
+			Visual at = visual;
+			if (window == at)
+				inWindow = true;
+			VisualParent parent = at.parent();
+			int depth = 0;
+			int limit = Integer.MAX_VALUE;
+			while (parent != null) {
+				at = parent.getTarget();
+				if (window == at)
+					inWindow = true;
+				if (at instanceof VisualNodeType) {
+					mostDistantWindowableAncestor = at;
+					if (depth >= limit) {
+						break;
+					}
+					depth += ((VisualNodeType) at).getType().depthScore;
+				} else if (at instanceof VisualArray) {
+					limit = Math.min(limit, depth + ((VisualArray) at).ellipsizeThreshold());
+				} else if (at instanceof VisualNodeBase) {
+					limit = Math.min(limit, depth + ((VisualNodeBase) at).ellipsizeThreshold());
+				}
+				parent = at.parent();
+			}
+			if (!inWindow) {
+				window(mostDistantWindowableAncestor);
+				final Brick firstBrick = window.getFirstBrick(this);
+				final Brick lastBrick = window.getLastBrick(this);
+				if (firstBrick != null && lastBrick != null) {
+					fillFromStartBrick(firstBrick);
+					fillFromEndBrick(lastBrick);
+				}
 			}
 		}
 
@@ -671,7 +688,13 @@ public class Context {
 			} else if (newValue > oldValue) {
 				foreground.idleExpand(this);
 			}
+			converseEdgeListeners.forEach(listener -> listener.changed(this, oldValue, newValue));
 		});
+		display.addTransverseEdgeListener((
+				(oldValue, newValue) -> {
+					transverseEdgeListeners.forEach(listener -> listener.changed(this, oldValue, newValue));
+				}
+		));
 	}
 
 	private final Consumer<IdleTask> addIdle;

@@ -45,7 +45,7 @@ public abstract class VisualPart extends Visual {
 	}
 
 	@Override
-	public void rootAlignments(final Context context, final Map<String, Alignment> alignments) {
+	public void anchor(final Context context, final Map<String, Alignment> alignments, final int depth) {
 	}
 
 	public Hoverable hover(final Context context, final Vector point) {

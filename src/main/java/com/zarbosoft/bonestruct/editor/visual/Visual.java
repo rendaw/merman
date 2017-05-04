@@ -36,12 +36,6 @@ public abstract class Visual {
 
 	public abstract Brick getLastBrick(Context context);
 
-	public boolean isAncestor(final Visual node) {
-		if (parent() == null)
-			return false;
-		return parent().getTarget().isAncestor(node);
-	}
-
 	public Iterator<Visual> children() {
 		return Iterators.forArray();
 	}
@@ -66,7 +60,7 @@ public abstract class Visual {
 		return null;
 	}
 
-	public abstract void rootAlignments(Context context, Map<String, Alignment> alignments);
+	public abstract void anchor(Context context, Map<String, Alignment> alignments, int depth);
 
 	public abstract void destroy(Context context);
 

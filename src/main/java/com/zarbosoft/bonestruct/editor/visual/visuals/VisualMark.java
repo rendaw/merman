@@ -3,11 +3,14 @@ package com.zarbosoft.bonestruct.editor.visual.visuals;
 import com.google.common.collect.Iterables;
 import com.zarbosoft.bonestruct.document.values.Value;
 import com.zarbosoft.bonestruct.editor.Context;
+import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.VisualParent;
 import com.zarbosoft.bonestruct.editor.visual.VisualPart;
 import com.zarbosoft.bonestruct.editor.visual.condition.ConditionAttachment;
 import com.zarbosoft.bonestruct.syntax.front.FrontMark;
+import com.zarbosoft.bonestruct.syntax.style.Style;
 import com.zarbosoft.bonestruct.wall.Brick;
+import com.zarbosoft.bonestruct.wall.BrickInterface;
 import com.zarbosoft.bonestruct.wall.bricks.BrickMark;
 import com.zarbosoft.rendaw.common.DeadCode;
 import com.zarbosoft.rendaw.common.Pair;
@@ -15,7 +18,7 @@ import com.zarbosoft.rendaw.common.Pair;
 import java.util.Arrays;
 import java.util.Set;
 
-public class VisualMark extends VisualPart implements ConditionAttachment.Listener {
+public class VisualMark extends VisualPart implements ConditionAttachment.Listener, BrickInterface {
 	private final FrontMark frontMark;
 	public VisualParent parent;
 	public BrickMark brick = null;
@@ -75,7 +78,7 @@ public class VisualMark extends VisualPart implements ConditionAttachment.Listen
 			return null;
 		if (condition != null && !condition.show())
 			return null;
-		brick = new BrickMark(this, context);
+		brick = new BrickMark(context, this);
 		brick.setText(context, frontMark.value);
 		return brick;
 	}
@@ -98,7 +101,7 @@ public class VisualMark extends VisualPart implements ConditionAttachment.Listen
 	@Override
 	public void tagsChanged(final Context context) {
 		if (brick != null) {
-			brick.setStyle(context);
+			brick.setStyle(context, context.getStyle(tags(context)));
 		}
 	}
 
@@ -134,5 +137,35 @@ public class VisualMark extends VisualPart implements ConditionAttachment.Listen
 	@Override
 	public boolean canExpand() {
 		return false;
+	}
+
+	@Override
+	public VisualPart getVisual() {
+		return this;
+	}
+
+	@Override
+	public Brick createPrevious(final Context context) {
+		return parent.createPreviousBrick(context);
+	}
+
+	@Override
+	public Brick createNext(final Context context) {
+		return parent.createNextBrick(context);
+	}
+
+	@Override
+	public void destroyed(final Context context) {
+		brick = null;
+	}
+
+	@Override
+	public Alignment getAlignment(final Style.Baked style) {
+		return getAlignment(style.alignment);
+	}
+
+	@Override
+	public Set<Tag> getTags(final Context context) {
+		return tags(context);
 	}
 }

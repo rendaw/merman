@@ -8,7 +8,7 @@ import com.zarbosoft.bonestruct.editor.Hoverable;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.editor.visual.Visual;
-import com.zarbosoft.bonestruct.editor.visual.VisualPart;
+import com.zarbosoft.bonestruct.syntax.style.Style;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -21,24 +21,61 @@ public abstract class Brick {
 	Set<Attachment> attachments = new HashSet<>();
 	Set<BeddingListener> beddingListeners = new HashSet<>();
 	Set<Bedding> bedding = new HashSet<>();
+	public Style.Baked style;
+	public final BrickInterface inter;
 
-	public abstract int converseEdge(final Context context);
-
-	public abstract VisualPart getVisual();
-
-	public abstract Properties getPropertiesForTagsChange(Context context, Visual.TagsChange change);
+	protected Brick(final BrickInterface inter) {
+		this.inter = inter;
+	}
 
 	public abstract int getConverse(Context context);
 
-	public Hoverable hover(final Context context, final Vector point) {
-		return getVisual().hover(context, point);
-	}
+	public abstract int converseEdge(final Context context);
+
+	public abstract DisplayNode getDisplayNode();
+
+	public abstract void setConverse(Context context, int minConverse, int converse);
+
+	public abstract void setStyle(final Context context, final Style.Baked style);
+
+	public abstract Properties properties(final Context context, final Style.Baked style);
 
 	/**
 	 * @param context
 	 * @return A new brick or null (no elements before or brick already exists)
 	 */
-	public abstract Brick createPrevious(Context context);
+	public Brick createPrevious(final Context context) {
+		return inter.createPrevious(context);
+	}
+
+	/**
+	 * @param context
+	 * @return A new brick or null (no elements afterward or brick already exists)
+	 */
+	public Brick createNext(final Context context) {
+		return inter.createNext(context);
+	}
+
+	protected Style.Baked getStyle() {
+		return style;
+	}
+
+	public Properties properties(final Context context) {
+		return properties(context, getStyle());
+	}
+
+	public Properties getPropertiesForTagsChange(
+			final Context context, final Visual.TagsChange change
+	) {
+		final Set<Visual.Tag> tags = new HashSet<>(inter.getTags(context));
+		tags.removeAll(change.remove);
+		tags.addAll(change.add);
+		return properties(context, context.getStyle(tags));
+	}
+
+	public Hoverable hover(final Context context, final Vector point) {
+		return inter.getVisual().hover(context, point);
+	}
 
 	public Set<BeddingListener> getBeddingListeners() {
 		return beddingListeners;
@@ -52,6 +89,10 @@ public abstract class Brick {
 
 	public void removeBeddingListener(final BeddingListener listener) {
 		beddingListeners.remove(listener);
+	}
+
+	public Visual getVisual() {
+		return inter.getVisual();
 	}
 
 	public static abstract class BeddingListener {
@@ -80,18 +121,6 @@ public abstract class Brick {
 			this.converseSpan = converseSpan;
 		}
 	}
-
-	public abstract Properties properties(Context context);
-
-	public abstract DisplayNode getRawVisual();
-
-	public abstract void setConverse(Context context, int minConverse, int converse);
-
-	/**
-	 * @param context
-	 * @return A new brick or null (no elements afterward or brick already exists)
-	 */
-	public abstract Brick createNext(Context context);
 
 	public abstract void allocateTransverse(Context context, int ascent, int descent);
 
@@ -188,7 +217,9 @@ public abstract class Brick {
 		return bedding;
 	}
 
-	protected abstract void destroyed(Context context);
+	protected void destroyed(final Context context) {
+		inter.destroyed(context);
+	}
 
 	public void destroy(final Context context) {
 		ImmutableSet.copyOf(attachments).forEach(a -> a.destroy(context));

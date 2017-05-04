@@ -117,7 +117,7 @@ public class Course {
 				beddingChanged = true;
 		}
 		renumber(at);
-		visual.addAll(at, bricks.stream().map(c -> c.getRawVisual()).collect(Collectors.toList()));
+		visual.addAll(at, bricks.stream().map(c -> c.getDisplayNode()).collect(Collectors.toList()));
 		getIdlePlace(context);
 		idlePlace.at(at);
 		idlePlace.changed.addAll(bricks);

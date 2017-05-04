@@ -6,10 +6,7 @@ import com.zarbosoft.bonestruct.document.Node;
 import com.zarbosoft.bonestruct.document.values.Value;
 import com.zarbosoft.bonestruct.document.values.ValueArray;
 import com.zarbosoft.bonestruct.editor.*;
-import com.zarbosoft.bonestruct.editor.visual.Vector;
-import com.zarbosoft.bonestruct.editor.visual.Visual;
-import com.zarbosoft.bonestruct.editor.visual.VisualParent;
-import com.zarbosoft.bonestruct.editor.visual.VisualPart;
+import com.zarbosoft.bonestruct.editor.visual.*;
 import com.zarbosoft.bonestruct.editor.visual.attachments.BorderAttachment;
 import com.zarbosoft.bonestruct.editor.visual.attachments.MultiVisualAttachmentAdapter;
 import com.zarbosoft.bonestruct.editor.visual.attachments.VisualAttachmentAdapter;
@@ -19,7 +16,10 @@ import com.zarbosoft.bonestruct.syntax.FreeNodeType;
 import com.zarbosoft.bonestruct.syntax.front.FrontConstantPart;
 import com.zarbosoft.bonestruct.syntax.middle.MiddleArray;
 import com.zarbosoft.bonestruct.syntax.middle.MiddleArrayBase;
+import com.zarbosoft.bonestruct.syntax.style.Style;
+import com.zarbosoft.bonestruct.syntax.symbol.Symbol;
 import com.zarbosoft.bonestruct.wall.Brick;
+import com.zarbosoft.bonestruct.wall.BrickInterface;
 import com.zarbosoft.rendaw.common.Pair;
 import org.pcollections.HashTreePSet;
 import org.pcollections.PSet;
@@ -36,6 +36,7 @@ public abstract class VisualArray extends VisualGroup {
 
 	private final ValueArray.Listener dataListener;
 	private final ValueArray data;
+	private Brick ellipsis = null;
 
 	public VisualArray(final Context context, final ValueArray data, final Set<Visual.Tag> tags) {
 		super(tags);
@@ -269,6 +270,10 @@ public abstract class VisualArray extends VisualGroup {
 
 	protected abstract boolean tagFirst();
 
+	public abstract int ellipsizeThreshold();
+
+	protected abstract Symbol ellipsis();
+
 	private class ChildGroup extends VisualGroup {
 
 		private final boolean selectable;
@@ -316,6 +321,72 @@ public abstract class VisualArray extends VisualGroup {
 	protected abstract List<FrontConstantPart> getSeparator();
 
 	protected abstract List<FrontConstantPart> getSuffix();
+
+	private Set<Tag> ellipsisTags(final Context context) {
+		return HashTreePSet.from(tags(context)).plus(new PartTag("ellipsis"));
+	}
+
+	private Brick createEllipsis(final Context context) {
+		if (ellipsis != null)
+			return null;
+		ellipsis = ellipsis().createBrick(context, new BrickInterface() {
+			@Override
+			public VisualPart getVisual() {
+				return VisualArray.this;
+			}
+
+			@Override
+			public Brick createPrevious(final Context context) {
+				return parent.createPreviousBrick(context);
+			}
+
+			@Override
+			public Brick createNext(final Context context) {
+				return parent.createNextBrick(context);
+			}
+
+			@Override
+			public void destroyed(final Context context) {
+				ellipsis = null;
+			}
+
+			@Override
+			public Alignment getAlignment(final Style.Baked style) {
+				return VisualArray.this.getAlignment(style.alignment);
+			}
+
+			@Override
+			public Set<Tag> getTags(final Context context) {
+				return ellipsisTags(context);
+			}
+		});
+		return ellipsis;
+	}
+
+	@Override
+	public Brick createFirstBrick(final Context context) {
+		if (data.parent.node().getVisual().depth >= ellipsizeThreshold()) {
+			return createEllipsis(context);
+		} else
+			return super.createFirstBrick(context);
+	}
+
+	@Override
+	public Brick createLastBrick(final Context context) {
+		if (data.parent.node().getVisual().depth >= ellipsizeThreshold()) {
+			return createEllipsis(context);
+		} else
+			return super.createLastBrick(context);
+	}
+
+	@Override
+	public void tagsChanged(final Context context) {
+		super.tagsChanged(context);
+		if (ellipsis != null) {
+			final Style.Baked style = context.getStyle(ellipsisTags(context));
+			ellipsis.setStyle(context, style);
+		}
+	}
 
 	private ArrayHoverable hoverable;
 

@@ -7,6 +7,7 @@ import com.zarbosoft.bonestruct.editor.visual.visuals.VisualArray;
 import com.zarbosoft.bonestruct.syntax.NodeType;
 import com.zarbosoft.bonestruct.syntax.middle.MiddleArrayBase;
 import com.zarbosoft.bonestruct.syntax.modules.hotkeys.grammar.Node;
+import com.zarbosoft.bonestruct.syntax.symbol.Symbol;
 import com.zarbosoft.interface1.Configuration;
 import org.pcollections.HashTreePSet;
 
@@ -27,6 +28,13 @@ public abstract class FrontDataArrayBase extends FrontPart {
 	public boolean tagFirst = false;
 	@Configuration(name = "tag_last", optional = true)
 	public boolean tagLast = false;
+
+	@Configuration(name = "ellipsize_threshold", optional = true,
+			description = "Ellipsize this element if the nodes depth exceeds this threshold.")
+	public int ellipsizeThreshold = Integer.MAX_VALUE;
+
+	@Configuration(optional = true, description = "How to visualize the ellipsis.")
+	public Symbol ellipsis;
 
 	protected MiddleArrayBase dataType;
 
@@ -64,6 +72,16 @@ public abstract class FrontDataArrayBase extends FrontPart {
 			@Override
 			protected boolean tagFirst() {
 				return tagFirst;
+			}
+
+			@Override
+			public int ellipsizeThreshold() {
+				return ellipsizeThreshold;
+			}
+
+			@Override
+			protected Symbol ellipsis() {
+				return ellipsis;
 			}
 
 			@Override

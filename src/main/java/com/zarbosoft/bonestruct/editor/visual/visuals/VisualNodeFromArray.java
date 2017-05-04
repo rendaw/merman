@@ -12,7 +12,7 @@ import com.zarbosoft.bonestruct.syntax.middle.MiddleArrayBase;
 import java.util.List;
 import java.util.Set;
 
-public class VisualNodeFromArray extends VisualNodeBase {
+public abstract class VisualNodeFromArray extends VisualNodeBase {
 	final ValueArray value;
 	private final ValueArray.Listener dataListener;
 

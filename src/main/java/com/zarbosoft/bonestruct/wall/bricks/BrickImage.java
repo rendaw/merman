@@ -5,34 +5,29 @@ import com.zarbosoft.bonestruct.display.Image;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.AlignmentListener;
-import com.zarbosoft.bonestruct.editor.visual.Visual;
-import com.zarbosoft.bonestruct.editor.visual.VisualPart;
-import com.zarbosoft.bonestruct.editor.visual.visuals.VisualImage;
 import com.zarbosoft.bonestruct.syntax.style.Style;
 import com.zarbosoft.bonestruct.wall.Brick;
+import com.zarbosoft.bonestruct.wall.BrickInterface;
 
 import java.nio.file.Paths;
-import java.util.HashSet;
-import java.util.Set;
 
 public class BrickImage extends Brick implements AlignmentListener {
-	private final VisualImage imageVisual;
 	private final Image image;
 	private Style.Baked style;
 	private Alignment alignment;
 	private int minConverse;
 
-	public BrickImage(final VisualImage imageVisual, final Context context) {
-		this.imageVisual = imageVisual;
+	public BrickImage(final Context context, final BrickInterface inter) {
+		super(inter);
 		image = context.display.image();
-		setStyle(context);
 	}
 
-	public void setStyle(final Context context) {
-		style = context.getStyle(imageVisual.tags(context));
+	@Override
+	public void setStyle(final Context context, final Style.Baked style) {
+		this.style = style;
 		if (alignment != null)
 			alignment.removeListener(context, this);
-		alignment = imageVisual.getAlignment(style.alignment);
+		alignment = inter.getAlignment(style);
 		if (alignment != null)
 			alignment.addListener(context, this);
 		image.setImage(context, Paths.get(style.image));
@@ -45,19 +40,9 @@ public class BrickImage extends Brick implements AlignmentListener {
 				style.broken,
 				(int) image.transverseSpan(context),
 				(int) 0,
-				imageVisual.getAlignment(style.alignment),
+				inter.getAlignment(style),
 				(int) image.converseSpan(context)
 		);
-	}
-
-	@Override
-	public Brick createNext(final Context context) {
-		return imageVisual.parent.createNextBrick(context);
-	}
-
-	@Override
-	public Brick createPrevious(final Context context) {
-		return imageVisual.parent.createPreviousBrick(context);
 	}
 
 	@Override
@@ -67,7 +52,7 @@ public class BrickImage extends Brick implements AlignmentListener {
 
 	@Override
 	public void destroyed(final Context context) {
-		imageVisual.brick = null;
+		super.destroyed(context);
 		if (alignment != null)
 			alignment.removeListener(context, this);
 	}
@@ -75,21 +60,6 @@ public class BrickImage extends Brick implements AlignmentListener {
 	@Override
 	public int converseEdge(final Context context) {
 		return image.converseEdge(context);
-	}
-
-	@Override
-	public VisualPart getVisual() {
-		return imageVisual;
-	}
-
-	@Override
-	public Properties getPropertiesForTagsChange(
-			final Context context, final Visual.TagsChange change
-	) {
-		final Set<Visual.Tag> tags = new HashSet<>(imageVisual.tags(context));
-		tags.removeAll(change.remove);
-		tags.addAll(change.add);
-		return properties(context, context.getStyle(tags));
 	}
 
 	@Override
@@ -103,12 +73,7 @@ public class BrickImage extends Brick implements AlignmentListener {
 	}
 
 	@Override
-	public Properties properties(final Context context) {
-		return properties(context, style);
-	}
-
-	@Override
-	public DisplayNode getRawVisual() {
+	public DisplayNode getDisplayNode() {
 		return image;
 	}
 

@@ -17,6 +17,7 @@ import com.zarbosoft.bonestruct.editor.visual.raw.Obbox;
 import com.zarbosoft.bonestruct.syntax.style.ObboxStyle;
 import com.zarbosoft.bonestruct.syntax.style.Style;
 import com.zarbosoft.bonestruct.wall.Brick;
+import com.zarbosoft.bonestruct.wall.BrickInterface;
 import com.zarbosoft.bonestruct.wall.bricks.BrickLine;
 import com.zarbosoft.rendaw.common.Common;
 import com.zarbosoft.rendaw.common.DeadCode;
@@ -72,11 +73,6 @@ public class VisualPrimitive extends VisualPart {
 	public PrimitiveHoverable hoverable;
 
 	@Override
-	public void changeTags(final Context context, final TagsChange tagsChange) {
-		super.changeTags(context, tagsChange);
-	}
-
-	@Override
 	public void tagsChanged(final Context context) {
 		final boolean fetched = false;
 		final BrickStyle style = brickStyle.get();
@@ -84,9 +80,7 @@ public class VisualPrimitive extends VisualPart {
 			return;
 		style.update(context);
 		for (final Line line : lines) {
-			if (line.brick == null)
-				continue;
-			line.brick.changed(context);
+			line.styleChanged(context, style);
 		}
 	}
 
@@ -879,7 +873,7 @@ public class VisualPrimitive extends VisualPart {
 		return new PrimitiveSelection(context, beginOffset, endOffset);
 	}
 
-	public class Line {
+	public class Line implements BrickInterface {
 		public int offset;
 
 		private Line(final boolean hard) {
@@ -917,7 +911,8 @@ public class VisualPrimitive extends VisualPart {
 				style = new BrickStyle(context);
 				brickStyle = new WeakReference<>(style);
 			}
-			brick = new BrickLine(context, VisualPrimitive.this, this, style);
+			brick = new BrickLine(context, this);
+			styleChanged(context, style);
 			brick.setText(context, text);
 			if (selection != null && (selection.range.beginLine == Line.this || selection.range.endLine == Line.this))
 				selection.range.nudge(context);
@@ -954,6 +949,43 @@ public class VisualPrimitive extends VisualPart {
 				else
 					return parent.createPreviousBrick(context);
 			return lines.get(index - 1).createBrick(context);
+		}
+
+		@Override
+		public VisualPart getVisual() {
+			return VisualPrimitive.this;
+		}
+
+		@Override
+		public Brick createPrevious(final Context context) {
+			return createPreviousBrick(context);
+		}
+
+		@Override
+		public Brick createNext(final Context context) {
+			return createNextBrick(context);
+		}
+
+		@Override
+		public void destroyed(final Context context) {
+			brick = null;
+		}
+
+		@Override
+		public Alignment getAlignment(final Style.Baked style) {
+			return VisualPrimitive.this.getAlignment(style.alignment);
+		}
+
+		@Override
+		public Set<Tag> getTags(final Context context) {
+			return hard ? hardTags : softTags;
+		}
+
+		public void styleChanged(final Context context, final BrickStyle style) {
+			if (brick == null)
+				return;
+			brick.setStyle(context, index == 0 ? style.firstStyle : hard ? style.hardStyle : style.softStyle);
+			brick.changed(context);
 		}
 	}
 

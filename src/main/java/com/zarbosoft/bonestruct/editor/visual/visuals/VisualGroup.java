@@ -180,7 +180,7 @@ public class VisualGroup extends VisualPart {
 	}
 
 	@Override
-	public void rootAlignments(final Context context, final Map<String, Alignment> alignments) {
+	public void anchor(final Context context, final Map<String, Alignment> alignments, final int depth) {
 		PMap<String, Alignment> derived = HashTreePMap.from(alignments);
 		for (final Map.Entry<String, Alignment> e : this.alignments.entrySet()) {
 			final Alignment alignment = e.getValue();
@@ -188,7 +188,7 @@ public class VisualGroup extends VisualPart {
 			derived = derived.plus(e.getKey(), alignment);
 		}
 		for (final VisualPart child : children)
-			child.rootAlignments(context, derived);
+			child.anchor(context, derived, depth);
 	}
 
 	@Override

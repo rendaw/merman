@@ -26,6 +26,10 @@ public abstract class NodeType {
 	@Configuration
 	public String id;
 
+	@Configuration(name = "depth_score", optional = true,
+			description = "Child nodes of this node are deeper by this amount.")
+	public int depthScore = 0;
+
 	public abstract List<FrontPart> front();
 
 	public abstract Map<String, MiddleElement> middle();

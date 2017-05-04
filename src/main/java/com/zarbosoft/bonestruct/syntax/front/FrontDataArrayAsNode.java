@@ -7,6 +7,7 @@ import com.zarbosoft.bonestruct.editor.visual.visuals.VisualNodeFromArray;
 import com.zarbosoft.bonestruct.syntax.NodeType;
 import com.zarbosoft.bonestruct.syntax.middle.MiddleArray;
 import com.zarbosoft.bonestruct.syntax.modules.hotkeys.grammar.Node;
+import com.zarbosoft.bonestruct.syntax.symbol.Symbol;
 import com.zarbosoft.interface1.Configuration;
 import org.pcollections.HashTreePSet;
 
@@ -40,7 +41,19 @@ public class FrontDataArrayAsNode extends FrontPart {
 						.from(tags)
 						.plus(new Visual.PartTag("nested"))
 						.plusAll(this.tags.stream().map(s -> new Visual.FreeTag(s)).collect(Collectors.toSet()))
-		);
+		) {
+
+			@Override
+			public int ellipsizeThreshold() {
+				// Only used for gaps; don't worry about gap ellipsizing
+				return Integer.MAX_VALUE;
+			}
+
+			@Override
+			protected Symbol ellipsis() {
+				return null;
+			}
+		};
 	}
 
 	@Override

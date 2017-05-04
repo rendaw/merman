@@ -10,7 +10,7 @@ import com.zarbosoft.bonestruct.syntax.middle.MiddleNode;
 
 import java.util.Set;
 
-public class VisualNode extends VisualNodeBase {
+public abstract class VisualNode extends VisualNodeBase {
 	final ValueNode value;
 	final private ValueNode.Listener dataListener;
 

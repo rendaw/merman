@@ -3,34 +3,30 @@ package com.zarbosoft.bonestruct.wall.bricks;
 import com.zarbosoft.bonestruct.display.Blank;
 import com.zarbosoft.bonestruct.display.DisplayNode;
 import com.zarbosoft.bonestruct.editor.Context;
-import com.zarbosoft.bonestruct.editor.visual.*;
-import com.zarbosoft.bonestruct.editor.visual.visuals.VisualSpace;
+import com.zarbosoft.bonestruct.editor.visual.Alignment;
+import com.zarbosoft.bonestruct.editor.visual.AlignmentListener;
+import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.syntax.style.Style;
 import com.zarbosoft.bonestruct.wall.Brick;
-import org.pcollections.HashTreePSet;
-
-import java.util.HashSet;
-import java.util.Set;
+import com.zarbosoft.bonestruct.wall.BrickInterface;
 
 public class BrickSpace extends Brick implements AlignmentListener {
-	private final VisualSpace spaceVisual;
 	private int converse = 0;
 	private Style.Baked style;
 	private Alignment alignment;
 	private final Blank visual;
 	private int minConverse;
 
-	public BrickSpace(final VisualSpace spaceVisual, final Context context) {
-		this.spaceVisual = spaceVisual;
-		setStyle(context);
+	public BrickSpace(final Context context, final BrickInterface inter) {
+		super(inter);
 		visual = context.display.blank();
 	}
 
-	public void setStyle(final Context context) {
-		this.style = context.getStyle(HashTreePSet.from(spaceVisual.tags(context)).plusAll(context.globalTags));
+	@Override
+	public void setStyle(final Context context, final Style.Baked style) {
 		if (alignment != null)
 			alignment.removeListener(context, this);
-		alignment = spaceVisual.getAlignment(style.alignment);
+		alignment = inter.getAlignment(style);
 		if (alignment != null)
 			alignment.addListener(context, this);
 		changed(context);
@@ -42,24 +38,7 @@ public class BrickSpace extends Brick implements AlignmentListener {
 	}
 
 	@Override
-	public VisualPart getVisual() {
-		return spaceVisual;
-	}
-
-	@Override
-	public Properties getPropertiesForTagsChange(final Context context, final Visual.TagsChange change) {
-		final Set<Visual.Tag> tags = new HashSet<>(spaceVisual.tags(context));
-		tags.removeAll(change.remove);
-		tags.addAll(change.add);
-		return properties(context.getStyle(tags));
-	}
-
-	@Override
-	public Properties properties(final Context context) {
-		return properties(style);
-	}
-
-	public Properties properties(final Style.Baked style) {
+	public Properties properties(final Context context, final Style.Baked style) {
 		return new Properties(
 				style.broken,
 				style.spaceTransverseBefore,
@@ -70,7 +49,7 @@ public class BrickSpace extends Brick implements AlignmentListener {
 	}
 
 	@Override
-	public DisplayNode getRawVisual() {
+	public DisplayNode getDisplayNode() {
 		return visual;
 	}
 
@@ -82,23 +61,13 @@ public class BrickSpace extends Brick implements AlignmentListener {
 	}
 
 	@Override
-	public Brick createNext(final Context context) {
-		return spaceVisual.parent.createNextBrick(context);
-	}
-
-	@Override
-	public Brick createPrevious(final Context context) {
-		return spaceVisual.parent.createPreviousBrick(context);
-	}
-
-	@Override
 	public void allocateTransverse(final Context context, final int ascent, final int descent) {
 
 	}
 
 	@Override
 	public void destroyed(final Context context) {
-		spaceVisual.brick = null;
+		super.destroyed(context);
 		if (alignment != null)
 			alignment.removeListener(context, this);
 	}
