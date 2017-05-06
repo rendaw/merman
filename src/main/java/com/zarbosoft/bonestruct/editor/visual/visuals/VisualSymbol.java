@@ -74,6 +74,7 @@ public class VisualSymbol extends VisualPart implements ConditionAttachment.List
 		if (condition != null && !condition.show())
 			return null;
 		brick = frontSymbol.type.createBrick(context, this);
+		brick.setStyle(context, context.getStyle(tags(context)));
 		return brick;
 	}
 
@@ -147,7 +148,7 @@ public class VisualSymbol extends VisualPart implements ConditionAttachment.List
 	}
 
 	@Override
-	public void destroyed(final Context context) {
+	public void brickDestroyed(final Context context) {
 		brick = null;
 	}
 

@@ -112,7 +112,7 @@ public abstract class VisualNodeBase extends VisualPart {
 			}
 
 			@Override
-			public void destroyed(final Context context) {
+			public void brickDestroyed(final Context context) {
 				ellipsis = null;
 			}
 
@@ -355,6 +355,7 @@ public abstract class VisualNodeBase extends VisualPart {
 
 	protected void set(final Context context, final Node data) {
 		boolean fixDeepSelection = false;
+		boolean fixDeepHover = false;
 		if (context.selection != null) {
 			VisualParent parent = context.selection.getVisual().parent();
 			while (parent != null) {
@@ -366,11 +367,24 @@ public abstract class VisualNodeBase extends VisualPart {
 				parent = visual.parent();
 			}
 		}
+		if (hoverable == null && context.hover != null) {
+			VisualParent parent = context.hover.part().parent();
+			while (parent != null) {
+				final Visual visual = parent.getTarget();
+				if (visual == this) {
+					fixDeepHover = true;
+					break;
+				}
+				parent = visual.parent();
+			}
+		}
 
 		coreSet(context, data);
 
 		if (fixDeepSelection)
 			select(context);
+		if (fixDeepHover)
+			context.clearHover();
 	}
 
 	protected void coreSet(final Context context, final Node data) {

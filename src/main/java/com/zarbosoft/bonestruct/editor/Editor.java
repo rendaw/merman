@@ -81,6 +81,8 @@ public class Editor {
 				keyIgnore = false;
 				return;
 			}
+			if (text.isEmpty())
+				return;
 			context.selection.receiveText(context, text);
 		});
 		display.addMouseExitListener(() -> {

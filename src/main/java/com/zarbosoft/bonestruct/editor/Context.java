@@ -15,6 +15,7 @@ import com.zarbosoft.bonestruct.editor.details.Details;
 import com.zarbosoft.bonestruct.editor.display.Display;
 import com.zarbosoft.bonestruct.editor.display.Group;
 import com.zarbosoft.bonestruct.editor.hid.HIDEvent;
+import com.zarbosoft.bonestruct.editor.history.Change;
 import com.zarbosoft.bonestruct.editor.history.History;
 import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.VisualParent;
@@ -374,6 +375,9 @@ public class Context {
 	public void clearHover() {
 		hover.clear(this);
 		hover = null;
+		if (hoverIdle != null) {
+			hoverIdle.destroy();
+		}
 	}
 
 	public class IdleFill extends IdleTask {
@@ -393,18 +397,22 @@ public class Context {
 			}
 			if (!ends.isEmpty()) {
 				final Brick next = ends.pollLast();
-				final Brick created = next.createNext(Context.this);
-				if (created != null) {
-					next.addAfter(Context.this, created);
-					ends.addLast(created);
+				if (next.parent != null) {
+					final Brick created = next.createNext(Context.this);
+					if (created != null) {
+						next.addAfter(Context.this, created);
+						ends.addLast(created);
+					}
 				}
 			}
 			if (!starts.isEmpty()) {
 				final Brick previous = starts.pollLast();
-				final Brick created = previous.createPrevious(Context.this);
-				if (created != null) {
-					previous.addBefore(Context.this, created);
-					starts.addLast(created);
+				if (previous.parent != null) {
+					final Brick created = previous.createPrevious(Context.this);
+					if (created != null) {
+						previous.addBefore(Context.this, created);
+						starts.addLast(created);
+					}
 				}
 			}
 			return true;
@@ -606,7 +614,7 @@ public class Context {
 		@Override
 		public boolean runImplementation() {
 			// TODO store indexes rather than brick ref
-			if (at == null) {
+			if (at == null || at.parent == null) {
 				hoverIdle = null;
 				return false;
 			}
@@ -703,6 +711,14 @@ public class Context {
 					transverseEdgeListeners.forEach(listener -> listener.changed(this, oldValue, newValue));
 				}
 		));
+		history.addListener(new History.Listener() {
+			@Override
+			public void applied(final Context context, final Change change) {
+				if (hoverIdle != null) {
+					hoverIdle.destroy();
+				}
+			}
+		});
 	}
 
 	private final Consumer<IdleTask> addIdle;

@@ -54,6 +54,7 @@ public abstract class VisualArray extends VisualGroup {
 	private void change(final Context context, final int index, final int remove, final List<Node> add) {
 		// Prep to fix selection if deep under an element
 		Integer fixDeepSelectionIndex = null;
+		Integer fixDeepHoverIndex = null;
 		Integer oldSelectionBeginIndex = null;
 		Integer oldSelectionEndIndex = null;
 		if (selection != null) {
@@ -70,6 +71,17 @@ public abstract class VisualArray extends VisualGroup {
 				parent = visual.parent();
 			}
 		}
+		if (hoverable == null && context.hover != null) {
+			VisualParent parent = context.hover.part().parent();
+			while (parent != null) {
+				final Visual visual = parent.getTarget();
+				if (visual == this) {
+					fixDeepHoverIndex = ((ArrayVisualParent) parent).valueIndex();
+					break;
+				}
+				parent = visual.parent();
+			}
+		}
 
 		coreChange(context, index, remove, add);
 
@@ -79,6 +91,8 @@ public abstract class VisualArray extends VisualGroup {
 			} else if (hoverable.index >= index) {
 				context.clearHover();
 			}
+		} else if (fixDeepHoverIndex != null && fixDeepHoverIndex >= index && fixDeepHoverIndex < index + remove) {
+			context.clearHover();
 		}
 		if (oldSelectionBeginIndex != null) {
 			if (data.get().isEmpty())
@@ -336,7 +350,7 @@ public abstract class VisualArray extends VisualGroup {
 			}
 
 			@Override
-			public void destroyed(final Context context) {
+			public void brickDestroyed(final Context context) {
 				ellipsis = null;
 			}
 

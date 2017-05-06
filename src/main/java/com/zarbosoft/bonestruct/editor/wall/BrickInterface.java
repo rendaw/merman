@@ -24,7 +24,7 @@ public interface BrickInterface {
 	 */
 	Brick createNext(Context context);
 
-	void destroyed(Context context);
+	void brickDestroyed(Context context);
 
 	Alignment getAlignment(Style.Baked style);
 

@@ -983,7 +983,7 @@ public class VisualPrimitive extends VisualPart {
 		}
 
 		@Override
-		public void destroyed(final Context context) {
+		public void brickDestroyed(final Context context) {
 			brick = null;
 		}
 

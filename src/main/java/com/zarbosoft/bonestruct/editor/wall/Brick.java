@@ -218,7 +218,7 @@ public abstract class Brick {
 	}
 
 	protected void destroyed(final Context context) {
-		inter.destroyed(context);
+		inter.brickDestroyed(context);
 	}
 
 	public void destroy(final Context context) {
