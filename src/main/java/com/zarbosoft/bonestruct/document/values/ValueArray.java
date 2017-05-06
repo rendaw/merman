@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.zarbosoft.bonestruct.document.Node;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.Path;
-import com.zarbosoft.bonestruct.history.changes.ChangeArray;
+import com.zarbosoft.bonestruct.editor.history.changes.ChangeArray;
 import com.zarbosoft.bonestruct.syntax.middle.MiddleArrayBase;
 import com.zarbosoft.bonestruct.syntax.middle.MiddleElement;
 import com.zarbosoft.rendaw.common.Pair;

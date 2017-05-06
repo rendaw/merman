@@ -1,8 +1,8 @@
 package com.zarbosoft.bonestruct.editor.displaynodes;
 
-import com.zarbosoft.bonestruct.display.DisplayNode;
-import com.zarbosoft.bonestruct.display.Group;
 import com.zarbosoft.bonestruct.editor.Context;
+import com.zarbosoft.bonestruct.editor.display.DisplayNode;
+import com.zarbosoft.bonestruct.editor.display.Group;
 
 import java.util.ArrayList;
 import java.util.List;

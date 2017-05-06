@@ -1,11 +1,11 @@
 package com.zarbosoft.bonestruct.syntax.modules.hotkeys;
 
 import com.google.common.collect.ImmutableList;
-import com.zarbosoft.bonestruct.display.Group;
-import com.zarbosoft.bonestruct.display.Text;
 import com.zarbosoft.bonestruct.editor.Action;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.details.DetailsPage;
+import com.zarbosoft.bonestruct.editor.display.Group;
+import com.zarbosoft.bonestruct.editor.display.Text;
 import com.zarbosoft.bonestruct.editor.displaynodes.ColumnarTableLayout;
 import com.zarbosoft.bonestruct.editor.displaynodes.TLayout;
 import com.zarbosoft.bonestruct.editor.hid.HIDEvent;

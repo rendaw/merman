@@ -1,7 +1,7 @@
 package com.zarbosoft.bonestruct.editor.displaynodes;
 
-import com.zarbosoft.bonestruct.display.Drawing;
 import com.zarbosoft.bonestruct.editor.Context;
+import com.zarbosoft.bonestruct.editor.display.Drawing;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.syntax.style.ObboxStyle;
 

@@ -1,9 +1,9 @@
 package com.zarbosoft.bonestruct.document.values;
 
 import com.zarbosoft.bonestruct.editor.Context;
-import com.zarbosoft.bonestruct.history.Change;
-import com.zarbosoft.bonestruct.history.changes.ChangePrimitiveAdd;
-import com.zarbosoft.bonestruct.history.changes.ChangePrimitiveRemove;
+import com.zarbosoft.bonestruct.editor.history.Change;
+import com.zarbosoft.bonestruct.editor.history.changes.ChangePrimitiveAdd;
+import com.zarbosoft.bonestruct.editor.history.changes.ChangePrimitiveRemove;
 import com.zarbosoft.bonestruct.syntax.middle.MiddleElement;
 import com.zarbosoft.bonestruct.syntax.middle.MiddlePrimitive;
 

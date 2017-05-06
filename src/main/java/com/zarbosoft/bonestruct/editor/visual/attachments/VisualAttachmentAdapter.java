@@ -2,8 +2,8 @@ package com.zarbosoft.bonestruct.editor.visual.attachments;
 
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.visual.Visual;
-import com.zarbosoft.bonestruct.wall.Attachment;
-import com.zarbosoft.bonestruct.wall.Brick;
+import com.zarbosoft.bonestruct.editor.wall.Attachment;
+import com.zarbosoft.bonestruct.editor.wall.Brick;
 
 import java.util.HashSet;
 import java.util.Set;

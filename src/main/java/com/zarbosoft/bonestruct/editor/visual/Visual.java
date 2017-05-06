@@ -3,7 +3,7 @@ package com.zarbosoft.bonestruct.editor.visual;
 import com.google.common.collect.Iterators;
 import com.zarbosoft.bonestruct.document.values.Value;
 import com.zarbosoft.bonestruct.editor.Context;
-import com.zarbosoft.bonestruct.wall.Brick;
+import com.zarbosoft.bonestruct.editor.wall.Brick;
 import com.zarbosoft.interface1.Configuration;
 import com.zarbosoft.rendaw.common.Pair;
 import org.pcollections.HashTreePSet;

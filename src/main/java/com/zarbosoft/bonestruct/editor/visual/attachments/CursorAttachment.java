@@ -1,12 +1,12 @@
 package com.zarbosoft.bonestruct.editor.visual.attachments;
 
-import com.zarbosoft.bonestruct.display.Drawing;
-import com.zarbosoft.bonestruct.display.Font;
 import com.zarbosoft.bonestruct.editor.Context;
+import com.zarbosoft.bonestruct.editor.display.Drawing;
+import com.zarbosoft.bonestruct.editor.display.Font;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
+import com.zarbosoft.bonestruct.editor.wall.Attachment;
+import com.zarbosoft.bonestruct.editor.wall.bricks.BrickText;
 import com.zarbosoft.bonestruct.syntax.style.ObboxStyle;
-import com.zarbosoft.bonestruct.wall.Attachment;
-import com.zarbosoft.bonestruct.wall.bricks.BrickText;
 
 public class CursorAttachment {
 	Drawing drawing;

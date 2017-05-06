@@ -1,8 +1,8 @@
 package com.zarbosoft.bonestruct.syntax.front;
 
-import com.zarbosoft.bonestruct.display.DisplayNode;
 import com.zarbosoft.bonestruct.document.Node;
 import com.zarbosoft.bonestruct.editor.Context;
+import com.zarbosoft.bonestruct.editor.display.DisplayNode;
 import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.VisualPart;
 import com.zarbosoft.bonestruct.editor.visual.visuals.VisualSymbol;

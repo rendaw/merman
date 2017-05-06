@@ -22,6 +22,18 @@ public class BackType extends BackPart {
 	public void finish(final Syntax syntax, final NodeType nodeType, final Set<String> middleUsed) {
 		super.finish(syntax, nodeType, middleUsed);
 		child.finish(syntax, nodeType, middleUsed);
+		child.parent = new PartParent() {
+			@Override
+			public BackPart part() {
+				return BackType.this;
+			}
+
+			@Override
+			public String pathSection() {
+				return null;
+			}
+		};
+
 	}
 
 	@Override

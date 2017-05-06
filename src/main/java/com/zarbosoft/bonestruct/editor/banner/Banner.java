@@ -1,15 +1,15 @@
 package com.zarbosoft.bonestruct.editor.banner;
 
-import com.zarbosoft.bonestruct.display.Text;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.IdleTask;
 import com.zarbosoft.bonestruct.editor.Selection;
+import com.zarbosoft.bonestruct.editor.display.Text;
 import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.attachments.VisualAttachmentAdapter;
+import com.zarbosoft.bonestruct.editor.wall.Attachment;
+import com.zarbosoft.bonestruct.editor.wall.Bedding;
+import com.zarbosoft.bonestruct.editor.wall.Brick;
 import com.zarbosoft.bonestruct.syntax.style.Style;
-import com.zarbosoft.bonestruct.wall.Attachment;
-import com.zarbosoft.bonestruct.wall.Bedding;
-import com.zarbosoft.bonestruct.wall.Brick;
 import com.zarbosoft.rendaw.common.ChainComparator;
 import org.pcollections.HashTreePSet;
 

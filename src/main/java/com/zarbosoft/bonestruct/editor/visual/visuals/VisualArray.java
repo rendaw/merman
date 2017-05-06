@@ -5,20 +5,20 @@ import com.zarbosoft.bonestruct.document.Node;
 import com.zarbosoft.bonestruct.document.values.Value;
 import com.zarbosoft.bonestruct.document.values.ValueArray;
 import com.zarbosoft.bonestruct.editor.*;
+import com.zarbosoft.bonestruct.editor.history.changes.ChangeArray;
 import com.zarbosoft.bonestruct.editor.visual.*;
 import com.zarbosoft.bonestruct.editor.visual.attachments.BorderAttachment;
 import com.zarbosoft.bonestruct.editor.visual.attachments.MultiVisualAttachmentAdapter;
 import com.zarbosoft.bonestruct.editor.visual.attachments.VisualAttachmentAdapter;
 import com.zarbosoft.bonestruct.editor.visual.attachments.VisualBorderAttachment;
-import com.zarbosoft.bonestruct.history.changes.ChangeArray;
+import com.zarbosoft.bonestruct.editor.wall.Brick;
+import com.zarbosoft.bonestruct.editor.wall.BrickInterface;
 import com.zarbosoft.bonestruct.syntax.FreeNodeType;
 import com.zarbosoft.bonestruct.syntax.front.FrontSymbol;
 import com.zarbosoft.bonestruct.syntax.middle.MiddleArray;
 import com.zarbosoft.bonestruct.syntax.middle.MiddleArrayBase;
 import com.zarbosoft.bonestruct.syntax.style.Style;
 import com.zarbosoft.bonestruct.syntax.symbol.Symbol;
-import com.zarbosoft.bonestruct.wall.Brick;
-import com.zarbosoft.bonestruct.wall.BrickInterface;
 import com.zarbosoft.rendaw.common.Pair;
 import org.pcollections.HashTreePSet;
 import org.pcollections.PSet;
@@ -29,7 +29,6 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static com.zarbosoft.rendaw.common.Common.last;
-import static java.io.File.separator;
 
 public abstract class VisualArray extends VisualGroup {
 
@@ -97,17 +96,9 @@ public abstract class VisualArray extends VisualGroup {
 		} else if (fixDeepSelectionIndex != null) {
 			if (data.get().isEmpty())
 				parent.selectUp(context);
-			else {
-				final Integer newIndex;
-				if (fixDeepSelectionIndex >= index + remove)
-					newIndex = fixDeepSelectionIndex - remove + add.size();
-				else if (fixDeepSelectionIndex >= index)
-					newIndex = Math.min(data.get().size() - 1, index + Math.max(0, add.size() - 1));
-				else
-					newIndex = null;
-				if (newIndex != null) {
-					select(context, newIndex, newIndex);
-				}
+			else if (fixDeepSelectionIndex >= index && fixDeepSelectionIndex < index + remove) {
+				final int newIndex = Math.min(data.get().size() - 1, index + Math.max(0, add.size() - 1));
+				select(context, newIndex, newIndex);
 			}
 		}
 	}
@@ -116,7 +107,7 @@ public abstract class VisualArray extends VisualGroup {
 		int visualIndex = index;
 		int visualRemove = remove;
 		int visualAdd = add.size();
-		if (!separator.isEmpty()) {
+		if (!getSeparator().isEmpty()) {
 			visualIndex = index == 0 ? 0 : visualIndex * 2 - 1;
 			visualAdd = children.isEmpty() ? visualAdd * 2 - 1 : visualAdd * 2;
 			visualRemove = Math.min(visualRemove * 2, children.size());
@@ -143,7 +134,7 @@ public abstract class VisualArray extends VisualGroup {
 			super.add(context, group, addAt);
 		};
 		for (final Node node : add) {
-			if (addIndex > 0)
+			if (!getSeparator().isEmpty() && addIndex > 0)
 				addSeparator.accept(addIndex++);
 			final ChildGroup group = new ChildGroup(HashTreePSet.empty(), true);
 			for (final FrontSymbol fix : getPrefix())
@@ -222,7 +213,7 @@ public abstract class VisualArray extends VisualGroup {
 				group.add(context, fix.createVisual(context, tags.plus(new Visual.PartTag("suffix"))));
 			super.add(context, group, addIndex++);
 		}
-		if (!separator.isEmpty() && addIndex < children.size()) {
+		if (!getSeparator().isEmpty() && addIndex < children.size()) {
 			addSeparator.accept(addIndex);
 		}
 
@@ -787,7 +778,7 @@ public abstract class VisualArray extends VisualGroup {
 		}
 
 		private int valueIndex() {
-			if (separator.isEmpty())
+			if (getSeparator().isEmpty())
 				return index;
 			return index / 2;
 		}

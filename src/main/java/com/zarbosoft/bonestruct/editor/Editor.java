@@ -2,13 +2,13 @@ package com.zarbosoft.bonestruct.editor;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.zarbosoft.bonestruct.display.Display;
 import com.zarbosoft.bonestruct.document.Document;
 import com.zarbosoft.bonestruct.document.Node;
+import com.zarbosoft.bonestruct.editor.display.Display;
+import com.zarbosoft.bonestruct.editor.history.History;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.editor.visual.VisualPart;
 import com.zarbosoft.bonestruct.editor.visual.attachments.TransverseExtentsAdapter;
-import com.zarbosoft.bonestruct.history.History;
 import com.zarbosoft.bonestruct.syntax.Syntax;
 import org.pcollections.HashTreePSet;
 
@@ -36,6 +36,7 @@ public class Editor {
 			final History history
 	) {
 		context = new Context(syntax, doc, display, addIdle, history);
+		context.history.clear();
 		context.actions.put(this, ImmutableList.of(new Action() {
 			@Override
 			public void run(final Context context) {

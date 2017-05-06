@@ -3,8 +3,6 @@ package com.zarbosoft.bonestruct.editor;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.zarbosoft.bonestruct.display.Display;
-import com.zarbosoft.bonestruct.display.Group;
 import com.zarbosoft.bonestruct.document.Document;
 import com.zarbosoft.bonestruct.document.InvalidDocument;
 import com.zarbosoft.bonestruct.document.Node;
@@ -14,7 +12,10 @@ import com.zarbosoft.bonestruct.document.values.ValueNode;
 import com.zarbosoft.bonestruct.document.values.ValuePrimitive;
 import com.zarbosoft.bonestruct.editor.banner.Banner;
 import com.zarbosoft.bonestruct.editor.details.Details;
+import com.zarbosoft.bonestruct.editor.display.Display;
+import com.zarbosoft.bonestruct.editor.display.Group;
 import com.zarbosoft.bonestruct.editor.hid.HIDEvent;
+import com.zarbosoft.bonestruct.editor.history.History;
 import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.VisualParent;
 import com.zarbosoft.bonestruct.editor.visual.VisualPart;
@@ -23,15 +24,14 @@ import com.zarbosoft.bonestruct.editor.visual.attachments.VisualAttachmentAdapte
 import com.zarbosoft.bonestruct.editor.visual.visuals.VisualArray;
 import com.zarbosoft.bonestruct.editor.visual.visuals.VisualNodeBase;
 import com.zarbosoft.bonestruct.editor.visual.visuals.VisualNodeType;
-import com.zarbosoft.bonestruct.history.History;
+import com.zarbosoft.bonestruct.editor.wall.Brick;
+import com.zarbosoft.bonestruct.editor.wall.Wall;
 import com.zarbosoft.bonestruct.syntax.Syntax;
 import com.zarbosoft.bonestruct.syntax.back.*;
 import com.zarbosoft.bonestruct.syntax.middle.MiddleArray;
 import com.zarbosoft.bonestruct.syntax.middle.MiddleRecord;
 import com.zarbosoft.bonestruct.syntax.modules.Module;
 import com.zarbosoft.bonestruct.syntax.style.Style;
-import com.zarbosoft.bonestruct.wall.Brick;
-import com.zarbosoft.bonestruct.wall.Wall;
 import com.zarbosoft.luxem.read.InvalidStream;
 import com.zarbosoft.luxem.read.Parse;
 import com.zarbosoft.luxem.write.RawWriter;
@@ -532,13 +532,14 @@ public class Context {
 			}
 		}
 
-		final Brick newCornerstone = visual.getFirstBrick(this);
-		if (newCornerstone == null) {
+		cornerstone = visual.getFirstBrick(this);
+		if (cornerstone == null) {
 			cornerstone = visual.createFirstBrick(this);
+			if (cornerstone == null)
+				throw new AssertionError();
 			cornerstoneTransverse = 0;
 		} else {
-			cornerstone = newCornerstone;
-			cornerstoneTransverse = newCornerstone.parent.transverseStart;
+			cornerstoneTransverse = cornerstone.parent.transverseStart;
 		}
 		selection.addBrickListener(this, new VisualAttachmentAdapter.BoundsListener() {
 			@Override

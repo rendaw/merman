@@ -1,12 +1,12 @@
 package com.zarbosoft.bonestruct.syntax.symbol;
 
-import com.zarbosoft.bonestruct.display.DisplayNode;
-import com.zarbosoft.bonestruct.display.Image;
 import com.zarbosoft.bonestruct.editor.Context;
+import com.zarbosoft.bonestruct.editor.display.DisplayNode;
+import com.zarbosoft.bonestruct.editor.display.Image;
+import com.zarbosoft.bonestruct.editor.wall.Brick;
+import com.zarbosoft.bonestruct.editor.wall.BrickInterface;
+import com.zarbosoft.bonestruct.editor.wall.bricks.BrickImage;
 import com.zarbosoft.bonestruct.syntax.style.Style;
-import com.zarbosoft.bonestruct.wall.Brick;
-import com.zarbosoft.bonestruct.wall.BrickInterface;
-import com.zarbosoft.bonestruct.wall.bricks.BrickImage;
 import com.zarbosoft.interface1.Configuration;
 
 import java.nio.file.Paths;

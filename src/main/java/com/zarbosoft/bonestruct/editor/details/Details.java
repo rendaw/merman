@@ -1,14 +1,14 @@
 package com.zarbosoft.bonestruct.editor.details;
 
-import com.zarbosoft.bonestruct.display.Group;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.IdleTask;
 import com.zarbosoft.bonestruct.editor.Selection;
+import com.zarbosoft.bonestruct.editor.display.Group;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.editor.visual.attachments.VisualAttachmentAdapter;
-import com.zarbosoft.bonestruct.wall.Attachment;
-import com.zarbosoft.bonestruct.wall.Bedding;
-import com.zarbosoft.bonestruct.wall.Brick;
+import com.zarbosoft.bonestruct.editor.wall.Attachment;
+import com.zarbosoft.bonestruct.editor.wall.Bedding;
+import com.zarbosoft.bonestruct.editor.wall.Brick;
 import com.zarbosoft.rendaw.common.ChainComparator;
 
 import java.util.PriorityQueue;

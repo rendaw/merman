@@ -24,7 +24,8 @@ public abstract class BackPart {
 			return new Pair<>(((NodeType.NodeBackParent) parent).index, new Path());
 		else if (parent instanceof PartParent) {
 			final Pair<Integer, Path> base = ((PartParent) parent).part().getSubpath();
-			return new Pair<>(base.first, base.second.add(((PartParent) parent).pathSection()));
+			final String section = ((PartParent) parent).pathSection();
+			return new Pair<>(base.first, section == null ? base.second : base.second.add(section));
 		} else
 			throw new DeadCode();
 	}

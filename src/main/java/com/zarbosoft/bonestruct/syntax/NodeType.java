@@ -1,5 +1,6 @@
 package com.zarbosoft.bonestruct.syntax;
 
+import com.google.common.collect.Iterators;
 import com.google.common.collect.Sets;
 import com.zarbosoft.bonestruct.document.Node;
 import com.zarbosoft.bonestruct.document.values.Value;
@@ -106,7 +107,7 @@ public abstract class NodeType {
 		final Deque<Iterator<BackPart>> stack = new ArrayDeque<>();
 		stack.addLast(back().iterator());
 		while (!stack.isEmpty()) {
-			final Iterator<BackPart> iterator = stack.peekLast();
+			final Iterator<BackPart> iterator = stack.pollLast();
 			if (!iterator.hasNext())
 				continue;
 			stack.addLast(iterator);
@@ -124,6 +125,8 @@ public abstract class NodeType {
 			} else if (next instanceof BackDataNode) {
 				if (((BackDataNode) next).middle.equals(id))
 					return next;
+			} else if (next instanceof BackType) {
+				stack.addLast(Iterators.singletonIterator(((BackType) next).child));
 			} else if (next instanceof BackDataPrimitive) {
 				if (((BackDataPrimitive) next).middle.equals(id))
 					return next;

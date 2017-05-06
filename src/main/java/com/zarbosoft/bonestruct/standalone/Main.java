@@ -5,10 +5,10 @@ import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.FileAppender;
 import com.google.common.collect.ImmutableList;
-import com.zarbosoft.bonestruct.display.javafx.JavaFXDisplay;
 import com.zarbosoft.bonestruct.document.Document;
 import com.zarbosoft.bonestruct.editor.*;
-import com.zarbosoft.bonestruct.history.History;
+import com.zarbosoft.bonestruct.editor.display.javafx.JavaFXDisplay;
+import com.zarbosoft.bonestruct.editor.history.History;
 import com.zarbosoft.bonestruct.syntax.Syntax;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -123,6 +123,7 @@ public class Main extends Application {
 		//gap preview styling
 		//hotkey preview details
 		//	columns: 1:rule 2:action name
+		fix save modifications on empty doc
 		test merging changes; finishing history on actions
 		test brick layout
 
@@ -339,7 +340,7 @@ public class Main extends Application {
 								if (top == null) {
 									idleTimer.cancel(false);
 									idleTimer = null;
-									System.out.format("Idle stopping at %d\n", i);
+									//System.out.format("Idle stopping at %d\n", i);
 									break;
 								} else {
 									if (top.run())

@@ -1,8 +1,8 @@
 package com.zarbosoft.bonestruct.syntax.style;
 
 import com.google.common.collect.ImmutableSet;
-import com.zarbosoft.bonestruct.display.Font;
 import com.zarbosoft.bonestruct.editor.Context;
+import com.zarbosoft.bonestruct.editor.display.Font;
 import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.interface1.Configuration;
 

@@ -1,9 +1,6 @@
 package com.zarbosoft.bonestruct.syntax.front;
 
 import com.google.common.collect.ImmutableList;
-import com.zarbosoft.bonestruct.display.DisplayNode;
-import com.zarbosoft.bonestruct.display.Group;
-import com.zarbosoft.bonestruct.display.Text;
 import com.zarbosoft.bonestruct.document.Node;
 import com.zarbosoft.bonestruct.document.values.Value;
 import com.zarbosoft.bonestruct.document.values.ValueArray;
@@ -12,6 +9,9 @@ import com.zarbosoft.bonestruct.document.values.ValuePrimitive;
 import com.zarbosoft.bonestruct.editor.Action;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.details.DetailsPage;
+import com.zarbosoft.bonestruct.editor.display.DisplayNode;
+import com.zarbosoft.bonestruct.editor.display.Group;
+import com.zarbosoft.bonestruct.editor.display.Text;
 import com.zarbosoft.bonestruct.editor.displaynodes.Box;
 import com.zarbosoft.bonestruct.editor.displaynodes.CLayout;
 import com.zarbosoft.bonestruct.editor.displaynodes.ColumnarTableLayout;
@@ -374,8 +374,6 @@ public abstract class FrontGapBase extends FrontPart {
 						.longestMatchFromStart(new ByteArrayInputStream(string
 								.substring(at)
 								.getBytes(StandardCharsets.UTF_8)));
-				if (longest.second.distance() == 0)
-					throw new AssertionError();
 				if (front instanceof FrontDataPrimitive) {
 					data.put(front.middle(), new ValuePrimitive(type.getDataPrimitive(front.middle()),
 							string.substring(at, at + (int) longest.second.distance())

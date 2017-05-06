@@ -3,15 +3,15 @@ package com.zarbosoft.bonestruct;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.zarbosoft.bonestruct.display.MockeryDisplay;
 import com.zarbosoft.bonestruct.document.Document;
 import com.zarbosoft.bonestruct.document.Node;
 import com.zarbosoft.bonestruct.document.values.ValueArray;
 import com.zarbosoft.bonestruct.document.values.ValuePrimitive;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.Path;
+import com.zarbosoft.bonestruct.editor.display.MockeryDisplay;
+import com.zarbosoft.bonestruct.editor.history.History;
 import com.zarbosoft.bonestruct.editor.visual.VisualPart;
-import com.zarbosoft.bonestruct.history.History;
 import com.zarbosoft.bonestruct.syntax.Syntax;
 import org.junit.Test;
 import org.pcollections.HashTreePSet;
@@ -388,6 +388,25 @@ public class TestDocumentGap {
 						.addArray("value", new TreeBuilder(MiscSyntax.syntax.gap).add("gap", "urt").build())
 						.build()
 		);
+	}
+
+	@Test
+	public void testDontDropOutOfTree() {
+		final Context context =
+				buildDoc(MiscSyntax.syntax, MiscSyntax.syntax.gap.create(), MiscSyntax.syntax.gap.create());
+		((Node) context.locateShort(new Path("0"))).getVisual().selectDown(context);
+		((Node) context.locateShort(new Path("1"))).getVisual().selectDown(context);
+		assertThat(context.document.top.get().size(), equalTo(1));
+		assertTreeEqual(context, MiscSyntax.syntax.gap.create(), context.document.top);
+		assertThat(context.selection.getPath().toList(), equalTo(ImmutableList.of("0", "0")));
+		context.history.undo(context);
+		assertThat(context.document.top.get().size(), equalTo(2));
+		assertTreeEqual(MiscSyntax.syntax.gap.create(), context.document.top.get().get(0));
+		assertThat(context.selection.getPath().toList(), equalTo(ImmutableList.of("1", "0")));
+		context.history.redo(context);
+		assertThat(context.document.top.get().size(), equalTo(1));
+		assertTreeEqual(MiscSyntax.syntax.gap.create(), context.document.top.get().get(0));
+		assertThat(context.selection.getPath().toList(), equalTo(ImmutableList.of("0", "0")));
 	}
 
 	@Test

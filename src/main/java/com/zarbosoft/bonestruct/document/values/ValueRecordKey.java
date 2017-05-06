@@ -1,8 +1,8 @@
 package com.zarbosoft.bonestruct.document.values;
 
-import com.zarbosoft.bonestruct.history.Change;
-import com.zarbosoft.bonestruct.history.changes.ChangeRecordKeyAdd;
-import com.zarbosoft.bonestruct.history.changes.ChangeRecordKeyRemove;
+import com.zarbosoft.bonestruct.editor.history.Change;
+import com.zarbosoft.bonestruct.editor.history.changes.ChangeRecordKeyAdd;
+import com.zarbosoft.bonestruct.editor.history.changes.ChangeRecordKeyRemove;
 import com.zarbosoft.bonestruct.syntax.middle.MiddleRecordKey;
 
 public class ValueRecordKey extends ValuePrimitive {

@@ -2,9 +2,9 @@ package com.zarbosoft.bonestruct.editor.visual.attachments;
 
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.displaynodes.Obbox;
+import com.zarbosoft.bonestruct.editor.wall.Attachment;
+import com.zarbosoft.bonestruct.editor.wall.Brick;
 import com.zarbosoft.bonestruct.syntax.style.ObboxStyle;
-import com.zarbosoft.bonestruct.wall.Attachment;
-import com.zarbosoft.bonestruct.wall.Brick;
 
 public class BorderAttachment {
 	Brick first;
