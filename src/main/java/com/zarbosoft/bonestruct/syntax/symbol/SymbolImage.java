@@ -7,9 +7,11 @@ import com.zarbosoft.bonestruct.syntax.style.Style;
 import com.zarbosoft.bonestruct.wall.Brick;
 import com.zarbosoft.bonestruct.wall.BrickInterface;
 import com.zarbosoft.bonestruct.wall.bricks.BrickImage;
+import com.zarbosoft.interface1.Configuration;
 
 import java.nio.file.Paths;
 
+@Configuration(name = "image")
 public class SymbolImage extends Symbol {
 	@Override
 	public DisplayNode createDisplay(final Context context) {

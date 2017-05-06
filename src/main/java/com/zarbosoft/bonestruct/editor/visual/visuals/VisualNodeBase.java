@@ -13,7 +13,7 @@ import com.zarbosoft.bonestruct.wall.Brick;
 import com.zarbosoft.bonestruct.wall.BrickInterface;
 import com.zarbosoft.rendaw.common.DeadCode;
 import com.zarbosoft.rendaw.common.Pair;
-import org.pcollections.HashTreePSet;
+import org.pcollections.PSet;
 
 import java.util.List;
 import java.util.Map;
@@ -32,7 +32,7 @@ public abstract class VisualNodeBase extends VisualPart {
 	private Brick ellipsis = null;
 
 	public VisualNodeBase(
-			final Set<Tag> tags
+			final PSet<Tag> tags
 	) {
 		super(tags);
 	}
@@ -89,7 +89,7 @@ public abstract class VisualNodeBase extends VisualPart {
 	}
 
 	private Set<Tag> ellipsisTags(final Context context) {
-		return HashTreePSet.from(tags(context)).plus(new PartTag("ellipsis"));
+		return tags(context).plus(new PartTag("ellipsis"));
 	}
 
 	private Brick createEllipsis(final Context context) {
@@ -194,10 +194,12 @@ public abstract class VisualNodeBase extends VisualPart {
 		else if (border != null) {
 			context.clearHover();
 		}
+		final Selection selection = new NestedSelection(context);
 		selected = true;
-		border = new BorderAttachment(context, context.syntax.selectStyle);
+		border = new BorderAttachment(context);
+		border.setStyle(context, selection.getStyle(context).obbox);
 		createAdapter(context);
-		context.setSelection(new NestedSelection(context));
+		context.setSelection(selection);
 	}
 
 	@Override
@@ -319,6 +321,11 @@ public abstract class VisualNodeBase extends VisualPart {
 		@Override
 		public Path getPath() {
 			return getSelectionPath();
+		}
+
+		@Override
+		public void globalTagsChanged(final Context context) {
+			border.setStyle(context, getStyle(context).obbox);
 		}
 
 		@Override
@@ -456,7 +463,6 @@ public abstract class VisualNodeBase extends VisualPart {
 			}
 			if (hoverable != null)
 				return hoverable;
-			border = new BorderAttachment(context, context.syntax.hoverStyle);
 			createAdapter(context);
 			hoverable = new Hoverable() {
 				@Override
@@ -484,7 +490,14 @@ public abstract class VisualNodeBase extends VisualPart {
 				public VisualPart part() {
 					return VisualNodeBase.this;
 				}
+
+				@Override
+				public void globalTagsChanged(final Context context) {
+					border.setStyle(context, getStyle(context).obbox);
+				}
 			};
+			border = new BorderAttachment(context);
+			border.setStyle(context, hoverable.getStyle(context).obbox);
 			return hoverable;
 		}
 	}

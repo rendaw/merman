@@ -10,6 +10,7 @@ import com.zarbosoft.bonestruct.syntax.modules.hotkeys.grammar.Node;
 import com.zarbosoft.bonestruct.syntax.symbol.Symbol;
 import com.zarbosoft.interface1.Configuration;
 import org.pcollections.HashTreePSet;
+import org.pcollections.PSet;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -32,7 +33,7 @@ public class FrontDataArrayAsNode extends FrontPart {
 
 	@Override
 	public VisualPart createVisual(
-			final Context context, final com.zarbosoft.bonestruct.document.Node node, final Set<Visual.Tag> tags
+			final Context context, final com.zarbosoft.bonestruct.document.Node node, final PSet<Visual.Tag> tags
 	) {
 		return new VisualNodeFromArray(
 				context,

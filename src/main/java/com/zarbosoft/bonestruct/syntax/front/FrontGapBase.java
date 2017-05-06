@@ -1,5 +1,7 @@
 package com.zarbosoft.bonestruct.syntax.front;
 
+import com.google.common.collect.ImmutableList;
+import com.zarbosoft.bonestruct.display.DisplayNode;
 import com.zarbosoft.bonestruct.display.Group;
 import com.zarbosoft.bonestruct.display.Text;
 import com.zarbosoft.bonestruct.document.Node;
@@ -7,15 +9,21 @@ import com.zarbosoft.bonestruct.document.values.Value;
 import com.zarbosoft.bonestruct.document.values.ValueArray;
 import com.zarbosoft.bonestruct.document.values.ValueNode;
 import com.zarbosoft.bonestruct.document.values.ValuePrimitive;
+import com.zarbosoft.bonestruct.editor.Action;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.details.DetailsPage;
+import com.zarbosoft.bonestruct.editor.displaynodes.Box;
+import com.zarbosoft.bonestruct.editor.displaynodes.CLayout;
+import com.zarbosoft.bonestruct.editor.displaynodes.ColumnarTableLayout;
 import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.VisualPart;
 import com.zarbosoft.bonestruct.editor.visual.visuals.VisualPrimitive;
 import com.zarbosoft.bonestruct.syntax.FreeNodeType;
 import com.zarbosoft.bonestruct.syntax.NodeType;
 import com.zarbosoft.bonestruct.syntax.middle.MiddlePrimitive;
+import com.zarbosoft.bonestruct.syntax.style.BoxStyle;
 import com.zarbosoft.bonestruct.syntax.style.Style;
+import com.zarbosoft.bonestruct.syntax.symbol.SymbolText;
 import com.zarbosoft.pidgoon.ParseContext;
 import com.zarbosoft.pidgoon.bytes.Grammar;
 import com.zarbosoft.pidgoon.bytes.Parse;
@@ -26,7 +34,6 @@ import com.zarbosoft.pidgoon.nodes.Wildcard;
 import com.zarbosoft.rendaw.common.Common;
 import com.zarbosoft.rendaw.common.DeadCode;
 import com.zarbosoft.rendaw.common.Pair;
-import org.pcollections.HashTreePSet;
 import org.pcollections.PSet;
 
 import java.io.ByteArrayInputStream;
@@ -42,7 +49,7 @@ public abstract class FrontGapBase extends FrontPart {
 
 	@Override
 	public VisualPart createVisual(
-			final Context context, final Node node, final Set<Visual.Tag> tags
+			final Context context, final Node node, final PSet<Visual.Tag> tags
 	) {
 		return new GapVisualPrimitive(context, node, tags);
 	}
@@ -53,20 +60,28 @@ public abstract class FrontGapBase extends FrontPart {
 		this.dataType = nodeType.getDataPrimitive(middle());
 	}
 
-	protected abstract List<String> process(
+	protected abstract List<? extends Choice> process(
 			final Context context, final Node self, final String string, final Common.UserData store
 	);
+
+	public abstract static class Choice {
+
+		public abstract void choose(final Context context, final String string);
+
+		public abstract String name();
+
+		public abstract Iterable<? extends FrontPart> parts();
+	}
 
 	private class GapVisualPrimitive extends VisualPrimitive {
 		private final Map<String, Value> data;
 
 		public GapVisualPrimitive(
-				final Context context, final Node node, final Set<Tag> tags
+				final Context context, final Node node, final PSet<Tag> tags
 		) {
 			super(context,
 					FrontGapBase.this.dataType.get(node.data),
-					HashTreePSet
-							.from(tags)
+					tags
 							.plus(new PartTag("gap"))
 							.plusAll(FrontGapBase.this.tags
 									.stream()
@@ -91,23 +106,128 @@ public abstract class FrontGapBase extends FrontPart {
 			private final Common.UserData userData = new Common.UserData();
 
 			private class GapDetails extends DetailsPage {
-				public GapDetails(final Context context, final List<String> choices) {
+				private final Box highlight;
+				List<Pair<DisplayNode, DisplayNode>> rows = new ArrayList<>();
+				private int index = 0;
+				private int scroll = 0;
+				private final Group tableGroup;
+				private final Context.ContextIntListener edgeListener;
+
+				public void updateScroll(final Context context) {
+					final Pair<DisplayNode, DisplayNode> row = rows.get(index);
+					final DisplayNode preview = row.first;
+					final DisplayNode text = row.second;
+					final int converse = preview.converse(context);
+					final int converseEdge = text.converseEdge(context);
+					scroll = Math.min(converse, Math.max(converseEdge - context.edge, scroll));
+					tableGroup.setConverse(context, scroll, true);
+				}
+
+				private void changeChoice(final Context context, final int index) {
+					this.index = index;
+					final Pair<DisplayNode, DisplayNode> row = rows.get(index);
+					final DisplayNode preview = row.first;
+					final DisplayNode text = row.second;
+					final int converse = preview.converse(context);
+					final int transverse = Math.min(preview.transverse(context), text.transverse(context));
+					final int converseEdge = text.converseEdge(context);
+					final int transverseEdge = Math.max(preview.transverseEdge(context), text.transverseEdge(context));
+					highlight.setSize(context, converse, transverse, converseEdge, transverseEdge);
+					updateScroll(context);
+				}
+
+				public GapDetails(final Context context, final List<? extends Choice> choices) {
+					this.edgeListener = new Context.ContextIntListener() {
+						@Override
+						public void changed(final Context context, final int oldValue, final int newValue) {
+							updateScroll(context);
+						}
+					};
+					context.addConverseEdgeListener(edgeListener);
 					final Group group = context.display.group();
 					this.node = group;
-					final PSet tags = HashTreePSet.from(context.globalTags);
+
+					final BoxStyle.Baked highlightStyle = new BoxStyle.Baked();
+					highlightStyle.merge(context.syntax.gapChoiceStyle);
+					highlight = Box.fromSettings(context, highlightStyle);
+					group.add(highlight.drawing);
+
+					final ColumnarTableLayout table = new ColumnarTableLayout(context, context.syntax.detailSpan);
+					tableGroup = table.group;
+					group.add(table.group);
+
+					final PSet<Tag> tags = context.globalTags;
 					final Style.Baked lineStyle = context.getStyle(tags
 							.plus(new Visual.PartTag("details_choice"))
 							.plus(new PartTag("details")));
-					int transverse = 0;
-					for (final String choice : choices) {
-						final Text line = context.display.text();
-						line.setColor(context, lineStyle.color);
-						line.setFont(context, lineStyle.getFont(context));
-						line.setText(context, choice);
-						group.add(line);
-						line.setTransverse(context, transverse);
-						transverse += line.transverseSpan(context);
+					final int transverse = 0;
+					for (final Choice choice : choices) {
+						final Group preview = context.display.group();
+						final CLayout previewLayout = new CLayout(preview);
+						for (final FrontPart part : choice.parts()) {
+							final DisplayNode node;
+							if (part instanceof FrontSymbol) {
+								node = ((FrontSymbol) part).createDisplay(context);
+							} else if (part instanceof FrontDataPrimitive) {
+								node = context.syntax.gapPlaceholder.createDisplay(context);
+								context.syntax.gapPlaceholder.style(context, node, lineStyle);
+							} else
+								throw new DeadCode();
+							previewLayout.add(node);
+						}
+						previewLayout.layout(context);
+
+						final Text text = context.display.text();
+						text.setColor(context, lineStyle.color);
+						text.setFont(context, lineStyle.getFont(context));
+						text.setText(context, choice.name());
+
+						rows.add(new Pair<>(preview, text));
+						table.add(ImmutableList.of(preview, text));
 					}
+					table.layout(context);
+					changeChoice(context, 0);
+					context.actions.put(this, ImmutableList.of(new Action() {
+						@Override
+						public void run(final Context context) {
+							choices.get(index).choose(context, self.get());
+						}
+
+						@Override
+						public String getName() {
+							return "choose";
+						}
+					}, new Action() {
+						@Override
+						public void run(final Context context) {
+							changeChoice(context, (index + 1) % choices.size());
+						}
+
+						@Override
+						public String getName() {
+							return "next_choice";
+						}
+					}, new Action() {
+						@Override
+						public void run(final Context context) {
+							changeChoice(context, (index + choices.size() - 1) % choices.size());
+						}
+
+						@Override
+						public String getName() {
+							return "previous_choice";
+						}
+					}));
+				}
+
+				public void destroy(final Context context) {
+					context.actions.remove(this);
+					context.removeConverseEdgeListener(edgeListener);
+				}
+
+				@Override
+				public void tagsChanged(final Context context) {
+
 				}
 			}
 
@@ -121,10 +241,12 @@ public abstract class FrontGapBase extends FrontPart {
 			@Override
 			public void receiveText(final Context context, final String text) {
 				super.receiveText(context, text);
-				final List<String> choices = process(context, self.parent.node(), self.get(), userData);
+				final List<? extends Choice> choices = process(context, self.parent.node(), self.get(), userData);
 				if (!choices.isEmpty()) {
-					if (gapDetails != null)
+					if (gapDetails != null) {
 						context.details.removePage(context, gapDetails);
+						gapDetails.destroy(context);
+					}
 					gapDetails = new GapDetails(context, choices);
 					context.details.addPage(context, gapDetails);
 				}
@@ -136,6 +258,7 @@ public abstract class FrontGapBase extends FrontPart {
 				deselect(context, self.parent.node(), self.get(), userData);
 				if (gapDetails != null) {
 					context.details.removePage(context, gapDetails);
+					gapDetails.destroy(context);
 					gapDetails = null;
 				}
 			}
@@ -201,10 +324,11 @@ public abstract class FrontGapBase extends FrontPart {
 		public com.zarbosoft.pidgoon.Node matchGrammar(final FreeNodeType type) {
 			final Sequence out = new Sequence();
 			for (final FrontPart part : keyParts) {
-				if (part instanceof FrontImage) {
-					out.add(Grammar.stringSequence(((FrontImage) part).gapKey));
-				} else if (part instanceof FrontMark) {
-					out.add(Grammar.stringSequence(((FrontMark) part).value));
+				if (part instanceof FrontSymbol) {
+					String text = ((FrontSymbol) part).gapKey;
+					if (((FrontSymbol) part).type instanceof SymbolText)
+						text = ((SymbolText) ((FrontSymbol) part).type).text;
+					out.add(Grammar.stringSequence(text));
 				} else if (part instanceof FrontDataPrimitive) {
 					final MiddlePrimitive middle =
 							(MiddlePrimitive) type.middle.get(((FrontDataPrimitive) part).middle);
@@ -232,13 +356,12 @@ public abstract class FrontGapBase extends FrontPart {
 			int at = 0;
 			for (final FrontPart front : iterable(frontIterator)) {
 				final Grammar grammar = new Grammar();
-				if (front instanceof FrontSpace)
-					continue;
-				else if (front instanceof FrontImage)
-					grammar.add("root", Grammar.stringSequence(((FrontImage) front).gapKey));
-				else if (front instanceof FrontMark)
-					grammar.add("root", Grammar.stringSequence(((FrontMark) front).value));
-				else if (front instanceof FrontDataPrimitive) {
+				if (front instanceof FrontSymbol) {
+					String text = ((FrontSymbol) front).gapKey;
+					if (((FrontSymbol) front).type instanceof SymbolText)
+						text = ((SymbolText) ((FrontSymbol) front).type).text;
+					grammar.add("root", Grammar.stringSequence(text));
+				} else if (front instanceof FrontDataPrimitive) {
 					final MiddlePrimitive middle =
 							(MiddlePrimitive) type.middle.get(((FrontDataPrimitive) front).middle);
 					grammar.add("root",
@@ -279,16 +402,6 @@ public abstract class FrontGapBase extends FrontPart {
 		}
 	}
 
-	private static boolean checkCondition(final ConditionType condition) {
-		if (condition instanceof ConditionNode &&
-				((ConditionNode) condition).is == ConditionNode.Is.PRECEDENT &&
-				!condition.invert)
-			return false;
-		else if (condition instanceof ConditionValue && ((ConditionValue) condition).is == ConditionValue.Is.EMPTY)
-			return false;
-		return true;
-	}
-
 	protected static List<GapKey> gapKeys(final FreeNodeType type) {
 		final List<GapKey> out = new ArrayList<>();
 		final Common.Mutable<GapKey> top = new Common.Mutable<>(new GapKey());
@@ -305,20 +418,8 @@ public abstract class FrontGapBase extends FrontPart {
 				}
 
 				@Override
-				public void handle(final FrontSpace front) {
-
-				}
-
-				@Override
-				public void handle(final FrontImage front) {
-					if (!checkCondition(front.condition))
-						return;
-					top.value.keyParts.add(front);
-				}
-
-				@Override
-				public void handle(final FrontMark front) {
-					if (!checkCondition(front.condition))
+				public void handle(final FrontSymbol front) {
+					if (front.condition != null && !front.condition.defaultOn())
 						return;
 					top.value.keyParts.add(front);
 				}

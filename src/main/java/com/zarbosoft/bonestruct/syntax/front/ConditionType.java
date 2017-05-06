@@ -11,4 +11,10 @@ public abstract class ConditionType {
 	public boolean invert = false;
 
 	public abstract ConditionAttachment create(Context context, Node node);
+
+	public boolean defaultOn() {
+		return invert ? defaultOnImplementation() : !defaultOnImplementation();
+	}
+
+	protected abstract boolean defaultOnImplementation();
 }

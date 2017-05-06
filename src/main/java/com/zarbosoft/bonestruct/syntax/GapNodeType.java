@@ -55,14 +55,14 @@ public class GapNodeType extends NodeType {
 		{
 			final FrontGapBase gap = new FrontGapBase() {
 				@Override
-				protected List<String> process(
+				protected List<? extends Choice> process(
 						final Context context, final Node self, final String string, final Common.UserData store
 				) {
-					class Choice {
+					class GapChoice extends Choice {
 						private final FreeNodeType type;
 						private final GapKey key;
 
-						Choice(
+						GapChoice(
 								final FreeNodeType type, final GapKey key
 						) {
 							this.type = type;
@@ -93,6 +93,16 @@ public class GapNodeType extends NodeType {
 							if (!remainder.isEmpty())
 								context.selection.receiveText(context, remainder);
 						}
+
+						@Override
+						public String name() {
+							return type.name();
+						}
+
+						@Override
+						public Iterable<? extends FrontPart> parts() {
+							return key.keyParts;
+						}
 					}
 
 					// Get or build gap grammar
@@ -105,7 +115,7 @@ public class GapNodeType extends NodeType {
 						)) {
 							final List<GapKey> gapKeys = gapKeys(type);
 							for (final GapKey key : gapKeys(type)) {
-								final Choice choice = new Choice(type, key);
+								final GapChoice choice = new GapChoice(type, key);
 								union.add(new Color(choice, new Operator(key.matchGrammar(type), store1 -> {
 									return store1.pushStack(choice);
 								})));
@@ -121,24 +131,24 @@ public class GapNodeType extends NodeType {
 					final Pair<ParseContext, Position> longest = new Parse<>()
 							.grammar(grammar)
 							.longestMatchFromStart(new ByteArrayInputStream(string.getBytes(StandardCharsets.UTF_8)));
-					final List<Choice> choices = Stream.concat(
-							longest.first.results.stream().map(result -> (Choice) result),
-							longest.first.leaves.stream().map(leaf -> (Choice) leaf.color())
+					final List<GapChoice> choices = Stream.concat(
+							longest.first.results.stream().map(result -> (GapChoice) result),
+							longest.first.leaves.stream().map(leaf -> (GapChoice) leaf.color())
 					).collect(Collectors.toList());
 					if (longest.second.distance() == string.length()) {
-						for (final Choice choice : choices) {
+						for (final GapChoice choice : choices) {
 							if (longest.first.leaves.size() <= choice.ambiguity()) {
 								choice.choose(context, string);
 								return ImmutableList.of();
 							}
 						}
 					} else if (longest.second.distance() >= 1) {
-						for (final Choice choice : choices) {
+						for (final GapChoice choice : choices) {
 							choice.choose(context, string);
 							return ImmutableList.of();
 						}
 					}
-					return choices.stream().map(choice -> choice.type.id).collect(Collectors.toList());
+					return choices;
 				}
 
 				@Override

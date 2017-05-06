@@ -7,11 +7,26 @@ import com.zarbosoft.bonestruct.syntax.style.Style;
 import com.zarbosoft.bonestruct.wall.Brick;
 import com.zarbosoft.bonestruct.wall.BrickInterface;
 import com.zarbosoft.bonestruct.wall.bricks.BrickMark;
+import com.zarbosoft.interface1.Configuration;
 
+@Configuration(name = "text")
 public class SymbolText extends Symbol {
+	@Configuration
+	public String text;
+
+	public SymbolText() {
+
+	}
+
+	public SymbolText(final String text) {
+		this.text = text;
+	}
+
 	@Override
 	public DisplayNode createDisplay(final Context context) {
-		return context.display.text();
+		final Text text = context.display.text();
+		text.setText(context, this.text);
+		return text;
 	}
 
 	@Override
@@ -23,6 +38,8 @@ public class SymbolText extends Symbol {
 
 	@Override
 	public Brick createBrick(final Context context, final BrickInterface inter) {
-		return new BrickMark(context, inter);
+		final BrickMark out = new BrickMark(context, inter);
+		out.setText(context, this.text);
+		return out;
 	}
 }

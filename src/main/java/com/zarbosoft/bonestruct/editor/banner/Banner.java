@@ -14,7 +14,6 @@ import com.zarbosoft.rendaw.common.ChainComparator;
 import org.pcollections.HashTreePSet;
 
 import java.util.PriorityQueue;
-import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -54,6 +53,10 @@ public class Banner {
 	public void setScroll(final Context context, final int scroll) {
 		this.scroll = scroll;
 		idlePlace(context);
+	}
+
+	public void tagsChanged(final Context context) {
+		updateStyle(context);
 	}
 
 	private class IdlePlace extends IdleTask {
@@ -105,12 +108,6 @@ public class Banner {
 
 					}
 				});
-			}
-		});
-		context.addTagsChangeListener(new Context.TagsListener() {
-			@Override
-			public void tagsChanged(final Context context, final Set<Visual.Tag> tags) {
-				updateStyle(context);
 			}
 		});
 	}

@@ -8,16 +8,16 @@ import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.Path;
 import com.zarbosoft.bonestruct.history.changes.ChangeArray;
 import com.zarbosoft.bonestruct.syntax.middle.MiddleArrayBase;
+import org.pcollections.PSet;
 
 import java.util.List;
-import java.util.Set;
 
 public abstract class VisualNodeFromArray extends VisualNodeBase {
 	final ValueArray value;
 	private final ValueArray.Listener dataListener;
 
 	public VisualNodeFromArray(
-			final Context context, final ValueArray value, final Set<Tag> tags
+			final Context context, final ValueArray value, final PSet<Tag> tags
 	) {
 		super(tags);
 		this.value = value;

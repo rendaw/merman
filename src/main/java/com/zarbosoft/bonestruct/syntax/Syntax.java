@@ -7,9 +7,11 @@ import com.zarbosoft.bonestruct.document.values.ValueArray;
 import com.zarbosoft.bonestruct.syntax.front.FrontDataRootArray;
 import com.zarbosoft.bonestruct.syntax.middle.MiddleArray;
 import com.zarbosoft.bonestruct.syntax.modules.Module;
+import com.zarbosoft.bonestruct.syntax.style.BoxStyle;
 import com.zarbosoft.bonestruct.syntax.style.ModelColor;
-import com.zarbosoft.bonestruct.syntax.style.ObboxStyle;
 import com.zarbosoft.bonestruct.syntax.style.Style;
+import com.zarbosoft.bonestruct.syntax.symbol.Symbol;
+import com.zarbosoft.bonestruct.syntax.symbol.SymbolText;
 import com.zarbosoft.interface1.Configuration;
 import com.zarbosoft.interface1.events.InterfaceEvent;
 import com.zarbosoft.luaconf.LuaConf;
@@ -58,14 +60,14 @@ public class Syntax {
 					"with this contents.")
 	public List<InterfaceEvent> template = new ArrayList<>();
 
+	@Configuration(optional = true, description = "Character to substitute for non-printing characters in primitives.")
+	public String placeholder = "▢";
+
 	@Configuration(optional = true)
 	public List<Style> styles = new ArrayList<>();
 
-	@Configuration(optional = true, name = "hover_style")
-	public ObboxStyle hoverStyle = new ObboxStyle();
-
-	@Configuration(optional = true, name = "select_style")
-	public ObboxStyle selectStyle = new ObboxStyle();
+	@Configuration(optional = true, description = "The max transverse span for details panes.")
+	public int detailSpan = 300;
 
 	@Configuration(description = "The definitions of all distinct element types in a document.\n" +
 			"A type with the id '__gap' and a single middle primitive element named 'value' must exist.  This will " +
@@ -83,6 +85,11 @@ public class Syntax {
 			"The suffix gap type is similar to the gap type, but is used when enclosing an " +
 					"existing node in a new node, where the new node visually succeeds the existing node.")
 	public SuffixGapNodeType suffixGap = new SuffixGapNodeType();
+	@Configuration(name = "gap_placeholder", optional = true,
+			description = "Placeholder for text in gap choice previews.")
+	public Symbol gapPlaceholder = new SymbolText("•");
+	@Configuration(optional = true, name = "gap_choice_style", description = "Style of the gap choice selection box.")
+	public BoxStyle gapChoiceStyle = new BoxStyle();
 
 	@Configuration(optional = true, description =
 			"Pseudo-types representing groups of types.  Group ids can be used anywhere a type id " +

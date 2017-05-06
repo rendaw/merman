@@ -1,7 +1,6 @@
 package com.zarbosoft.bonestruct.editor.visual.visuals;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import com.zarbosoft.bonestruct.document.Node;
 import com.zarbosoft.bonestruct.document.values.Value;
 import com.zarbosoft.bonestruct.document.values.ValueArray;
@@ -13,7 +12,7 @@ import com.zarbosoft.bonestruct.editor.visual.attachments.VisualAttachmentAdapte
 import com.zarbosoft.bonestruct.editor.visual.attachments.VisualBorderAttachment;
 import com.zarbosoft.bonestruct.history.changes.ChangeArray;
 import com.zarbosoft.bonestruct.syntax.FreeNodeType;
-import com.zarbosoft.bonestruct.syntax.front.FrontConstantPart;
+import com.zarbosoft.bonestruct.syntax.front.FrontSymbol;
 import com.zarbosoft.bonestruct.syntax.middle.MiddleArray;
 import com.zarbosoft.bonestruct.syntax.middle.MiddleArrayBase;
 import com.zarbosoft.bonestruct.syntax.style.Style;
@@ -38,7 +37,7 @@ public abstract class VisualArray extends VisualGroup {
 	private final ValueArray data;
 	private Brick ellipsis = null;
 
-	public VisualArray(final Context context, final ValueArray data, final Set<Visual.Tag> tags) {
+	public VisualArray(final Context context, final ValueArray data, final PSet<Visual.Tag> tags) {
 		super(tags);
 		this.data = data;
 		dataListener = new ValueArray.Listener() {
@@ -135,19 +134,19 @@ public abstract class VisualArray extends VisualGroup {
 		remove(context, visualIndex, visualRemove);
 
 		// Add
-		final PSet<Visual.Tag> tags = HashTreePSet.from(tags(context));
+		final PSet<Visual.Tag> tags = tags(context);
 		int addIndex = visualIndex;
 		final Consumer<Integer> addSeparator = addAt -> {
-			final ChildGroup group = new ChildGroup(ImmutableSet.of(), false);
-			for (final FrontConstantPart fix : getSeparator())
+			final ChildGroup group = new ChildGroup(HashTreePSet.empty(), false);
+			for (final FrontSymbol fix : getSeparator())
 				group.add(context, fix.createVisual(context, tags.plus(new Visual.PartTag("separator"))));
 			super.add(context, group, addAt);
 		};
 		for (final Node node : add) {
 			if (addIndex > 0)
 				addSeparator.accept(addIndex++);
-			final ChildGroup group = new ChildGroup(ImmutableSet.of(), true);
-			for (final FrontConstantPart fix : getPrefix())
+			final ChildGroup group = new ChildGroup(HashTreePSet.empty(), true);
+			for (final FrontSymbol fix : getPrefix())
 				group.add(context, fix.createVisual(context, tags.plus(new Visual.PartTag("prefix"))));
 			final Visual nodeVisual = node.createVisual(context);
 			final int addIndex2 = addIndex;
@@ -219,7 +218,7 @@ public abstract class VisualArray extends VisualGroup {
 
 				}
 			});
-			for (final FrontConstantPart fix : getSuffix())
+			for (final FrontSymbol fix : getSuffix())
 				group.add(context, fix.createVisual(context, tags.plus(new Visual.PartTag("suffix"))));
 			super.add(context, group, addIndex++);
 		}
@@ -278,7 +277,7 @@ public abstract class VisualArray extends VisualGroup {
 
 		private final boolean selectable;
 
-		public ChildGroup(final Set<Visual.Tag> tags, final boolean selectable) {
+		public ChildGroup(final PSet<Visual.Tag> tags, final boolean selectable) {
 			super(tags);
 			this.selectable = selectable;
 		}
@@ -316,14 +315,14 @@ public abstract class VisualArray extends VisualGroup {
 		}
 	}
 
-	protected abstract List<FrontConstantPart> getPrefix();
+	protected abstract List<FrontSymbol> getPrefix();
 
-	protected abstract List<FrontConstantPart> getSeparator();
+	protected abstract List<FrontSymbol> getSeparator();
 
-	protected abstract List<FrontConstantPart> getSuffix();
+	protected abstract List<FrontSymbol> getSuffix();
 
 	private Set<Tag> ellipsisTags(final Context context) {
-		return HashTreePSet.from(tags(context)).plus(new PartTag("ellipsis"));
+		return tags(context).plus(new PartTag("ellipsis"));
 	}
 
 	private Brick createEllipsis(final Context context) {
@@ -395,7 +394,7 @@ public abstract class VisualArray extends VisualGroup {
 		VisualBorderAttachment border;
 
 		public ArrayHoverable(final Context context) {
-			border = new VisualBorderAttachment(context, context.syntax.hoverStyle);
+			border = new VisualBorderAttachment(context, getStyle(context).obbox);
 		}
 
 		public void setIndex(final Context context, final int index) {
@@ -426,6 +425,11 @@ public abstract class VisualArray extends VisualGroup {
 		public VisualPart part() {
 			return VisualArray.this;
 		}
+
+		@Override
+		public void globalTagsChanged(final Context context) {
+			border.setStyle(context, getStyle(context).obbox);
+		}
 	}
 
 	private int visualIndex(final int valueIndex) {
@@ -444,7 +448,8 @@ public abstract class VisualArray extends VisualGroup {
 		public int endIndex;
 
 		public ArraySelection(final Context context, final int start, final int end) {
-			border = new BorderAttachment(context, context.syntax.selectStyle);
+			border = new BorderAttachment(context);
+			border.setStyle(context, getStyle(context).obbox);
 			adapter = new MultiVisualAttachmentAdapter(context);
 			adapter.addListener(context, new VisualAttachmentAdapter.BoundsListener() {
 				@Override
@@ -724,6 +729,11 @@ public abstract class VisualArray extends VisualGroup {
 		@Override
 		public Path getPath() {
 			return data.getPath().add(String.valueOf(beginIndex));
+		}
+
+		@Override
+		public void globalTagsChanged(final Context context) {
+			border.setStyle(context, getStyle(context).obbox);
 		}
 	}
 

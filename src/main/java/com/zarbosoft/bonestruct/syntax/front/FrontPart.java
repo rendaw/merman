@@ -7,6 +7,7 @@ import com.zarbosoft.bonestruct.editor.visual.VisualPart;
 import com.zarbosoft.bonestruct.syntax.NodeType;
 import com.zarbosoft.interface1.Configuration;
 import com.zarbosoft.rendaw.common.DeadCode;
+import org.pcollections.PSet;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -18,7 +19,7 @@ public abstract class FrontPart {
 	public Set<String> tags = new HashSet<>();
 
 	public abstract VisualPart createVisual(
-			Context context, Node node, Set<Visual.Tag> tags
+			Context context, Node node, PSet<Visual.Tag> tags
 	);
 
 	public void finish(final NodeType nodeType, final Set<String> middleUsed) {
@@ -28,11 +29,7 @@ public abstract class FrontPart {
 
 	public static abstract class DispatchHandler {
 
-		public abstract void handle(FrontSpace front);
-
-		public abstract void handle(FrontImage front);
-
-		public abstract void handle(FrontMark front);
+		public abstract void handle(FrontSymbol front);
 
 		public abstract void handle(FrontDataArrayBase front);
 
@@ -45,15 +42,11 @@ public abstract class FrontPart {
 
 	public static abstract class NodeDispatchHandler extends DispatchHandler {
 
-		final public void handle(final FrontSpace front) {
+		@Override
+		final public void handle(final FrontSymbol front) {
 		}
 
-		final public void handle(final FrontImage front) {
-		}
-
-		final public void handle(final FrontMark front) {
-		}
-
+		@Override
 		final public void handle(final FrontDataPrimitive front) {
 		}
 
@@ -64,15 +57,7 @@ public abstract class FrontPart {
 
 	public static abstract class NodeOnlyDispatchHandler extends DispatchHandler {
 
-		final public void handle(final FrontSpace front) {
-			throw new DeadCode();
-		}
-
-		final public void handle(final FrontImage front) {
-			throw new DeadCode();
-		}
-
-		final public void handle(final FrontMark front) {
+		final public void handle(final FrontSymbol front) {
 			throw new DeadCode();
 		}
 
@@ -90,17 +75,7 @@ public abstract class FrontPart {
 
 	public abstract static class DataDispatchHandler extends DispatchHandler {
 		@Override
-		public void handle(final FrontSpace front) {
-
-		}
-
-		@Override
-		public void handle(final FrontImage front) {
-
-		}
-
-		@Override
-		public void handle(final FrontMark front) {
+		public void handle(final FrontSymbol front) {
 
 		}
 	}

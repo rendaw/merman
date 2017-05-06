@@ -115,16 +115,21 @@ public class Main extends Application {
 		//primitive compact/expand
 		//window indicator -> change global tags (state windowed/nonwindowed)
 		//indicators -> plugin that shows/hides indicators by tag
-		non printable & front array/node placeholder character as syntax param
-		gap preview details styling
-			columns: 1:preview 2:type id
-		hotkey preview details
-			columns: 1:rule 2:action name
+		//gap handle conditional front elements
+		//non printable & front array/node placeholder character as syntax param
+		//gap preview details styling
+		//	columns: 1:preview 2:type id
+		//gap choice selection
+		//gap preview styling
+		//hotkey preview details
+		//	columns: 1:rule 2:action name
 		test merging changes; finishing history on actions
 		test brick layout
 
 		sed (led) substitution
 
+		details + banner styling (background/lines, padding, alignment(?), etc)
+			__ details templates that have substitution points in nested symbols and layouts, backgrounds
 		comment toc with jumps (plugin?)
 		exit primitive when next mark key; escaping (?)
 		plugin add colored bar to side if dirty

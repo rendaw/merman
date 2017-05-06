@@ -5,7 +5,9 @@ import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.syntax.style.Style;
 import com.zarbosoft.bonestruct.wall.Brick;
 import com.zarbosoft.bonestruct.wall.BrickInterface;
+import com.zarbosoft.interface1.Configuration;
 
+@Configuration
 public abstract class Symbol {
 	public abstract DisplayNode createDisplay(Context context);
 

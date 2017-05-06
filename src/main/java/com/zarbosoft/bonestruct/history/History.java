@@ -121,7 +121,7 @@ public class History {
 				past.addLast(reverseLevel);
 			} else
 				reverseLevel = past.peek();
-			if (reverseLevel.select == null)
+			if (reverseLevel.select != null)
 				reverseLevel.select = context.selection.saveState();
 			final Change reverse = change.apply(context);
 			reverseLevel.merge(reverse);

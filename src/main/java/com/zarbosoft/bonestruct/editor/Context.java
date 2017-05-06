@@ -36,6 +36,8 @@ import com.zarbosoft.luxem.read.InvalidStream;
 import com.zarbosoft.luxem.read.Parse;
 import com.zarbosoft.luxem.write.RawWriter;
 import javafx.animation.Interpolator;
+import org.pcollections.HashTreePSet;
+import org.pcollections.PSet;
 import org.pcollections.TreePVector;
 
 import java.io.ByteArrayInputStream;
@@ -54,7 +56,7 @@ public class Context {
 	private final Set<TagsListener> tagsChangeListeners = new HashSet<>();
 	public final TransverseExtentsAdapter selectionExtentsAdapter = new TransverseExtentsAdapter();
 	public List<Module.State> modules;
-	public Set<Visual.Tag> globalTags = new HashSet<>();
+	public PSet<Visual.Tag> globalTags = HashTreePSet.empty();
 	public List<KeyListener> keyListeners = new ArrayList<>();
 	List<ContextIntListener> converseEdgeListeners = new ArrayList<>();
 	List<ContextIntListener> transverseEdgeListeners = new ArrayList<>();
@@ -137,8 +139,11 @@ public class Context {
 	}
 
 	public void changeGlobalTags(final Visual.TagsChange change) {
-		globalTags.removeAll(change.remove);
-		globalTags.addAll(change.add);
+		globalTags = globalTags.minusAll(change.remove).plusAll(change.add);
+		if (hover != null)
+			hover.globalTagsChanged(this);
+		if (selection != null)
+			selection.globalTagsChanged(this);
 		selectionTagsChanged();
 		foreground.children.forEach(course -> course.children.forEach(brick -> brick.getVisual().tagsChanged(this)));
 	}
@@ -146,6 +151,8 @@ public class Context {
 	public void selectionTagsChanged() {
 		if (selection == null)
 			return;
+		banner.tagsChanged(this);
+		details.tagsChanged(this);
 		tagsChangeListeners.forEach(listener -> listener.tagsChanged(this, selection.getVisual().tags(this)));
 	}
 
@@ -313,7 +320,7 @@ public class Context {
 
 	public abstract static class TagsListener {
 
-		public abstract void tagsChanged(Context context, Set<Visual.Tag> tags);
+		public abstract void tagsChanged(Context context, PSet<Visual.Tag> tags);
 	}
 
 	public void addSelectionListener(final SelectionListener listener) {

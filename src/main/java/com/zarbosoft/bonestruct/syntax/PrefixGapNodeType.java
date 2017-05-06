@@ -57,14 +57,14 @@ public class PrefixGapNodeType extends NodeType {
 		{
 			final FrontGapBase gap = new FrontGapBase() {
 				@Override
-				protected List<String> process(
+				protected List<? extends Choice> process(
 						final Context context, final Node self, final String string, final Common.UserData store
 				) {
-					class Choice {
+					class PrefixChoice extends Choice {
 						private final FreeNodeType type;
 						private final GapKey key;
 
-						Choice(final FreeNodeType type, final GapKey key) {
+						PrefixChoice(final FreeNodeType type, final GapKey key) {
 							this.type = type;
 							this.key = key;
 						}
@@ -111,6 +111,16 @@ public class PrefixGapNodeType extends NodeType {
 							else
 								inner.getVisual().selectDown(context);
 						}
+
+						@Override
+						public String name() {
+							return type.name();
+						}
+
+						@Override
+						public Iterable<? extends FrontPart> parts() {
+							return key.keyParts;
+						}
 					}
 
 					// Get or build gap grammar
@@ -125,7 +135,7 @@ public class PrefixGapNodeType extends NodeType {
 							for (final GapKey key : gapKeys(type)) {
 								if (key.indexAfter == -1)
 									continue;
-								final Choice choice = new Choice(type, key);
+								final PrefixChoice choice = new PrefixChoice(type, key);
 								union.add(new Color(choice, new Operator(key.matchGrammar(type), store1 -> {
 									return store1.pushStack(choice);
 								})));
@@ -142,17 +152,17 @@ public class PrefixGapNodeType extends NodeType {
 							.grammar(grammar)
 							.longestMatchFromStart(new ByteArrayInputStream(string.getBytes(StandardCharsets.UTF_8)));
 					if (longest.second.distance() == string.length()) {
-						final List<Choice> choices =
-								Stream.concat(longest.first.results.stream().map(result -> (Choice) result),
-										longest.first.leaves.stream().map(leaf -> (Choice) leaf.color())
+						final List<PrefixChoice> choices =
+								Stream.concat(longest.first.results.stream().map(result -> (PrefixChoice) result),
+										longest.first.leaves.stream().map(leaf -> (PrefixChoice) leaf.color())
 								).collect(Collectors.toList());
-						for (final Choice choice : choices) {
+						for (final PrefixChoice choice : choices) {
 							if (longest.first.leaves.size() <= choice.ambiguity()) {
 								choice.choose(context, string);
 								return ImmutableList.of();
 							}
 						}
-						return choices.stream().map(choice -> choice.type.id).collect(Collectors.toList());
+						return choices;
 					}
 					return ImmutableList.of();
 				}

@@ -6,55 +6,40 @@ import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.VisualParent;
 import com.zarbosoft.bonestruct.editor.visual.VisualPart;
+import com.zarbosoft.bonestruct.editor.visual.condition.ConditionAttachment;
+import com.zarbosoft.bonestruct.syntax.front.FrontSymbol;
 import com.zarbosoft.bonestruct.syntax.style.Style;
 import com.zarbosoft.bonestruct.wall.Brick;
 import com.zarbosoft.bonestruct.wall.BrickInterface;
-import com.zarbosoft.bonestruct.wall.bricks.BrickSpace;
 import com.zarbosoft.rendaw.common.DeadCode;
 import com.zarbosoft.rendaw.common.Pair;
-import org.pcollections.HashTreePSet;
+import org.pcollections.PSet;
 
 import java.util.Arrays;
 import java.util.Set;
 
-public class VisualSpace extends VisualPart implements BrickInterface {
+public class VisualSymbol extends VisualPart implements ConditionAttachment.Listener, BrickInterface {
+	private final FrontSymbol frontSymbol;
 	public VisualParent parent;
-	public BrickSpace brick;
+	public Brick brick = null;
+	public ConditionAttachment condition = null;
 
-	public VisualSpace(final Set<Tag> tags) {
-		super(HashTreePSet.from(tags).plus(new PartTag("space")));
+	public VisualSymbol(final FrontSymbol frontSymbol, final PSet<Tag> tags, final ConditionAttachment condition) {
+		super(tags);
+		this.frontSymbol = frontSymbol;
+		if (condition != null) {
+			this.condition = condition;
+			condition.register(this);
+		}
 	}
 
 	@Override
-	public Brick getFirstBrick(final Context context) {
-		return brick;
-	}
-
-	@Override
-	public Brick getLastBrick(final Context context) {
-		return brick;
-	}
-
-	@Override
-	public Iterable<Pair<Brick, Brick.Properties>> getPropertiesForTagsChange(
-			final Context context, final TagsChange change
-	) {
-		if (brick == null)
-			return Iterables.concat();
-		return Arrays.asList(new Pair<Brick, Brick.Properties>(brick,
-				brick.getPropertiesForTagsChange(context, change)
-		));
-	}
-
-	@Override
-	public void destroy(final Context context) {
-		if (brick != null)
+	public void conditionChanged(final Context context, final boolean show) {
+		if (show) {
+			suggestCreateBricks(context);
+		} else if (brick != null) {
 			brick.destroy(context);
-	}
-
-	@Override
-	public boolean isAt(final Value value) {
-		return false;
+		}
 	}
 
 	@Override
@@ -86,7 +71,9 @@ public class VisualSpace extends VisualPart implements BrickInterface {
 	public Brick createFirstBrick(final Context context) {
 		if (brick != null)
 			return null;
-		brick = new BrickSpace(context, this);
+		if (condition != null && !condition.show())
+			return null;
+		brick = frontSymbol.type.createBrick(context, this);
 		return brick;
 	}
 
@@ -96,10 +83,52 @@ public class VisualSpace extends VisualPart implements BrickInterface {
 	}
 
 	@Override
+	public Brick getFirstBrick(final Context context) {
+		return brick;
+	}
+
+	@Override
+	public Brick getLastBrick(final Context context) {
+		return brick;
+	}
+
+	@Override
 	public void tagsChanged(final Context context) {
 		if (brick != null) {
 			brick.setStyle(context, context.getStyle(tags(context)));
 		}
+	}
+
+	@Override
+	public Iterable<Pair<Brick, Brick.Properties>> getPropertiesForTagsChange(
+			final Context context, final TagsChange change
+	) {
+		if (brick == null)
+			return Iterables.concat();
+		return Arrays.asList(new Pair<>(brick, brick.getPropertiesForTagsChange(context, change)));
+	}
+
+	@Override
+	public void destroy(final Context context) {
+		if (brick != null)
+			brick.destroy(context);
+		if (condition != null)
+			condition.destroy(context);
+	}
+
+	@Override
+	public boolean isAt(final Value value) {
+		return false;
+	}
+
+	@Override
+	public boolean canCompact() {
+		return false;
+	}
+
+	@Override
+	public boolean canExpand() {
+		return false;
 	}
 
 	@Override

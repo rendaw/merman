@@ -76,6 +76,13 @@ public class ConditionValue extends ConditionType {
 			throw new DeadCode();
 	}
 
+	@Override
+	protected boolean defaultOnImplementation() {
+		if (is == ConditionValue.Is.EMPTY)
+			return false;
+		return true;
+	}
+
 	@Configuration
 	public static enum Is {
 		@Configuration(name = "empty", description = "Show if the value is empty.")

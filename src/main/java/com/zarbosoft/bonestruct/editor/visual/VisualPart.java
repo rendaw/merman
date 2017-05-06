@@ -4,12 +4,12 @@ import com.google.common.collect.ImmutableSet;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.Hoverable;
 import com.zarbosoft.rendaw.common.DeadCode;
+import org.pcollections.PSet;
 
 import java.util.Map;
-import java.util.Set;
 
 public abstract class VisualPart extends Visual {
-	public VisualPart(final Set<Tag> tags) {
+	public VisualPart(final PSet<Tag> tags) {
 		super(tags);
 	}
 

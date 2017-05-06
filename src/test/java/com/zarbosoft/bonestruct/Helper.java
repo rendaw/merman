@@ -2,7 +2,6 @@ package com.zarbosoft.bonestruct;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.zarbosoft.bonestruct.display.MockeryDisplay;
 import com.zarbosoft.bonestruct.document.Document;
@@ -23,9 +22,11 @@ import com.zarbosoft.bonestruct.syntax.Syntax;
 import com.zarbosoft.bonestruct.syntax.back.*;
 import com.zarbosoft.bonestruct.syntax.front.*;
 import com.zarbosoft.bonestruct.syntax.middle.*;
+import com.zarbosoft.bonestruct.syntax.symbol.SymbolText;
 import com.zarbosoft.luxem.write.RawWriter;
 import com.zarbosoft.rendaw.common.DeadCode;
 import org.junit.ComparisonFailure;
+import org.pcollections.HashTreePSet;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -175,8 +176,8 @@ public class Helper {
 		}
 
 		public TypeBuilder frontMark(final String value) {
-			final FrontMark part = new FrontMark();
-			part.value = value;
+			final FrontSymbol part = new FrontSymbol();
+			part.type = new SymbolText(value);
 			type.front.add(part);
 			return this;
 		}
@@ -298,14 +299,14 @@ public class Helper {
 	}
 
 	public static class FrontMarkBuilder {
-		private final FrontMark front;
+		private final FrontSymbol front;
 
 		public FrontMarkBuilder(final String value) {
-			this.front = new FrontMark();
-			front.value = value;
+			this.front = new FrontSymbol();
+			front.type = new SymbolText(value);
 		}
 
-		public FrontMark build() {
+		public FrontSymbol build() {
 			return front;
 		}
 	}
@@ -318,7 +319,7 @@ public class Helper {
 			front.middle = middle;
 		}
 
-		public FrontDataArrayBuilder addSeparator(final FrontConstantPart part) {
+		public FrontDataArrayBuilder addSeparator(final FrontSymbol part) {
 			front.separator.add(part);
 			return this;
 		}
@@ -479,7 +480,7 @@ public class Helper {
 			}
 		};
 		final Node rootNode = new Node(ImmutableMap.of("value", doc.top));
-		final VisualPart visual = syntax.rootFront.createVisual(context, rootNode, ImmutableSet.of());
+		final VisualPart visual = syntax.rootFront.createVisual(context, rootNode, HashTreePSet.empty());
 		visual.selectDown(context);
 		return context;
 	}

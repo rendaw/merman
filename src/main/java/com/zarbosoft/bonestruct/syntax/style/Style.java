@@ -1,5 +1,6 @@
 package com.zarbosoft.bonestruct.syntax.style;
 
+import com.google.common.collect.ImmutableSet;
 import com.zarbosoft.bonestruct.display.Font;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.visual.Visual;
@@ -16,9 +17,6 @@ public class Style {
 
 	@Configuration
 	public Set<Visual.Tag> tags = new HashSet<>();
-
-	@Configuration(optional = true)
-	public ObboxStyle border = new ObboxStyle();
 
 	@Configuration(name = "break", optional = true)
 	public Boolean broken = null;
@@ -72,6 +70,14 @@ public class Style {
 	@Configuration(optional = true)
 	public Integer space = null;
 
+	// Other
+
+	@Configuration(optional = true)
+	public BoxStyle box = null;
+
+	@Configuration(optional = true)
+	public ObboxStyle obbox = null;
+
 	public static class Baked {
 		public Set<Visual.Tag> tags = new HashSet<>();
 		public boolean broken = false;
@@ -88,24 +94,38 @@ public class Style {
 		public int converse = 12;
 		public int transverse = 12;
 		public int space = 0;
+		public BoxStyle.Baked box = new BoxStyle.Baked();
+		public ObboxStyle.Baked obbox = new ObboxStyle.Baked();
 
 		public Baked(final Set<Visual.Tag> tags) {
 			this.tags.addAll(tags);
 		}
 
+		public static Set<Class<?>> mergeableTypes = ImmutableSet.of(
+				Integer.class,
+				Double.class,
+				Boolean.class,
+				String.class,
+				ModelColor.class,
+				BoxStyle.class,
+				ObboxStyle.class
+		);
+
 		public void merge(final Style style) {
 			for (final Field field : Style.class.getFields()) {
 				if (field.getAnnotation(Configuration.class) == null)
 					continue;
-				if (field.getType() != Integer.class &&
-						field.getType() != Double.class &&
-						field.getType() != Boolean.class &&
-						field.getType() != String.class &&
-						field.getType() != ModelColor.class)
+				if (!mergeableTypes.contains(field.getType()))
 					continue;
 				final Object value = uncheck(() -> field.get(style));
-				if (value != null)
-					uncheck(() -> getClass().getField(field.getName()).set(this, value));
+				if (value != null) {
+					if (field.getName().equals("box"))
+						box.merge((BoxStyle) value);
+					else if (field.getName().equals("obbox"))
+						obbox.merge((ObboxStyle) value);
+					else
+						uncheck(() -> getClass().getField(field.getName()).set(this, value));
+				}
 			}
 		}
 

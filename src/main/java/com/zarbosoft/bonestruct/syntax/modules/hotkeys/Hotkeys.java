@@ -1,10 +1,13 @@
 package com.zarbosoft.bonestruct.syntax.modules.hotkeys;
 
+import com.google.common.collect.ImmutableList;
 import com.zarbosoft.bonestruct.display.Group;
 import com.zarbosoft.bonestruct.display.Text;
 import com.zarbosoft.bonestruct.editor.Action;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.details.DetailsPage;
+import com.zarbosoft.bonestruct.editor.displaynodes.ColumnarTableLayout;
+import com.zarbosoft.bonestruct.editor.displaynodes.TLayout;
 import com.zarbosoft.bonestruct.editor.hid.HIDEvent;
 import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.syntax.modules.Module;
@@ -17,12 +20,10 @@ import com.zarbosoft.pidgoon.events.Grammar;
 import com.zarbosoft.pidgoon.events.Operator;
 import com.zarbosoft.pidgoon.events.Parse;
 import com.zarbosoft.pidgoon.nodes.Union;
-import org.pcollections.HashTreePSet;
 import org.pcollections.PSet;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import static com.zarbosoft.rendaw.common.Common.iterable;
 
@@ -31,7 +32,7 @@ public class Hotkeys extends Module {
 	@Configuration(optional = true)
 	public List<HotkeyRule> rules = new ArrayList<>();
 
-	@Configuration(optional = true, name = "show_details")
+	@Configuration(name = "show_details", optional = true)
 	public boolean showDetails = true;
 
 	private Grammar hotkeyGrammar;
@@ -44,27 +45,41 @@ public class Hotkeys extends Module {
 		public HotkeyDetails(final Context context) {
 			final Group group = context.display.group();
 			this.node = group;
-			final PSet tags = HashTreePSet.from(context.globalTags);
+			final TLayout layout = new TLayout(group);
+
 			final Text first = context.display.text();
-			final Style.Baked firstStyle = context.getStyle(tags
+			final Style.Baked firstStyle = context.getStyle(context.globalTags
 					.plus(new Visual.PartTag("details_prompt"))
 					.plus(new Visual.PartTag("details")));
 			first.setColor(context, firstStyle.color);
 			first.setFont(context, firstStyle.getFont(context));
-			group.add(first);
-			final Style.Baked lineStyle =
-					context.getStyle(tags.plus(new Visual.PartTag("details_line")).plus(new Visual.PartTag("details")));
 			first.setText(context, hotkeySequence);
-			int transverse = first.transverseSpan(context);
+			layout.add(first);
+
+			final Style.Baked lineStyle = context.getStyle(context.globalTags
+					.plus(new Visual.PartTag("details_line"))
+					.plus(new Visual.PartTag("details")));
+			final ColumnarTableLayout table = new ColumnarTableLayout(context, context.syntax.detailSpan);
 			for (final com.zarbosoft.pidgoon.internal.State leaf : hotkeyParse.context().leaves) {
-				final Text line = context.display.text();
-				line.setColor(context, lineStyle.color);
-				line.setFont(context, lineStyle.getFont(context));
-				line.setText(context, ((Action) leaf.color()).getName());
-				group.add(line);
-				line.setTransverse(context, transverse);
-				transverse += line.transverseSpan(context);
+				final Action action = leaf.color();
+				final Text rule = context.display.text();
+				rule.setColor(context, lineStyle.color);
+				rule.setFont(context, lineStyle.getFont(context));
+				rule.setText(context, hotkeyGrammar.getNode(action.getName()).toString());
+				final Text name = context.display.text();
+				name.setColor(context, lineStyle.color);
+				name.setFont(context, lineStyle.getFont(context));
+				name.setText(context, action.getName());
+				table.add(ImmutableList.of(rule, name));
 			}
+			table.layout(context);
+			layout.add(table.group);
+			layout.layout(context);
+		}
+
+		@Override
+		public void tagsChanged(final Context context) {
+
 		}
 	}
 
@@ -73,7 +88,7 @@ public class Hotkeys extends Module {
 		context.addKeyListener(this::handleEvent);
 		context.addTagsChangeListener(new Context.TagsListener() {
 			@Override
-			public void tagsChanged(final Context context, final Set<Visual.Tag> tags) {
+			public void tagsChanged(final Context context, final PSet<Visual.Tag> tags) {
 				System.out.format("resetting hotkeys tags [%s]\n", tags);
 				clean(context);
 				hotkeys = new HotkeyRule(tags);

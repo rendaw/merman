@@ -1,140 +1,57 @@
-package com.zarbosoft.bonestruct.editor.visual.raw;
+package com.zarbosoft.bonestruct.editor.displaynodes;
 
 import com.zarbosoft.bonestruct.display.Drawing;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
-import com.zarbosoft.bonestruct.syntax.style.ModelColor;
 import com.zarbosoft.bonestruct.syntax.style.ObboxStyle;
 
-public abstract class Obbox {
+public class Obbox {
 	public final Drawing drawing;
 
 	public Obbox(final Context context) {
 		drawing = context.display.drawing();
 	}
 
-	public static Obbox fromSettings(final Context context, final ObboxStyle.Baked settings) {
-		return new Obbox(context) {
-			@Override
-			public int padding() {
-				return settings.padding;
-			}
-
-			@Override
-			public int roundRadius() {
-				return settings.roundRadius;
-			}
-
-			@Override
-			public boolean roundStart() {
-				return settings.roundStart;
-			}
-
-			@Override
-			public boolean roundEnd() {
-				return settings.roundEnd;
-			}
-
-			@Override
-			public boolean roundOuterEdges() {
-				return settings.roundOuterEdges;
-			}
-
-			@Override
-			public boolean roundInnerEdges() {
-				return settings.roundInnerEdges;
-			}
-
-			@Override
-			public boolean roundConcave() {
-				return settings.roundConcave;
-			}
-
-			@Override
-			public boolean line() {
-				return settings.line;
-			}
-
-			@Override
-			public ModelColor lineColor() {
-				return settings.lineColor;
-			}
-
-			@Override
-			public double lineThickness() {
-				return settings.lineThickness;
-			}
-
-			@Override
-			public boolean fill() {
-				return settings.fill;
-			}
-
-			@Override
-			public ModelColor fillColor() {
-				return settings.fillColor;
-			}
-		};
+	public void setStyle(final Context context, final ObboxStyle.Baked style) {
+		this.style = style;
 	}
 
+	ObboxStyle.Baked style;
+
 	int radius = 0;
-
-	public abstract int padding();
-
-	public abstract int roundRadius();
-
-	public abstract boolean roundStart();
-
-	public abstract boolean roundEnd();
-
-	public abstract boolean roundOuterEdges();
-
-	public abstract boolean roundInnerEdges();
-
-	public abstract boolean roundConcave();
-
-	public abstract boolean line();
-
-	public abstract ModelColor lineColor();
-
-	public abstract double lineThickness();
-
-	public abstract boolean fill();
-
-	public abstract ModelColor fillColor();
 
 	public void setSize(
 			final Context context, int sc, int st, int ste, int ec, int et, int ete
 	) {
 		final boolean oneLine = st == et;
 		drawing.clear();
-		sc -= padding();
-		st -= padding();
-		ste = oneLine ? ste + padding() : ste - padding();
-		ec += padding();
-		et += padding();
-		ete += padding();
-		radius = roundRadius();
-		//radius = Math.min(roundRadius(), Math.min(ste - st, ete - et));
-		final int buffer = (int) (lineThickness() + 1);
-		final Vector wh = new Vector(context.edge + padding() * 2 + buffer * 2, ete - st + buffer * 2);
+		sc -= style.padding;
+		st -= style.padding;
+		ste = oneLine ? ste + style.padding : ste - style.padding;
+		ec += style.padding;
+		et += style.padding;
+		ete += style.padding;
+		radius = style.roundRadius;
+		//radius = Math.min(style.roundRadius, Math.min(ste - st, ete - et));
+		final int buffer = (int) (style.lineThickness + 1);
+		final Vector wh = new Vector(context.edge + style.padding * 2 + buffer * 2, ete - st + buffer * 2);
 		drawing.resize(context, wh);
-		drawing.setPosition(context, new Vector(-(buffer + padding()), st - buffer), false);
+		drawing.setPosition(context, new Vector(-(buffer + style.padding), st - buffer), false);
 		final Drawing.DrawingContext gc = drawing.begin(context);
-		gc.translate(buffer + padding(), buffer);
+		gc.translate(buffer + style.padding, buffer);
 		ste -= st;
 		et -= st;
 		ete -= st;
 		st = 0;
-		if (fill()) {
-			gc.setFillColor(fillColor());
-			path(gc, oneLine, -padding(), context.edge + padding(), sc, st, ste, ec, et, ete);
+		if (style.fill) {
+			gc.setFillColor(style.fillColor);
+			path(gc, oneLine, -style.padding, context.edge + style.padding, sc, st, ste, ec, et, ete);
 			gc.fill();
 		}
-		if (line()) {
-			gc.setLineColor(lineColor());
-			gc.setLineThickness(lineThickness());
-			path(gc, oneLine, -padding(), context.edge + padding(), sc, st, ste, ec, et, ete);
+		if (style.line) {
+			gc.setLineColor(style.lineColor);
+			gc.setLineThickness(style.lineThickness);
+			path(gc, oneLine, -style.padding, context.edge + style.padding, sc, st, ste, ec, et, ete);
 			gc.stroke();
 		}
 	}
@@ -156,7 +73,7 @@ public abstract class Obbox {
 			moveTo(gc, startConverse, (startTransverse + startTransverseEdge) / 2);
 			cornerTo(
 					gc,
-					roundStart(),
+					style.roundStart,
 					startConverse,
 					startTransverse,
 					(startConverse + endConverse) / 2,
@@ -164,7 +81,7 @@ public abstract class Obbox {
 			);
 			cornerTo(
 					gc,
-					roundOuterEdges(),
+					style.roundOuterEdges,
 					endConverse,
 					startTransverse,
 					endConverse,
@@ -172,7 +89,7 @@ public abstract class Obbox {
 			);
 			cornerTo(
 					gc,
-					roundEnd(),
+					style.roundEnd,
 					endConverse,
 					startTransverseEdge,
 					(startConverse + endConverse) / 2,
@@ -180,7 +97,7 @@ public abstract class Obbox {
 			);
 			cornerTo(
 					gc,
-					roundOuterEdges(),
+					style.roundOuterEdges,
 					startConverse,
 					startTransverseEdge,
 					startConverse,
@@ -192,7 +109,7 @@ public abstract class Obbox {
 			moveTo(gc, startConverse, (startTransverse + startTransverseEdge) / 2);
 			cornerTo(
 					gc,
-					roundStart(),
+					style.roundStart,
 					startConverse,
 					startTransverse,
 					(startConverse + converseEdge) / 2,
@@ -200,7 +117,7 @@ public abstract class Obbox {
 			);
 			cornerTo(
 					gc,
-					roundOuterEdges(),
+					style.roundOuterEdges,
 					converseEdge,
 					startTransverse,
 					converseEdge,
@@ -209,7 +126,7 @@ public abstract class Obbox {
 			if (endConverse == converseEdge) {
 				cornerTo(
 						gc,
-						roundInnerEdges(),
+						style.roundInnerEdges,
 						converseEdge,
 						endTransverseEdge,
 						(converseZero + converseEdge) / 2,
@@ -218,7 +135,7 @@ public abstract class Obbox {
 			} else {
 				cornerTo(
 						gc,
-						roundInnerEdges(),
+						style.roundInnerEdges,
 						converseEdge,
 						endTransverse,
 						(endConverse + converseEdge) / 2,
@@ -226,7 +143,7 @@ public abstract class Obbox {
 				);
 				cornerTo(
 						gc,
-						roundConcave(),
+						style.roundConcave,
 						endConverse,
 						endTransverse,
 						endConverse,
@@ -234,7 +151,7 @@ public abstract class Obbox {
 				);
 				cornerTo(
 						gc,
-						roundEnd(),
+						style.roundEnd,
 						endConverse,
 						endTransverseEdge,
 						(converseZero + endConverse) / 2,
@@ -244,7 +161,7 @@ public abstract class Obbox {
 			if (startConverse == converseZero) {
 				cornerTo(
 						gc,
-						roundOuterEdges(),
+						style.roundOuterEdges,
 						converseZero,
 						endTransverseEdge,
 						converseZero,
@@ -253,7 +170,7 @@ public abstract class Obbox {
 			} else {
 				cornerTo(
 						gc,
-						roundOuterEdges(),
+						style.roundOuterEdges,
 						converseZero,
 						endTransverseEdge,
 						converseZero,
@@ -261,7 +178,7 @@ public abstract class Obbox {
 				);
 				cornerTo(
 						gc,
-						roundInnerEdges(),
+						style.roundInnerEdges,
 						converseZero,
 						startTransverseEdge,
 						startConverse / 2,
@@ -269,7 +186,7 @@ public abstract class Obbox {
 				);
 				cornerTo(
 						gc,
-						roundConcave(),
+						style.roundConcave,
 						startConverse,
 						startTransverseEdge,
 						startConverse,

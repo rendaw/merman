@@ -31,6 +31,13 @@ public class ConditionNode extends ConditionType {
 		return condition;
 	}
 
+	@Override
+	protected boolean defaultOnImplementation() {
+		if (is == ConditionNode.Is.PRECEDENT && !invert)
+			return false;
+		return true;
+	}
+
 	@Configuration
 	public static enum Is {
 		@Configuration(name = "precedent", description = "Show if the node is precedent relative to its parent.")

@@ -15,6 +15,7 @@ import com.zarbosoft.rendaw.common.DeadCode;
 import com.zarbosoft.rendaw.common.Pair;
 import org.pcollections.HashTreePMap;
 import org.pcollections.PMap;
+import org.pcollections.PSet;
 
 import java.util.*;
 import java.util.function.IntFunction;
@@ -22,7 +23,7 @@ import java.util.function.IntFunction;
 import static com.zarbosoft.rendaw.common.Common.last;
 
 public class VisualGroup extends VisualPart {
-	public VisualGroup(final Set<Tag> tags) {
+	public VisualGroup(final PSet<Tag> tags) {
 		super(tags);
 	}
 

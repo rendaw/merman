@@ -4,12 +4,6 @@ return {
     pad_transverse = 60,
     background = rgb { r = 74 / 255, g = 60 / 255, b = 89 / 255 },
     animate_course_placement = true,
-    hover_style = {
-        line_color = rgb { r = 112 / 255, g = 80 / 255, b = 145 / 255 },
-    },
-    select_style = {
-        line_color = rgb { r = 101 / 255, g = 82 / 255, b = 122 / 255 },
-    },
     styles = {
         {
             color = rgb { r = 163 / 255, g = 164 / 255, b = 232 / 255 },
@@ -30,6 +24,18 @@ return {
         {
             tags = { part 'gap' },
             color = rgb { r = 255 / 255, g = 249 / 255, b = 106 / 255 },
+        },
+        {
+            tags = { part 'hover' },
+            obbox = {
+                line_color = rgb { r = 112 / 255, g = 80 / 255, b = 145 / 255 },
+            },
+        },
+        {
+            tags = { part 'select' },
+            obbox = {
+                line_color = rgb { r = 101 / 255, g = 82 / 255, b = 122 / 255 },
+            },
         },
         {
             tags = { free 'break', state 'compact' },
@@ -80,12 +86,12 @@ return {
                 record_table = concensus {},
             },
             front = {
-                mark '{',
+                symbol { type = text '{' },
                 array {
                     middle = 'data',
-                    separator = { mark ',' },
+                    separator = { text ',' },
                 },
-                mark { value = '}', tags = { 'break', 'base' }, },
+                symbol { type = text '}', tags = { 'break', 'base' }, },
             },
             auto_choose_ambiguity = 999,
         },
@@ -98,10 +104,10 @@ return {
                 value = node 'value',
             },
             front = {
-                space { tags = { 'indent', 'break' } },
+                symbol { type = space {}, tags = { 'indent', 'break' } },
                 primitive 'key',
-                mark ':',
-                space { tags = { 'record_table' } },
+                symbol { type = text ':' },
+                symbol { type = space {}, tags = { 'record_table' } },
                 node 'value',
             },
         },
@@ -119,13 +125,13 @@ return {
                 indent = relative { base = 'indent', offset = 16 },
             },
             front = {
-                mark '{',
+                symbol { type = text '{' },
                 array {
                     middle = 'data',
-                    prefix = { space { tags = { 'indent', 'break' } } },
-                    separator = { mark ',' },
+                    prefix = { { type = space {}, tags = { 'indent', 'break' } } },
+                    separator = { { type = text ',' } },
                 },
-                mark { value = '}', tags = { 'break', 'base' }, }
+                symbol { type = text '}', tags = { 'break', 'base' }, }
             },
             auto_choose_ambiguity = 999,
         },

@@ -1,6 +1,5 @@
 package com.zarbosoft.bonestruct.editor.visual.visuals;
 
-import com.google.common.collect.ImmutableSet;
 import com.zarbosoft.bonestruct.document.Node;
 import com.zarbosoft.bonestruct.document.values.Value;
 import com.zarbosoft.bonestruct.editor.Context;
@@ -38,7 +37,7 @@ public class VisualNodeType extends Visual {
 		this.node = node;
 		final PSet<Tag> tags = HashTreePSet.singleton(new TypeTag(nodeType.id));
 		compact = false;
-		body = new VisualGroup(ImmutableSet.of());
+		body = new VisualGroup(HashTreePSet.empty());
 		for (final Map.Entry<String, AlignmentDefinition> entry : nodeType.alignments().entrySet()) {
 			body.alignments.put(entry.getKey(), entry.getValue().create());
 		}

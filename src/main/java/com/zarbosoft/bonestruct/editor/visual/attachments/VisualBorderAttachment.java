@@ -7,9 +7,9 @@ import com.zarbosoft.bonestruct.wall.Brick;
 public class VisualBorderAttachment extends MultiVisualAttachmentAdapter {
 	private final BorderAttachment border;
 
-	public VisualBorderAttachment(final Context context, final ObboxStyle style) {
+	public VisualBorderAttachment(final Context context, final ObboxStyle.Baked style) {
 		super(context);
-		this.border = new BorderAttachment(context, style);
+		this.border = new BorderAttachment(context);
 		addListener(context, new VisualAttachmentAdapter.BoundsListener() {
 			@Override
 			public void firstChanged(final Context context, final Brick brick) {
@@ -27,5 +27,9 @@ public class VisualBorderAttachment extends MultiVisualAttachmentAdapter {
 	public void destroy(final Context context) {
 		super.destroy(context);
 		border.destroy(context);
+	}
+
+	public void setStyle(final Context context, final ObboxStyle.Baked style) {
+		border.setStyle(context, style);
 	}
 }

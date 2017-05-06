@@ -1,7 +1,7 @@
 package com.zarbosoft.bonestruct.editor.visual.attachments;
 
 import com.zarbosoft.bonestruct.editor.Context;
-import com.zarbosoft.bonestruct.editor.visual.raw.Obbox;
+import com.zarbosoft.bonestruct.editor.displaynodes.Obbox;
 import com.zarbosoft.bonestruct.syntax.style.ObboxStyle;
 import com.zarbosoft.bonestruct.wall.Attachment;
 import com.zarbosoft.bonestruct.wall.bricks.BrickText;
@@ -68,9 +68,9 @@ public class TextBorderAttachment {
 	private int endTransverseSpan;
 
 	public TextBorderAttachment(
-			final Context context, final ObboxStyle.Baked style
+			final Context context
 	) {
-		border = Obbox.fromSettings(context, style);
+		border = new Obbox(context);
 		context.background.add(border.drawing);
 	}
 
@@ -128,5 +128,10 @@ public class TextBorderAttachment {
 				endTransverse,
 				endTransverse + endTransverseSpan
 		);
+	}
+
+	public void setStyle(final Context context, final ObboxStyle.Baked style) {
+		border.setStyle(context, style);
+		redraw(context);
 	}
 }

@@ -7,7 +7,7 @@ import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.syntax.symbol.Symbol;
 import com.zarbosoft.interface1.Configuration;
-import org.pcollections.HashTreePSet;
+import org.pcollections.PSet;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -41,7 +41,7 @@ public class Indicators extends Module {
 
 	@Configuration(optional = true,
 			description = "If true, show the symbols at the start of the gutter.  Otherwise, the end.")
-	boolean transverseStart = true;
+	public boolean transverseStart = true;
 	@Configuration
 	public int transversePadding = 0;
 
@@ -54,7 +54,7 @@ public class Indicators extends Module {
 		}
 	};
 
-	public void update(final Context context, final Set<Visual.Tag> tags) {
+	public void update(final Context context, final PSet<Visual.Tag> tags) {
 		int transverse = 0;
 		int offset = 0;
 		for (final Indicator indicator : indicators) {
@@ -67,8 +67,7 @@ public class Indicators extends Module {
 				indicator.symbol.style(
 						context,
 						node,
-						context.getStyle(HashTreePSet
-								.from(tags)
+						context.getStyle(tags
 								.plus(new Visual.TypeTag(indicator.id))
 								.plus(new Visual.PartTag("indicator")))
 				);
@@ -98,7 +97,7 @@ public class Indicators extends Module {
 	public State initialize(final Context context) {
 		context.addTagsChangeListener(new Context.TagsListener() {
 			@Override
-			public void tagsChanged(final Context context, final Set<Visual.Tag> tags) {
+			public void tagsChanged(final Context context, final PSet<Visual.Tag> tags) {
 				update(context, tags);
 			}
 		});

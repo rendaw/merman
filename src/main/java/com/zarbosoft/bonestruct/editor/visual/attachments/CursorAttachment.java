@@ -10,7 +10,7 @@ import com.zarbosoft.bonestruct.wall.bricks.BrickText;
 
 public class CursorAttachment {
 	Drawing drawing;
-	private final ObboxStyle.Baked style;
+	private ObboxStyle.Baked style;
 	private final Attachment attachment = new Attachment() {
 		@Override
 		public void setTransverse(final Context context, final int transverse) {
@@ -54,9 +54,8 @@ public class CursorAttachment {
 	private int transverseAscent;
 	private BrickText brick;
 
-	public CursorAttachment(final Context context, final ObboxStyle.Baked style) {
+	public CursorAttachment(final Context context) {
 		drawing = context.display.drawing();
-		this.style = style;
 		context.display.add(drawing);
 	}
 
@@ -134,5 +133,11 @@ public class CursorAttachment {
 		if (brick != null)
 			brick.removeAttachment(context, this.attachment);
 		context.background.remove(drawing);
+	}
+
+	public void setStyle(final Context context, final ObboxStyle.Baked style) {
+		this.style = style;
+		if (brick != null)
+			redraw(context);
 	}
 }

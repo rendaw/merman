@@ -5,6 +5,7 @@ import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.VisualPart;
 import com.zarbosoft.interface1.Configuration;
+import org.pcollections.PSet;
 
 import java.util.Set;
 
@@ -15,7 +16,7 @@ public abstract class FrontConstantPart extends FrontPart {
 
 	@Override
 	public VisualPart createVisual(
-			final Context context, final Node node, final Set<Visual.Tag> tags
+			final Context context, final Node node, final PSet<Visual.Tag> tags
 	) {
 		return createVisual(context, tags);
 	}

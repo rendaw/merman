@@ -7,15 +7,14 @@ import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.Path;
 import com.zarbosoft.bonestruct.history.changes.ChangeNodeSet;
 import com.zarbosoft.bonestruct.syntax.middle.MiddleNode;
-
-import java.util.Set;
+import org.pcollections.PSet;
 
 public abstract class VisualNode extends VisualNodeBase {
 	final ValueNode value;
 	final private ValueNode.Listener dataListener;
 
 	public VisualNode(
-			final Context context, final ValueNode value, final Set<Tag> tags
+			final Context context, final ValueNode value, final PSet<Tag> tags
 	) {
 		super(tags);
 		this.value = value;

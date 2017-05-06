@@ -10,6 +10,7 @@ import com.zarbosoft.bonestruct.syntax.modules.hotkeys.grammar.Node;
 import com.zarbosoft.bonestruct.syntax.symbol.Symbol;
 import com.zarbosoft.interface1.Configuration;
 import org.pcollections.HashTreePSet;
+import org.pcollections.PSet;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -17,11 +18,11 @@ import java.util.stream.Collectors;
 public abstract class FrontDataArrayBase extends FrontPart {
 
 	@Configuration(optional = true)
-	public List<FrontConstantPart> prefix = new ArrayList<>();
+	public List<FrontSymbol> prefix = new ArrayList<>();
 	@Configuration(optional = true)
-	public List<FrontConstantPart> suffix = new ArrayList<>();
+	public List<FrontSymbol> suffix = new ArrayList<>();
 	@Configuration(optional = true)
-	public List<FrontConstantPart> separator = new ArrayList<>();
+	public List<FrontSymbol> separator = new ArrayList<>();
 	@Configuration(optional = true)
 	public Map<String, Node> hotkeys = new HashMap<>();
 	@Configuration(name = "tag_first", optional = true)
@@ -53,7 +54,7 @@ public abstract class FrontDataArrayBase extends FrontPart {
 
 	@Override
 	public VisualPart createVisual(
-			final Context context, final com.zarbosoft.bonestruct.document.Node node, final Set<Visual.Tag> tags
+			final Context context, final com.zarbosoft.bonestruct.document.Node node, final PSet<Visual.Tag> tags
 	) {
 		return new VisualArray(
 				context,
@@ -85,17 +86,17 @@ public abstract class FrontDataArrayBase extends FrontPart {
 			}
 
 			@Override
-			protected List<FrontConstantPart> getPrefix() {
+			protected List<FrontSymbol> getPrefix() {
 				return prefix;
 			}
 
 			@Override
-			protected List<FrontConstantPart> getSuffix() {
+			protected List<FrontSymbol> getSuffix() {
 				return suffix;
 			}
 
 			@Override
-			protected List<FrontConstantPart> getSeparator() {
+			protected List<FrontSymbol> getSeparator() {
 				return separator;
 			}
 		};

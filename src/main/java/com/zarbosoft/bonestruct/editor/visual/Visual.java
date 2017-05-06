@@ -9,13 +9,16 @@ import com.zarbosoft.rendaw.common.Pair;
 import org.pcollections.HashTreePSet;
 import org.pcollections.PSet;
 
-import java.util.*;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 public abstract class Visual {
-	private final Set<Tag> tags = new HashSet<>();
+	private PSet<Tag> tags = HashTreePSet.empty();
 
-	public Visual(final Set<Tag> tags) {
-		this.tags.addAll(tags);
+	public Visual(final PSet<Tag> tags) {
+		this.tags = tags;
 	}
 
 	public abstract void setParent(VisualParent parent);
@@ -100,13 +103,12 @@ public abstract class Visual {
 		}
 	}
 
-	public Set<Tag> tags(final Context context) {
-		return HashTreePSet.from(tags).plusAll(context.globalTags);
+	public PSet<Tag> tags(final Context context) {
+		return tags.plusAll(context.globalTags);
 	}
 
 	public void changeTags(final Context context, final TagsChange tagsChange) {
-		tags.removeAll(tagsChange.remove);
-		tags.addAll(tagsChange.add);
+		tags = tags.minusAll(tagsChange.remove).plusAll(tagsChange.add);
 		if (context.selection.getVisual() == this)
 			context.selectionTagsChanged();
 		tagsChanged(context);

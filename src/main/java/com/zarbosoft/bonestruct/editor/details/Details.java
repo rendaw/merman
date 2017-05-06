@@ -57,6 +57,11 @@ public class Details {
 		idlePlace(context);
 	}
 
+	public void tagsChanged(final Context context) {
+		if (current != null)
+			current.tagsChanged(context);
+	}
+
 	private class IdlePlace extends IdleTask {
 		private final Context context;
 

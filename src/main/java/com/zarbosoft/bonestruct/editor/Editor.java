@@ -2,7 +2,6 @@ package com.zarbosoft.bonestruct.editor;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.zarbosoft.bonestruct.display.Display;
 import com.zarbosoft.bonestruct.document.Document;
 import com.zarbosoft.bonestruct.document.Node;
@@ -11,6 +10,7 @@ import com.zarbosoft.bonestruct.editor.visual.VisualPart;
 import com.zarbosoft.bonestruct.editor.visual.attachments.TransverseExtentsAdapter;
 import com.zarbosoft.bonestruct.history.History;
 import com.zarbosoft.bonestruct.syntax.Syntax;
+import org.pcollections.HashTreePSet;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -107,7 +107,7 @@ public class Editor {
 		visual.add(context.midground);
 		visual.add(context.foreground.visual);
 		final Node rootNode = new Node(ImmutableMap.of("value", doc.top));
-		final VisualPart root = context.syntax.rootFront.createVisual(context, rootNode, ImmutableSet.of());
+		final VisualPart root = context.syntax.rootFront.createVisual(context, rootNode, HashTreePSet.empty());
 		context.selectionExtentsAdapter.addListener(context, new TransverseExtentsAdapter.Listener() {
 			@Override
 			public void transverseChanged(final Context context, final int transverse) {

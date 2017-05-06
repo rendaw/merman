@@ -6,6 +6,7 @@ import com.zarbosoft.bonestruct.display.Font;
 import com.zarbosoft.bonestruct.document.values.Value;
 import com.zarbosoft.bonestruct.document.values.ValuePrimitive;
 import com.zarbosoft.bonestruct.editor.*;
+import com.zarbosoft.bonestruct.editor.displaynodes.Obbox;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.editor.visual.VisualParent;
@@ -13,7 +14,6 @@ import com.zarbosoft.bonestruct.editor.visual.VisualPart;
 import com.zarbosoft.bonestruct.editor.visual.attachments.CursorAttachment;
 import com.zarbosoft.bonestruct.editor.visual.attachments.TextBorderAttachment;
 import com.zarbosoft.bonestruct.editor.visual.attachments.VisualAttachmentAdapter;
-import com.zarbosoft.bonestruct.editor.visual.raw.Obbox;
 import com.zarbosoft.bonestruct.syntax.style.ObboxStyle;
 import com.zarbosoft.bonestruct.syntax.style.Style;
 import com.zarbosoft.bonestruct.wall.Brick;
@@ -22,7 +22,6 @@ import com.zarbosoft.bonestruct.wall.bricks.BrickLine;
 import com.zarbosoft.rendaw.common.Common;
 import com.zarbosoft.rendaw.common.DeadCode;
 import com.zarbosoft.rendaw.common.Pair;
-import org.pcollections.HashTreePSet;
 import org.pcollections.PSet;
 
 import java.lang.ref.WeakReference;
@@ -56,7 +55,7 @@ public class VisualPrimitive extends VisualPart {
 		}
 
 		public void update(final Context context) {
-			final PSet<Tag> tags = HashTreePSet.from(tags(context));
+			final PSet<Tag> tags = tags(context);
 			firstStyle = context.getStyle(tags.plus(new StateTag("first")));
 			hardStyle = context.getStyle(tags.plus(new StateTag("hard")));
 			softStyle = context.getStyle(tags.plus(new StateTag("soft")));
@@ -131,11 +130,10 @@ public class VisualPrimitive extends VisualPart {
 		Line endLine;
 		public int beginOffset;
 		public int endOffset;
-		private final ObboxStyle.Baked style;
+		private ObboxStyle.Baked style;
 		Set<VisualAttachmentAdapter.BoundsListener> listeners = new HashSet<>();
 
-		private RangeAttachment(final ObboxStyle.Baked style) {
-			this.style = style;
+		private RangeAttachment() {
 		}
 
 		private void setOffsets(final Context context, final int beginOffset, final int endOffset) {
@@ -146,7 +144,8 @@ public class VisualPrimitive extends VisualPart {
 				if (border != null)
 					border.destroy(context);
 				if (cursor == null) {
-					cursor = new CursorAttachment(context, style);
+					cursor = new CursorAttachment(context);
+					cursor.setStyle(context, style);
 				}
 				final int index = findContaining(beginOffset);
 				beginLine = endLine = lines.get(index);
@@ -165,7 +164,8 @@ public class VisualPrimitive extends VisualPart {
 				if (cursor != null)
 					cursor.destroy(context);
 				if (border == null) {
-					border = new TextBorderAttachment(context, style);
+					border = new TextBorderAttachment(context);
+					border.setStyle(context, style);
 				}
 				final int beginIndex = findContaining(beginOffset);
 				if (beginLine == null || beginLine.index != beginIndex) {
@@ -225,6 +225,14 @@ public class VisualPrimitive extends VisualPart {
 
 		public void removeListener(final Context context, final VisualAttachmentAdapter.BoundsListener listener) {
 			listeners.remove(listener);
+		}
+
+		public void setStyle(final Context context, final ObboxStyle.Baked style) {
+			this.style = style;
+			if (border != null)
+				border.setStyle(context, style);
+			if (cursor != null)
+				cursor.setStyle(context, style);
 		}
 	}
 
@@ -325,9 +333,8 @@ public class VisualPrimitive extends VisualPart {
 		public PrimitiveSelection(
 				final Context context, final int beginOffset, final int endOffset
 		) {
-			final ObboxStyle.Baked style = new ObboxStyle.Baked();
-			style.merge(context.syntax.selectStyle);
-			range = new RangeAttachment(style);
+			range = new RangeAttachment();
+			range.setStyle(context, getStyle(context).obbox);
 			range.setOffsets(context, beginOffset, endOffset);
 			clusterIterator.setText(data.get());
 			data.addListener(this.clusterListener);
@@ -797,6 +804,11 @@ public class VisualPrimitive extends VisualPart {
 		public Path getPath() {
 			return data.getPath().add(String.valueOf(range.beginOffset));
 		}
+
+		@Override
+		public void globalTagsChanged(final Context context) {
+			range.setStyle(context, getStyle(context).obbox);
+		}
 	}
 
 	public static class PrimitiveSelectionState implements SelectionState {
@@ -834,9 +846,8 @@ public class VisualPrimitive extends VisualPart {
 		RangeAttachment range;
 
 		PrimitiveHoverable(final Context context) {
-			final ObboxStyle.Baked style = new ObboxStyle.Baked();
-			style.merge(context.syntax.hoverStyle);
-			range = new RangeAttachment(style);
+			range = new RangeAttachment();
+			range.setStyle(context, getStyle(context).obbox);
 		}
 
 		public void setPosition(final Context context, final int offset) {
@@ -864,6 +875,11 @@ public class VisualPrimitive extends VisualPart {
 		@Override
 		public VisualPart part() {
 			return VisualPrimitive.this;
+		}
+
+		@Override
+		public void globalTagsChanged(final Context context) {
+			range.setStyle(context, getStyle(context).obbox);
 		}
 	}
 
@@ -1000,8 +1016,8 @@ public class VisualPrimitive extends VisualPart {
 				.orElseGet(() -> lines.size());
 	}
 
-	public VisualPrimitive(final Context context, final ValuePrimitive data, final Set<Tag> tags) {
-		super(HashTreePSet.from(tags).plus(new PartTag("primitive")));
+	public VisualPrimitive(final Context context, final ValuePrimitive data, final PSet<Tag> tags) {
+		super(tags.plus(new PartTag("primitive")));
 		data.visual = this;
 		dataListener = new ValuePrimitive.Listener() {
 			@Override

@@ -14,6 +14,7 @@ import com.zarbosoft.bonestruct.editor.visual.VisualPart;
 import com.zarbosoft.bonestruct.history.History;
 import com.zarbosoft.bonestruct.syntax.Syntax;
 import org.junit.Test;
+import org.pcollections.HashTreePSet;
 
 import java.util.Arrays;
 import java.util.function.Consumer;
@@ -32,7 +33,7 @@ public class TestDocumentGap {
 		final Context context = new Context(MiscSyntax.syntax, doc, new MockeryDisplay(), idleTask -> {
 		}, new History());
 		final Node rootNode = new Node(ImmutableMap.of("value", doc.top));
-		final VisualPart visual = MiscSyntax.syntax.rootFront.createVisual(context, rootNode, ImmutableSet.of());
+		final VisualPart visual = MiscSyntax.syntax.rootFront.createVisual(context, rootNode, HashTreePSet.empty());
 		gap.getVisual().selectDown(context);
 		return context;
 	}

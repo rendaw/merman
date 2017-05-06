@@ -12,7 +12,11 @@ import javafx.scene.shape.StrokeLineCap;
 import javafx.scene.transform.Affine;
 
 public class JavaFXDrawing extends JavaFXNode implements Drawing {
-	public Canvas node;
+	final public Canvas node;
+
+	public JavaFXDrawing() {
+		this.node = new Canvas();
+	}
 
 	@Override
 	protected Node node() {
