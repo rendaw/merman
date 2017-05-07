@@ -1,4 +1,4 @@
-package com.zarbosoft.bonestruct.syntax.modules.hotkeys;
+package com.zarbosoft.bonestruct.modules.hotkeys;
 
 import com.zarbosoft.interface1.Configuration;
 

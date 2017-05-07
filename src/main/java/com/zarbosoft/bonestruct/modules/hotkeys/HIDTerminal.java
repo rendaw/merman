@@ -1,7 +1,7 @@
-package com.zarbosoft.bonestruct.syntax.modules.hotkeys;
+package com.zarbosoft.bonestruct.modules.hotkeys;
 
 import com.zarbosoft.bonestruct.editor.hid.HIDEvent;
-import com.zarbosoft.bonestruct.syntax.modules.hotkeys.grammar.Terminal;
+import com.zarbosoft.bonestruct.modules.hotkeys.grammar.Terminal;
 import com.zarbosoft.interface1.Configuration;
 
 @Configuration(name = "key")

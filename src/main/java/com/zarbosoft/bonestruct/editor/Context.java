@@ -33,7 +33,7 @@ import com.zarbosoft.bonestruct.syntax.Syntax;
 import com.zarbosoft.bonestruct.syntax.back.*;
 import com.zarbosoft.bonestruct.syntax.middle.MiddleArray;
 import com.zarbosoft.bonestruct.syntax.middle.MiddleRecord;
-import com.zarbosoft.bonestruct.syntax.modules.Module;
+import com.zarbosoft.bonestruct.modules.Module;
 import com.zarbosoft.bonestruct.syntax.style.Style;
 import com.zarbosoft.luxem.read.InvalidStream;
 import com.zarbosoft.luxem.read.Parse;

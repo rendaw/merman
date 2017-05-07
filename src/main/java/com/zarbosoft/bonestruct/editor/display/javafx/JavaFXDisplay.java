@@ -6,7 +6,7 @@ import com.zarbosoft.bonestruct.editor.display.*;
 import com.zarbosoft.bonestruct.editor.hid.HIDEvent;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.syntax.Syntax;
-import com.zarbosoft.bonestruct.syntax.modules.hotkeys.Key;
+import com.zarbosoft.bonestruct.modules.hotkeys.Key;
 import com.zarbosoft.bonestruct.syntax.style.ModelColor;
 import com.zarbosoft.rendaw.common.DeadCode;
 import javafx.beans.value.ChangeListener;
@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-import static com.zarbosoft.bonestruct.syntax.modules.hotkeys.Key.*;
+import static com.zarbosoft.bonestruct.modules.hotkeys.Key.*;
 
 public class JavaFXDisplay implements Display {
 	public Pane node = new Pane();

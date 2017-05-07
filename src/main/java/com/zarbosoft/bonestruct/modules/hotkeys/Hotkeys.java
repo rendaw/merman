@@ -1,4 +1,4 @@
-package com.zarbosoft.bonestruct.syntax.modules.hotkeys;
+package com.zarbosoft.bonestruct.modules.hotkeys;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
@@ -11,8 +11,8 @@ import com.zarbosoft.bonestruct.editor.displaynodes.ColumnarTableLayout;
 import com.zarbosoft.bonestruct.editor.displaynodes.TLayout;
 import com.zarbosoft.bonestruct.editor.hid.HIDEvent;
 import com.zarbosoft.bonestruct.editor.visual.Visual;
-import com.zarbosoft.bonestruct.syntax.modules.Module;
-import com.zarbosoft.bonestruct.syntax.modules.hotkeys.grammar.Node;
+import com.zarbosoft.bonestruct.modules.Module;
+import com.zarbosoft.bonestruct.modules.hotkeys.grammar.Node;
 import com.zarbosoft.bonestruct.syntax.style.Style;
 import com.zarbosoft.interface1.Configuration;
 import com.zarbosoft.pidgoon.InvalidStream;

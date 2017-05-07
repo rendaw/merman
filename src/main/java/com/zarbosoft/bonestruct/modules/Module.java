@@ -1,4 +1,4 @@
-package com.zarbosoft.bonestruct.syntax.modules;
+package com.zarbosoft.bonestruct.modules;
 
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.interface1.Configuration;

@@ -1,4 +1,4 @@
-package com.zarbosoft.bonestruct.syntax.modules;
+package com.zarbosoft.bonestruct.modules;
 
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.display.DisplayNode;
@@ -14,7 +14,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-@Configuration(description = "Displays a row of symbols in either gutter based on tags.")
+@Configuration(name = "indicators", description = "Displays a row of symbols in either gutter based on tags.")
 public class Indicators extends Module {
 	@Configuration
 	public static class Indicator {
@@ -33,16 +33,17 @@ public class Indicators extends Module {
 	@Configuration
 	public List<Indicator> indicators = new ArrayList<>();
 
-	@Configuration(optional = true, description = "If true, show the symbols in the near gutter.  Otherwise, the far.")
+	@Configuration(name = "converse_start", optional = true,
+			description = "If true, show the symbols in the near gutter.  Otherwise, the far.")
 	public boolean converseStart = true;
 
-	@Configuration
+	@Configuration(name = "converse_padding", optional = true)
 	public int conversePadding = 0;
 
-	@Configuration(optional = true,
+	@Configuration(name = "transverse_start", optional = true,
 			description = "If true, show the symbols at the start of the gutter.  Otherwise, the end.")
 	public boolean transverseStart = true;
-	@Configuration
+	@Configuration(name = "transverse_padding", optional = true)
 	public int transversePadding = 0;
 
 	private Group group;

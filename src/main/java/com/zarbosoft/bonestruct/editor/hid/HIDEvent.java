@@ -1,6 +1,6 @@
 package com.zarbosoft.bonestruct.editor.hid;
 
-import com.zarbosoft.bonestruct.syntax.modules.hotkeys.Key;
+import com.zarbosoft.bonestruct.modules.hotkeys.Key;
 import com.zarbosoft.interface1.Walk;
 
 public class HIDEvent implements com.zarbosoft.pidgoon.events.Event {

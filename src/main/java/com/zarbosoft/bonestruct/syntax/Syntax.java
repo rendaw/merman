@@ -6,7 +6,7 @@ import com.zarbosoft.bonestruct.document.Node;
 import com.zarbosoft.bonestruct.document.values.ValueArray;
 import com.zarbosoft.bonestruct.syntax.front.FrontDataRootArray;
 import com.zarbosoft.bonestruct.syntax.middle.MiddleArray;
-import com.zarbosoft.bonestruct.syntax.modules.Module;
+import com.zarbosoft.bonestruct.modules.Module;
 import com.zarbosoft.bonestruct.syntax.style.BoxStyle;
 import com.zarbosoft.bonestruct.syntax.style.ModelColor;
 import com.zarbosoft.bonestruct.syntax.style.Style;

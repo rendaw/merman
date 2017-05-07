@@ -6,7 +6,7 @@ import com.zarbosoft.bonestruct.editor.visual.VisualPart;
 import com.zarbosoft.bonestruct.editor.visual.visuals.VisualArray;
 import com.zarbosoft.bonestruct.syntax.NodeType;
 import com.zarbosoft.bonestruct.syntax.middle.MiddleArrayBase;
-import com.zarbosoft.bonestruct.syntax.modules.hotkeys.grammar.Node;
+import com.zarbosoft.bonestruct.modules.hotkeys.grammar.Node;
 import com.zarbosoft.bonestruct.syntax.symbol.Symbol;
 import com.zarbosoft.interface1.Configuration;
 import org.pcollections.HashTreePSet;

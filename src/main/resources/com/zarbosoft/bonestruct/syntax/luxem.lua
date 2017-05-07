@@ -153,6 +153,20 @@ return {
                 'typing',
             },
         },
+        indicators {
+            indicators = {
+                {
+                    id = 'typing',
+                    symbol = text 't',
+                    tags = { global 'mode_typing' },
+                },
+                {
+                    id = 'nottyping',
+                    symbol = text 'n',
+                    tags = { global 'mode_nottyping' },
+                },
+            },
+        },
         hotkeys {
             rules = {
                 {

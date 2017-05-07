@@ -1,4 +1,4 @@
-package com.zarbosoft.bonestruct.syntax.modules;
+package com.zarbosoft.bonestruct.modules;
 
 import com.google.common.collect.ImmutableSet;
 import com.zarbosoft.bonestruct.editor.Action;

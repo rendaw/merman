@@ -1,7 +1,7 @@
-package com.zarbosoft.bonestruct.syntax.modules.hotkeys;
+package com.zarbosoft.bonestruct.modules.hotkeys;
 
 import com.zarbosoft.bonestruct.editor.visual.Visual;
-import com.zarbosoft.bonestruct.syntax.modules.hotkeys.grammar.Node;
+import com.zarbosoft.bonestruct.modules.hotkeys.grammar.Node;
 import com.zarbosoft.interface1.Configuration;
 
 import java.util.*;
