@@ -1,20 +1,18 @@
-package com.zarbosoft.bonestruct;
+package com.zarbosoft.bonestruct.helper;
 
 import com.zarbosoft.bonestruct.syntax.FreeNodeType;
 import com.zarbosoft.bonestruct.syntax.Syntax;
 
-import static com.zarbosoft.bonestruct.Helper.buildBackDataNode;
-
 public class ExpressionSyntax {
-	final static FreeNodeType infinity;
-	final static FreeNodeType factorial;
-	final static FreeNodeType plus;
-	final static FreeNodeType minus;
-	final static FreeNodeType multiply;
-	final static FreeNodeType divide;
-	final static FreeNodeType subscript;
-	final static FreeNodeType inclusiveRange;
-	final static Syntax syntax;
+	final public static FreeNodeType infinity;
+	final public static FreeNodeType factorial;
+	final public static FreeNodeType plus;
+	final public static FreeNodeType minus;
+	final public static FreeNodeType multiply;
+	final public static FreeNodeType divide;
+	final public static FreeNodeType subscript;
+	final public static FreeNodeType inclusiveRange;
+	final public static Syntax syntax;
 
 	static {
 		infinity = new Helper.TypeBuilder("infinity")
@@ -24,7 +22,7 @@ public class ExpressionSyntax {
 				.build();
 		factorial = new Helper.TypeBuilder("factorial")
 				.middleNode("value", "any")
-				.back(new Helper.BackRecordBuilder().add("value", buildBackDataNode("value")).build())
+				.back(new Helper.BackRecordBuilder().add("value", Helper.buildBackDataNode("value")).build())
 				.frontDataNode("value")
 				.frontMark("!")
 				.autoComplete(99)
@@ -33,8 +31,8 @@ public class ExpressionSyntax {
 				.middleNode("first", "any")
 				.middleNode("second", "any")
 				.back(new Helper.BackRecordBuilder()
-						.add("first", buildBackDataNode("first"))
-						.add("second", buildBackDataNode("second"))
+						.add("first", Helper.buildBackDataNode("first"))
+						.add("second", Helper.buildBackDataNode("second"))
 						.build())
 				.frontDataNode("first")
 				.frontMark("+")
@@ -47,8 +45,8 @@ public class ExpressionSyntax {
 				.middleNode("first", "any")
 				.middleNode("second", "any")
 				.back(new Helper.BackRecordBuilder()
-						.add("first", buildBackDataNode("first"))
-						.add("second", buildBackDataNode("second"))
+						.add("first", Helper.buildBackDataNode("first"))
+						.add("second", Helper.buildBackDataNode("second"))
 						.build())
 				.frontDataNode("first")
 				.frontMark("-")
@@ -61,8 +59,8 @@ public class ExpressionSyntax {
 				.middleNode("first", "any")
 				.middleNode("second", "any")
 				.back(new Helper.BackRecordBuilder()
-						.add("first", buildBackDataNode("first"))
-						.add("second", buildBackDataNode("second"))
+						.add("first", Helper.buildBackDataNode("first"))
+						.add("second", Helper.buildBackDataNode("second"))
 						.build())
 				.frontDataNode("first")
 				.frontMark("*")
@@ -75,8 +73,8 @@ public class ExpressionSyntax {
 				.middleNode("first", "any")
 				.middleNode("second", "any")
 				.back(new Helper.BackRecordBuilder()
-						.add("first", buildBackDataNode("first"))
-						.add("second", buildBackDataNode("second"))
+						.add("first", Helper.buildBackDataNode("first"))
+						.add("second", Helper.buildBackDataNode("second"))
 						.build())
 				.frontDataNode("first")
 				.frontMark("/")
@@ -89,8 +87,8 @@ public class ExpressionSyntax {
 				.middleNode("first", "name")
 				.middleNode("second", "name")
 				.back(new Helper.BackRecordBuilder()
-						.add("first", buildBackDataNode("first"))
-						.add("second", buildBackDataNode("second"))
+						.add("first", Helper.buildBackDataNode("first"))
+						.add("second", Helper.buildBackDataNode("second"))
 						.build())
 				.frontDataNode("first")
 				.frontMark("_")
@@ -102,8 +100,8 @@ public class ExpressionSyntax {
 				.middleNode("first", "any")
 				.middleNode("second", "any")
 				.back(new Helper.BackRecordBuilder()
-						.add("first", buildBackDataNode("first"))
-						.add("second", buildBackDataNode("second"))
+						.add("first", Helper.buildBackDataNode("first"))
+						.add("second", Helper.buildBackDataNode("second"))
 						.build())
 				.frontMark("[")
 				.frontDataNode("first")

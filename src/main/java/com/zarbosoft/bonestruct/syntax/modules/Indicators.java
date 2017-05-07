@@ -95,7 +95,7 @@ public class Indicators extends Module {
 
 	@Override
 	public State initialize(final Context context) {
-		context.addTagsChangeListener(new Context.TagsListener() {
+		context.addSelectionTagsChangeListener(new Context.TagsListener() {
 			@Override
 			public void tagsChanged(final Context context, final PSet<Visual.Tag> tags) {
 				update(context, tags);

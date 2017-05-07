@@ -1,6 +1,7 @@
 package com.zarbosoft.bonestruct.syntax.modules.hotkeys;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Sets;
 import com.zarbosoft.bonestruct.editor.Action;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.details.DetailsPage;
@@ -23,7 +24,9 @@ import com.zarbosoft.pidgoon.nodes.Union;
 import org.pcollections.PSet;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static com.zarbosoft.rendaw.common.Common.iterable;
 
@@ -39,7 +42,8 @@ public class Hotkeys extends Module {
 	private EventStream<Action> hotkeyParse;
 	private String hotkeySequence = "";
 	private HotkeyDetails hotkeyDetails = null;
-	private HotkeyRule hotkeys = null;
+	Map<String, List<Node>> hotkeys = new HashMap<>();
+	boolean freeTyping = true;
 
 	private class HotkeyDetails extends DetailsPage {
 		public HotkeyDetails(final Context context) {
@@ -86,18 +90,20 @@ public class Hotkeys extends Module {
 	@Override
 	public State initialize(final Context context) {
 		context.addKeyListener(this::handleEvent);
-		context.addTagsChangeListener(new Context.TagsListener() {
+		context.addSelectionTagsChangeListener(new Context.TagsListener() {
 			@Override
 			public void tagsChanged(final Context context, final PSet<Visual.Tag> tags) {
 				System.out.format("resetting hotkeys tags [%s]\n", tags);
 				clean(context);
-				hotkeys = new HotkeyRule(tags);
+				hotkeys = new HashMap<>();
+				freeTyping = true;
 				for (final HotkeyRule rule : rules) {
-					System.out.format("rule [%s]\n", rule.tags);
-					if (!tags.containsAll(rule.tags))
+					System.out.format("rule [%s]\n", rule.with);
+					if (!tags.containsAll(rule.with) || !Sets.intersection(tags, rule.without).isEmpty())
 						continue;
 					System.out.format("\tmatches\n");
-					hotkeys.merge(rule);
+					hotkeys.putAll(rule.hotkeys);
+					freeTyping = freeTyping && rule.freeTyping;
 				}
 				hotkeyGrammar = new Grammar();
 				final Union union = new Union();
@@ -105,8 +111,8 @@ public class Hotkeys extends Module {
 						.entrySet()
 						.stream()
 						.flatMap(e -> e.getValue().stream()))) {
-					if (hotkeys.hotkeys.containsKey(action.getName())) {
-						for (final Node hotkey : hotkeys.hotkeys.get(action.getName())) {
+					if (hotkeys.containsKey(action.getName())) {
+						for (final Node hotkey : hotkeys.get(action.getName())) {
 							System.out.format("action [%s] adding hotkey [%s]\n", action.getName(), hotkey);
 							union.add(new Operator(hotkey.build(), store -> store.pushStack(action)));
 						}
@@ -151,7 +157,7 @@ public class Hotkeys extends Module {
 			return true;
 		} catch (final InvalidStream e) {
 			clean(context);
-			return hotkeys.freeTyping ? false : true;
+			return freeTyping ? false : true;
 		}
 	}
 

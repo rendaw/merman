@@ -1,4 +1,4 @@
-package com.zarbosoft.bonestruct;
+package com.zarbosoft.bonestruct.helper;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -22,6 +22,7 @@ import com.zarbosoft.bonestruct.syntax.Syntax;
 import com.zarbosoft.bonestruct.syntax.back.*;
 import com.zarbosoft.bonestruct.syntax.front.*;
 import com.zarbosoft.bonestruct.syntax.middle.*;
+import com.zarbosoft.bonestruct.syntax.style.Style;
 import com.zarbosoft.bonestruct.syntax.symbol.SymbolText;
 import com.zarbosoft.luxem.write.RawWriter;
 import com.zarbosoft.rendaw.common.DeadCode;
@@ -79,7 +80,7 @@ public class Helper {
 		throw new AssertionError(String.format("No action named [%s]", name));
 	}
 
-	static class SyntaxBuilder {
+	public static class SyntaxBuilder {
 
 		private final Syntax syntax;
 
@@ -103,9 +104,14 @@ public class Helper {
 			syntax.groups.put(name, subtypes);
 			return this;
 		}
+
+		public SyntaxBuilder style(final Style style) {
+			syntax.styles.add(style);
+			return this;
+		}
 	}
 
-	static class GroupBuilder {
+	public static class GroupBuilder {
 		Set<String> subtypes = new HashSet<>();
 
 		public GroupBuilder type(final FreeNodeType type) {
@@ -123,7 +129,7 @@ public class Helper {
 		}
 	}
 
-	static class TypeBuilder {
+	public static class TypeBuilder {
 		private final FreeNodeType type;
 
 		public TypeBuilder(final String id) {
@@ -272,7 +278,7 @@ public class Helper {
 		return back;
 	}
 
-	static class BackRecordBuilder {
+	public static class BackRecordBuilder {
 		BackRecord back = new BackRecord();
 
 		public BackRecordBuilder add(final String key, final BackPart part) {
@@ -285,7 +291,7 @@ public class Helper {
 		}
 	}
 
-	static class BackArrayBuilder {
+	public static class BackArrayBuilder {
 		BackArray back = new BackArray();
 
 		public BackArrayBuilder add(final BackPart part) {

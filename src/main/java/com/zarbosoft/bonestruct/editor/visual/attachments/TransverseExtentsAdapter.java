@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableSet;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.wall.Attachment;
 import com.zarbosoft.bonestruct.editor.wall.Brick;
+import com.zarbosoft.bonestruct.editor.wall.Wall;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -18,6 +19,10 @@ public class TransverseExtentsAdapter {
 	private Brick first;
 	private Brick last;
 
+	public TransverseExtentsAdapter(final Context context) {
+		context.foreground.addBeddingListener(context, beddingListener);
+	}
+
 	Attachment firstAttachment = new Attachment() {
 		@Override
 		public void setTransverse(final Context context, final int transverse) {
@@ -30,13 +35,17 @@ public class TransverseExtentsAdapter {
 			first = null;
 		}
 	};
-	Brick.BeddingListener firstBeddingListener = new Brick.BeddingListener() {
+	Wall.BeddingListener beddingListener = new Wall.BeddingListener() {
 		@Override
 		public void beddingChanged(final Context context, final int beddingBefore, final int beddingAfter) {
-			if (beddingBefore == TransverseExtentsAdapter.this.beddingBefore)
-				return;
-			TransverseExtentsAdapter.this.beddingBefore = beddingBefore;
-			ImmutableSet.copyOf(listeners).stream().forEach(l -> l.beddingBeforeChanged(context, beddingBefore));
+			if (beddingBefore != TransverseExtentsAdapter.this.beddingBefore) {
+				TransverseExtentsAdapter.this.beddingBefore = beddingBefore;
+				ImmutableSet.copyOf(listeners).stream().forEach(l -> l.beddingBeforeChanged(context, beddingBefore));
+			}
+			if (beddingAfter != TransverseExtentsAdapter.this.beddingAfter) {
+				TransverseExtentsAdapter.this.beddingAfter = beddingAfter;
+				ImmutableSet.copyOf(listeners).stream().forEach(l -> l.beddingAfterChanged(context, beddingAfter));
+			}
 		}
 	};
 
@@ -62,15 +71,6 @@ public class TransverseExtentsAdapter {
 			last = null;
 		}
 	};
-	Brick.BeddingListener lastBeddingListener = new Brick.BeddingListener() {
-		@Override
-		public void beddingChanged(final Context context, final int beddingBefore, final int beddingAfter) {
-			if (beddingAfter == TransverseExtentsAdapter.this.beddingAfter)
-				return;
-			TransverseExtentsAdapter.this.beddingAfter = beddingAfter;
-			ImmutableSet.copyOf(listeners).stream().forEach(l -> l.beddingAfterChanged(context, beddingAfter));
-		}
-	};
 
 	private void notifyEdgeChanged(final Context context) {
 		ImmutableSet
@@ -84,22 +84,18 @@ public class TransverseExtentsAdapter {
 		public void firstChanged(final Context context, final Brick brick) {
 			if (first != null) {
 				first.removeAttachment(context, firstAttachment);
-				first.removeBeddingListener(firstBeddingListener);
 			}
 			first = brick;
 			first.addAttachment(context, firstAttachment);
-			first.addBeddingListener(context, firstBeddingListener);
 		}
 
 		@Override
 		public void lastChanged(final Context context, final Brick brick) {
 			if (last != null) {
 				last.removeAttachment(context, lastAttachment);
-				last.removeBeddingListener(lastBeddingListener);
 			}
 			last = brick;
 			last.addAttachment(context, lastAttachment);
-			last.addBeddingListener(context, lastBeddingListener);
 		}
 	};
 

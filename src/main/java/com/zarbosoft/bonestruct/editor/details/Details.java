@@ -3,8 +3,6 @@ package com.zarbosoft.bonestruct.editor.details;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.IdleTask;
 import com.zarbosoft.bonestruct.editor.Selection;
-import com.zarbosoft.bonestruct.editor.display.Group;
-import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.editor.visual.attachments.VisualAttachmentAdapter;
 import com.zarbosoft.bonestruct.editor.wall.Attachment;
 import com.zarbosoft.bonestruct.editor.wall.Bedding;
@@ -14,10 +12,9 @@ import com.zarbosoft.rendaw.common.ChainComparator;
 import java.util.PriorityQueue;
 
 public class Details {
-	private Group group;
 	private final PriorityQueue<DetailsPage> queue =
 			new PriorityQueue<>(11, new ChainComparator<DetailsPage>().greaterFirst(m -> m.priority).build());
-	private DetailsPage current;
+	public DetailsPage current;
 	private Brick brick;
 	private int transverse;
 	private int transverseSpan;
@@ -72,7 +69,7 @@ public class Details {
 		@Override
 		protected boolean runImplementation() {
 			if (current != null) {
-				translateGroup(context);
+				setPosition(context);
 			}
 			idle = null;
 			return false;
@@ -84,6 +81,13 @@ public class Details {
 		}
 	}
 
+	private void setPosition(final Context context) {
+		current.node.setTransverse(context, Math.min(
+				context.transverseEdge - current.node.transverseSpan(context),
+				transverse + transverseSpan - documentScroll
+		), false);
+	}
+
 	public Details(final Context context) {
 		context.addSelectionListener(new Context.SelectionListener() {
 			@Override
@@ -92,14 +96,9 @@ public class Details {
 					@Override
 					public void firstChanged(final Context context, final Brick first) {
 						if (brick != null) {
-							if (bedding != null)
-								brick.removeBedding(context, bedding);
 							brick.removeAttachment(context, attachment);
 						}
 						brick = first;
-						if (bedding != null) {
-							brick.addBedding(context, bedding);
-						}
 						brick.addAttachment(context, attachment);
 					}
 
@@ -112,45 +111,39 @@ public class Details {
 		});
 	}
 
-	private void translateGroup(final Context context) {
-		current.node.setPosition(context, new Vector(0, Math.min(
-				context.transverseEdge - current.node.converseSpan(context),
-				transverse + transverseSpan - documentScroll
-		)), false);
-	}
-
 	public void addPage(final Context context, final DetailsPage page) {
-		if (queue.isEmpty()) {
-			group = context.display.group();
-			context.midground.add(group);
-		}
 		queue.add(page);
 		update(context);
 	}
 
 	private void update(final Context context) {
 		if (queue.isEmpty()) {
-			if (group != null) {
-				context.midground.remove(group);
-				group = null;
-				brick.removeBedding(context, bedding);
+			if (current != null) {
+				context.foreground.removeBedding(context, bedding);
 				bedding = null;
+				current = null;
 			}
 		} else if (queue.peek() != current) {
+			if (current != null) {
+				context.midground.remove(current.node);
+			}
 			current = queue.peek();
-			group.clear();
-			group.add(current.node);
+			context.midground.add(current.node);
 			if (bedding != null) {
-				brick.removeBedding(context, bedding);
+				context.foreground.removeBedding(context, bedding);
 			}
 			bedding = new Bedding(0, current.node.transverseSpan(context));
-			brick.addBedding(context, bedding);
+			context.foreground.addBedding(context, bedding);
+			setPosition(context);
 		}
 	}
 
 	public void removePage(final Context context, final DetailsPage page) {
 		if (queue.isEmpty())
 			return;
+		if (current == page) {
+			context.midground.remove(page.node);
+		}
 		queue.remove(page);
 		update(context);
 	}

@@ -68,12 +68,7 @@ public class Banner {
 
 		@Override
 		protected boolean runImplementation() {
-			if (text != null) {
-				text.setTransverse(context,
-						Math.max(scroll, Banner.this.transverse - (int) text.font().getDescent()),
-						false
-				);
-			}
+			setTransverse(context);
 			idle = null;
 			return false;
 		}
@@ -84,6 +79,12 @@ public class Banner {
 		}
 	}
 
+	private void setTransverse(final Context context) {
+		if (text == null)
+			return;
+		text.setTransverse(context, Banner.this.transverse - (int) text.font().getDescent() - scroll, false);
+	}
+
 	public Banner(final Context context) {
 		context.addSelectionListener(new Context.SelectionListener() {
 			@Override
@@ -92,14 +93,9 @@ public class Banner {
 					@Override
 					public void firstChanged(final Context context, final Brick first) {
 						if (brick != null) {
-							if (bedding != null)
-								brick.removeBedding(context, bedding);
 							brick.removeAttachment(context, attachment);
 						}
 						brick = first;
-						if (bedding != null) {
-							brick.addBedding(context, bedding);
-						}
 						brick.addAttachment(context, attachment);
 					}
 
@@ -119,9 +115,9 @@ public class Banner {
 			text.setFont(context, style.getFont(context));
 			text.setColor(context, style.color);
 			context.midground.add(text);
-			text.setTransverse(context, Math.max(scroll, transverse - text.font().getDescent()), false);
 			bedding = new Bedding(text.transverseSpan(context), 0);
-			brick.addBedding(context, bedding);
+			context.foreground.addBedding(context, bedding);
+			setTransverse(context);
 		}
 		queue.add(message);
 		update(context);
@@ -137,6 +133,10 @@ public class Banner {
 		final Style.Baked style = getStyle(context);
 		text.setFont(context, style.getFont(context));
 		text.setColor(context, style.color);
+		context.foreground.removeBedding(context, bedding);
+		bedding = new Bedding(text.transverseSpan(context), 0);
+		context.foreground.addBedding(context, bedding);
+		idlePlace(context);
 	}
 
 	private void update(final Context context) {
@@ -144,7 +144,7 @@ public class Banner {
 			if (text != null) {
 				context.midground.remove(text);
 				text = null;
-				brick.removeBedding(context, bedding);
+				context.foreground.removeBedding(context, bedding);
 				bedding = null;
 			}
 		} else if (queue.peek() != current) {

@@ -6,10 +6,12 @@ import com.zarbosoft.bonestruct.document.values.ValueArray;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.Path;
 import com.zarbosoft.bonestruct.editor.visual.visuals.VisualArray;
+import com.zarbosoft.bonestruct.helper.Helper;
+import com.zarbosoft.bonestruct.helper.MiscSyntax;
 import org.junit.Test;
 
-import static com.zarbosoft.bonestruct.Helper.assertTreeEqual;
-import static com.zarbosoft.bonestruct.Helper.buildDoc;
+import static com.zarbosoft.bonestruct.helper.Helper.assertTreeEqual;
+import static com.zarbosoft.bonestruct.helper.Helper.buildDoc;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 

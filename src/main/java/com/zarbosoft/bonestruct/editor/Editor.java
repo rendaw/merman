@@ -8,7 +8,6 @@ import com.zarbosoft.bonestruct.editor.display.Display;
 import com.zarbosoft.bonestruct.editor.history.History;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.editor.visual.VisualPart;
-import com.zarbosoft.bonestruct.editor.visual.attachments.TransverseExtentsAdapter;
 import com.zarbosoft.bonestruct.syntax.Syntax;
 import org.pcollections.HashTreePSet;
 
@@ -20,11 +19,6 @@ import java.util.stream.Collectors;
 public class Editor {
 	private final Context context;
 	private final Display visual;
-	int scrollStart;
-	int scrollEnd;
-	int scrollStartBeddingBefore;
-	int scrollStartBeddingAfter;
-	private int scroll;
 	boolean keyIgnore = false;
 
 	public Editor(
@@ -99,11 +93,7 @@ public class Editor {
 				context.hoverIdle = context.new HoverIdle(context);
 				addIdle.accept(context.hoverIdle);
 			}
-			context.hoverIdle.point = vector.add(new Vector(-context.syntax.padConverse, scroll));
-		});
-		display.addTransverseEdgeListener((oldValue, newValue) -> {
-			context.transverseEdge = Math.max(0, newValue - doc.syntax.padTransverse * 2);
-			scrollVisible(context);
+			context.hoverIdle.point = vector.add(new Vector(-context.syntax.padConverse, context.scroll));
 		});
 		visual.setBackgroundColor(context.syntax.background);
 		visual.add(context.background);
@@ -111,57 +101,7 @@ public class Editor {
 		visual.add(context.foreground.visual);
 		final Node rootNode = new Node(ImmutableMap.of("value", doc.top));
 		final VisualPart root = context.syntax.rootFront.createVisual(context, rootNode, HashTreePSet.empty());
-		context.selectionExtentsAdapter.addListener(context, new TransverseExtentsAdapter.Listener() {
-			@Override
-			public void transverseChanged(final Context context, final int transverse) {
-				scrollStart = transverse;
-				scrollVisible(context);
-			}
-
-			@Override
-			public void transverseEdgeChanged(final Context context, final int transverse) {
-				scrollEnd = transverse;
-				scrollVisible(context);
-			}
-
-			@Override
-			public void beddingAfterChanged(final Context context, final int beddingAfter) {
-				scrollStartBeddingAfter = beddingAfter;
-				scrollVisible(context);
-			}
-
-			@Override
-			public void beddingBeforeChanged(final Context context, final int beddingBefore) {
-				scrollStartBeddingBefore = beddingBefore;
-				scrollVisible(context);
-			}
-		});
 		root.selectDown(context);
-	}
-
-	private void scrollVisible(final Context context) {
-		final int minimum = scrollStart - scrollStartBeddingBefore - context.syntax.padTransverse;
-		final int maximum = scrollEnd + scrollStartBeddingAfter + context.syntax.padTransverse;
-		final int maxDiff = scroll + context.transverseEdge - maximum;
-		Integer newScroll = null;
-		if (minimum < scroll) {
-			newScroll = minimum;
-		} else if (maxDiff > 0 && scroll + maxDiff < minimum) {
-			newScroll = scroll + maxDiff;
-		}
-		if (newScroll != null) {
-			context.foreground.visual.setPosition(context,
-					new Vector(context.syntax.padConverse, -newScroll),
-					context.syntax.animateCoursePlacement
-			);
-			context.background.setPosition(context,
-					new Vector(context.syntax.padConverse, -newScroll),
-					context.syntax.animateCoursePlacement
-			);
-			scroll = newScroll;
-			context.banner.setScroll(context, newScroll);
-			context.details.setScroll(context, newScroll);
-		}
 	}
 
 	public void destroy() {

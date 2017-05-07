@@ -19,8 +19,6 @@ public abstract class Brick {
 	public Course parent;
 	public int index;
 	Set<Attachment> attachments = new HashSet<>();
-	Set<BeddingListener> beddingListeners = new HashSet<>();
-	Set<Bedding> bedding = new HashSet<>();
 	public Style.Baked style;
 	public final BrickInterface inter;
 
@@ -77,27 +75,8 @@ public abstract class Brick {
 		return inter.getVisual().hover(context, point);
 	}
 
-	public Set<BeddingListener> getBeddingListeners() {
-		return beddingListeners;
-	}
-
-	public void addBeddingListener(final Context context, final BeddingListener listener) {
-		beddingListeners.add(listener);
-		if (parent != null)
-			listener.beddingChanged(context, parent.beddingBefore, parent.beddingAfter);
-	}
-
-	public void removeBeddingListener(final BeddingListener listener) {
-		beddingListeners.remove(listener);
-	}
-
 	public Visual getVisual() {
 		return inter.getVisual();
-	}
-
-	public static abstract class BeddingListener {
-
-		public abstract void beddingChanged(Context context, int beddingBefore, int beddingAfter);
 	}
 
 	public static class Properties {
@@ -198,23 +177,6 @@ public abstract class Brick {
 
 	public Set<Attachment> getAttachments(final Context context) {
 		return attachments;
-	}
-
-	public void addBedding(final Context context, final Bedding bedding) {
-		this.bedding.add(bedding);
-		if (parent != null) {
-			parent.beddingChanged(context);
-		}
-	}
-
-	public void removeBedding(final Context context, final Bedding bedding) {
-		this.bedding.remove(bedding);
-		if (parent != null)
-			parent.beddingChanged(context);
-	}
-
-	public Set<Bedding> getBeddings(final Context context) {
-		return bedding;
 	}
 
 	protected void destroyed(final Context context) {

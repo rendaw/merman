@@ -26,12 +26,10 @@ public class Course {
 	private IdleCompactTask idleCompact;
 	private IdleExpandTask idleExpand;
 	public int transverseStart = 0;
-	int ascent = 0;
-	int descent = 0;
+	public int ascent = 0;
+	public int descent = 0;
 	public List<Brick> children = new ArrayList<>();
 	int lastExpandCheckConverse = 0;
-	public int beddingBefore = 0;
-	int beddingAfter = 0;
 
 	Course(final Context context) {
 		visual = context.display.group();
@@ -40,12 +38,11 @@ public class Course {
 	}
 
 	public int transverseEdge(final Context context) {
-		final int out = transverseStart + ascent + descent + beddingAfter;
-		return out;
+		return transverseStart + ascent + descent;
 	}
 
 	void setTransverse(final Context context, final int transverse) {
-		transverseStart = transverse + beddingBefore;
+		transverseStart = transverse;
 		visual.setPosition(context,
 				new com.zarbosoft.bonestruct.editor.visual.Vector(0, transverseStart),
 				context.syntax.animateCoursePlacement
@@ -88,20 +85,15 @@ public class Course {
 		parent.add(context, this.index + 1, ImmutableList.of(next));
 		if (index < children.size()) {
 			final List<Brick> transplant = ImmutableList.copyOf(children.subList(index, children.size()));
-			boolean beddingChanged = false;
 			getIdlePlace(context);
 			for (final Brick brick : transplant) {
 				idlePlace.removeMaxAscent = Math.max(idlePlace.removeMaxAscent, brick.properties(context).ascent);
 				idlePlace.removeMaxDescent = Math.max(idlePlace.removeMaxDescent, brick.properties(context).descent);
 				idlePlace.changed.remove(brick);
-				if (!brick.getBeddings(context).isEmpty())
-					beddingChanged = true;
 			}
 			children.subList(index, children.size()).clear();
 			visual.remove(index, visual.size() - index);
 			next.add(context, 0, transplant);
-			if (beddingChanged)
-				beddingChanged(context);
 		}
 		return next;
 	}
@@ -110,19 +102,14 @@ public class Course {
 		if (bricks.size() == 0)
 			throw new AssertionError("Adding no bricks");
 		children.addAll(at, bricks);
-		boolean beddingChanged = false;
 		for (final Brick brick : bricks) {
 			brick.parent = this;
-			if (!brick.getBeddings(context).isEmpty())
-				beddingChanged = true;
 		}
 		renumber(at);
 		visual.addAll(at, bricks.stream().map(c -> c.getDisplayNode()).collect(Collectors.toList()));
 		getIdlePlace(context);
 		idlePlace.at(at);
 		idlePlace.changed.addAll(bricks);
-		if (beddingChanged)
-			beddingChanged(context);
 	}
 
 	void removeFromSystem(final Context context, final int at) {
@@ -135,8 +122,6 @@ public class Course {
 			if (at == 0) {
 				joinPreviousCourse(context);
 			} else {
-				if (!brick.getBeddings(context).isEmpty())
-					beddingChanged(context);
 				visual.remove(at);
 				getIdlePlace(context);
 				idlePlace.at(at);
@@ -189,32 +174,8 @@ public class Course {
 		}
 	}
 
-	public void beddingChanged(final Context context) {
-		final Pair<Integer, Integer> pair = ImmutableList
-				.copyOf(children)
-				.stream()
-				.map(c -> ImmutableList
-						.copyOf(c.getBeddings(context))
-						.stream()
-						.map(b -> new Pair<>(b.before, b.after))
-						.reduce((a, b) -> new Pair<>(a.first + b.first, a.second + b.second))
-						.orElse(new Pair<>(0, 0)))
-				.reduce((a, b) -> new Pair<>(a.first + b.first, a.second + b.second))
-				.orElse(new Pair<>(0, 0));
-		beddingBefore = pair.first;
-		beddingAfter = pair.second;
-		ImmutableList
-				.copyOf(children)
-				.stream()
-				.forEach(c -> ImmutableList
-						.copyOf(c.getBeddingListeners())
-						.stream()
-						.forEach(a -> a.beddingChanged(context, beddingBefore, beddingAfter)));
-		parent.adjust(context, this.index);
-	}
-
 	public int transverseSpan() {
-		return beddingBefore + ascent + descent + beddingAfter;
+		return ascent + descent;
 	}
 
 	class IdlePlaceTask extends IdleTask {

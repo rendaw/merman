@@ -56,7 +56,7 @@ public class CursorAttachment {
 
 	public CursorAttachment(final Context context) {
 		drawing = context.display.drawing();
-		context.display.add(drawing);
+		context.foreground.visual.add(drawing);
 	}
 
 	public void setPosition(final Context context, final BrickText brick, final int index) {

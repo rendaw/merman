@@ -1,31 +1,29 @@
-package com.zarbosoft.bonestruct;
+package com.zarbosoft.bonestruct.helper;
 
 import com.zarbosoft.bonestruct.syntax.FreeNodeType;
 import com.zarbosoft.bonestruct.syntax.Syntax;
 
-import static com.zarbosoft.bonestruct.Helper.*;
-
 public class MiscSyntax {
-	final static FreeNodeType infinity;
-	final static FreeNodeType one;
-	final static FreeNodeType two;
-	final static FreeNodeType three;
-	final static FreeNodeType four;
-	final static FreeNodeType five;
-	final static FreeNodeType multiback;
-	final static FreeNodeType quoted;
-	final static FreeNodeType binaryBang;
-	final static FreeNodeType plusEqual;
-	final static FreeNodeType plus;
-	final static FreeNodeType waddle;
-	final static FreeNodeType snooze;
-	final static FreeNodeType multiplier;
-	final static FreeNodeType array;
-	final static FreeNodeType record;
-	final static FreeNodeType recordElement;
-	final static FreeNodeType pair;
-	final static FreeNodeType ratio;
-	final static Syntax syntax;
+	final public static FreeNodeType infinity;
+	final public static FreeNodeType one;
+	final public static FreeNodeType two;
+	final public static FreeNodeType three;
+	final public static FreeNodeType four;
+	final public static FreeNodeType five;
+	final public static FreeNodeType multiback;
+	final public static FreeNodeType quoted;
+	final public static FreeNodeType binaryBang;
+	final public static FreeNodeType plusEqual;
+	final public static FreeNodeType plus;
+	final public static FreeNodeType waddle;
+	final public static FreeNodeType snooze;
+	final public static FreeNodeType multiplier;
+	final public static FreeNodeType array;
+	final public static FreeNodeType record;
+	final public static FreeNodeType recordElement;
+	final public static FreeNodeType pair;
+	final public static FreeNodeType ratio;
+	final public static Syntax syntax;
 
 	static {
 		infinity = new Helper.TypeBuilder("infinity")
@@ -54,8 +52,8 @@ public class MiscSyntax {
 				.front(new Helper.FrontMarkBuilder("five").build())
 				.build();
 		multiback = new Helper.TypeBuilder("multiback")
-				.back(buildBackDataPrimitive("a"))
-				.back(buildBackDataPrimitive("b"))
+				.back(Helper.buildBackDataPrimitive("a"))
+				.back(Helper.buildBackDataPrimitive("b"))
 				.middlePrimitive("a")
 				.middlePrimitive("b")
 				.frontDataPrimitive("a")
@@ -64,7 +62,7 @@ public class MiscSyntax {
 				.build();
 		quoted = new Helper.TypeBuilder("quoted")
 				.middlePrimitive("value")
-				.back(buildBackDataPrimitive("value"))
+				.back(Helper.buildBackDataPrimitive("value"))
 				.front(new Helper.FrontMarkBuilder("\"").build())
 				.frontDataPrimitive("value")
 				.front(new Helper.FrontMarkBuilder("\"").build())
@@ -74,8 +72,8 @@ public class MiscSyntax {
 				.middleNode("first", "any")
 				.middleNode("second", "any")
 				.back(new Helper.BackRecordBuilder()
-						.add("first", buildBackDataNode("first"))
-						.add("second", buildBackDataNode("second"))
+						.add("first", Helper.buildBackDataNode("first"))
+						.add("second", Helper.buildBackDataNode("second"))
 						.build())
 				.frontDataNode("first")
 				.frontMark("+")
@@ -85,8 +83,8 @@ public class MiscSyntax {
 				.middleNode("first", "any")
 				.middleNode("second", "any")
 				.back(new Helper.BackRecordBuilder()
-						.add("first", buildBackDataNode("first"))
-						.add("second", buildBackDataNode("second"))
+						.add("first", Helper.buildBackDataNode("first"))
+						.add("second", Helper.buildBackDataNode("second"))
 						.build())
 				.frontDataNode("first")
 				.frontMark("+=")
@@ -96,8 +94,8 @@ public class MiscSyntax {
 				.middleNode("first", "any")
 				.middleNode("second", "any")
 				.back(new Helper.BackRecordBuilder()
-						.add("first", buildBackDataNode("first"))
-						.add("second", buildBackDataNode("second"))
+						.add("first", Helper.buildBackDataNode("first"))
+						.add("second", Helper.buildBackDataNode("second"))
 						.build())
 				.frontDataNode("first")
 				.frontMark("!")
@@ -106,14 +104,14 @@ public class MiscSyntax {
 				.build();
 		waddle = new Helper.TypeBuilder("waddle")
 				.middleNode("first", "any")
-				.back(new Helper.BackRecordBuilder().add("first", buildBackDataNode("first")).build())
+				.back(new Helper.BackRecordBuilder().add("first", Helper.buildBackDataNode("first")).build())
 				.frontDataNode("first")
 				.frontMark("?")
 				.autoComplete(99)
 				.build();
 		snooze = new Helper.TypeBuilder("snooze")
 				.middleNode("value", "any")
-				.back(new Helper.BackRecordBuilder().add("value", buildBackDataNode("value")).build())
+				.back(new Helper.BackRecordBuilder().add("value", Helper.buildBackDataNode("value")).build())
 				.frontMark("#")
 				.frontDataNode("value")
 				.autoComplete(99)
@@ -122,8 +120,8 @@ public class MiscSyntax {
 				.middlePrimitive("text")
 				.middleNode("value", "any")
 				.back(new Helper.BackRecordBuilder()
-						.add("value", buildBackDataNode("value"))
-						.add("text", buildBackDataPrimitive("text"))
+						.add("value", Helper.buildBackDataNode("value"))
+						.add("text", Helper.buildBackDataPrimitive("text"))
 						.build())
 				.frontMark("x")
 				.frontDataPrimitive("text")
@@ -132,15 +130,17 @@ public class MiscSyntax {
 				.build();
 		array = new Helper.TypeBuilder("array")
 				.middleArray("value", "any")
-				.back(buildBackDataArray("value"))
+				.back(Helper.buildBackDataArray("value"))
 				.frontMark("<")
-				.front(new FrontDataArrayBuilder("value").addSeparator(new FrontMarkBuilder(", ").build()).build())
+				.front(new Helper.FrontDataArrayBuilder("value")
+						.addSeparator(new Helper.FrontMarkBuilder(", ").build())
+						.build())
 				.frontMark(">")
 				.autoComplete(99)
 				.build();
 		record = new Helper.TypeBuilder("record")
 				.middleRecord("value", "record_element")
-				.back(buildBackDataRecord("value"))
+				.back(Helper.buildBackDataRecord("value"))
 				.frontMark("{")
 				.frontDataArray("value")
 				.frontMark("}")
@@ -149,8 +149,8 @@ public class MiscSyntax {
 		recordElement = new Helper.TypeBuilder("record_element")
 				.middleRecordKey("key")
 				.middleNode("value", "any")
-				.back(buildBackDataKey("key"))
-				.back(buildBackDataNode("value"))
+				.back(Helper.buildBackDataKey("key"))
+				.back(Helper.buildBackDataNode("value"))
 				.frontDataPrimitive("key")
 				.frontMark(": ")
 				.frontDataNode("value")
@@ -160,8 +160,8 @@ public class MiscSyntax {
 				.middleNode("first", "any")
 				.middleNode("second", "any")
 				.back(new Helper.BackArrayBuilder()
-						.add(buildBackDataNode("first"))
-						.add(buildBackDataNode("second"))
+						.add(Helper.buildBackDataNode("first"))
+						.add(Helper.buildBackDataNode("second"))
 						.build())
 				.frontMark("<")
 				.frontDataNode("first")
@@ -173,9 +173,9 @@ public class MiscSyntax {
 		ratio = new Helper.TypeBuilder("ratio")
 				.middlePrimitive("first")
 				.middlePrimitive("second")
-				.back(new BackRecordBuilder()
-						.add("first", buildBackDataPrimitive("first"))
-						.add("second", buildBackDataPrimitive("second"))
+				.back(new Helper.BackRecordBuilder()
+						.add("first", Helper.buildBackDataPrimitive("first"))
+						.add("second", Helper.buildBackDataPrimitive("second"))
 						.build())
 				.frontMark("<")
 				.frontDataPrimitive("first")

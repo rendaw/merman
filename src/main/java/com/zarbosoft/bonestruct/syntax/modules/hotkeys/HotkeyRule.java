@@ -8,10 +8,12 @@ import java.util.*;
 
 @Configuration
 public class HotkeyRule {
-	@Configuration
-	public Set<Visual.Tag> tags = new HashSet<>();
+	@Configuration(description = "These tags must be present.")
+	public Set<Visual.Tag> with = new HashSet<>();
+	@Configuration(optional = true, description = "These tags must be absent.")
+	public Set<Visual.Tag> without = new HashSet<>();
 
-	@Configuration
+	@Configuration(description = "Hotkeys to use when the tags match.")
 	public Map<String, List<Node>> hotkeys = new HashMap<>();
 
 	@Configuration(name = "free_typing", optional = true,
@@ -22,12 +24,8 @@ public class HotkeyRule {
 
 	}
 
-	public HotkeyRule(final Set<Visual.Tag> tags) {
-		this.tags.addAll(tags);
-	}
-
-	public void merge(final HotkeyRule hotkeys) {
-		this.hotkeys.putAll(hotkeys.hotkeys);
-		freeTyping = freeTyping && hotkeys.freeTyping;
+	public HotkeyRule(final Set<Visual.Tag> with, final Set<Visual.Tag> without) {
+		this.with.addAll(with);
+		this.without.addAll(without);
 	}
 }

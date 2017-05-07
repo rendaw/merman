@@ -15,8 +15,10 @@ import static com.zarbosoft.rendaw.common.Common.uncheck;
 @Configuration
 public class Style {
 
-	@Configuration
-	public Set<Visual.Tag> tags = new HashSet<>();
+	@Configuration(description = "These tags must be present.")
+	public Set<Visual.Tag> with = new HashSet<>();
+	@Configuration(optional = true, description = "These tags must be absent.")
+	public Set<Visual.Tag> without = new HashSet<>();
 
 	@Configuration(name = "break", optional = true)
 	public Boolean broken = null;

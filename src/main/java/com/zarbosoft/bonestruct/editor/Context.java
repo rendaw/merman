@@ -3,6 +3,7 @@ package com.zarbosoft.bonestruct.editor;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import com.zarbosoft.bonestruct.document.Document;
 import com.zarbosoft.bonestruct.document.InvalidDocument;
 import com.zarbosoft.bonestruct.document.Node;
@@ -17,6 +18,7 @@ import com.zarbosoft.bonestruct.editor.display.Group;
 import com.zarbosoft.bonestruct.editor.hid.HIDEvent;
 import com.zarbosoft.bonestruct.editor.history.Change;
 import com.zarbosoft.bonestruct.editor.history.History;
+import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.VisualParent;
 import com.zarbosoft.bonestruct.editor.visual.VisualPart;
@@ -36,6 +38,7 @@ import com.zarbosoft.bonestruct.syntax.style.Style;
 import com.zarbosoft.luxem.read.InvalidStream;
 import com.zarbosoft.luxem.read.Parse;
 import com.zarbosoft.luxem.write.RawWriter;
+import com.zarbosoft.rendaw.common.WeakCache;
 import javafx.animation.Interpolator;
 import org.pcollections.HashTreePSet;
 import org.pcollections.PSet;
@@ -43,19 +46,18 @@ import org.pcollections.TreePVector;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class Context {
 	public final History history;
-	public WeakHashMap<Set<Visual.Tag>, WeakReference<Style.Baked>> styleCache = new WeakHashMap<>();
+	WeakCache<Set<Visual.Tag>, Style.Baked> styleCache = new WeakCache<>(v -> v.tags);
 	public Visual window;
 	private final Set<SelectionListener> selectionListeners = new HashSet<>();
 	private final Set<HoverListener> hoverListeners = new HashSet<>();
-	private final Set<TagsListener> tagsChangeListeners = new HashSet<>();
-	public final TransverseExtentsAdapter selectionExtentsAdapter = new TransverseExtentsAdapter();
+	private final Set<TagsListener> selectionTagsChangeListeners = new HashSet<>();
+	public final TransverseExtentsAdapter selectionExtentsAdapter;
 	public List<Module.State> modules;
 	public PSet<Visual.Tag> globalTags = HashTreePSet.empty();
 	public List<KeyListener> keyListeners = new ArrayList<>();
@@ -68,10 +70,14 @@ public class Context {
 	public Group background;
 	public Brick cornerstone;
 	public int cornerstoneTransverse;
-	public int scrollTransverse;
 	public Banner banner;
 	public Details details;
 	public final Display display;
+	int scrollStart;
+	int scrollEnd;
+	int scrollStartBeddingBefore;
+	int scrollStartBeddingAfter;
+	public int scroll;
 
 	public static interface ContextIntListener {
 		void changed(Context context, int oldValue, int newValue);
@@ -154,7 +160,7 @@ public class Context {
 			return;
 		banner.tagsChanged(this);
 		details.tagsChanged(this);
-		tagsChangeListeners.forEach(listener -> listener.tagsChanged(this, selection.getVisual().tags(this)));
+		selectionTagsChangeListeners.forEach(listener -> listener.tagsChanged(this, selection.getVisual().tags(this)));
 	}
 
 	public Object locateLong(final Path path) {
@@ -196,16 +202,14 @@ public class Context {
 						try {
 							subIndex = Integer.parseInt(segment);
 						} catch (final NumberFormatException e) {
-							throw new InvalidPath(String.format(
-									"Segment [%s] at [%s] is not an integer.",
+							throw new InvalidPath(String.format("Segment [%s] at [%s] is not an integer.",
 									segment,
 									new Path(TreePVector.from(segments.subList(0, tempPathIndex)))
 							));
 						}
 						final BackArray arrayPart = ((BackArray) part);
 						if (subIndex >= arrayPart.elements.size())
-							throw new InvalidPath(String.format(
-									"Invalid index %d at [%s].",
+							throw new InvalidPath(String.format("Invalid index %d at [%s].",
 									subIndex,
 									new Path(TreePVector.from(segments.subList(0, tempPathIndex)))
 							));
@@ -218,8 +222,7 @@ public class Context {
 						final int tempPathIndex = pathIndex;
 						final BackRecord recordPart = ((BackRecord) part);
 						if (!recordPart.pairs.containsKey(segment))
-							throw new InvalidPath(String.format(
-									"Invalid key [%s] at [%s].",
+							throw new InvalidPath(String.format("Invalid key [%s] at [%s].",
 									segment,
 									new Path(TreePVector.from(segments.subList(0, pathIndex)))
 							));
@@ -275,8 +278,7 @@ public class Context {
 						try {
 							index = Integer.parseInt(segment);
 						} catch (final NumberFormatException e) {
-							throw new InvalidPath(String.format(
-									"Segment [%s] at [%s] is not an integer.",
+							throw new InvalidPath(String.format("Segment [%s] at [%s] is not an integer.",
 									segment,
 									new Path(TreePVector.from(segments.subList(0, pathIndex)))
 							));
@@ -297,8 +299,7 @@ public class Context {
 					part = node.type.back().get(0);
 				} else if (value instanceof ValuePrimitive) {
 					if (segments.size() > pathIndex + 1)
-						throw new InvalidPath(String.format(
-								"Path continues but data ends at primitive [%s].",
+						throw new InvalidPath(String.format("Path continues but data ends at primitive [%s].",
 								new Path(TreePVector.from(segments.subList(0, pathIndex)))
 						));
 					return value;
@@ -340,12 +341,12 @@ public class Context {
 		this.hoverListeners.remove(listener);
 	}
 
-	public void addTagsChangeListener(final TagsListener listener) {
-		this.tagsChangeListeners.add(listener);
+	public void addSelectionTagsChangeListener(final TagsListener listener) {
+		this.selectionTagsChangeListeners.add(listener);
 	}
 
-	public void removeTagsChangeListener(final TagsListener listener) {
-		this.tagsChangeListeners.remove(listener);
+	public void removeSelectionTagsChangeListener(final TagsListener listener) {
+		this.selectionTagsChangeListeners.remove(listener);
 	}
 
 	public void addKeyListener(final KeyListener listener) {
@@ -467,13 +468,11 @@ public class Context {
 	private void window(Visual visual) {
 		if (visual == null) {
 			visual = document.top.visual;
-			changeGlobalTags(new Visual.TagsChange(
-					ImmutableSet.of(new Visual.StateTag("unwindowed")),
+			changeGlobalTags(new Visual.TagsChange(ImmutableSet.of(new Visual.StateTag("unwindowed")),
 					ImmutableSet.of(new Visual.StateTag("windowed"))
 			));
 		} else {
-			changeGlobalTags(new Visual.TagsChange(
-					ImmutableSet.of(new Visual.StateTag("windowed")),
+			changeGlobalTags(new Visual.TagsChange(ImmutableSet.of(new Visual.StateTag("windowed")),
 					ImmutableSet.of(new Visual.StateTag("unwindowed"))
 			));
 		}
@@ -561,8 +560,8 @@ public class Context {
 			}
 		});
 		ImmutableSet.copyOf(selectionListeners).forEach(l -> l.selectionChanged(this, selection));
-		selection.addBrickListener(this, selectionExtentsAdapter.boundsListener);
 
+		selection.addBrickListener(this, selectionExtentsAdapter.boundsListener);
 		fillFromEndBrick(cornerstone);
 		fillFromStartBrick(cornerstone);
 
@@ -573,23 +572,15 @@ public class Context {
 	}
 
 	public Style.Baked getStyle(final Set<Visual.Tag> tags) {
-		final Optional<Style.Baked> found = styleCache
-				.entrySet()
-				.stream()
-				.filter(e -> tags.equals(e.getKey()))
-				.map(e -> e.getValue().get())
-				.filter(v -> v != null)
-				.findFirst();
-		if (found.isPresent())
-			return found.get();
-		final Style.Baked out = new Style.Baked(tags);
-		for (final Style style : syntax.styles) {
-			if (tags.containsAll(style.tags)) {
+		return styleCache.getOrCreate(tags, tags1 -> {
+			final Style.Baked out = new Style.Baked(tags);
+			for (final Style style : syntax.styles) {
+				if (!tags.containsAll(style.with) || !Sets.intersection(tags, style.without).isEmpty())
+					continue;
 				out.merge(style);
 			}
-		}
-		styleCache.put(out.tags, new WeakReference<>(out));
-		return out;
+			return out;
+		});
 	}
 
 	public class HoverIdle extends IdleTask {
@@ -660,8 +651,8 @@ public class Context {
 
 	public final Syntax syntax;
 	public final Document document;
-	public int edge = Integer.MAX_VALUE;
-	public int transverseEdge = 0;
+	public int edge;
+	public int transverseEdge;
 	public Brick hoverBrick;
 	public Hoverable hover;
 	public HoverIdle hoverIdle;
@@ -690,6 +681,8 @@ public class Context {
 		this.syntax = syntax;
 		this.document = document;
 		this.display = display;
+		edge = display.edge(this);
+		transverseEdge = display.transverseEdge(this);
 		background = display.group();
 		midground = display.group();
 		banner = new Banner(this);
@@ -708,6 +701,8 @@ public class Context {
 		});
 		display.addTransverseEdgeListener((
 				(oldValue, newValue) -> {
+					transverseEdge = Math.max(0, newValue - document.syntax.padTransverse * 2);
+					scrollVisible();
 					transverseEdgeListeners.forEach(listener -> listener.changed(this, oldValue, newValue));
 				}
 		));
@@ -719,6 +714,54 @@ public class Context {
 				}
 			}
 		});
+		selectionExtentsAdapter = new TransverseExtentsAdapter(this);
+		selectionExtentsAdapter.addListener(this, new TransverseExtentsAdapter.Listener() {
+			@Override
+			public void transverseChanged(final Context context, final int transverse) {
+				scrollStart = transverse;
+				scrollVisible();
+			}
+
+			@Override
+			public void transverseEdgeChanged(final Context context, final int transverse) {
+				scrollEnd = transverse;
+				scrollVisible();
+			}
+
+			@Override
+			public void beddingAfterChanged(final Context context, final int beddingAfter) {
+				scrollStartBeddingAfter = beddingAfter;
+				scrollVisible();
+			}
+
+			@Override
+			public void beddingBeforeChanged(final Context context, final int beddingBefore) {
+				scrollStartBeddingBefore = beddingBefore;
+				scrollVisible();
+			}
+		});
+	}
+
+	private void scrollVisible() {
+		final int minimum = scrollStart - scrollStartBeddingBefore - syntax.padTransverse;
+		final int maximum = scrollEnd + scrollStartBeddingAfter + syntax.padTransverse;
+		final int maxDiff = maximum - transverseEdge - scroll;
+		Integer newScroll = null;
+		if (minimum < scroll) {
+			newScroll = minimum;
+		} else if (maxDiff > 0 && scroll + maxDiff < minimum) {
+			newScroll = scroll + maxDiff;
+		}
+		if (newScroll != null) {
+			foreground.visual.setPosition(this,
+					new Vector(syntax.padConverse, -newScroll),
+					syntax.animateCoursePlacement
+			);
+			background.setPosition(this, new Vector(syntax.padConverse, -newScroll), syntax.animateCoursePlacement);
+			scroll = newScroll;
+			banner.setScroll(this, newScroll);
+			details.setScroll(this, newScroll);
+		}
 	}
 
 	private final Consumer<IdleTask> addIdle;

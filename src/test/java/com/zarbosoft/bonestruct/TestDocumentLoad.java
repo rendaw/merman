@@ -3,13 +3,14 @@ package com.zarbosoft.bonestruct;
 import com.zarbosoft.bonestruct.document.Document;
 import com.zarbosoft.bonestruct.document.Node;
 import com.zarbosoft.bonestruct.editor.Path;
+import com.zarbosoft.bonestruct.helper.Helper;
 import com.zarbosoft.bonestruct.syntax.FreeNodeType;
 import com.zarbosoft.bonestruct.syntax.Syntax;
 import org.junit.Test;
 
 import java.util.List;
 
-import static com.zarbosoft.bonestruct.Helper.buildBackPrimitive;
+import static com.zarbosoft.bonestruct.helper.Helper.buildBackPrimitive;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.IsNot.not;
 import static org.junit.Assert.assertThat;

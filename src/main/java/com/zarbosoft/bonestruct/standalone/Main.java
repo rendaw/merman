@@ -126,6 +126,7 @@ public class Main extends Application {
 		fix save modifications on empty doc
 		test merging changes; finishing history on actions
 		test brick layout
+		move scroll to wall with listener for banner/details?
 
 		sed (led) substitution
 

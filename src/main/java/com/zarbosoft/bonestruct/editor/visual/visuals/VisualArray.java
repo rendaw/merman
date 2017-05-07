@@ -483,6 +483,8 @@ public abstract class VisualArray extends VisualGroup {
 			}, new Action() {
 				@Override
 				public void run(final Context context) {
+					if (parent == null)
+						return;
 					context.history.finishChange(context);
 					parent.selectUp(context);
 				}

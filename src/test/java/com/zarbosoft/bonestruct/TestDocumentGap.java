@@ -12,6 +12,9 @@ import com.zarbosoft.bonestruct.editor.Path;
 import com.zarbosoft.bonestruct.editor.display.MockeryDisplay;
 import com.zarbosoft.bonestruct.editor.history.History;
 import com.zarbosoft.bonestruct.editor.visual.VisualPart;
+import com.zarbosoft.bonestruct.helper.ExpressionSyntax;
+import com.zarbosoft.bonestruct.helper.Helper;
+import com.zarbosoft.bonestruct.helper.MiscSyntax;
 import com.zarbosoft.bonestruct.syntax.Syntax;
 import org.junit.Test;
 import org.pcollections.HashTreePSet;
@@ -20,7 +23,7 @@ import java.util.Arrays;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import static com.zarbosoft.bonestruct.Helper.*;
+import static com.zarbosoft.bonestruct.helper.Helper.*;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 

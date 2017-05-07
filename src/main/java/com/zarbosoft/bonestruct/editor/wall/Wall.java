@@ -4,9 +4,12 @@ import com.google.common.collect.ImmutableList;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.IdleTask;
 import com.zarbosoft.bonestruct.editor.display.Group;
+import com.zarbosoft.rendaw.common.Pair;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.zarbosoft.rendaw.common.Common.last;
@@ -18,6 +21,15 @@ public class Wall {
 	private IdleCompactTask idleCompact;
 	private IdleExpandTask idleExpand;
 	private Course cornerstoneCourse;
+	Set<Bedding> bedding = new HashSet<>();
+	public int beddingBefore = 0;
+	int beddingAfter = 0;
+	Set<BeddingListener> beddingListeners = new HashSet<>();
+
+	public static abstract class BeddingListener {
+
+		public abstract void beddingChanged(Context context, int beddingBefore, int beddingAfter);
+	}
 
 	public Wall(final Context context) {
 		visual = context.display.group();
@@ -94,6 +106,45 @@ public class Wall {
 		idleExpand.at = 0;
 	}
 
+	public Set<BeddingListener> getBeddingListeners() {
+		return beddingListeners;
+	}
+
+	public void addBeddingListener(final Context context, final BeddingListener listener) {
+		beddingListeners.add(listener);
+		listener.beddingChanged(context, beddingBefore, beddingAfter);
+	}
+
+	public void removeBeddingListener(final BeddingListener listener) {
+		beddingListeners.remove(listener);
+	}
+
+	public void addBedding(final Context context, final Bedding bedding) {
+		this.bedding.add(bedding);
+		beddingChanged(context);
+	}
+
+	public void removeBedding(final Context context, final Bedding bedding) {
+		this.bedding.remove(bedding);
+		beddingChanged(context);
+	}
+
+	private void beddingChanged(final Context context) {
+		final Pair<Integer, Integer> pair = ImmutableList
+				.copyOf(bedding)
+				.stream()
+				.map(b -> new Pair<>(b.before, b.after))
+				.reduce((a, b) -> new Pair<>(a.first + b.first, a.second + b.second))
+				.orElse(new Pair<>(0, 0));
+		beddingBefore = pair.first;
+		beddingAfter = pair.second;
+		ImmutableList
+				.copyOf(beddingListeners)
+				.stream()
+				.forEach(a -> a.beddingChanged(context, beddingBefore, beddingAfter));
+		adjust(context, cornerstoneCourse.index);
+	}
+
 	public void setCornerstone(final Context context, final Brick cornerstone) {
 		if (cornerstone.parent == null) {
 			clear(context);
@@ -102,6 +153,8 @@ public class Wall {
 			course.add(context, 0, ImmutableList.of(cornerstone));
 		}
 		this.cornerstoneCourse = cornerstone.parent;
+		if (beddingBefore > 0 || beddingAfter > 0)
+			adjust(context, cornerstoneCourse.index);
 	}
 
 	class IdleCompactTask extends IdleTask {
@@ -197,15 +250,19 @@ public class Wall {
 				// Always < children size because of cornerstone
 				final Course child = children.get(backward);
 				final Course preceding = children.get(backward + 1);
-				child.setTransverse(context,
-						preceding.transverseStart - preceding.beddingBefore - child.transverseSpan()
-				);
+				int transverse = preceding.transverseStart - child.transverseSpan();
+				if (preceding == cornerstoneCourse)
+					transverse -= beddingBefore;
+				child.setTransverse(context, transverse);
 				backward -= 1;
 				modified = true;
 			}
 			if (forward < children.size()) {
 				// Always > 0 because of cornerstone
-				children.get(forward).setTransverse(context, children.get(forward - 1).transverseEdge(context));
+				int transverse = children.get(forward - 1).transverseEdge(context);
+				if (forward - 1 == cornerstoneCourse.index)
+					transverse += beddingAfter;
+				children.get(forward).setTransverse(context, transverse);
 				forward += 1;
 				modified = true;
 			}
