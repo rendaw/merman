@@ -146,7 +146,7 @@ return {
         }
     },
     modules = {
-        hover_type {},
+        selection_type {},
         modes {
             states = {
                 'nottyping',

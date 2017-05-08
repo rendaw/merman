@@ -3,8 +3,9 @@ package com.zarbosoft.bonestruct.modules;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.Hoverable;
 import com.zarbosoft.bonestruct.editor.banner.BannerMessage;
+import com.zarbosoft.bonestruct.editor.visual.VisualPart;
 import com.zarbosoft.bonestruct.editor.visual.visuals.VisualArray;
-import com.zarbosoft.bonestruct.editor.visual.visuals.VisualNode;
+import com.zarbosoft.bonestruct.editor.visual.visuals.VisualNodeBase;
 import com.zarbosoft.bonestruct.editor.visual.visuals.VisualNodeType;
 import com.zarbosoft.bonestruct.editor.visual.visuals.VisualPrimitive;
 import com.zarbosoft.interface1.Configuration;
@@ -38,18 +39,18 @@ public class HoverType extends Module {
 							text.append((hoverable.node()).getType().name());
 					}
 					if (part) {
+						final VisualPart part = hoverable.part();
 						final String temp;
-						final Class<?> c = hoverable.part().getClass();
-						if (c == VisualArray.class) {
+						if (part instanceof VisualArray) {
 							temp = "array";
-						} else if (c == VisualPrimitive.class) {
+						} else if (part instanceof VisualPrimitive) {
 							temp = "primitive";
-						} else if (c == VisualNode.class) {
+						} else if (part instanceof VisualNodeBase) {
 							temp = "nested";
 						} else
-							temp = c.getTypeName();
+							temp = part.getClass().getSimpleName();
 						if (text.length() > 0)
-							text.append("(" + temp + ")");
+							text.append(" (" + temp + ")");
 						else
 							text.append(temp);
 					}

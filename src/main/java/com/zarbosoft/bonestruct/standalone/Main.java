@@ -174,6 +174,9 @@ public class Main extends Application {
 			doc = uncheck(() -> syntax.load(path));
 		else
 			doc = syntax.create();
+		if (doc.top.get().isEmpty()) {
+			doc.top.data.add(syntax.gap.create());
+		}
 		this.display = new JavaFXDisplay(syntax);
 		final Editor editor = new Editor(syntax, doc, display, this::addIdle, path, history);
 		editor.addActions(this, ImmutableList.of(new Action() {

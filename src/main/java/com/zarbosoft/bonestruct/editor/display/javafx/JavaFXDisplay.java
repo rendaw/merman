@@ -5,17 +5,19 @@ import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.display.*;
 import com.zarbosoft.bonestruct.editor.hid.HIDEvent;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
-import com.zarbosoft.bonestruct.syntax.Syntax;
 import com.zarbosoft.bonestruct.modules.hotkeys.Key;
+import com.zarbosoft.bonestruct.syntax.Syntax;
 import com.zarbosoft.bonestruct.syntax.style.ModelColor;
 import com.zarbosoft.rendaw.common.DeadCode;
 import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.geometry.Bounds;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.Pane;
+import javafx.scene.shape.Rectangle;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -95,6 +97,16 @@ public class JavaFXDisplay implements Display {
 				node.heightProperty().addListener(transverseSizeListener);
 				break;
 		}
+		final ChangeListener<Number> clipListener = new ChangeListener<>() {
+			@Override
+			public void changed(
+					final ObservableValue<? extends Number> observable, final Number oldValue, final Number newValue
+			) {
+				node.setClip(new Rectangle(node.getWidth(), node.getHeight()));
+			}
+		};
+		node.heightProperty().addListener(clipListener);
+		node.widthProperty().addListener(clipListener);
 	}
 
 	public void addMouseExitListener(final Runnable listener) {

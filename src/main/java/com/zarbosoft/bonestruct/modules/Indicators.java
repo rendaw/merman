@@ -2,7 +2,9 @@ package com.zarbosoft.bonestruct.modules;
 
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.display.DisplayNode;
+import com.zarbosoft.bonestruct.editor.display.Font;
 import com.zarbosoft.bonestruct.editor.display.Group;
+import com.zarbosoft.bonestruct.editor.display.Text;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.syntax.symbol.Symbol;
@@ -72,8 +74,19 @@ public class Indicators extends Module {
 								.plus(new Visual.TypeTag(indicator.id))
 								.plus(new Visual.PartTag("indicator")))
 				);
+				final int ascent;
+				final int descent;
+				if (node instanceof Text) {
+					final Font font = ((Text) node).font();
+					ascent = font.getAscent();
+					descent = font.getDescent();
+				} else {
+					ascent = 0;
+					descent = node.transverseSpan(context);
+				}
+				transverse += ascent;
 				node.setTransverse(context, transverse);
-				transverse += node.transverseSpan(context);
+				transverse += descent;
 				if (!converseStart) {
 					node.setConverse(context, -node.converseSpan(context));
 				}
