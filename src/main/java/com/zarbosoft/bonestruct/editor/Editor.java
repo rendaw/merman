@@ -66,7 +66,8 @@ public class Editor {
 		context.modules = doc.syntax.modules.stream().map(p -> p.initialize(context)).collect(Collectors.toList());
 		this.visual = display;
 		display.addHIDEventListener(hidEvent -> {
-			if (context.keyListeners.stream().map(l -> l.handleKey(context, hidEvent)).findFirst().orElse(false))
+			keyIgnore = false;
+			if (!context.keyListeners.stream().allMatch(l -> l.handleKey(context, hidEvent)))
 				return;
 			keyIgnore = true;
 		});

@@ -6,6 +6,7 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.FileAppender;
 import com.google.common.collect.ImmutableList;
 import com.zarbosoft.bonestruct.document.Document;
+import com.zarbosoft.bonestruct.document.values.ValueArray;
 import com.zarbosoft.bonestruct.editor.*;
 import com.zarbosoft.bonestruct.editor.display.javafx.JavaFXDisplay;
 import com.zarbosoft.bonestruct.editor.history.History;
@@ -175,7 +176,7 @@ public class Main extends Application {
 		else
 			doc = syntax.create();
 		if (doc.top.get().isEmpty()) {
-			doc.top.data.add(syntax.gap.create());
+			doc.top = new ValueArray(doc.syntax.root, ImmutableList.of(syntax.gap.create()));
 		}
 		this.display = new JavaFXDisplay(syntax);
 		final Editor editor = new Editor(syntax, doc, display, this::addIdle, path, history);

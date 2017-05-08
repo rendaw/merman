@@ -559,16 +559,17 @@ public class Context {
 
 			}
 		});
-		ImmutableSet.copyOf(selectionListeners).forEach(l -> l.selectionChanged(this, selection));
 
 		selection.addBrickListener(this, selectionExtentsAdapter.boundsListener);
 		fillFromEndBrick(cornerstone);
 		fillFromStartBrick(cornerstone);
 
-		selectionTagsChanged();
 		if (oldSelection != null) {
 			oldSelection.clear(this);
 		}
+
+		ImmutableSet.copyOf(selectionListeners).forEach(l -> l.selectionChanged(this, selection));
+		selectionTagsChanged();
 	}
 
 	public Style.Baked getStyle(final Set<Visual.Tag> tags) {

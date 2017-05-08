@@ -20,7 +20,7 @@ import static com.zarbosoft.rendaw.common.Common.uncheck;
 public class Document {
 
 	final public Syntax syntax;
-	final public ValueArray top;
+	public ValueArray top;
 
 	public Document(final Syntax syntax, final ValueArray top) {
 		this.syntax = syntax;

@@ -85,7 +85,8 @@ public class VisualPrimitive extends VisualPart {
 
 	@Override
 	public boolean selectDown(final Context context) {
-		select(context);
+		final int length = data.length();
+		select(context, length, length);
 		return true;
 	}
 

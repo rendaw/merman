@@ -93,7 +93,7 @@ public class Hotkeys extends Module {
 		context.addSelectionTagsChangeListener(new Context.TagsListener() {
 			@Override
 			public void tagsChanged(final Context context, final PSet<Visual.Tag> tags) {
-				System.out.format("resetting hotkeys tags [%s]\n", tags);
+				System.out.format("\n\n\nresetting hotkeys tags [%s]\n", tags);
 				clean(context);
 				hotkeys = new HashMap<>();
 				freeTyping = true;
@@ -137,7 +137,6 @@ public class Hotkeys extends Module {
 			hotkeySequence += event.toString();
 		else
 			hotkeySequence += " " + event.toString();
-		final boolean clean = false;
 		try {
 			hotkeyParse = hotkeyParse.push(event, hotkeySequence);
 			if (hotkeyParse.ended()) {

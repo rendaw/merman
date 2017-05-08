@@ -150,7 +150,7 @@ public abstract class VisualArray extends VisualGroup {
 		for (final Node node : add) {
 			if (!getSeparator().isEmpty() && addIndex > 0)
 				addSeparator.accept(addIndex++);
-			final ChildGroup group = new ChildGroup(HashTreePSet.empty(), true);
+			final ChildGroup group = new ChildGroup(HashTreePSet.singleton(new PartTag("element")), true);
 			for (final FrontSymbol fix : getPrefix())
 				group.add(context, fix.createVisual(context, tags.plus(new Visual.PartTag("prefix"))));
 			final Visual nodeVisual = node.createVisual(context);

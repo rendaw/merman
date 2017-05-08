@@ -8,7 +8,6 @@ import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.modules.hotkeys.Key;
 import com.zarbosoft.bonestruct.syntax.Syntax;
 import com.zarbosoft.bonestruct.syntax.style.ModelColor;
-import com.zarbosoft.rendaw.common.Common;
 import com.zarbosoft.rendaw.common.DeadCode;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -20,7 +19,6 @@ import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.Pane;
 import javafx.scene.shape.Rectangle;
 
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
