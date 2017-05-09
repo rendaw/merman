@@ -131,11 +131,11 @@ public class MiscSyntax {
 		array = new Helper.TypeBuilder("array")
 				.middleArray("value", "any")
 				.back(Helper.buildBackDataArray("value"))
-				.frontMark("<")
+				.frontMark("[")
 				.front(new Helper.FrontDataArrayBuilder("value")
 						.addSeparator(new Helper.FrontMarkBuilder(", ").build())
 						.build())
-				.frontMark(">")
+				.frontMark("]")
 				.autoComplete(99)
 				.build();
 		record = new Helper.TypeBuilder("record")

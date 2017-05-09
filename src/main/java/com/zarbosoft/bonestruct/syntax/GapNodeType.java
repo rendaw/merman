@@ -6,15 +6,15 @@ import com.google.common.collect.Iterables;
 import com.zarbosoft.bonestruct.document.Node;
 import com.zarbosoft.bonestruct.document.values.Value;
 import com.zarbosoft.bonestruct.document.values.ValueArray;
+import com.zarbosoft.bonestruct.document.values.ValueNode;
 import com.zarbosoft.bonestruct.document.values.ValuePrimitive;
 import com.zarbosoft.bonestruct.editor.Context;
+import com.zarbosoft.bonestruct.editor.history.changes.ChangeArray;
 import com.zarbosoft.bonestruct.syntax.alignments.AlignmentDefinition;
 import com.zarbosoft.bonestruct.syntax.back.BackDataPrimitive;
 import com.zarbosoft.bonestruct.syntax.back.BackPart;
 import com.zarbosoft.bonestruct.syntax.back.BackType;
-import com.zarbosoft.bonestruct.syntax.front.FrontConstantPart;
-import com.zarbosoft.bonestruct.syntax.front.FrontGapBase;
-import com.zarbosoft.bonestruct.syntax.front.FrontPart;
+import com.zarbosoft.bonestruct.syntax.front.*;
 import com.zarbosoft.bonestruct.syntax.middle.MiddleElement;
 import com.zarbosoft.bonestruct.syntax.middle.MiddlePrimitive;
 import com.zarbosoft.interface1.Configuration;
@@ -50,6 +50,50 @@ public class GapNodeType extends NodeType {
 	private final List<BackPart> back;
 	private final Map<String, MiddleElement> middle;
 
+	public Value findSelectNext(
+			final Context context, final Node node, boolean skipFirstNode
+	) {
+		for (final FrontPart front : node.type.front()) {
+			if (front instanceof FrontDataPrimitive) {
+				return node.data.get(((FrontDataPrimitive) front).middle);
+			} else if (front instanceof FrontGapBase) {
+				return node.data.get(middle());
+			} else if (front instanceof FrontDataNode) {
+				if (skipFirstNode) {
+					skipFirstNode = false;
+				} else {
+					final Value found = findSelectNext(context,
+							((ValueNode) node.data.get(((FrontDataNode) front).middle)).get(),
+							skipFirstNode
+					);
+					if (found != null)
+						return found;
+				}
+			} else if (front instanceof FrontDataArray) {
+				final ValueArray array = (ValueArray) node.data.get(((FrontDataArray) front).middle);
+				if (array.data.isEmpty()) {
+					if (skipFirstNode) {
+						skipFirstNode = false;
+					} else {
+						final Node newGap = context.syntax.gap.create();
+						context.history.apply(context, new ChangeArray(array, 0, 0, ImmutableList.of(newGap)));
+						return newGap.data.get("gap");
+					}
+				} else
+					for (final Node element : array.get()) {
+						if (skipFirstNode) {
+							skipFirstNode = false;
+						} else {
+							final Value found = findSelectNext(context, element, skipFirstNode);
+							if (found != null)
+								return found;
+						}
+					}
+			}
+		}
+		return null;
+	}
+
 	public GapNodeType() {
 		id = "__gap";
 		{
@@ -80,16 +124,16 @@ public class GapNodeType extends NodeType {
 							final String remainder = parsed.remainder;
 
 							// Place the node
-							ValuePrimitive selectNext = findSelectNext(node, false);
+							Value selectNext = findSelectNext(context, node, false);
 							final Node replacement;
 							if (selectNext == null) {
 								replacement = context.syntax.suffixGap.create(true, node);
-								selectNext = findSelectNext(replacement, false);
+								selectNext = replacement.data.get("gap");
 							} else {
 								replacement = node;
 							}
 							self.parent.replace(context, replacement);
-							select(context, selectNext);
+							selectNext.getVisual().selectDown(context);
 							if (!remainder.isEmpty())
 								context.selection.receiveText(context, remainder);
 						}
@@ -131,10 +175,10 @@ public class GapNodeType extends NodeType {
 					final Pair<ParseContext, Position> longest = new Parse<>()
 							.grammar(grammar)
 							.longestMatchFromStart(new ByteArrayInputStream(string.getBytes(StandardCharsets.UTF_8)));
-					final List<GapChoice> choices = Stream.concat(
-							longest.first.results.stream().map(result -> (GapChoice) result),
-							longest.first.leaves.stream().map(leaf -> (GapChoice) leaf.color())
-					).collect(Collectors.toList());
+					final List<GapChoice> choices =
+							Stream.concat(longest.first.results.stream().map(result -> (GapChoice) result),
+									longest.first.leaves.stream().map(leaf -> (GapChoice) leaf.color())
+							).collect(Collectors.toList());
 					if (longest.second.distance() == string.length()) {
 						for (final GapChoice choice : choices) {
 							if (longest.first.leaves.size() <= choice.ambiguity()) {

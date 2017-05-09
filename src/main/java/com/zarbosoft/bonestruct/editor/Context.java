@@ -78,6 +78,8 @@ public class Context {
 	int scrollStartBeddingBefore;
 	int scrollStartBeddingAfter;
 	public int scroll;
+	private int selectToken;
+	private int selectTokens = 0;
 
 	public static interface ContextIntListener {
 		void changed(Context context, int oldValue, int newValue);
@@ -498,8 +500,18 @@ public class Context {
 	}
 
 	public void setSelection(final Selection selection) {
+		final int localToken = selectTokens++;
+		this.selectToken = localToken;
 		final Selection oldSelection = this.selection;
 		this.selection = selection;
+
+		if (oldSelection != null) {
+			oldSelection.clear(this);
+		}
+
+		// Check if another select occurred during deselect
+		if (localToken != selectToken)
+			return;
 
 		final VisualPart visual = this.selection.getVisual();
 		{
@@ -563,10 +575,6 @@ public class Context {
 		selection.addBrickListener(this, selectionExtentsAdapter.boundsListener);
 		fillFromEndBrick(cornerstone);
 		fillFromStartBrick(cornerstone);
-
-		if (oldSelection != null) {
-			oldSelection.clear(this);
-		}
 
 		ImmutableSet.copyOf(selectionListeners).forEach(l -> l.selectionChanged(this, selection));
 		selectionTagsChanged();

@@ -233,7 +233,7 @@ public class SuffixGapNodeType extends NodeType {
 								child2Placement.replace(context, child2);
 
 							// Select and dump remainder
-							select(context, selectNext);
+							selectNext.getVisual().selectDown(context);
 							if (!remainder.isEmpty())
 								context.selection.receiveText(context, remainder);
 						}

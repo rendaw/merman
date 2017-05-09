@@ -17,7 +17,6 @@ import com.zarbosoft.rendaw.common.Pair;
 import org.pcollections.HashTreePSet;
 import org.pcollections.PSet;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import static com.zarbosoft.rendaw.common.Common.enumerate;
@@ -28,7 +27,6 @@ public class VisualNodeType extends Visual {
 	private final Node node;
 	private boolean compact;
 	private VisualParent parent;
-	public Map<String, VisualPart> frontToData = new HashMap<>();
 	public int depth = 0;
 
 	public VisualNodeType(final NodeType nodeType, final Context context, final Node node) {
@@ -43,7 +41,6 @@ public class VisualNodeType extends Visual {
 		}
 		enumerate(Common.stream(nodeType.front())).forEach(pair -> {
 			final VisualPart visual = pair.second.createVisual(context, node, tags);
-			frontToData.put(pair.second.middle(), visual);
 			body.add(context, visual);
 		});
 		body.setParent(new VisualParent() {

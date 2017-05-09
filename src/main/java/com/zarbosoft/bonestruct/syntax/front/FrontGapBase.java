@@ -3,8 +3,6 @@ package com.zarbosoft.bonestruct.syntax.front;
 import com.google.common.collect.ImmutableList;
 import com.zarbosoft.bonestruct.document.Node;
 import com.zarbosoft.bonestruct.document.values.Value;
-import com.zarbosoft.bonestruct.document.values.ValueArray;
-import com.zarbosoft.bonestruct.document.values.ValueNode;
 import com.zarbosoft.bonestruct.document.values.ValuePrimitive;
 import com.zarbosoft.bonestruct.editor.Action;
 import com.zarbosoft.bonestruct.editor.Context;
@@ -266,45 +264,6 @@ public abstract class FrontGapBase extends FrontPart {
 	}
 
 	protected abstract void deselect(Context context, Node self, String string, Common.UserData userData);
-
-	public ValuePrimitive findSelectNext(
-			final Node node, boolean skipFirstNode
-	) {
-		for (final FrontPart front : node.type.front()) {
-			if (front instanceof FrontDataPrimitive) {
-				return (ValuePrimitive) node.data.get(((FrontDataPrimitive) front).middle);
-			} else if (front instanceof FrontGapBase) {
-				return (ValuePrimitive) node.data.get(middle());
-			} else if (front instanceof FrontDataNode) {
-				if (skipFirstNode) {
-					skipFirstNode = false;
-				} else {
-					final ValuePrimitive found =
-							findSelectNext(((ValueNode) node.data.get(((FrontDataNode) front).middle)).get(),
-									skipFirstNode
-							);
-					if (found != null)
-						return found;
-				}
-			} else if (front instanceof FrontDataArray) {
-				final ValueArray array = (ValueArray) node.data.get(((FrontDataArray) front).middle);
-				for (final Node element : array.get()) {
-					if (skipFirstNode) {
-						skipFirstNode = false;
-					} else {
-						final ValuePrimitive found = findSelectNext(element, skipFirstNode);
-						if (found != null)
-							return found;
-					}
-				}
-			}
-		}
-		return null;
-	}
-
-	protected void select(final Context context, final ValuePrimitive value) {
-		value.parent.node().getVisual().frontToData.get(value.middle.id).selectDown(context);
-	}
 
 	@Override
 	public void dispatch(final DispatchHandler handler) {

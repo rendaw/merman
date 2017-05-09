@@ -140,6 +140,20 @@ public class TestDocumentGap {
 		);
 	}
 
+	@Test
+	public void unitContinueInsideArray() {
+		final Context context = blank();
+		context.selection.receiveText(context, "[");
+		context.selection.receiveText(context, "e");
+		dump(context.document.top);
+		assertTreeEqual(context,
+				new Helper.TreeBuilder(MiscSyntax.array)
+						.addArray("value", new TreeBuilder(MiscSyntax.syntax.gap).add("gap", "e").build())
+						.build(),
+				context.document.top
+		);
+	}
+
 	// ========================================================================
 	// Suffix
 
