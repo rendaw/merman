@@ -1,8 +1,8 @@
 package com.zarbosoft.bonestruct;
 
 import com.google.common.collect.ImmutableList;
-import com.zarbosoft.bonestruct.document.Node;
-import com.zarbosoft.bonestruct.document.values.ValueNode;
+import com.zarbosoft.bonestruct.document.Atom;
+import com.zarbosoft.bonestruct.document.values.ValueAtom;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.Path;
 import com.zarbosoft.bonestruct.helper.ExpressionSyntax;
@@ -15,7 +15,7 @@ import static com.zarbosoft.bonestruct.helper.Helper.buildDoc;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
-public class TestActionsNode {
+public class TestActionsAtom {
 
 	@Test
 	public void testEnter() {
@@ -25,7 +25,7 @@ public class TestActionsNode {
 						.add("value", new Helper.TreeBuilder(MiscSyntax.infinity).build())
 						.build()
 		).build());
-		((Node) context.locateLong(new Path("0", "value"))).getVisual().parent().getTarget().select(context);
+		((Atom) context.locateLong(new Path("0", "value"))).parent.selectUp(context);
 		Helper.act(context, "enter");
 		assertThat(context.selection.getPath().toList(), equalTo(ImmutableList.of("0", "value", "value")));
 	}
@@ -38,7 +38,7 @@ public class TestActionsNode {
 						.add("value", new Helper.TreeBuilder(MiscSyntax.infinity).build())
 						.build()
 		).build());
-		((Node) context.locateLong(new Path("0", "value"))).getVisual().parent().getTarget().select(context);
+		((Atom) context.locateLong(new Path("0", "value"))).parent.selectUp(context);
 		Helper.act(context, "exit");
 		assertThat(context.selection.getPath().toList(), equalTo(ImmutableList.of("0")));
 	}
@@ -51,7 +51,7 @@ public class TestActionsNode {
 						.add("value", new Helper.TreeBuilder(MiscSyntax.infinity).build())
 						.build()
 		).build());
-		((Node) context.locateLong(new Path("0", "value"))).getVisual().parent().getTarget().select(context);
+		((Atom) context.locateLong(new Path("0", "value"))).parent.selectUp(context);
 		Helper.act(context, "delete");
 		assertTreeEqual(
 				context,
@@ -69,9 +69,9 @@ public class TestActionsNode {
 						.add("second", ExpressionSyntax.syntax.gap.create())
 						.build()
 		);
-		((ValueNode) context.locateShort(new Path("0", "first"))).getVisual().select(context);
+		((ValueAtom) context.locateShort(new Path("0", "first"))).getVisual().select(context);
 		Helper.act(context, "copy");
-		((ValueNode) context.locateShort(new Path("0", "second"))).getVisual().select(context);
+		((ValueAtom) context.locateShort(new Path("0", "second"))).getVisual().select(context);
 		Helper.act(context, "paste");
 		assertTreeEqual(
 				context,
@@ -91,7 +91,7 @@ public class TestActionsNode {
 						.add("value", new Helper.TreeBuilder(ExpressionSyntax.infinity).build())
 						.build()
 		);
-		((ValueNode) context.locateShort(new Path("0", "value"))).getVisual().select(context);
+		((ValueAtom) context.locateShort(new Path("0", "value"))).getVisual().select(context);
 		Helper.act(context, "cut");
 		assertTreeEqual(
 				context,

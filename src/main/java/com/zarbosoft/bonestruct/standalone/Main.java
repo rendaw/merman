@@ -107,7 +107,7 @@ public class Main extends Application {
 		//order of operations, conditional front elements
 		//windowing, depth indicator
 		//	window nodes, not values (except root valuearray)
-		//	atom, core, mote, basis; node -> core?
+		//	atom, core, mote, basis; atom -> core?
 		//	actually, window visuals, so the above 2 lines moot probably
 		//ellipsis with depth score type param
 		//__ ellipsis is the opposite of windowing
@@ -117,14 +117,16 @@ public class Main extends Application {
 		//window indicator -> change global tags (state windowed/nonwindowed)
 		//indicators -> plugin that shows/hides indicators by tag
 		//gap handle conditional front elements
-		//non printable & front array/node placeholder character as syntax param
+		//non printable & front array/atom placeholder character as syntax param
 		//gap preview details styling
 		//	columns: 1:preview 2:type id
 		//gap choice selection
 		//gap preview styling
 		//hotkey preview details
 		//	columns: 1:rule 2:action name
-		fix save modifications on empty doc
+		//fix save modifications on empty doc
+		test windowing
+		add window up/down actions
 		test merging changes; finishing history on actions
 		test brick layout
 		move scroll to wall with listener for banner/details?
@@ -175,7 +177,7 @@ public class Main extends Application {
 			doc = uncheck(() -> syntax.load(path));
 		else
 			doc = syntax.create();
-		if (doc.top.get().isEmpty()) {
+		if (doc.top.data.isEmpty()) {
 			doc.top = new ValueArray(doc.syntax.root, ImmutableList.of(syntax.gap.create()));
 		}
 		this.display = new JavaFXDisplay(syntax);

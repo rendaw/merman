@@ -3,9 +3,9 @@ package com.zarbosoft.bonestruct.syntax;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
-import com.zarbosoft.bonestruct.document.Node;
+import com.zarbosoft.bonestruct.document.Atom;
 import com.zarbosoft.bonestruct.document.values.ValueArray;
-import com.zarbosoft.bonestruct.document.values.ValueNode;
+import com.zarbosoft.bonestruct.document.values.ValueAtom;
 import com.zarbosoft.bonestruct.document.values.ValuePrimitive;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.history.changes.ChangeArray;
@@ -14,7 +14,7 @@ import com.zarbosoft.bonestruct.syntax.alignments.AlignmentDefinition;
 import com.zarbosoft.bonestruct.syntax.back.*;
 import com.zarbosoft.bonestruct.syntax.front.*;
 import com.zarbosoft.bonestruct.syntax.middle.MiddleArray;
-import com.zarbosoft.bonestruct.syntax.middle.MiddleElement;
+import com.zarbosoft.bonestruct.syntax.middle.MiddlePart;
 import com.zarbosoft.bonestruct.syntax.middle.MiddlePrimitive;
 import com.zarbosoft.interface1.Configuration;
 import com.zarbosoft.pidgoon.ParseContext;
@@ -38,33 +38,33 @@ import java.util.stream.Stream;
 import static com.zarbosoft.rendaw.common.Common.iterable;
 
 @Configuration
-public class PrefixGapNodeType extends NodeType {
+public class PrefixGapAtomType extends AtomType {
 	private final MiddleArray dataValue;
 	private final MiddlePrimitive dataGap;
 	@Configuration(name = "prefix", optional = true)
-	public List<FrontConstantPart> frontPrefix = new ArrayList<>();
+	public List<FrontSymbol> frontPrefix = new ArrayList<>();
 	@Configuration(name = "infix", optional = true)
-	public List<FrontConstantPart> frontInfix = new ArrayList<>();
+	public List<FrontSymbol> frontInfix = new ArrayList<>();
 	@Configuration(name = "suffix", optional = true)
-	public List<FrontConstantPart> frontSuffix = new ArrayList<>();
+	public List<FrontSymbol> frontSuffix = new ArrayList<>();
 
 	private final List<FrontPart> front;
 	private final List<BackPart> back;
-	private final Map<String, MiddleElement> middle;
+	private final Map<String, MiddlePart> middle;
 
-	public PrefixGapNodeType() {
+	public PrefixGapAtomType() {
 		id = "__prefix_gap";
 		{
 			final FrontGapBase gap = new FrontGapBase() {
 				@Override
 				protected List<? extends Choice> process(
-						final Context context, final Node self, final String string, final Common.UserData store
+						final Context context, final Atom self, final String string, final Common.UserData store
 				) {
 					class PrefixChoice extends Choice {
-						private final FreeNodeType type;
+						private final FreeAtomType type;
 						private final GapKey key;
 
-						PrefixChoice(final FreeNodeType type, final GapKey key) {
+						PrefixChoice(final FreeAtomType type, final GapKey key) {
 							this.type = type;
 							this.key = key;
 						}
@@ -74,22 +74,22 @@ public class PrefixGapNodeType extends NodeType {
 						}
 
 						public void choose(final Context context, final String string) {
-							// Build node
+							// Build atom
 							final GapKey.ParseResult parsed = key.parse(context, type, string);
-							final Node node = parsed.node;
+							final Atom atom = parsed.atom;
 
-							// Place the node
-							self.parent.replace(context, node);
+							// Place the atom
+							self.parent.replace(context, atom);
 
 							// Wrap the value in a prefix gap and place
-							final Node value = ((ValueArray) self.data.get("value")).get().get(0);
-							final Node inner =
+							final Atom value = ((ValueArray) self.data.get("value")).data.get(0);
+							final Atom inner =
 									parsed.nextInput == null ? context.syntax.prefixGap.create(value) : value;
 							type.front().get(key.indexAfter).dispatch(new NodeOnlyDispatchHandler() {
 								@Override
 								public void handle(final FrontDataArrayBase front) {
 									context.history.apply(context,
-											new ChangeArray((ValueArray) node.data.get(front.middle()),
+											new ChangeArray((ValueArray) atom.data.get(front.middle()),
 													0,
 													0,
 													ImmutableList.of(inner)
@@ -98,18 +98,18 @@ public class PrefixGapNodeType extends NodeType {
 								}
 
 								@Override
-								public void handle(final FrontDataNode front) {
+								public void handle(final FrontDataAtom front) {
 									context.history.apply(context,
-											new ChangeNodeSet((ValueNode) node.data.get(front.middle), inner)
+											new ChangeNodeSet((ValueAtom) atom.data.get(front.middle), inner)
 									);
 								}
 							});
 
 							// Select the next input after the key
 							if (parsed.nextInput != null)
-								node.data.get(parsed.nextInput.middle()).getVisual().selectDown(context);
+								atom.data.get(parsed.nextInput.middle()).selectDown(context);
 							else
-								inner.getVisual().selectDown(context);
+								inner.visual.selectDown(context);
 						}
 
 						@Override
@@ -126,7 +126,7 @@ public class PrefixGapNodeType extends NodeType {
 					// Get or build gap grammar
 					final Grammar grammar = store.get(() -> {
 						final Union union = new Union();
-						for (final FreeNodeType type : (
+						for (final FreeAtomType type : (
 								self.parent == null ?
 										iterable(context.syntax.getLeafTypes(context.syntax.root.type)) :
 										iterable(context.syntax.getLeafTypes(self.parent.childType()))
@@ -169,14 +169,14 @@ public class PrefixGapNodeType extends NodeType {
 
 				@Override
 				protected void deselect(
-						final Context context, final Node self, final String string, final Common.UserData userData
+						final Context context, final Atom self, final String string, final Common.UserData userData
 				) {
 					if (self.getVisual() != null && string.isEmpty()) {
-						self.parent.replace(context, ((ValueArray) self.data.get("value")).get().get(0));
+						self.parent.replace(context, ((ValueArray) self.data.get("value")).data.get(0));
 					}
 				}
 			};
-			final FrontDataArrayAsNode value = new FrontDataArrayAsNode();
+			final FrontDataArrayAsAtom value = new FrontDataArrayAsAtom();
 			value.middle = "value";
 			front = ImmutableList.copyOf(Iterables.concat(frontPrefix,
 					ImmutableList.of(gap),
@@ -213,7 +213,7 @@ public class PrefixGapNodeType extends NodeType {
 	}
 
 	@Override
-	public Map<String, MiddleElement> middle() {
+	public Map<String, MiddlePart> middle() {
 		return middle;
 	}
 
@@ -242,8 +242,8 @@ public class PrefixGapNodeType extends NodeType {
 		return "Gap (prefix)";
 	}
 
-	public Node create(final Node value) {
-		return new Node(this,
+	public Atom create(final Atom value) {
+		return new Atom(this,
 				ImmutableMap.of("value",
 						new ValueArray(dataValue, ImmutableList.of(value)),
 						"gap",

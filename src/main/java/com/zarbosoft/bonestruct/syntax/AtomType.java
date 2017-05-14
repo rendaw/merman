@@ -2,10 +2,12 @@ package com.zarbosoft.bonestruct.syntax;
 
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Sets;
-import com.zarbosoft.bonestruct.document.Node;
+import com.zarbosoft.bonestruct.document.Atom;
 import com.zarbosoft.bonestruct.document.values.Value;
 import com.zarbosoft.bonestruct.editor.Context;
-import com.zarbosoft.bonestruct.editor.visual.visuals.VisualNodeType;
+import com.zarbosoft.bonestruct.editor.visual.Alignment;
+import com.zarbosoft.bonestruct.editor.visual.VisualParent;
+import com.zarbosoft.bonestruct.editor.visual.visuals.VisualAtomType;
 import com.zarbosoft.bonestruct.syntax.alignments.AlignmentDefinition;
 import com.zarbosoft.bonestruct.syntax.back.*;
 import com.zarbosoft.bonestruct.syntax.front.FrontPart;
@@ -23,17 +25,17 @@ import java.util.*;
 import static com.zarbosoft.rendaw.common.Common.enumerate;
 
 @Configuration
-public abstract class NodeType {
+public abstract class AtomType {
 	@Configuration
 	public String id;
 
 	@Configuration(name = "depth_score", optional = true,
-			description = "Child nodes of this node are deeper by this amount.")
+			description = "Child nodes of this atom are deeper by this amount.")
 	public int depthScore = 0;
 
 	public abstract List<FrontPart> front();
 
-	public abstract Map<String, MiddleElement> middle();
+	public abstract Map<String, MiddlePart> middle();
 
 	public abstract List<BackPart> back();
 
@@ -92,13 +94,19 @@ public abstract class NodeType {
 			store = (Store) Helper.<Pair<String, Value>>stackPopSingleList(store,
 					pair -> data.put(pair.first, pair.second)
 			);
-			final Node node = new Node(this, data);
-			return store.pushStack(node);
+			final Atom atom = new Atom(this, data);
+			return store.pushStack(atom);
 		});
 	}
 
-	public VisualNodeType createVisual(final Context context, final Node node) {
-		return new VisualNodeType(this, context, node);
+	public VisualAtomType createVisual(
+			final Context context,
+			final VisualParent parent,
+			final Atom atom,
+			final Map<String, Alignment> alignments,
+			final int depth
+	) {
+		return new VisualAtomType(context, parent, this, atom, alignments, depth);
 	}
 
 	public abstract String name();
@@ -122,8 +130,8 @@ public abstract class NodeType {
 			} else if (next instanceof BackDataKey) {
 				if (((BackDataKey) next).middle.equals(id))
 					return next;
-			} else if (next instanceof BackDataNode) {
-				if (((BackDataNode) next).middle.equals(id))
+			} else if (next instanceof BackDataAtom) {
+				if (((BackDataAtom) next).middle.equals(id))
 					return next;
 			} else if (next instanceof BackType) {
 				stack.addLast(Iterators.singletonIterator(((BackType) next).child));
@@ -142,8 +150,8 @@ public abstract class NodeType {
 		return getData(MiddleRecord.class, middle);
 	}
 
-	private <D extends MiddleElement> D getData(final Class<? extends MiddleElement> type, final String id) {
-		final MiddleElement found = middle().get(id);
+	private <D extends MiddlePart> D getData(final Class<? extends MiddlePart> type, final String id) {
+		final MiddlePart found = middle().get(id);
 		if (found == null) {
 			throw new InvalidSyntax(String.format("No middle element [%s] in [%s]", id, this.id));
 		} else {
@@ -162,8 +170,8 @@ public abstract class NodeType {
 		return getData(MiddlePrimitive.class, key);
 	}
 
-	public MiddleNode getDataNode(final String key) {
-		return getData(MiddleNode.class, key);
+	public MiddleAtom getDataNode(final String key) {
+		return getData(MiddleAtom.class, key);
 	}
 
 	public MiddleArrayBase getDataArray(final String key) {

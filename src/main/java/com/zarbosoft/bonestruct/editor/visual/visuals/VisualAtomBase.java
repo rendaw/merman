@@ -1,7 +1,7 @@
 package com.zarbosoft.bonestruct.editor.visual.visuals;
 
 import com.google.common.collect.ImmutableList;
-import com.zarbosoft.bonestruct.document.Node;
+import com.zarbosoft.bonestruct.document.Atom;
 import com.zarbosoft.bonestruct.document.values.Value;
 import com.zarbosoft.bonestruct.editor.*;
 import com.zarbosoft.bonestruct.editor.visual.*;
@@ -21,8 +21,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public abstract class VisualNodeBase extends VisualPart {
-	protected Visual body;
+public abstract class VisualAtomBase extends VisualPart {
+	protected VisualAtomType body;
 	VisualParent parent;
 	boolean selected = false;
 	private VisualAttachmentAdapter adapter;
@@ -31,15 +31,13 @@ public abstract class VisualNodeBase extends VisualPart {
 	private NestedSelection selection;
 	private Brick ellipsis = null;
 
-	public VisualNodeBase(
-			final PSet<Tag> tags
-	) {
+	public VisualAtomBase(final PSet<Tag> tags) {
 		super(tags);
 	}
 
-	protected abstract void nodeSet(Context context, Node value);
+	protected abstract void nodeSet(Context context, Atom value);
 
-	protected abstract Node nodeGet();
+	protected abstract Atom atomGet();
 
 	protected abstract String nodeType();
 
@@ -52,33 +50,51 @@ public abstract class VisualNodeBase extends VisualPart {
 	protected abstract Symbol ellipsis();
 
 	@Override
-	public void setParent(final VisualParent parent) {
-		this.parent = parent;
-	}
-
-	@Override
 	public VisualParent parent() {
 		return parent;
 	}
 
 	@Override
 	public Brick getFirstBrick(final Context context) {
+		if (ellipsize(context))
+			return ellipsis;
 		return body.getFirstBrick(context);
 	}
 
 	@Override
 	public Brick getLastBrick(final Context context) {
+		if (ellipsize(context))
+			return ellipsis;
 		return body.getLastBrick(context);
 	}
 
 	@Override
-	public void anchor(final Context context, final Map<String, Alignment> alignments, final int depth) {
-		body.anchor(context, alignments, depth);
+	public void root(
+			final Context context, final VisualParent parent, final Map<String, Alignment> alignments, final int depth
+	) {
+		this.parent = parent;
+		if (ellipsize(context)) {
+			if (body != null)
+				body.uproot(context, null);
+		} else {
+			if (body == null) {
+				coreSet(context, atomGet());
+			}
+			body.root(context, new NestedParent(), alignments, depth);
+		}
 	}
 
 	@Override
-	public void destroy(final Context context) {
-		body.destroy(context);
+	public void uproot(final Context context, final Visual root) {
+		if (selection != null)
+			context.clearSelection();
+		if (hoverable != null)
+			context.clearHover();
+		if (ellipsis != null) {
+			ellipsis.destroy(context);
+		}
+		if (body != null)
+			body.uproot(context, root);
 	}
 
 	@Override
@@ -98,7 +114,7 @@ public abstract class VisualNodeBase extends VisualPart {
 		ellipsis = ellipsis().createBrick(context, new BrickInterface() {
 			@Override
 			public VisualPart getVisual() {
-				return VisualNodeBase.this;
+				return VisualAtomBase.this;
 			}
 
 			@Override
@@ -118,7 +134,7 @@ public abstract class VisualNodeBase extends VisualPart {
 
 			@Override
 			public Alignment getAlignment(final Style.Baked style) {
-				return VisualNodeBase.this.getAlignment(style.alignment);
+				return VisualAtomBase.this.getAlignment(style.alignment);
 			}
 
 			@Override
@@ -137,9 +153,17 @@ public abstract class VisualNodeBase extends VisualPart {
 		}
 	}
 
+	private boolean ellipsize(final Context context) {
+		if (!context.window)
+			return false;
+		if (parent.getNodeVisual() == null)
+			return false;
+		return parent.getNodeVisual().depth >= ellipsizeThreshold();
+	}
+
 	@Override
 	public Brick createFirstBrick(final Context context) {
-		if (nodeGet().getVisual().depth >= ellipsizeThreshold()) {
+		if (ellipsize(context)) {
 			return createEllipsis(context);
 		} else {
 			final Brick out = body.createFirstBrick(context);
@@ -153,7 +177,7 @@ public abstract class VisualNodeBase extends VisualPart {
 
 	@Override
 	public Brick createLastBrick(final Context context) {
-		if (nodeGet().getVisual().depth >= ellipsizeThreshold()) {
+		if (ellipsize(context)) {
 			return createEllipsis(context);
 		} else {
 			final Brick out = body.createLastBrick(context);
@@ -181,13 +205,6 @@ public abstract class VisualNodeBase extends VisualPart {
 		});
 	}
 
-	@Override
-	public boolean selectDown(final Context context) {
-		select(context);
-		return true;
-	}
-
-	@Override
 	public void select(final Context context) {
 		if (selected)
 			return;
@@ -200,11 +217,6 @@ public abstract class VisualNodeBase extends VisualPart {
 		border.setStyle(context, selection.getStyle(context).obbox);
 		createAdapter(context);
 		context.setSelection(selection);
-	}
-
-	@Override
-	public void selectUp(final Context context) {
-		select(context);
 	}
 
 	protected Stream<Action> getActions(final Context context) {
@@ -223,8 +235,8 @@ public abstract class VisualNodeBase extends VisualPart {
 			@Override
 			public void run(final Context context) {
 				context.history.finishChange(context);
-				if (parent != null) {
-					parent.selectUp(context);
+				if (value().parent != null) {
+					value().parent.selectUp(context);
 				}
 			}
 
@@ -246,7 +258,7 @@ public abstract class VisualNodeBase extends VisualPart {
 			@Override
 			public void run(final Context context) {
 				context.history.finishChange(context);
-				context.copy(ImmutableList.of(nodeGet()));
+				context.copy(ImmutableList.of(atomGet()));
 			}
 
 			@Override
@@ -257,7 +269,7 @@ public abstract class VisualNodeBase extends VisualPart {
 			@Override
 			public void run(final Context context) {
 				context.history.finishChange(context);
-				context.copy(ImmutableList.of(nodeGet()));
+				context.copy(ImmutableList.of(atomGet()));
 				nodeSet(context, context.syntax.gap.create());
 			}
 
@@ -269,10 +281,10 @@ public abstract class VisualNodeBase extends VisualPart {
 			@Override
 			public void run(final Context context) {
 				context.history.finishChange(context);
-				final List<Node> nodes = context.uncopy(nodeType());
-				if (nodes.size() != 1)
+				final List<Atom> atoms = context.uncopy(nodeType());
+				if (atoms.size() != 1)
 					return;
-				nodeSet(context, nodes.get(0));
+				nodeSet(context, atoms.get(0));
 				context.history.finishChange(context);
 			}
 
@@ -283,7 +295,9 @@ public abstract class VisualNodeBase extends VisualPart {
 		}, new Action() {
 			@Override
 			public void run(final Context context) {
-				context.window(nodeGet());
+				final Atom root = atomGet();
+				context.setAtomWindow(root);
+				root.visual.selectDown(context);
 			}
 
 			@Override
@@ -295,7 +309,7 @@ public abstract class VisualNodeBase extends VisualPart {
 
 	private class NestedSelection extends Selection {
 		public NestedSelection(final Context context) {
-			context.actions.put(this, VisualNodeBase.this.getActions(context).collect(Collectors.toList()));
+			context.actions.put(this, VisualAtomBase.this.getActions(context).collect(Collectors.toList()));
 		}
 
 		@Override
@@ -310,7 +324,7 @@ public abstract class VisualNodeBase extends VisualPart {
 
 		@Override
 		public VisualPart getVisual() {
-			return VisualNodeBase.this;
+			return VisualAtomBase.this;
 		}
 
 		@Override
@@ -349,11 +363,13 @@ public abstract class VisualNodeBase extends VisualPart {
 
 		@Override
 		public void select(final Context context) {
-			((VisualNodeBase) value.visual).select(context);
+			value.selectDown(context);
 		}
 	}
 
-	protected void set(final Context context, final Node data) {
+	protected void set(final Context context, final Atom data) {
+		if (ellipsize(context))
+			return;
 		boolean fixDeepSelection = false;
 		boolean fixDeepHover = false;
 		if (context.selection != null) {
@@ -380,6 +396,7 @@ public abstract class VisualNodeBase extends VisualPart {
 		}
 
 		coreSet(context, data);
+		context.idleLayBricks(parent, 0, 0, 0, i -> null, i -> null, i -> body.createFirstBrick(context));
 
 		if (fixDeepSelection)
 			select(context);
@@ -387,17 +404,14 @@ public abstract class VisualNodeBase extends VisualPart {
 			context.clearHover();
 	}
 
-	protected void coreSet(final Context context, final Node data) {
+	private void coreSet(final Context context, final Atom data) {
 		if (body != null)
-			body.destroy(context);
-		this.body = data.createVisual(context);
-		body.setParent(new NestedParent());
-		if (parent != null) {
-			final Brick previousBrick = parent.getPreviousBrick(context);
-			final Brick nextBrick = parent.getNextBrick(context);
-			if (previousBrick != null && nextBrick != null)
-				context.fillFromEndBrick(previousBrick);
-		}
+			body.uproot(context, null);
+		this.body = (VisualAtomType) data.createVisual(context,
+				new NestedParent(),
+				parent.getTarget().alignments(),
+				depth()
+		);
 		if (adapter != null) {
 			adapter.setBase(context, body);
 		}
@@ -405,17 +419,17 @@ public abstract class VisualNodeBase extends VisualPart {
 
 	private class NestedParent extends VisualParent {
 		@Override
-		public void selectUp(final Context context) {
-			selectDown(context);
+		public VisualParent parent() {
+			return parent;
 		}
 
 		@Override
 		public Visual getTarget() {
-			return VisualNodeBase.this;
+			return VisualAtomBase.this;
 		}
 
 		@Override
-		public VisualNodeType getNodeVisual() {
+		public VisualAtomType getNodeVisual() {
 			throw new DeadCode();
 		}
 
@@ -490,19 +504,19 @@ public abstract class VisualNodeBase extends VisualPart {
 
 				@Override
 				public void click(final Context context) {
-					selectDown(context);
+					body.selectDown(context);
 				}
 
 				@Override
-				public VisualNodeType node() {
-					if (VisualNodeBase.this.parent == null)
+				public VisualAtomType node() {
+					if (VisualAtomBase.this.parent == null)
 						return null;
-					return VisualNodeBase.this.parent.getNodeVisual();
+					return VisualAtomBase.this.parent.getNodeVisual();
 				}
 
 				@Override
 				public VisualPart part() {
-					return VisualNodeBase.this;
+					return VisualAtomBase.this;
 				}
 
 				@Override
@@ -514,5 +528,10 @@ public abstract class VisualNodeBase extends VisualPart {
 			border.setStyle(context, hoverable.getStyle(context).obbox);
 			return hoverable;
 		}
+	}
+
+	@Override
+	public boolean selectDown(final Context context) {
+		return value().selectDown(context);
 	}
 }

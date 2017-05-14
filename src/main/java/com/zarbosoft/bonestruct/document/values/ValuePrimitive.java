@@ -4,13 +4,15 @@ import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.history.Change;
 import com.zarbosoft.bonestruct.editor.history.changes.ChangePrimitiveAdd;
 import com.zarbosoft.bonestruct.editor.history.changes.ChangePrimitiveRemove;
-import com.zarbosoft.bonestruct.syntax.middle.MiddleElement;
+import com.zarbosoft.bonestruct.editor.visual.visuals.VisualPrimitive;
+import com.zarbosoft.bonestruct.syntax.middle.MiddlePart;
 import com.zarbosoft.bonestruct.syntax.middle.MiddlePrimitive;
 
 import java.util.HashSet;
 import java.util.Set;
 
 public class ValuePrimitive extends com.zarbosoft.bonestruct.document.values.Value {
+	public VisualPrimitive visual;
 	public final MiddlePrimitive middle;
 	public StringBuilder data = new StringBuilder();
 	public final Set<Listener> listeners = new HashSet<>();
@@ -18,6 +20,23 @@ public class ValuePrimitive extends com.zarbosoft.bonestruct.document.values.Val
 	public ValuePrimitive(final MiddlePrimitive middle, final String data) {
 		this.middle = middle;
 		this.data = new StringBuilder(data);
+	}
+
+	@Override
+	public VisualPrimitive getVisual() {
+		return visual;
+	}
+
+	@Override
+	public boolean selectDown(final Context context) {
+		if (context.window) {
+			if (visual == null) {
+				context.createWindowForSelection(this, context.syntax.ellipsizeThreshold);
+			}
+		}
+		final int length = data.length();
+		visual.select(context, length, length);
+		return true;
 	}
 
 	public void addListener(final Listener listener) {
@@ -37,7 +56,7 @@ public class ValuePrimitive extends com.zarbosoft.bonestruct.document.values.Val
 	}
 
 	@Override
-	public MiddleElement middle() {
+	public MiddlePart middle() {
 		return middle;
 	}
 

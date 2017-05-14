@@ -1,11 +1,14 @@
 package com.zarbosoft.bonestruct.syntax.front;
 
+import com.zarbosoft.bonestruct.document.Atom;
 import com.zarbosoft.bonestruct.editor.Context;
+import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.Visual;
+import com.zarbosoft.bonestruct.editor.visual.VisualParent;
 import com.zarbosoft.bonestruct.editor.visual.VisualPart;
 import com.zarbosoft.bonestruct.editor.visual.visuals.VisualArray;
 import com.zarbosoft.bonestruct.modules.hotkeys.grammar.Node;
-import com.zarbosoft.bonestruct.syntax.NodeType;
+import com.zarbosoft.bonestruct.syntax.AtomType;
 import com.zarbosoft.bonestruct.syntax.middle.MiddleArrayBase;
 import com.zarbosoft.bonestruct.syntax.symbol.Symbol;
 import com.zarbosoft.interface1.Configuration;
@@ -40,9 +43,10 @@ public abstract class FrontDataArrayBase extends FrontPart {
 	protected MiddleArrayBase dataType;
 
 	@Override
-	public void finish(final NodeType nodeType, final Set<String> middleUsed) {
+	public void finish(final AtomType atomType, final Set<String> middleUsed) {
 		middleUsed.add(middle());
-		dataType = nodeType.getDataArray(middle());
+		((MiddleArrayBase) atomType.middle().get(middle())).front = this;
+		dataType = atomType.getDataArray(middle());
 	}
 
 	public abstract String middle();
@@ -54,15 +58,23 @@ public abstract class FrontDataArrayBase extends FrontPart {
 
 	@Override
 	public VisualPart createVisual(
-			final Context context, final com.zarbosoft.bonestruct.document.Node node, final PSet<Visual.Tag> tags
+			final Context context,
+			final VisualParent parent,
+			final Atom atom,
+			final PSet<Visual.Tag> tags,
+			final Map<String, Alignment> alignments,
+			final int depth
 	) {
 		return new VisualArray(
 				context,
-				dataType.get(node.data),
+				parent,
+				dataType.get(atom.data),
 				HashTreePSet
 						.from(tags)
 						.plus(new Visual.PartTag("array"))
-						.plusAll(this.tags.stream().map(s -> new Visual.FreeTag(s)).collect(Collectors.toSet()))
+						.plusAll(this.tags.stream().map(s -> new Visual.FreeTag(s)).collect(Collectors.toSet())),
+				alignments,
+				depth
 		) {
 
 			@Override

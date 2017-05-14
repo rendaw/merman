@@ -1,8 +1,9 @@
 package com.zarbosoft.bonestruct.editor.visual;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterators;
-import com.zarbosoft.bonestruct.document.values.Value;
 import com.zarbosoft.bonestruct.editor.Context;
+import com.zarbosoft.bonestruct.editor.visual.visuals.VisualAtomType;
 import com.zarbosoft.bonestruct.editor.wall.Brick;
 import com.zarbosoft.interface1.Configuration;
 import com.zarbosoft.rendaw.common.Pair;
@@ -15,21 +16,13 @@ import java.util.Objects;
 import java.util.Set;
 
 public abstract class Visual {
-	private PSet<Tag> tags = HashTreePSet.empty();
+	private PSet<Tag> tags;
 
 	public Visual(final PSet<Tag> tags) {
 		this.tags = tags;
 	}
 
-	public abstract void setParent(VisualParent parent);
-
 	public abstract VisualParent parent();
-
-	public abstract boolean selectDown(Context context);
-
-	public abstract void select(Context context);
-
-	public abstract void selectUp(Context context);
 
 	public abstract Brick createFirstBrick(Context context);
 
@@ -63,17 +56,35 @@ public abstract class Visual {
 		return null;
 	}
 
-	public abstract void anchor(Context context, Map<String, Alignment> alignments, int depth);
+	public int depth() {
+		final VisualParent parent = parent();
+		if (parent == null)
+			return 0;
+		final VisualAtomType atomVisual = parent.getNodeVisual();
+		if (atomVisual == null)
+			return 0;
+		return atomVisual.depth;
+	}
 
-	public abstract void destroy(Context context);
+	public abstract void uproot(Context context, Visual root);
 
-	public abstract boolean isAt(Value value);
+	public abstract void root(
+			Context context, VisualParent parent, Map<String, Alignment> alignments, int depth
+	);
+
+	public abstract boolean selectDown(final Context context);
 
 	public void suggestCreateBricks(final Context context) {
 		final Brick previousBrick = parent() == null ? null : parent().getPreviousBrick(context);
 		final Brick nextBrick = parent() == null ? null : parent().getNextBrick(context);
 		if (previousBrick != null && nextBrick != null)
 			context.fillFromEndBrick(previousBrick);
+	}
+
+	public Map<String, Alignment> alignments() {
+		if (parent() == null)
+			return ImmutableMap.of();
+		return parent().getTarget().alignments();
 	}
 
 	@Configuration

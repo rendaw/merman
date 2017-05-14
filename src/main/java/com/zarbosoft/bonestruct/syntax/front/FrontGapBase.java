@@ -1,7 +1,7 @@
 package com.zarbosoft.bonestruct.syntax.front;
 
 import com.google.common.collect.ImmutableList;
-import com.zarbosoft.bonestruct.document.Node;
+import com.zarbosoft.bonestruct.document.Atom;
 import com.zarbosoft.bonestruct.document.values.Value;
 import com.zarbosoft.bonestruct.document.values.ValuePrimitive;
 import com.zarbosoft.bonestruct.editor.Action;
@@ -13,11 +13,13 @@ import com.zarbosoft.bonestruct.editor.display.Text;
 import com.zarbosoft.bonestruct.editor.displaynodes.Box;
 import com.zarbosoft.bonestruct.editor.displaynodes.CLayout;
 import com.zarbosoft.bonestruct.editor.displaynodes.ColumnarTableLayout;
+import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.Visual;
+import com.zarbosoft.bonestruct.editor.visual.VisualParent;
 import com.zarbosoft.bonestruct.editor.visual.VisualPart;
 import com.zarbosoft.bonestruct.editor.visual.visuals.VisualPrimitive;
-import com.zarbosoft.bonestruct.syntax.FreeNodeType;
-import com.zarbosoft.bonestruct.syntax.NodeType;
+import com.zarbosoft.bonestruct.syntax.AtomType;
+import com.zarbosoft.bonestruct.syntax.FreeAtomType;
 import com.zarbosoft.bonestruct.syntax.middle.MiddlePrimitive;
 import com.zarbosoft.bonestruct.syntax.style.BoxStyle;
 import com.zarbosoft.bonestruct.syntax.style.Style;
@@ -47,19 +49,24 @@ public abstract class FrontGapBase extends FrontPart {
 
 	@Override
 	public VisualPart createVisual(
-			final Context context, final Node node, final PSet<Visual.Tag> tags
+			final Context context,
+			final VisualParent parent,
+			final Atom atom,
+			final PSet<Visual.Tag> tags,
+			final Map<String, Alignment> alignments,
+			final int depth
 	) {
-		return new GapVisualPrimitive(context, node, tags);
+		return new GapVisualPrimitive(context, parent, atom, tags);
 	}
 
 	@Override
-	public void finish(final NodeType nodeType, final Set<String> middleUsed) {
+	public void finish(final AtomType atomType, final Set<String> middleUsed) {
 		middleUsed.add(middle());
-		this.dataType = nodeType.getDataPrimitive(middle());
+		this.dataType = atomType.getDataPrimitive(middle());
 	}
 
 	protected abstract List<? extends Choice> process(
-			final Context context, final Node self, final String string, final Common.UserData store
+			final Context context, final Atom self, final String string, final Common.UserData store
 	);
 
 	public abstract static class Choice {
@@ -75,10 +82,11 @@ public abstract class FrontGapBase extends FrontPart {
 		private final Map<String, Value> data;
 
 		public GapVisualPrimitive(
-				final Context context, final Node node, final PSet<Tag> tags
+				final Context context, final VisualParent parent, final Atom atom, final PSet<Tag> tags
 		) {
 			super(context,
-					FrontGapBase.this.dataType.get(node.data),
+					parent,
+					FrontGapBase.this.dataType.get(atom.data),
 					tags
 							.plus(new PartTag("gap"))
 							.plusAll(FrontGapBase.this.tags
@@ -86,7 +94,7 @@ public abstract class FrontGapBase extends FrontPart {
 									.map(s -> new FreeTag(s))
 									.collect(Collectors.toSet()))
 			);
-			this.data = node.data;
+			this.data = atom.data;
 		}
 
 		@Override
@@ -263,7 +271,7 @@ public abstract class FrontGapBase extends FrontPart {
 		}
 	}
 
-	protected abstract void deselect(Context context, Node self, String string, Common.UserData userData);
+	protected abstract void deselect(Context context, Atom self, String string, Common.UserData userData);
 
 	@Override
 	public void dispatch(final DispatchHandler handler) {
@@ -280,7 +288,7 @@ public abstract class FrontGapBase extends FrontPart {
 		public List<FrontPart> keyParts = new ArrayList<>();
 		public int indexAfter;
 
-		public com.zarbosoft.pidgoon.Node matchGrammar(final FreeNodeType type) {
+		public com.zarbosoft.pidgoon.Node matchGrammar(final FreeAtomType type) {
 			final Sequence out = new Sequence();
 			for (final FrontPart part : keyParts) {
 				if (part instanceof FrontSymbol) {
@@ -299,12 +307,12 @@ public abstract class FrontGapBase extends FrontPart {
 		}
 
 		public class ParseResult {
-			public Node node;
+			public Atom atom;
 			public FrontPart nextInput;
 			public String remainder;
 		}
 
-		public ParseResult parse(final Context context, final FreeNodeType type, final String string) {
+		public ParseResult parse(final Context context, final FreeAtomType type, final String string) {
 			final ParseResult out = new ParseResult();
 			final Iterator<FrontPart> frontIterator = keyParts.iterator();
 
@@ -345,7 +353,7 @@ public abstract class FrontGapBase extends FrontPart {
 			}
 			filled.forEach(middle -> data.put(middle, type.middle.get(middle).create(context.syntax)));
 			out.remainder = string.substring(at);
-			out.node = new Node(type, data);
+			out.atom = new Atom(type, data);
 
 			// Look for the next place to enter text
 			for (final FrontPart part : iterable(frontIterator)) {
@@ -359,7 +367,7 @@ public abstract class FrontGapBase extends FrontPart {
 		}
 	}
 
-	protected static List<GapKey> gapKeys(final FreeNodeType type) {
+	protected static List<GapKey> gapKeys(final FreeAtomType type) {
 		final List<GapKey> out = new ArrayList<>();
 		final Common.Mutable<GapKey> top = new Common.Mutable<>(new GapKey());
 		top.value.indexBefore = -1;
@@ -389,7 +397,7 @@ public abstract class FrontGapBase extends FrontPart {
 				}
 
 				@Override
-				public void handle(final FrontDataNode front) {
+				public void handle(final FrontDataAtom front) {
 					flush(true);
 				}
 

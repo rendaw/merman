@@ -1,7 +1,7 @@
 package com.zarbosoft.bonestruct.editor.history.changes;
 
 import com.google.common.collect.ImmutableList;
-import com.zarbosoft.bonestruct.document.Node;
+import com.zarbosoft.bonestruct.document.Atom;
 import com.zarbosoft.bonestruct.document.values.ValueArray;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.history.Change;
@@ -14,9 +14,9 @@ public class ChangeArray extends Change {
 	private final ValueArray value;
 	private int index;
 	private int remove;
-	private final List<Node> add = new ArrayList<>();
+	private final List<Atom> add = new ArrayList<>();
 
-	public ChangeArray(final ValueArray value, final int index, final int remove, final List<Node> add) {
+	public ChangeArray(final ValueArray value, final int index, final int remove, final List<Atom> add) {
 		this.value = value;
 		this.index = index;
 		this.remove = remove;
@@ -50,7 +50,7 @@ public class ChangeArray extends Change {
 		if (add.isEmpty() && index == 0 && remove == value.data.size() && value.parent == null) {
 			add.add(context.syntax.gap.create());
 		}
-		final List<Node> clearSublist = value.data.subList(index, index + remove);
+		final List<Atom> clearSublist = value.data.subList(index, index + remove);
 		final ChangeArray reverse = new ChangeArray(value, index, add.size(), ImmutableList.copyOf(clearSublist));
 		clearSublist.stream().forEach(v -> v.setParent(null));
 		clearSublist.clear();

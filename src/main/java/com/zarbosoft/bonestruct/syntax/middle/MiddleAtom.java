@@ -1,6 +1,6 @@
 package com.zarbosoft.bonestruct.syntax.middle;
 
-import com.zarbosoft.bonestruct.document.values.ValueNode;
+import com.zarbosoft.bonestruct.document.values.ValueAtom;
 import com.zarbosoft.bonestruct.syntax.InvalidSyntax;
 import com.zarbosoft.bonestruct.syntax.Syntax;
 import com.zarbosoft.interface1.Configuration;
@@ -8,14 +8,14 @@ import com.zarbosoft.interface1.Configuration;
 import java.util.Map;
 import java.util.Set;
 
-@Configuration(name = "node")
-public class MiddleNode extends MiddleElement {
+@Configuration(name = "atom")
+public class MiddleAtom extends MiddlePart {
 
 	@Configuration
 	public String type;
 
-	public ValueNode get(final Map<String, com.zarbosoft.bonestruct.document.values.Value> data) {
-		return (ValueNode) data.get(id);
+	public ValueAtom get(final Map<String, com.zarbosoft.bonestruct.document.values.Value> data) {
+		return (ValueAtom) data.get(id);
 	}
 
 	@Override
@@ -28,6 +28,6 @@ public class MiddleNode extends MiddleElement {
 
 	@Override
 	public com.zarbosoft.bonestruct.document.values.Value create(final Syntax syntax) {
-		return new ValueNode(this, syntax.gap.create());
+		return new ValueAtom(this, syntax.gap.create());
 	}
 }

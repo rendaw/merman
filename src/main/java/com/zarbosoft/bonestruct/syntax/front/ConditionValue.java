@@ -1,6 +1,6 @@
 package com.zarbosoft.bonestruct.syntax.front;
 
-import com.zarbosoft.bonestruct.document.Node;
+import com.zarbosoft.bonestruct.document.Atom;
 import com.zarbosoft.bonestruct.document.values.Value;
 import com.zarbosoft.bonestruct.document.values.ValueArray;
 import com.zarbosoft.bonestruct.document.values.ValuePrimitive;
@@ -15,9 +15,9 @@ import java.util.List;
 public class ConditionValue extends ConditionType {
 	@Override
 	public ConditionAttachment create(
-			final Context context, final Node node
+			final Context context, final Atom atom
 	) {
-		final Value value = node.data.get(middle);
+		final Value value = atom.data.get(middle);
 		if (value instanceof ValuePrimitive) {
 			class PrimitiveCondition extends ConditionAttachment implements ValuePrimitive.Listener {
 
@@ -64,7 +64,7 @@ public class ConditionValue extends ConditionType {
 				}
 
 				@Override
-				public void changed(final Context context, final int index, final int remove, final List<Node> add) {
+				public void changed(final Context context, final int index, final int remove, final List<Atom> add) {
 					if (((ValueArray) value).data.isEmpty()) {
 						setState(context, false);
 					} else

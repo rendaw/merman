@@ -2,7 +2,6 @@ package com.zarbosoft.bonestruct.editor.visual.visuals;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
-import com.zarbosoft.bonestruct.document.values.Value;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.Hoverable;
 import com.zarbosoft.bonestruct.editor.IdleTask;
@@ -11,7 +10,6 @@ import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.VisualParent;
 import com.zarbosoft.bonestruct.editor.visual.VisualPart;
 import com.zarbosoft.bonestruct.editor.wall.Brick;
-import com.zarbosoft.rendaw.common.DeadCode;
 import com.zarbosoft.rendaw.common.Pair;
 import org.pcollections.HashTreePMap;
 import org.pcollections.PMap;
@@ -23,8 +21,25 @@ import java.util.function.IntFunction;
 import static com.zarbosoft.rendaw.common.Common.last;
 
 public class VisualGroup extends VisualPart {
-	public VisualGroup(final PSet<Tag> tags) {
+
+	public VisualGroup(
+			final Context context,
+			final VisualParent parent,
+			final PSet<Tag> tags,
+			final Map<String, Alignment> alignments,
+			final int depth
+	) {
 		super(tags);
+		root(context, parent, alignments, depth);
+	}
+
+	protected VisualGroup(final PSet<Tag> tags) { // Should only be called by inheritors... temp private
+		super(tags);
+	}
+
+	@Override
+	public Map<String, Alignment> alignments() {
+		return alignments;
 	}
 
 	@Override
@@ -51,18 +66,6 @@ public class VisualGroup extends VisualPart {
 	}
 
 	@Override
-	public void select(final Context context) {
-		throw new DeadCode();
-	}
-
-	@Override
-	public void selectUp(final Context context) {
-		if (parent == null)
-			return;
-		parent.getTarget().selectUp(context);
-	}
-
-	@Override
 	public Brick createFirstBrick(final Context context) {
 		if (children.isEmpty())
 			return null;
@@ -85,24 +88,17 @@ public class VisualGroup extends VisualPart {
 	boolean compact = false;
 
 	@Override
-	public void setParent(final VisualParent parent) {
-		this.parent = parent;
-	}
-
-	@Override
 	public VisualParent parent() {
 		return parent;
 	}
 
-	public void add(final Context context, final VisualPart node, int preindex) {
-		if (preindex < 0)
-			preindex = this.children.size() + preindex + 1;
-		if (preindex >= this.children.size() + 1)
-			throw new AssertionError("Inserting visual node after group end.");
-		final int index = preindex;
+	public void add(final Context context, final VisualPart node, final int index) {
+		if (index < 0)
+			throw new AssertionError("Inserting visual atom at negative index.");
+		if (index >= this.children.size() + 1)
+			throw new AssertionError("Inserting visual atom after group end.");
 		this.children.stream().skip(index).forEach(n -> ((Parent) n.parent()).index += 1);
 		this.children.add(index, node);
-		node.setParent(createParent(index));
 		final Brick previousBrick = index == 0 ?
 				(parent == null ? null : parent.getPreviousBrick(context)) :
 				children.get(index - 1).getLastBrick(context);
@@ -118,16 +114,16 @@ public class VisualGroup extends VisualPart {
 	}
 
 	public void add(final Context context, final VisualPart node) {
-		add(context, node, -1);
+		add(context, node, children.size());
 	}
 
-	public void remove(final Context context, int index) {
+	public void remove(final Context context, final int index) {
 		if (index < 0)
-			index = this.children.size() + index;
+			throw new AssertionError("Removing visual atom at negative index.");
 		if (index >= this.children.size())
-			throw new AssertionError("Removing visual node after group end.");
+			throw new AssertionError("Removing visual atom after group end.");
 		final VisualPart node = children.get(index);
-		node.destroy(context);
+		node.uproot(context, null);
 		this.children.remove(index);
 		this.children.stream().skip(index).forEach(n -> ((Parent) n.parent()).index -= 1);
 	}
@@ -181,26 +177,26 @@ public class VisualGroup extends VisualPart {
 	}
 
 	@Override
-	public void anchor(final Context context, final Map<String, Alignment> alignments, final int depth) {
+	public void root(
+			final Context context, final VisualParent parent, final Map<String, Alignment> alignments, final int depth
+	) {
+		this.parent = parent;
 		PMap<String, Alignment> derived = HashTreePMap.from(alignments);
 		for (final Map.Entry<String, Alignment> e : this.alignments.entrySet()) {
 			final Alignment alignment = e.getValue();
 			alignment.root(context, alignments);
 			derived = derived.plus(e.getKey(), alignment);
 		}
-		for (final VisualPart child : children)
-			child.anchor(context, derived, depth);
+		for (int index = 0; index < children.size(); ++index) {
+			final VisualPart child = children.get(index);
+			child.root(context, child.parent(), derived, depth);
+		}
 	}
 
 	@Override
-	public void destroy(final Context context) {
+	public void uproot(final Context context, final Visual root) {
 		for (final VisualPart child : children)
-			child.destroy(context);
-	}
-
-	@Override
-	public boolean isAt(final Value value) {
-		return false;
+			child.uproot(context, root);
 	}
 
 	@Override
@@ -218,10 +214,8 @@ public class VisualGroup extends VisualPart {
 		}
 
 		@Override
-		public void selectUp(final Context context) {
-			if (target.parent == null)
-				return;
-			target.parent.selectUp(context);
+		public VisualParent parent() {
+			return target.parent;
 		}
 
 		@Override
@@ -248,7 +242,7 @@ public class VisualGroup extends VisualPart {
 		}
 
 		@Override
-		public VisualNodeType getNodeVisual() {
+		public VisualAtomType getNodeVisual() {
 			if (target.parent == null)
 				return null;
 			return target.parent.getNodeVisual();

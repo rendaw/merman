@@ -3,10 +3,10 @@ package com.zarbosoft.bonestruct.syntax;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
-import com.zarbosoft.bonestruct.document.Node;
+import com.zarbosoft.bonestruct.document.Atom;
 import com.zarbosoft.bonestruct.document.values.Value;
 import com.zarbosoft.bonestruct.document.values.ValueArray;
-import com.zarbosoft.bonestruct.document.values.ValueNode;
+import com.zarbosoft.bonestruct.document.values.ValueAtom;
 import com.zarbosoft.bonestruct.document.values.ValuePrimitive;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.history.changes.ChangeArray;
@@ -15,7 +15,7 @@ import com.zarbosoft.bonestruct.syntax.back.BackDataPrimitive;
 import com.zarbosoft.bonestruct.syntax.back.BackPart;
 import com.zarbosoft.bonestruct.syntax.back.BackType;
 import com.zarbosoft.bonestruct.syntax.front.*;
-import com.zarbosoft.bonestruct.syntax.middle.MiddleElement;
+import com.zarbosoft.bonestruct.syntax.middle.MiddlePart;
 import com.zarbosoft.bonestruct.syntax.middle.MiddlePrimitive;
 import com.zarbosoft.interface1.Configuration;
 import com.zarbosoft.pidgoon.ParseContext;
@@ -39,48 +39,48 @@ import java.util.stream.Stream;
 import static com.zarbosoft.rendaw.common.Common.iterable;
 
 @Configuration
-public class GapNodeType extends NodeType {
+public class GapAtomType extends AtomType {
 	private final MiddlePrimitive dataGap;
 	@Configuration
-	public List<FrontConstantPart> frontPrefix = new ArrayList<>();
+	public List<FrontSymbol> frontPrefix = new ArrayList<>();
 	@Configuration
-	public List<FrontConstantPart> frontSuffix = new ArrayList<>();
+	public List<FrontSymbol> frontSuffix = new ArrayList<>();
 
 	private final List<FrontPart> front;
 	private final List<BackPart> back;
-	private final Map<String, MiddleElement> middle;
+	private final Map<String, MiddlePart> middle;
 
 	public Value findSelectNext(
-			final Context context, final Node node, boolean skipFirstNode
+			final Context context, final Atom atom, boolean skipFirstNode
 	) {
-		for (final FrontPart front : node.type.front()) {
+		for (final FrontPart front : atom.type.front()) {
 			if (front instanceof FrontDataPrimitive) {
-				return node.data.get(((FrontDataPrimitive) front).middle);
+				return atom.data.get(((FrontDataPrimitive) front).middle);
 			} else if (front instanceof FrontGapBase) {
-				return node.data.get(middle());
-			} else if (front instanceof FrontDataNode) {
+				return atom.data.get(middle());
+			} else if (front instanceof FrontDataAtom) {
 				if (skipFirstNode) {
 					skipFirstNode = false;
 				} else {
 					final Value found = findSelectNext(context,
-							((ValueNode) node.data.get(((FrontDataNode) front).middle)).get(),
+							((ValueAtom) atom.data.get(((FrontDataAtom) front).middle)).get(),
 							skipFirstNode
 					);
 					if (found != null)
 						return found;
 				}
 			} else if (front instanceof FrontDataArray) {
-				final ValueArray array = (ValueArray) node.data.get(((FrontDataArray) front).middle);
+				final ValueArray array = (ValueArray) atom.data.get(((FrontDataArray) front).middle);
 				if (array.data.isEmpty()) {
 					if (skipFirstNode) {
 						skipFirstNode = false;
 					} else {
-						final Node newGap = context.syntax.gap.create();
+						final Atom newGap = context.syntax.gap.create();
 						context.history.apply(context, new ChangeArray(array, 0, 0, ImmutableList.of(newGap)));
 						return newGap.data.get("gap");
 					}
 				} else
-					for (final Node element : array.get()) {
+					for (final Atom element : array.data) {
 						if (skipFirstNode) {
 							skipFirstNode = false;
 						} else {
@@ -94,20 +94,20 @@ public class GapNodeType extends NodeType {
 		return null;
 	}
 
-	public GapNodeType() {
+	public GapAtomType() {
 		id = "__gap";
 		{
 			final FrontGapBase gap = new FrontGapBase() {
 				@Override
 				protected List<? extends Choice> process(
-						final Context context, final Node self, final String string, final Common.UserData store
+						final Context context, final Atom self, final String string, final Common.UserData store
 				) {
 					class GapChoice extends Choice {
-						private final FreeNodeType type;
+						private final FreeAtomType type;
 						private final GapKey key;
 
 						GapChoice(
-								final FreeNodeType type, final GapKey key
+								final FreeAtomType type, final GapKey key
 						) {
 							this.type = type;
 							this.key = key;
@@ -118,22 +118,22 @@ public class GapNodeType extends NodeType {
 						}
 
 						public void choose(final Context context, final String string) {
-							// Build node
+							// Build atom
 							final GapKey.ParseResult parsed = key.parse(context, type, string);
-							final Node node = parsed.node;
+							final Atom atom = parsed.atom;
 							final String remainder = parsed.remainder;
 
-							// Place the node
-							Value selectNext = findSelectNext(context, node, false);
-							final Node replacement;
+							// Place the atom
+							Value selectNext = findSelectNext(context, atom, false);
+							final Atom replacement;
 							if (selectNext == null) {
-								replacement = context.syntax.suffixGap.create(true, node);
+								replacement = context.syntax.suffixGap.create(true, atom);
 								selectNext = replacement.data.get("gap");
 							} else {
-								replacement = node;
+								replacement = atom;
 							}
 							self.parent.replace(context, replacement);
-							selectNext.getVisual().selectDown(context);
+							selectNext.selectDown(context);
 							if (!remainder.isEmpty())
 								context.selection.receiveText(context, remainder);
 						}
@@ -152,7 +152,7 @@ public class GapNodeType extends NodeType {
 					// Get or build gap grammar
 					final Grammar grammar = store.get(() -> {
 						final Union union = new Union();
-						for (final FreeNodeType type : (
+						for (final FreeAtomType type : (
 								self.parent == null ?
 										iterable(context.syntax.getLeafTypes(context.syntax.root.type)) :
 										iterable(context.syntax.getLeafTypes(self.parent.childType()))
@@ -197,7 +197,7 @@ public class GapNodeType extends NodeType {
 
 				@Override
 				protected void deselect(
-						final Context context, final Node self, final String string, final Common.UserData userData
+						final Context context, final Atom self, final String string, final Common.UserData userData
 				) {
 					if (!string.isEmpty())
 						return;
@@ -232,7 +232,7 @@ public class GapNodeType extends NodeType {
 	}
 
 	@Override
-	public Map<String, MiddleElement> middle() {
+	public Map<String, MiddlePart> middle() {
 		return middle;
 	}
 
@@ -261,7 +261,7 @@ public class GapNodeType extends NodeType {
 		return "Gap";
 	}
 
-	public Node create() {
-		return new Node(this, ImmutableMap.of("gap", new ValuePrimitive(dataGap, "")));
+	public Atom create() {
+		return new Atom(this, ImmutableMap.of("gap", new ValuePrimitive(dataGap, "")));
 	}
 }

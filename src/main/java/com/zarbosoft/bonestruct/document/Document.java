@@ -46,17 +46,17 @@ public class Document {
 		}
 	}
 
-	public static void write(final Node node, final RawWriter writer) {
+	public static void write(final Atom atom, final RawWriter writer) {
 		uncheck(() -> {
 			final Deque<Pair<Object, Map<String, Value>>> stack = new ArrayDeque<>();
-			stack.addLast(new Pair<>(node, null));
+			stack.addLast(new Pair<>(atom, null));
 			while (!stack.isEmpty()) {
 				final Pair<Object, Map<String, Value>> pair = stack.pollLast();
 				final Map<String, Value> data = pair.second;
 				final Object next = pair.first;
-				if (next instanceof Node) {
-					for (final BackPart part : reverse(((Node) next).type.back())) {
-						stack.addLast(new Pair<>(part, ((Node) next).data));
+				if (next instanceof Atom) {
+					for (final BackPart part : reverse(((Atom) next).type.back())) {
+						stack.addLast(new Pair<>(part, ((Atom) next).data));
 					}
 				} else if (next instanceof BackType) {
 					writer.type(((BackType) next).value);
@@ -79,17 +79,17 @@ public class Document {
 					writer.key(((WriteKey) next).key);
 				} else if (next instanceof BackDataPrimitive) {
 					writer.primitive(((ValuePrimitive) data.get(((BackDataPrimitive) next).middle)).get());
-				} else if (next instanceof BackDataNode) {
-					stack.addLast(new Pair<>(((ValueNode) data.get(((BackDataNode) next).middle)).get(), null));
+				} else if (next instanceof BackDataAtom) {
+					stack.addLast(new Pair<>(((ValueAtom) data.get(((BackDataAtom) next).middle)).get(), null));
 				} else if (next instanceof BackDataArray) {
-					for (final Node node2 : reverse(((ValueArray) data.get(((BackDataArray) next).middle)).data)) {
-						stack.addLast(new Pair<>(node2, null));
+					for (final Atom atom2 : reverse(((ValueArray) data.get(((BackDataArray) next).middle)).data)) {
+						stack.addLast(new Pair<>(atom2, null));
 					}
 				} else if (next instanceof BackDataKey) {
 					writer.key(((ValueRecordKey) data.get(((BackDataKey) next).middle)).get());
 				} else if (next instanceof BackDataRecord) {
-					for (final Node node2 : ((ValueArray) data.get(((BackDataRecord) next).middle)).data) {
-						stack.addLast(new Pair<>(node2, null));
+					for (final Atom atom2 : ((ValueArray) data.get(((BackDataRecord) next).middle)).data) {
+						stack.addLast(new Pair<>(atom2, null));
 					}
 				} else
 					throw new DeadCode();

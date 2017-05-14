@@ -1,10 +1,10 @@
 package com.zarbosoft.bonestruct;
 
 import com.google.common.collect.ImmutableList;
-import com.zarbosoft.bonestruct.document.Node;
+import com.zarbosoft.bonestruct.document.Atom;
 import com.zarbosoft.bonestruct.document.values.Value;
 import com.zarbosoft.bonestruct.document.values.ValueArray;
-import com.zarbosoft.bonestruct.document.values.ValueNode;
+import com.zarbosoft.bonestruct.document.values.ValueAtom;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.Path;
 import com.zarbosoft.bonestruct.editor.history.changes.ChangeArray;
@@ -28,35 +28,35 @@ public class TestSelectionChanges {
 
 	private void innerTestTransform(
 			final Syntax syntax,
-			final Node begin,
+			final Atom begin,
 			final Path selectBegin,
-			final Pair.Consumer<Context, Node> transform,
-			final Node end,
+			final Pair.Consumer<Context, Atom> transform,
+			final Atom end,
 			final Path selectEnd
 	) {
 		final Context context = buildDoc(syntax, begin);
 
 		// Initial selection and double checking
-		final Node found = (Node) context.locateLong(selectBegin);
-		found.getVisual().parent().selectUp(context);
+		final Atom found = (Atom) context.locateLong(selectBegin);
+		found.parent.selectUp(context);
 		assertThat(context.selection.getPath(), equalTo(selectBegin));
 
 		// Transform
 		transform.accept(context, found);
-		assertThat(context.document.top.get().size(), equalTo(1));
-		assertTreeEqual(context.document.top.get().get(0), end);
+		assertThat(context.document.top.data.size(), equalTo(1));
+		assertTreeEqual(context.document.top.data.get(0), end);
 		assertThat(context.selection.getPath(), equalTo(selectEnd));
 
 		// Undo
 		context.history.undo(context);
-		assertThat(context.document.top.get().size(), equalTo(1));
-		assertTreeEqual(context.document.top.get().get(0), begin);
+		assertThat(context.document.top.data.size(), equalTo(1));
+		assertTreeEqual(context.document.top.data.get(0), begin);
 		assertThat(context.selection.getPath(), equalTo(selectBegin));
 
 		// Redo
 		context.history.redo(context);
-		assertThat(context.document.top.get().size(), equalTo(1));
-		assertTreeEqual(context.document.top.get().get(0), end);
+		assertThat(context.document.top.data.size(), equalTo(1));
+		assertTreeEqual(context.document.top.data.get(0), end);
 		assertThat(context.selection.getPath(), equalTo(selectEnd));
 	}
 
@@ -75,7 +75,7 @@ public class TestSelectionChanges {
 				new Helper.TreeBuilder(MiscSyntax.five).build()
 		).build());
 
-		final ValueArray value = (ValueArray) context.document.top.get().get(0).data.get("value");
+		final ValueArray value = (ValueArray) context.document.top.data.get(0).data.get("value");
 		final VisualArray visual = (VisualArray) value.visual;
 		visual.select(context, beginSelectBegin, beginSelectEnd);
 		final VisualArray.ArraySelection selection = visual.selection;
@@ -379,7 +379,7 @@ public class TestSelectionChanges {
 				new Path("0", "value"),
 				(context, selected) -> {
 					context.history.apply(context,
-							new ChangeNodeSet((ValueNode) selected.parent.value(), MiscSyntax.syntax.gap.create())
+							new ChangeNodeSet((ValueAtom) selected.parent.value(), MiscSyntax.syntax.gap.create())
 					);
 				},
 				new Helper.TreeBuilder(MiscSyntax.snooze).add("value", MiscSyntax.syntax.gap.create()).build(),

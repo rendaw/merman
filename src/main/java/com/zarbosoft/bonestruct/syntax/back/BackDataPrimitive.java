@@ -1,7 +1,7 @@
 package com.zarbosoft.bonestruct.syntax.back;
 
 import com.zarbosoft.bonestruct.document.values.ValuePrimitive;
-import com.zarbosoft.bonestruct.syntax.NodeType;
+import com.zarbosoft.bonestruct.syntax.AtomType;
 import com.zarbosoft.bonestruct.syntax.Syntax;
 import com.zarbosoft.interface1.Configuration;
 import com.zarbosoft.luxem.read.source.LPrimitiveEvent;
@@ -20,18 +20,18 @@ public class BackDataPrimitive extends BackPart {
 	public String middle;
 
 	@Override
-	public Node buildBackRule(final Syntax syntax, final NodeType nodeType) {
+	public Node buildBackRule(final Syntax syntax, final AtomType atomType) {
 		return new Operator(new Terminal(new LPrimitiveEvent(null)), store -> {
 			store = (Store) store.pushStack(new Pair<>(
 					middle,
-					new ValuePrimitive(nodeType.getDataPrimitive(middle), ((LPrimitiveEvent) store.top()).value)
+					new ValuePrimitive(atomType.getDataPrimitive(middle), ((LPrimitiveEvent) store.top()).value)
 			));
 			return Helper.stackSingleElement(store);
 		});
 	}
 
-	public void finish(final Syntax syntax, final NodeType nodeType, final Set<String> middleUsed) {
+	public void finish(final Syntax syntax, final AtomType atomType, final Set<String> middleUsed) {
 		middleUsed.add(middle);
-		nodeType.getDataPrimitive(middle);
+		atomType.getDataPrimitive(middle);
 	}
 }

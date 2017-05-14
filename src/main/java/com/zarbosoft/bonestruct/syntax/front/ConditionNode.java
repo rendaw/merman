@@ -1,25 +1,25 @@
 package com.zarbosoft.bonestruct.syntax.front;
 
-import com.zarbosoft.bonestruct.document.Node;
+import com.zarbosoft.bonestruct.document.Atom;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.visual.condition.ConditionAttachment;
-import com.zarbosoft.bonestruct.syntax.FreeNodeType;
-import com.zarbosoft.bonestruct.syntax.SuffixGapNodeType;
+import com.zarbosoft.bonestruct.syntax.FreeAtomType;
+import com.zarbosoft.bonestruct.syntax.SuffixGapAtomType;
 import com.zarbosoft.interface1.Configuration;
 
 @Configuration(name = "precedential")
 public class ConditionNode extends ConditionType {
 	@Override
 	public ConditionAttachment create(
-			final Context context, final Node node
+			final Context context, final Atom atom
 	) {
 		final boolean show;
-		if (node.parent.value().parent == null) {
+		if (atom.parent.value().parent == null) {
 			show = true;
-		} else if (!(node.type instanceof FreeNodeType)) {
+		} else if (!(atom.type instanceof FreeAtomType)) {
 			show = true;
 		} else {
-			show = SuffixGapNodeType.isPrecedent((FreeNodeType) node.type, node.parent, true);
+			show = SuffixGapAtomType.isPrecedent((FreeAtomType) atom.type, atom.parent, true);
 		}
 		final ConditionAttachment condition = new ConditionAttachment(invert) {
 			@Override
@@ -40,7 +40,7 @@ public class ConditionNode extends ConditionType {
 
 	@Configuration
 	public static enum Is {
-		@Configuration(name = "precedent", description = "Show if the node is precedent relative to its parent.")
+		@Configuration(name = "precedent", description = "Show if the atom is precedent relative to its parent.")
 		PRECEDENT,
 	}
 

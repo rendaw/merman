@@ -1,10 +1,10 @@
 package com.zarbosoft.bonestruct;
 
+import com.zarbosoft.bonestruct.document.Atom;
 import com.zarbosoft.bonestruct.document.Document;
-import com.zarbosoft.bonestruct.document.Node;
 import com.zarbosoft.bonestruct.editor.Path;
 import com.zarbosoft.bonestruct.helper.Helper;
-import com.zarbosoft.bonestruct.syntax.FreeNodeType;
+import com.zarbosoft.bonestruct.syntax.FreeAtomType;
 import com.zarbosoft.bonestruct.syntax.Syntax;
 import org.junit.Test;
 
@@ -16,7 +16,7 @@ import static org.hamcrest.core.IsNot.not;
 import static org.junit.Assert.assertThat;
 
 public class TestDocumentLoad {
-	static FreeNodeType type1;
+	static FreeAtomType type1;
 	static Syntax syntax;
 
 	static {
@@ -31,7 +31,7 @@ public class TestDocumentLoad {
 	public void primitive() {
 		final Document doc = syntax.load("#1");
 		{
-			final List<Node> top = doc.top.get();
+			final List<Atom> top = doc.top.data;
 			assertThat(top.size(), equalTo(1));
 			assertThat(top.get(0).type, equalTo(type1));
 			assertThat(top.get(0).parent.getPath(), equalTo(new Path("0")));
@@ -42,7 +42,7 @@ public class TestDocumentLoad {
 	public void rootArray() {
 		final Document doc = syntax.load("#1, #1");
 		{
-			final List<Node> top = doc.top.get();
+			final List<Atom> top = doc.top.data;
 			assertThat(top.size(), equalTo(2));
 			assertThat(top.get(0).type, equalTo(type1));
 			assertThat(top.get(1).type, equalTo(type1));

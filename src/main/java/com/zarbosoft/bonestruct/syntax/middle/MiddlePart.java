@@ -7,7 +7,7 @@ import com.zarbosoft.interface1.Configuration;
 import java.util.Set;
 
 @Configuration
-public abstract class MiddleElement {
+public abstract class MiddlePart {
 	public String id;
 
 	public abstract void finish(Set<String> allTypes, Set<String> scalarTypes);

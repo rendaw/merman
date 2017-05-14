@@ -1,15 +1,18 @@
 package com.zarbosoft.bonestruct.syntax.front;
 
-import com.zarbosoft.bonestruct.document.Node;
+import com.zarbosoft.bonestruct.document.Atom;
 import com.zarbosoft.bonestruct.editor.Context;
+import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.Visual;
+import com.zarbosoft.bonestruct.editor.visual.VisualParent;
 import com.zarbosoft.bonestruct.editor.visual.VisualPart;
-import com.zarbosoft.bonestruct.syntax.NodeType;
+import com.zarbosoft.bonestruct.syntax.AtomType;
 import com.zarbosoft.interface1.Configuration;
 import com.zarbosoft.rendaw.common.DeadCode;
 import org.pcollections.PSet;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 @Configuration
@@ -19,10 +22,15 @@ public abstract class FrontPart {
 	public Set<String> tags = new HashSet<>();
 
 	public abstract VisualPart createVisual(
-			Context context, Node node, PSet<Visual.Tag> tags
+			Context context,
+			VisualParent parent,
+			Atom atom,
+			PSet<Visual.Tag> tags,
+			Map<String, Alignment> alignments,
+			int depth
 	);
 
-	public void finish(final NodeType nodeType, final Set<String> middleUsed) {
+	public void finish(final AtomType atomType, final Set<String> middleUsed) {
 	}
 
 	public abstract String middle();
@@ -33,7 +41,7 @@ public abstract class FrontPart {
 
 		public abstract void handle(FrontDataArrayBase front);
 
-		public abstract void handle(FrontDataNode front);
+		public abstract void handle(FrontDataAtom front);
 
 		public abstract void handle(FrontDataPrimitive front);
 

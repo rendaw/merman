@@ -6,8 +6,6 @@ import com.zarbosoft.bonestruct.editor.Hoverable;
 import com.zarbosoft.rendaw.common.DeadCode;
 import org.pcollections.PSet;
 
-import java.util.Map;
-
 public abstract class VisualPart extends Visual {
 	public VisualPart(final PSet<Tag> tags) {
 		super(tags);
@@ -42,10 +40,6 @@ public abstract class VisualPart extends Visual {
 				context,
 				new TagsChange(ImmutableSet.of(new StateTag("expanded")), ImmutableSet.of(new StateTag("compact")))
 		);
-	}
-
-	@Override
-	public void anchor(final Context context, final Map<String, Alignment> alignments, final int depth) {
 	}
 
 	public Hoverable hover(final Context context, final Vector point) {

@@ -1,11 +1,14 @@
 package com.zarbosoft.bonestruct.syntax.front;
 
+import com.zarbosoft.bonestruct.document.Atom;
 import com.zarbosoft.bonestruct.editor.Context;
+import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.Visual;
+import com.zarbosoft.bonestruct.editor.visual.VisualParent;
 import com.zarbosoft.bonestruct.editor.visual.VisualPart;
-import com.zarbosoft.bonestruct.editor.visual.visuals.VisualNodeFromArray;
+import com.zarbosoft.bonestruct.editor.visual.visuals.VisualAtomFromArray;
 import com.zarbosoft.bonestruct.modules.hotkeys.grammar.Node;
-import com.zarbosoft.bonestruct.syntax.NodeType;
+import com.zarbosoft.bonestruct.syntax.AtomType;
 import com.zarbosoft.bonestruct.syntax.middle.MiddleArray;
 import com.zarbosoft.bonestruct.syntax.symbol.Symbol;
 import com.zarbosoft.interface1.Configuration;
@@ -17,7 +20,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class FrontDataArrayAsNode extends FrontPart {
+public class FrontDataArrayAsAtom extends FrontPart {
 
 	@Override
 	public String middle() {
@@ -33,15 +36,23 @@ public class FrontDataArrayAsNode extends FrontPart {
 
 	@Override
 	public VisualPart createVisual(
-			final Context context, final com.zarbosoft.bonestruct.document.Node node, final PSet<Visual.Tag> tags
+			final Context context,
+			final VisualParent parent,
+			final Atom atom,
+			final PSet<Visual.Tag> tags,
+			final Map<String, Alignment> alignments,
+			final int depth
 	) {
-		return new VisualNodeFromArray(
+		return new VisualAtomFromArray(
 				context,
-				dataType.get(node.data),
+				parent,
+				dataType.get(atom.data),
 				HashTreePSet
 						.from(tags)
 						.plus(new Visual.PartTag("nested"))
-						.plusAll(this.tags.stream().map(s -> new Visual.FreeTag(s)).collect(Collectors.toSet()))
+						.plusAll(this.tags.stream().map(s -> new Visual.FreeTag(s)).collect(Collectors.toSet())),
+				alignments,
+				depth
 		) {
 
 			@Override
@@ -58,9 +69,9 @@ public class FrontDataArrayAsNode extends FrontPart {
 	}
 
 	@Override
-	public void finish(final NodeType nodeType, final Set<String> middleUsed) {
+	public void finish(final AtomType atomType, final Set<String> middleUsed) {
 		middleUsed.add(middle);
-		dataType = (MiddleArray) nodeType.getDataArray(middle);
+		dataType = (MiddleArray) atomType.getDataArray(middle);
 	}
 
 	@Override

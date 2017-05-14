@@ -1,7 +1,8 @@
 package com.zarbosoft.bonestruct.syntax.back;
 
+import com.zarbosoft.bonestruct.document.Atom;
 import com.zarbosoft.bonestruct.document.values.ValueArray;
-import com.zarbosoft.bonestruct.syntax.NodeType;
+import com.zarbosoft.bonestruct.syntax.AtomType;
 import com.zarbosoft.bonestruct.syntax.Syntax;
 import com.zarbosoft.interface1.Configuration;
 import com.zarbosoft.luxem.read.source.LArrayCloseEvent;
@@ -27,31 +28,28 @@ public class BackDataArray extends BackPart {
 	public String middle;
 
 	@Override
-	public Node buildBackRule(final Syntax syntax, final NodeType nodeType) {
+	public Node buildBackRule(final Syntax syntax, final AtomType atomType) {
 		final Sequence sequence;
 		sequence = new Sequence();
 		sequence.add(new Operator(new Terminal(new LArrayOpenEvent()), (store) -> store.pushStack(0)));
-		sequence.add(new Repeat(new Operator(new Reference(nodeType.getDataArray(middle).type),
+		sequence.add(new Repeat(new Operator(
+				new Reference(atomType.getDataArray(middle).type),
 				(store) -> com.zarbosoft.pidgoon.internal.Helper.stackSingleElement(store)
 		)));
 		sequence.add(new Terminal(new LArrayCloseEvent()));
 		return new Operator(sequence, (store) -> {
-			final List<com.zarbosoft.bonestruct.document.Node> temp = new ArrayList<>();
-			store =
-					(Store) com.zarbosoft.pidgoon.internal.Helper.<com.zarbosoft.bonestruct.document.Node>stackPopSingleList(
-							store,
-							temp::add
-					);
+			final List<Atom> temp = new ArrayList<>();
+			store = (Store) com.zarbosoft.pidgoon.internal.Helper.<Atom>stackPopSingleList(store, temp::add);
 			Collections.reverse(temp);
-			final ValueArray value = new ValueArray(nodeType.getDataArray(middle), temp);
+			final ValueArray value = new ValueArray(atomType.getDataArray(middle), temp);
 			store = (Store) store.pushStack(new Pair<>(middle, value));
 			return Helper.stackSingleElement(store);
 		});
 	}
 
 	@Override
-	public void finish(final Syntax syntax, final NodeType nodeType, final Set<String> middleUsed) {
+	public void finish(final Syntax syntax, final AtomType atomType, final Set<String> middleUsed) {
 		middleUsed.add(middle);
-		nodeType.getDataArray(middle);
+		atomType.getDataArray(middle);
 	}
 }

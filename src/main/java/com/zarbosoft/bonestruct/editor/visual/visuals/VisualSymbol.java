@@ -1,9 +1,9 @@
 package com.zarbosoft.bonestruct.editor.visual.visuals;
 
 import com.google.common.collect.Iterables;
-import com.zarbosoft.bonestruct.document.values.Value;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
+import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.VisualParent;
 import com.zarbosoft.bonestruct.editor.visual.VisualPart;
 import com.zarbosoft.bonestruct.editor.visual.condition.ConditionAttachment;
@@ -11,11 +11,11 @@ import com.zarbosoft.bonestruct.editor.wall.Brick;
 import com.zarbosoft.bonestruct.editor.wall.BrickInterface;
 import com.zarbosoft.bonestruct.syntax.front.FrontSymbol;
 import com.zarbosoft.bonestruct.syntax.style.Style;
-import com.zarbosoft.rendaw.common.DeadCode;
 import com.zarbosoft.rendaw.common.Pair;
 import org.pcollections.PSet;
 
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Set;
 
 public class VisualSymbol extends VisualPart implements ConditionAttachment.Listener, BrickInterface {
@@ -24,8 +24,15 @@ public class VisualSymbol extends VisualPart implements ConditionAttachment.List
 	public Brick brick = null;
 	public ConditionAttachment condition = null;
 
-	public VisualSymbol(final FrontSymbol frontSymbol, final PSet<Tag> tags, final ConditionAttachment condition) {
+	public VisualSymbol(
+			final Context context,
+			final VisualParent parent,
+			final FrontSymbol frontSymbol,
+			final PSet<Tag> tags,
+			final ConditionAttachment condition
+	) {
 		super(tags);
+		this.parent = parent;
 		this.frontSymbol = frontSymbol;
 		if (condition != null) {
 			this.condition = condition;
@@ -43,11 +50,6 @@ public class VisualSymbol extends VisualPart implements ConditionAttachment.List
 	}
 
 	@Override
-	public void setParent(final VisualParent parent) {
-		this.parent = parent;
-	}
-
-	@Override
 	public VisualParent parent() {
 		return parent;
 	}
@@ -55,16 +57,6 @@ public class VisualSymbol extends VisualPart implements ConditionAttachment.List
 	@Override
 	public boolean selectDown(final Context context) {
 		return false;
-	}
-
-	@Override
-	public void select(final Context context) {
-		throw new DeadCode();
-	}
-
-	@Override
-	public void selectUp(final Context context) {
-		throw new DeadCode();
 	}
 
 	@Override
@@ -110,16 +102,18 @@ public class VisualSymbol extends VisualPart implements ConditionAttachment.List
 	}
 
 	@Override
-	public void destroy(final Context context) {
+	public void root(
+			final Context context, final VisualParent parent, final Map<String, Alignment> alignments, final int depth
+	) {
+		// Nothing should be useful/change here
+	}
+
+	@Override
+	public void uproot(final Context context, final Visual root) {
 		if (brick != null)
 			brick.destroy(context);
 		if (condition != null)
 			condition.destroy(context);
-	}
-
-	@Override
-	public boolean isAt(final Value value) {
-		return false;
 	}
 
 	@Override

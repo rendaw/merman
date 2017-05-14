@@ -1,10 +1,11 @@
 package com.zarbosoft.bonestruct.syntax.back;
 
 import com.google.common.collect.ImmutableList;
+import com.zarbosoft.bonestruct.document.Atom;
 import com.zarbosoft.bonestruct.document.values.ValueArray;
-import com.zarbosoft.bonestruct.syntax.FreeNodeType;
+import com.zarbosoft.bonestruct.syntax.AtomType;
+import com.zarbosoft.bonestruct.syntax.FreeAtomType;
 import com.zarbosoft.bonestruct.syntax.InvalidSyntax;
-import com.zarbosoft.bonestruct.syntax.NodeType;
 import com.zarbosoft.bonestruct.syntax.Syntax;
 import com.zarbosoft.bonestruct.syntax.middle.MiddleRecord;
 import com.zarbosoft.interface1.Configuration;
@@ -33,37 +34,34 @@ public class BackDataRecord extends BackPart {
 	public String middle;
 
 	@Override
-	public Node buildBackRule(final Syntax syntax, final NodeType nodeType) {
+	public Node buildBackRule(final Syntax syntax, final AtomType atomType) {
 		final Sequence sequence;
 		sequence = new Sequence();
 		sequence.add(new Operator(new Terminal(new LObjectOpenEvent()), (store) -> store.pushStack(0)));
-		sequence.add(new Repeat(new Operator(new Reference(nodeType.getDataArray(middle).type),
+		sequence.add(new Repeat(new Operator(
+				new Reference(atomType.getDataArray(middle).type),
 				(store) -> com.zarbosoft.pidgoon.internal.Helper.stackSingleElement(store)
 		)));
 		sequence.add(new Terminal(new LObjectCloseEvent()));
 		return new Operator(sequence, (store) -> {
-			final List<com.zarbosoft.bonestruct.document.Node> temp = new ArrayList<>();
-			store =
-					(Store) com.zarbosoft.pidgoon.internal.Helper.<com.zarbosoft.bonestruct.document.Node>stackPopSingleList(
-							store,
-							temp::add
-					);
+			final List<Atom> temp = new ArrayList<>();
+			store = (Store) com.zarbosoft.pidgoon.internal.Helper.<Atom>stackPopSingleList(store, temp::add);
 			Collections.reverse(temp);
-			final ValueArray value = new ValueArray(nodeType.getDataArray(middle), temp);
+			final ValueArray value = new ValueArray(atomType.getDataArray(middle), temp);
 			store = (Store) store.pushStack(new Pair<>(middle, value));
 			return Helper.stackSingleElement(store);
 		});
 	}
 
 	@Override
-	public void finish(final Syntax syntax, final NodeType nodeType, final Set<String> middleUsed) {
+	public void finish(final Syntax syntax, final AtomType atomType, final Set<String> middleUsed) {
 		middleUsed.add(middle);
-		final MiddleRecord dataType = nodeType.getDataRecord(middle);
-		for (final FreeNodeType element : iterable(syntax.getLeafTypes(dataType.type))) {
+		final MiddleRecord dataType = atomType.getDataRecord(middle);
+		for (final FreeAtomType element : iterable(syntax.getLeafTypes(dataType.type))) {
 			if (element.back.size() != 2 ||
 					!(element.back.get(0) instanceof BackDataKey) ||
 					ImmutableList
-							.of(BackDataNode.class, BackDataPrimitive.class, BackDataRecord.class, BackDataArray.class)
+							.of(BackDataAtom.class, BackDataPrimitive.class, BackDataRecord.class, BackDataArray.class)
 							.stream()
 							.noneMatch(klass -> klass.equals(element.back.get(1).getClass())))
 				throw new InvalidSyntax(

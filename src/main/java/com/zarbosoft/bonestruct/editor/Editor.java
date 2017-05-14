@@ -1,15 +1,11 @@
 package com.zarbosoft.bonestruct.editor;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.zarbosoft.bonestruct.document.Document;
-import com.zarbosoft.bonestruct.document.Node;
 import com.zarbosoft.bonestruct.editor.display.Display;
 import com.zarbosoft.bonestruct.editor.history.History;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
-import com.zarbosoft.bonestruct.editor.visual.VisualPart;
 import com.zarbosoft.bonestruct.syntax.Syntax;
-import org.pcollections.HashTreePSet;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -17,6 +13,20 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class Editor {
+	/**
+	 * Invariants and inner workings
+	 * - Bricks are only created
+	 * -- outward from the cornerstone when the selection changes
+	 * -- when the window expands
+	 * -- when the model changes
+	 * <p>
+	 * The whole document is always loaded.
+	 * Visuals exist for everything in the window.
+	 * Bricks eventually exist for everything on screen.
+	 * <p>
+	 * The selection may be null within a transaction but always exists afterwards.
+	 * The initial selection is set by default in context.
+	 */
 	private final Context context;
 	private final Display visual;
 	boolean keyIgnore = false;
@@ -100,9 +110,7 @@ public class Editor {
 		visual.add(context.background);
 		visual.add(context.midground);
 		visual.add(context.foreground.visual);
-		final Node rootNode = new Node(ImmutableMap.of("value", doc.top));
-		final VisualPart root = context.syntax.rootFront.createVisual(context, rootNode, HashTreePSet.empty());
-		root.selectDown(context);
+		context.document.top.selectDown(context);
 	}
 
 	public void destroy() {

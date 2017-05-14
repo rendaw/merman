@@ -2,15 +2,12 @@ package com.zarbosoft.bonestruct.editor.visual.visuals;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
-import com.zarbosoft.bonestruct.document.values.Value;
 import com.zarbosoft.bonestruct.document.values.ValuePrimitive;
 import com.zarbosoft.bonestruct.editor.*;
 import com.zarbosoft.bonestruct.editor.display.Font;
 import com.zarbosoft.bonestruct.editor.displaynodes.Obbox;
-import com.zarbosoft.bonestruct.editor.visual.Alignment;
+import com.zarbosoft.bonestruct.editor.visual.*;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
-import com.zarbosoft.bonestruct.editor.visual.VisualParent;
-import com.zarbosoft.bonestruct.editor.visual.VisualPart;
 import com.zarbosoft.bonestruct.editor.visual.attachments.CursorAttachment;
 import com.zarbosoft.bonestruct.editor.visual.attachments.TextBorderAttachment;
 import com.zarbosoft.bonestruct.editor.visual.attachments.VisualAttachmentAdapter;
@@ -20,13 +17,13 @@ import com.zarbosoft.bonestruct.editor.wall.bricks.BrickLine;
 import com.zarbosoft.bonestruct.syntax.style.ObboxStyle;
 import com.zarbosoft.bonestruct.syntax.style.Style;
 import com.zarbosoft.rendaw.common.Common;
-import com.zarbosoft.rendaw.common.DeadCode;
 import com.zarbosoft.rendaw.common.Pair;
 import org.pcollections.PSet;
 
 import java.lang.ref.WeakReference;
 import java.text.BreakIterator;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -81,23 +78,6 @@ public class VisualPrimitive extends VisualPart {
 		for (final Line line : lines) {
 			line.styleChanged(context, style);
 		}
-	}
-
-	@Override
-	public boolean selectDown(final Context context) {
-		final int length = data.length();
-		select(context, length, length);
-		return true;
-	}
-
-	@Override
-	public void select(final Context context) {
-		select(context, 0, 0);
-	}
-
-	@Override
-	public void selectUp(final Context context) {
-		throw new DeadCode();
 	}
 
 	@Override
@@ -343,8 +323,8 @@ public class VisualPrimitive extends VisualPart {
 				@Override
 				public void run(final Context context) {
 					context.history.finishChange(context);
-					if (parent != null) {
-						parent.selectUp(context);
+					if (data.parent != null) {
+						data.parent.selectUp(context);
 					}
 				}
 
@@ -867,7 +847,7 @@ public class VisualPrimitive extends VisualPart {
 		}
 
 		@Override
-		public VisualNodeType node() {
+		public VisualAtomType node() {
 			if (VisualPrimitive.this.parent == null)
 				return null;
 			return VisualPrimitive.this.parent.getNodeVisual();
@@ -1017,28 +997,29 @@ public class VisualPrimitive extends VisualPart {
 				.orElseGet(() -> lines.size());
 	}
 
-	public VisualPrimitive(final Context context, final ValuePrimitive data, final PSet<Tag> tags) {
+	private void idleLayBricks(final Context context, final int start, final int end) {
+		final Function<Integer, Brick> accessor = i -> lines.get(i).brick;
+		context.idleLayBricks(parent,
+				start,
+				end - start,
+				lines.size(),
+				accessor,
+				accessor,
+				i -> lines.get(start).createBrick(context)
+		);
+	}
+
+	public VisualPrimitive(
+			final Context context, final VisualParent parent, final ValuePrimitive data, final PSet<Tag> tags
+	) {
 		super(tags.plus(new PartTag("primitive")));
+		this.parent = parent;
 		data.visual = this;
 		dataListener = new ValuePrimitive.Listener() {
 			@Override
 			public void set(final Context context, final String newValue) {
-				clear(context);
-				final Common.Mutable<Integer> offset = new Common.Mutable<>(0);
-				enumerate(Arrays.stream(newValue.split("\n", -1))).forEach(pair -> {
-					final Line line = new Line(true);
-					line.setText(context, pair.second);
-					line.setIndex(context, pair.first);
-					line.offset = offset.value;
-					lines.add(line);
-					offset.value += 1 + pair.second.length();
-				});
-				if (selection != null) {
-					selection.range.setOffsets(context,
-							Math.max(0, Math.min(newValue.length(), selection.range.beginOffset))
-					);
-				}
-				suggestCreateBricks(context);
+				VisualPrimitive.this.set(context, newValue);
+				idleLayBricks(context, 0, lines.size());
 			}
 
 			@Override
@@ -1065,6 +1046,7 @@ public class VisualPrimitive extends VisualPart {
 				movingOffset = line.offset;
 
 				// Add new hard lines for remaining segments
+				final int firstLineCreated = index + 1;
 				while (true) {
 					index += 1;
 					movingOffset += line.text.length();
@@ -1077,17 +1059,8 @@ public class VisualPrimitive extends VisualPart {
 					movingOffset += 1;
 					line.offset = movingOffset;
 					lines.add(index, line);
-
-					if (index == originalIndex + 1) {
-						final Brick previousBrick = index == 0 ?
-								(parent == null ? null : parent.getPreviousBrick(context)) :
-								lines.get(index - 1).brick;
-						final Brick nextBrick = index + 1 >= lines.size() ?
-								(parent == null ? null : parent.getNextBrick(context)) :
-								lines.get(index + 1).brick;
-						context.suggestCreateBricksBetween(previousBrick, nextBrick);
-					}
 				}
+				final int lastLineCreated = index + 1;
 				if (remainder != null)
 					line.setText(context, line.text + remainder);
 
@@ -1102,6 +1075,8 @@ public class VisualPrimitive extends VisualPart {
 						newBegin = selection.range.beginOffset + value.length();
 					selection.range.setOffsets(context, newBegin);
 				}
+
+				idleLayBricks(context, firstLineCreated, lastLineCreated - firstLineCreated);
 			}
 
 			@Override
@@ -1160,13 +1135,24 @@ public class VisualPrimitive extends VisualPart {
 			}
 		};
 		data.addListener(dataListener);
-		dataListener.set(context, data.get());
+		set(context, data.get());
 		this.data = data;
 	}
 
-	@Override
-	public void setParent(final VisualParent parent) {
-		this.parent = parent;
+	private void set(final Context context, final String newValue) {
+		clear(context);
+		final Common.Mutable<Integer> offset = new Common.Mutable<>(0);
+		enumerate(Arrays.stream(newValue.split("\n", -1))).forEach(pair -> {
+			final Line line = new Line(true);
+			line.setText(context, pair.second);
+			line.setIndex(context, pair.first);
+			line.offset = offset.value;
+			lines.add(line);
+			offset.value += 1 + pair.second.length();
+		});
+		if (selection != null) {
+			selection.range.setOffsets(context, Math.max(0, Math.min(newValue.length(), selection.range.beginOffset)));
+		}
 	}
 
 	@Override
@@ -1206,15 +1192,27 @@ public class VisualPrimitive extends VisualPart {
 	}
 
 	@Override
-	public void destroy(final Context context) {
-		data.removeListener(dataListener);
-		data.visual = null;
-		clear(context);
+	public void root(
+			final Context context, final VisualParent parent, final Map<String, Alignment> alignments, final int depth
+	) {
+		// Nothing should change meaningfully here
 	}
 
 	@Override
-	public boolean isAt(final Value value) {
-		return data == value;
+	public boolean selectDown(final Context context) {
+		data.selectDown(context);
+		return true;
+	}
+
+	@Override
+	public void uproot(final Context context, final Visual root) {
+		if (selection != null)
+			context.clearSelection();
+		if (hoverable != null)
+			context.clearHover();
+		data.removeListener(dataListener);
+		data.visual = null;
+		clear(context);
 	}
 
 	@Override
@@ -1388,9 +1386,12 @@ public class VisualPrimitive extends VisualPart {
 		}
 
 		// If text remains, make new lines
+		Integer firstLineCreated = null;
+		Integer lastLineCreated = null;
 		if (build.hasText()) {
 			final Brick priorBrick = lines.get(j - 1).brick;
 
+			firstLineCreated = j;
 			while (build.hasText()) {
 				final Line line = new Line(false);
 				line.setIndex(context, j);
@@ -1406,9 +1407,7 @@ public class VisualPrimitive extends VisualPart {
 				lines.add(j, line);
 				++j;
 			}
-
-			final Brick followingBrick = j == lines.size() ? parent.getNextBrick(context) : lines.get(j).brick;
-			context.suggestCreateBricksBetween(priorBrick, followingBrick);
+			lastLineCreated = j;
 		}
 
 		// If ran out of text early, delete following soft lines
@@ -1422,6 +1421,10 @@ public class VisualPrimitive extends VisualPart {
 
 		// Cleanup
 		renumber(context, j, build.offset);
+
+		if (firstLineCreated != null) {
+			idleLayBricks(context, firstLineCreated, lastLineCreated - firstLineCreated);
+		}
 
 		// Adjust hover/selection
 		if (hoverable != null) {

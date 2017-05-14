@@ -11,7 +11,7 @@ import com.zarbosoft.bonestruct.editor.wall.BrickInterface;
 import com.zarbosoft.bonestruct.syntax.style.Style;
 
 public abstract class BrickText extends Brick implements AlignmentListener {
-	Text text;
+	public Text text;
 	private int minConverse;
 
 	public BrickText(final Context context, final BrickInterface inter) {

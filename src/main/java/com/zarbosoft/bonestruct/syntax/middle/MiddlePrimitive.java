@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.Set;
 
 @Configuration(name = "primitive")
-public class MiddlePrimitive extends MiddleElement {
+public class MiddlePrimitive extends MiddlePart {
 
 	@Configuration(optional = true, description = "An expression grammar describing valid primitive contents.")
 	public Node validation;

@@ -1,11 +1,14 @@
 package com.zarbosoft.bonestruct.syntax.front;
 
+import com.zarbosoft.bonestruct.document.Atom;
 import com.zarbosoft.bonestruct.editor.Context;
+import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.Visual;
+import com.zarbosoft.bonestruct.editor.visual.VisualParent;
 import com.zarbosoft.bonestruct.editor.visual.VisualPart;
 import com.zarbosoft.bonestruct.editor.visual.visuals.VisualPrimitive;
 import com.zarbosoft.bonestruct.modules.hotkeys.grammar.Node;
-import com.zarbosoft.bonestruct.syntax.NodeType;
+import com.zarbosoft.bonestruct.syntax.AtomType;
 import com.zarbosoft.bonestruct.syntax.middle.MiddlePrimitive;
 import com.zarbosoft.interface1.Configuration;
 import org.pcollections.HashTreePSet;
@@ -29,11 +32,17 @@ public class FrontDataPrimitive extends FrontPart {
 
 	@Override
 	public VisualPart createVisual(
-			final Context context, final com.zarbosoft.bonestruct.document.Node node, final PSet<Visual.Tag> tags
+			final Context context,
+			final VisualParent parent,
+			final Atom atom,
+			final PSet<Visual.Tag> tags,
+			final Map<String, Alignment> alignments,
+			final int depth
 	) {
 		return new VisualPrimitive(
 				context,
-				dataType.get(node.data),
+				parent,
+				dataType.get(atom.data),
 				HashTreePSet
 						.from(tags)
 						.plus(new Visual.PartTag("primitive"))
@@ -42,9 +51,9 @@ public class FrontDataPrimitive extends FrontPart {
 	}
 
 	@Override
-	public void finish(final NodeType nodeType, final Set<String> middleUsed) {
+	public void finish(final AtomType atomType, final Set<String> middleUsed) {
 		middleUsed.add(middle);
-		this.dataType = nodeType.getDataPrimitive(middle);
+		this.dataType = atomType.getDataPrimitive(middle);
 	}
 
 	@Override

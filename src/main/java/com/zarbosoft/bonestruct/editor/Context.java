@@ -4,12 +4,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
+import com.zarbosoft.bonestruct.document.Atom;
 import com.zarbosoft.bonestruct.document.Document;
 import com.zarbosoft.bonestruct.document.InvalidDocument;
-import com.zarbosoft.bonestruct.document.Node;
 import com.zarbosoft.bonestruct.document.values.Value;
 import com.zarbosoft.bonestruct.document.values.ValueArray;
-import com.zarbosoft.bonestruct.document.values.ValueNode;
+import com.zarbosoft.bonestruct.document.values.ValueAtom;
 import com.zarbosoft.bonestruct.document.values.ValuePrimitive;
 import com.zarbosoft.bonestruct.editor.banner.Banner;
 import com.zarbosoft.bonestruct.editor.details.Details;
@@ -24,9 +24,7 @@ import com.zarbosoft.bonestruct.editor.visual.VisualParent;
 import com.zarbosoft.bonestruct.editor.visual.VisualPart;
 import com.zarbosoft.bonestruct.editor.visual.attachments.TransverseExtentsAdapter;
 import com.zarbosoft.bonestruct.editor.visual.attachments.VisualAttachmentAdapter;
-import com.zarbosoft.bonestruct.editor.visual.visuals.VisualArray;
-import com.zarbosoft.bonestruct.editor.visual.visuals.VisualNodeBase;
-import com.zarbosoft.bonestruct.editor.visual.visuals.VisualNodeType;
+import com.zarbosoft.bonestruct.editor.visual.visuals.VisualAtomType;
 import com.zarbosoft.bonestruct.editor.wall.Brick;
 import com.zarbosoft.bonestruct.editor.wall.Wall;
 import com.zarbosoft.bonestruct.modules.Module;
@@ -48,12 +46,16 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static com.zarbosoft.rendaw.common.Common.last;
 
 public class Context {
 	public final History history;
 	WeakCache<Set<Visual.Tag>, Style.Baked> styleCache = new WeakCache<>(v -> v.tags);
-	public Visual window;
+	public boolean window;
+	public Atom windowAtom;
 	private final Set<SelectionListener> selectionListeners = new HashSet<>();
 	private final Set<HoverListener> hoverListeners = new HashSet<>();
 	private final Set<TagsListener> selectionTagsChangeListeners = new HashSet<>();
@@ -68,8 +70,6 @@ public class Context {
 	public final Wall foreground;
 	public Group midground;
 	public Group background;
-	public Brick cornerstone;
-	public int cornerstoneTransverse;
 	public Banner banner;
 	public Details details;
 	public final Display display;
@@ -78,8 +78,7 @@ public class Context {
 	int scrollStartBeddingBefore;
 	int scrollStartBeddingAfter;
 	public int scroll;
-	private int selectToken;
-	private int selectTokens = 0;
+	int selectToken = 0;
 
 	public static interface ContextIntListener {
 		void changed(Context context, int oldValue, int newValue);
@@ -101,10 +100,64 @@ public class Context {
 		transverseEdgeListeners.remove(listener);
 	}
 
-	public void suggestCreateBricksBetween(final Brick previousBrick, final Brick nextBrick) {
-		if (previousBrick == null || nextBrick == null)
+	public void idleLayBricks(
+			final VisualParent parent,
+			final int index,
+			final int addCount,
+			final int size,
+			final Function<Integer, Brick> accessFirst,
+			final Function<Integer, Brick> accessLast,
+			final Function<Integer, Brick> create
+	) {
+		if (size == 0)
 			return;
-		fillFromEndBrick(previousBrick);
+		if (index > 0) {
+			final Brick previousBrick = accessLast.apply(index - 1);
+			if (previousBrick == null)
+				return;
+			if (index + addCount < size) {
+				// Hits neither edge
+				final Brick nextBrick = accessFirst.apply(index + addCount);
+				if (nextBrick != null) {
+					fillFromStartBrick(previousBrick);
+				}
+			} else {
+				// Hits end edge
+				final boolean nextEdge = parent == null ? true : parent.isNextWindowEdge(this);
+				if (!nextEdge && parent.getNextBrick(this) == null)
+					return;
+				fillFromStartBrick(previousBrick);
+			}
+		} else {
+			final boolean previousEdge = parent == null ? true : parent.isPreviousWindowEdge(this);
+			final Brick previousBrick = parent == null ? null : parent.getPreviousBrick(this);
+			if (index + addCount < size) {
+				// Hits index edge
+				final Brick nextBrick = accessFirst.apply(index + addCount);
+				if (nextBrick != null) {
+					if (previousEdge) {
+						fillFromEndBrick(nextBrick);
+					} else if (previousBrick != null) {
+						fillFromStartBrick(previousBrick);
+					}
+				}
+			} else {
+				// Hits both edges
+				final boolean nextEdge = parent == null ? true : parent.isNextWindowEdge(this);
+				if (previousEdge && nextEdge) {
+					foreground.setCornerstone(this, create.apply(index));
+				} else {
+					final Brick nextBrick = parent.getNextBrick(this);
+					if (previousEdge && nextBrick != null) {
+						fillFromEndBrick(nextBrick);
+					} else if (nextEdge && previousBrick != null) {
+						fillFromStartBrick(previousBrick);
+					} else if (previousBrick != null && nextBrick != null) {
+						fillFromStartBrick(previousBrick);
+					}
+				}
+			}
+		}
 	}
 
 	@FunctionalInterface
@@ -112,11 +165,11 @@ public class Context {
 		boolean handleKey(Context context, HIDEvent event);
 	}
 
-	public void copy(final List<com.zarbosoft.bonestruct.document.Node> nodes) {
+	public void copy(final List<Atom> atoms) {
 		final ByteArrayOutputStream stream = new ByteArrayOutputStream();
 		final RawWriter writer = new RawWriter(stream);
-		for (final com.zarbosoft.bonestruct.document.Node node : nodes) {
-			Document.write(node, writer);
+		for (final Atom atom : atoms) {
+			Document.write(atom, writer);
 		}
 		clipboardEngine.set(stream.toByteArray());
 	}
@@ -125,12 +178,12 @@ public class Context {
 		clipboardEngine.setString(string);
 	}
 
-	public List<com.zarbosoft.bonestruct.document.Node> uncopy(final String type) {
+	public List<Atom> uncopy(final String type) {
 		final byte[] bytes = clipboardEngine.get();
 		if (bytes == null)
 			return ImmutableList.of();
 		try {
-			return new Parse<com.zarbosoft.bonestruct.document.Node>()
+			return new Parse<Atom>()
 					.grammar(syntax.getGrammar())
 					.node(type)
 					.parse(new ByteArrayInputStream(bytes))
@@ -185,19 +238,19 @@ public class Context {
 	public Object locate(final Path path, final boolean goLong) {
 		int pathIndex = -1;
 		final List<String> segments = ImmutableList.copyOf(path.segments);
-		// Either (value) or (node & part) are always set
+		// Either (value) or (atom & part) are always set
 		Value value = document.top;
-		com.zarbosoft.bonestruct.document.Node node = null;
+		Atom atom = null;
 		BackPart part = null;
 		for (int cycle = 0; cycle < 10000; ++cycle) {
 			if (part != null) {
-				// Process from either the root or a sublevel of a node
+				// Process from either the root or a sublevel of a atom
 				String middle = null;
 				while (true) {
 					if (part instanceof BackArray) {
 						pathIndex += 1;
 						if (pathIndex == segments.size())
-							return node;
+							return atom;
 						final String segment = segments.get(pathIndex);
 						final int tempPathIndex = pathIndex;
 						final int subIndex;
@@ -219,7 +272,7 @@ public class Context {
 					} else if (part instanceof BackRecord) {
 						pathIndex += 1;
 						if (pathIndex >= segments.size())
-							return node;
+							return atom;
 						final String segment = segments.get(pathIndex);
 						final int tempPathIndex = pathIndex;
 						final BackRecord recordPart = ((BackRecord) part);
@@ -235,8 +288,8 @@ public class Context {
 					} else if (part instanceof BackDataKey) {
 						middle = ((BackDataKey) part).middle;
 						break;
-					} else if (part instanceof BackDataNode) {
-						middle = ((BackDataNode) part).middle;
+					} else if (part instanceof BackDataAtom) {
+						middle = ((BackDataAtom) part).middle;
 						break;
 					} else if (part instanceof BackDataPrimitive) {
 						middle = ((BackDataPrimitive) part).middle;
@@ -247,13 +300,13 @@ public class Context {
 					} else if (part instanceof BackType) {
 						part = ((BackType) part).child;
 					} else
-						return node;
+						return atom;
 				}
-				value = node.data.get(middle);
+				value = atom.data.get(middle);
 				if (!goLong && pathIndex + 1 == segments.size())
 					return value;
 				part = null;
-				node = null;
+				atom = null;
 			} else {
 				// Start from a value
 				if (value instanceof ValueArray) {
@@ -263,7 +316,7 @@ public class Context {
 					final int tempPathIndex = pathIndex;
 					final String segment = segments.get(pathIndex);
 					if (((ValueArray) value).middle() instanceof MiddleRecord) {
-						node = ((ValueArray) value).get().stream().filter(child -> (
+						atom = ((ValueArray) value).data.stream().filter(child -> (
 								(ValuePrimitive) child.data.get((
 										(BackDataKey) child.type.back().get(0)
 								).middle)
@@ -273,8 +326,8 @@ public class Context {
 								new Path(TreePVector.from(segments.subList(0, tempPathIndex)))
 						)));
 						if (!goLong && pathIndex + 1 == segments.size())
-							return node;
-						part = node.type.back().get(1);
+							return atom;
+						part = atom.type.back().get(1);
 					} else if (((ValueArray) value).middle() instanceof MiddleArray) {
 						final int index;
 						try {
@@ -285,7 +338,7 @@ public class Context {
 									new Path(TreePVector.from(segments.subList(0, pathIndex)))
 							));
 						}
-						node = ((ValueArray) value).get().stream().filter(child -> (
+						atom = ((ValueArray) value).data.stream().filter(child -> (
 								((ValueArray.ArrayParent) child.parent).actualIndex <= index
 						)).reduce((a, b) -> b).orElseThrow(() -> new InvalidPath(String.format(
 								"Invalid index %d at [%s].",
@@ -293,12 +346,12 @@ public class Context {
 								new Path(TreePVector.from(segments.subList(0, tempPathIndex)))
 						)));
 						if (!goLong && pathIndex + 1 == segments.size())
-							return node;
-						part = node.type.back().get(index - ((ValueArray.ArrayParent) node.parent).actualIndex);
+							return atom;
+						part = atom.type.back().get(index - ((ValueArray.ArrayParent) atom.parent).actualIndex);
 					}
-				} else if (value instanceof ValueNode) {
-					node = ((ValueNode) value).get();
-					part = node.type.back().get(0);
+				} else if (value instanceof ValueAtom) {
+					atom = ((ValueAtom) value).get();
+					part = atom.type.back().get(0);
 				} else if (value instanceof ValuePrimitive) {
 					if (segments.size() > pathIndex + 1)
 						throw new InvalidPath(String.format("Path continues but data ends at primitive [%s].",
@@ -367,7 +420,7 @@ public class Context {
 		idleFill.ends.addLast(end);
 	}
 
-	private void fillFromStartBrick(final Brick start) {
+	public void fillFromStartBrick(final Brick start) {
 		if (idleFill == null) {
 			idleFill = new IdleFill();
 			addIdle(idleFill);
@@ -429,79 +482,76 @@ public class Context {
 
 	public IdleFill idleFill = null;
 
-	public class IdleClear extends IdleTask {
-		public Brick end = null;
-		public Brick start = null;
-
-		@Override
-		protected int priority() {
-			return 105;
-		}
-
-		@Override
-		protected boolean runImplementation() {
-			if (end != null) {
-				final Brick current = end;
-				end = current.next();
-				current.destroy(Context.this);
-			}
-			if (start != null) {
-				final Brick current = start;
-				start = current.previous();
-				current.destroy(Context.this);
-			}
-			if (end == null && start == null) {
-				idleClear = null;
-				return false;
-			} else
+	private boolean overlapsWindow(final Visual visual) {
+		Visual at = visual;
+		while (true) {
+			if (at == windowAtom.visual)
 				return true;
+			if (at.parent() == null)
+				break;
+			at = at.parent().getTarget();
 		}
-
-		@Override
-		protected void destroyed() {
-			idleClear = null;
-		}
+		return false;
 	}
 
-	public IdleClear idleClear = null;
+	public void createWindowForSelection(final Value value, final int depthThreshold) {
+		final Visual oldWindow = windowAtom == null ? document.top.visual : windowAtom.visual;
 
-	public IdleTask idleClick = null;
+		windowAtom = value.parent.node();
+		int depth = 0;
+		while (true) {
+			depth += windowAtom.type.depthScore;
+			if (depth > depthThreshold)
+				break;
+			if (windowAtom.parent.value().parent == null)
+				break;
+			windowAtom = windowAtom.parent.value().parent.node();
+		}
 
-	private void window(Visual visual) {
-		if (visual == null) {
-			visual = document.top.visual;
-			changeGlobalTags(new Visual.TagsChange(ImmutableSet.of(new Visual.StateTag("unwindowed")),
-					ImmutableSet.of(new Visual.StateTag("windowed"))
-			));
+		if (depth <= depthThreshold) {
+			windowAtom = null;
+			final Atom rootAtom = new Atom(ImmutableMap.of("value", document.top));
+			final Visual windowVisual =
+					syntax.rootFront.createVisual(this, null, rootAtom, HashTreePSet.empty(), ImmutableMap.of(), 0);
 		} else {
-			changeGlobalTags(new Visual.TagsChange(ImmutableSet.of(new Visual.StateTag("windowed")),
-					ImmutableSet.of(new Visual.StateTag("unwindowed"))
-			));
+			final Visual windowVisual = windowAtom.createVisual(this, null, ImmutableMap.of(), 0);
 		}
-		final Brick first = visual.getFirstBrick(this);
-		final Brick last = visual.getLastBrick(this);
-		if (first != null || last != null) {
-			if (idleClear == null) {
-				idleClear = new IdleClear();
-				addIdle(idleClear);
-			}
-			if (first != null)
-				idleClear.start = first.previous();
-			if (last != null)
-				idleClear.end = last.next();
-		}
-		window = visual;
-		window.anchor(this, ImmutableMap.of(), 0);
+
+		if (!overlapsWindow(oldWindow))
+			oldWindow.uproot(this, null);
 	}
 
-	public void window(final Node node) {
-		window(node.getVisual());
-		node.getVisual().selectDown(this);
+	public void setAtomWindow(final Atom atom) {
+		Visual.TagsChange tagsChange = new Visual.TagsChange();
+		if (window) {
+			if (windowAtom == null)
+				tagsChange = tagsChange.remove(new Visual.StateTag("root_window"));
+		} else {
+			window = true;
+			tagsChange = tagsChange.add(new Visual.StateTag("windowed")).remove(new Visual.StateTag("root_window"));
+		}
+		final Visual oldWindow = windowAtom == null ? document.top.visual : windowAtom.visual;
+		windowAtom = atom;
+		final Visual windowVisual = atom.createVisual(this, null, ImmutableMap.of(), 0);
+		if (!overlapsWindow(oldWindow))
+			oldWindow.uproot(this, windowVisual);
+		if (!tagsChange.add.isEmpty() || !tagsChange.remove.isEmpty())
+			changeGlobalTags(tagsChange);
+		fillOutward();
+	}
+
+	private void fillOutward() {
+		fillFromStartBrick(foreground.children.get(0).children.get(0));
+		fillFromEndBrick(last(last(foreground.children).children));
+	}
+
+	public void clearSelection() {
+		selection.clear(this);
+		selection = null;
 	}
 
 	public void setSelection(final Selection selection) {
-		final int localToken = selectTokens++;
-		this.selectToken = localToken;
+		final int localToken = ++selectToken;
 		final Selection oldSelection = this.selection;
 		this.selection = selection;
 
@@ -509,57 +559,17 @@ public class Context {
 			oldSelection.clear(this);
 		}
 
-		// Check if another select occurred during deselect
 		if (localToken != selectToken)
 			return;
 
 		final VisualPart visual = this.selection.getVisual();
-		{
-			boolean inWindow = false;
-			Visual mostDistantWindowableAncestor = null;
-			Visual at = visual;
-			if (window == at)
-				inWindow = true;
-			VisualParent parent = at.parent();
-			int depth = 0;
-			int limit = Integer.MAX_VALUE;
-			while (parent != null) {
-				at = parent.getTarget();
-				if (window == at)
-					inWindow = true;
-				if (at instanceof VisualNodeType) {
-					mostDistantWindowableAncestor = at;
-					if (depth >= limit) {
-						break;
-					}
-					depth += ((VisualNodeType) at).getType().depthScore;
-				} else if (at instanceof VisualArray) {
-					limit = Math.min(limit, depth + ((VisualArray) at).ellipsizeThreshold());
-				} else if (at instanceof VisualNodeBase) {
-					limit = Math.min(limit, depth + ((VisualNodeBase) at).ellipsizeThreshold());
-				}
-				parent = at.parent();
-			}
-			if (!inWindow) {
-				window(mostDistantWindowableAncestor);
-				final Brick firstBrick = window.getFirstBrick(this);
-				final Brick lastBrick = window.getLastBrick(this);
-				if (firstBrick != null && lastBrick != null) {
-					fillFromStartBrick(firstBrick);
-					fillFromEndBrick(lastBrick);
-				}
-			}
-		}
+		Brick first = visual.getFirstBrick(this);
+		if (first == null)
+			first = visual.createFirstBrick(this);
+		foreground.setCornerstone(this, first);
+		fillFromStartBrick(first);
+		fillFromEndBrick(first);
 
-		cornerstone = visual.getFirstBrick(this);
-		if (cornerstone == null) {
-			cornerstone = visual.createFirstBrick(this);
-			if (cornerstone == null)
-				throw new AssertionError();
-			cornerstoneTransverse = 0;
-		} else {
-			cornerstoneTransverse = cornerstone.parent.transverseStart;
-		}
 		selection.addBrickListener(this, new VisualAttachmentAdapter.BoundsListener() {
 			@Override
 			public void firstChanged(final Context context, final Brick brick) {
@@ -571,10 +581,7 @@ public class Context {
 
 			}
 		});
-
 		selection.addBrickListener(this, selectionExtentsAdapter.boundsListener);
-		fillFromEndBrick(cornerstone);
-		fillFromStartBrick(cornerstone);
 
 		ImmutableSet.copyOf(selectionListeners).forEach(l -> l.selectionChanged(this, selection));
 		selectionTagsChanged();
@@ -613,7 +620,6 @@ public class Context {
 
 		@Override
 		public boolean runImplementation() {
-			// TODO store indexes rather than brick ref
 			if (at == null || at.parent == null) {
 				hoverIdle = null;
 				return false;
@@ -667,6 +673,26 @@ public class Context {
 	public HoverIdle hoverIdle;
 	public Selection selection;
 
+	public void windowClear() {
+		windowClearNoFill();
+		fillOutward();
+	}
+
+	public void windowClearNoFill() {
+		window = false;
+		windowAtom = null;
+		syntax.rootFront.createVisual(this,
+				null,
+				new Atom(ImmutableMap.of("value", document.top)),
+				HashTreePSet.empty(),
+				ImmutableMap.of(),
+				0
+		);
+		changeGlobalTags(new Visual.TagsChange(ImmutableSet.of(),
+				ImmutableSet.of(new Visual.StateTag("windowed"), new Visual.StateTag("root_window"))
+		));
+	}
+
 	public Context(
 			final Syntax syntax,
 			final Document document,
@@ -677,14 +703,73 @@ public class Context {
 		actions.put(this, ImmutableList.of(new Action() {
 			@Override
 			public void run(final Context context) {
-				if (window == document.top.getVisual())
-					return;
-				window(document.top.getVisual());
+				windowClear();
 			}
 
 			@Override
 			public String getName() {
 				return "window_clear";
+			}
+		}, new Action() {
+			@Override
+			public void run(final Context context) {
+				if (!window)
+					return;
+				if (windowAtom == null)
+					return;
+				final Atom atom = windowAtom;
+				final Visual oldWindowVisual = windowAtom.visual;
+				final Visual windowVisual;
+				if (atom.parent.value().parent == null) {
+					final Atom rootAtom = new Atom(ImmutableMap.of("value", document.top));
+					windowVisual = syntax.rootFront.createVisual(context,
+							null,
+							rootAtom,
+							HashTreePSet.empty(),
+							ImmutableMap.of(),
+							0
+					);
+				} else {
+					windowVisual = atom.parent.value().parent.node().createVisual(context, null, ImmutableMap.of(), 0);
+				}
+				fillOutward();
+			}
+
+			@Override
+			public String getName() {
+				return "window_up";
+			}
+		}, new Action() {
+			@Override
+			public void run(final Context context) {
+				if (!window)
+					return;
+				final List<VisualAtomType> chain = new ArrayList<>();
+				final VisualAtomType stop = windowAtom.visual;
+				if (selection.getVisual().parent() == null)
+					return;
+				VisualAtomType at = selection.getVisual().parent().getNodeVisual();
+				while (at != null) {
+					if (at == stop)
+						break;
+					if (at.parent() == null)
+						break;
+					chain.add(at);
+					at = at.parent().getNodeVisual();
+				}
+				if (chain.isEmpty())
+					return;
+				final Visual oldWindowVisual = windowAtom.visual;
+				final VisualAtomType windowVisual = last(chain);
+				windowAtom = windowVisual.atom;
+				last(chain).root(context, null, ImmutableMap.of(), 0);
+				oldWindowVisual.uproot(context, windowVisual);
+				fillOutward();
+			}
+
+			@Override
+			public String getName() {
+				return "window_down";
 			}
 		}));
 		this.syntax = syntax;
@@ -749,6 +834,10 @@ public class Context {
 				scrollVisible();
 			}
 		});
+		if (!syntax.startWindowed)
+			windowClearNoFill();
+		document.top.selectDown(this);
+		fillOutward();
 	}
 
 	private void scrollVisible() {

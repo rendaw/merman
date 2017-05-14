@@ -1,28 +1,28 @@
 package com.zarbosoft.bonestruct.helper;
 
-import com.zarbosoft.bonestruct.syntax.FreeNodeType;
+import com.zarbosoft.bonestruct.syntax.FreeAtomType;
 import com.zarbosoft.bonestruct.syntax.Syntax;
 
 public class MiscSyntax {
-	final public static FreeNodeType infinity;
-	final public static FreeNodeType one;
-	final public static FreeNodeType two;
-	final public static FreeNodeType three;
-	final public static FreeNodeType four;
-	final public static FreeNodeType five;
-	final public static FreeNodeType multiback;
-	final public static FreeNodeType quoted;
-	final public static FreeNodeType binaryBang;
-	final public static FreeNodeType plusEqual;
-	final public static FreeNodeType plus;
-	final public static FreeNodeType waddle;
-	final public static FreeNodeType snooze;
-	final public static FreeNodeType multiplier;
-	final public static FreeNodeType array;
-	final public static FreeNodeType record;
-	final public static FreeNodeType recordElement;
-	final public static FreeNodeType pair;
-	final public static FreeNodeType ratio;
+	final public static FreeAtomType infinity;
+	final public static FreeAtomType one;
+	final public static FreeAtomType two;
+	final public static FreeAtomType three;
+	final public static FreeAtomType four;
+	final public static FreeAtomType five;
+	final public static FreeAtomType multiback;
+	final public static FreeAtomType quoted;
+	final public static FreeAtomType binaryBang;
+	final public static FreeAtomType plusEqual;
+	final public static FreeAtomType plus;
+	final public static FreeAtomType waddle;
+	final public static FreeAtomType snooze;
+	final public static FreeAtomType multiplier;
+	final public static FreeAtomType array;
+	final public static FreeAtomType record;
+	final public static FreeAtomType recordElement;
+	final public static FreeAtomType pair;
+	final public static FreeAtomType ratio;
 	final public static Syntax syntax;
 
 	static {

@@ -1,6 +1,6 @@
 package com.zarbosoft.bonestruct.helper;
 
-import com.zarbosoft.bonestruct.document.Node;
+import com.zarbosoft.bonestruct.document.Atom;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.display.MockeryDisplay;
 import com.zarbosoft.bonestruct.syntax.Syntax;
@@ -12,7 +12,7 @@ public class TestWizard {
 	public final Context context;
 	private final MockeryDisplay display;
 
-	public TestWizard(final Syntax syntax, final Node... initial) {
+	public TestWizard(final Syntax syntax, final Atom... initial) {
 		this.runner = new IdleRunner();
 		this.context = buildDoc(runner::idleAdd, syntax, initial);
 		this.display = (MockeryDisplay) context.display;

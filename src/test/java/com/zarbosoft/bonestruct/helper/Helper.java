@@ -1,13 +1,12 @@
 package com.zarbosoft.bonestruct.helper;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
+import com.zarbosoft.bonestruct.document.Atom;
 import com.zarbosoft.bonestruct.document.Document;
-import com.zarbosoft.bonestruct.document.Node;
 import com.zarbosoft.bonestruct.document.values.Value;
 import com.zarbosoft.bonestruct.document.values.ValueArray;
-import com.zarbosoft.bonestruct.document.values.ValueNode;
+import com.zarbosoft.bonestruct.document.values.ValueAtom;
 import com.zarbosoft.bonestruct.document.values.ValuePrimitive;
 import com.zarbosoft.bonestruct.editor.Action;
 import com.zarbosoft.bonestruct.editor.ClipboardEngine;
@@ -15,9 +14,8 @@ import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.IdleTask;
 import com.zarbosoft.bonestruct.editor.display.MockeryDisplay;
 import com.zarbosoft.bonestruct.editor.history.History;
-import com.zarbosoft.bonestruct.editor.visual.VisualPart;
-import com.zarbosoft.bonestruct.syntax.FreeNodeType;
-import com.zarbosoft.bonestruct.syntax.NodeType;
+import com.zarbosoft.bonestruct.syntax.AtomType;
+import com.zarbosoft.bonestruct.syntax.FreeAtomType;
 import com.zarbosoft.bonestruct.syntax.Syntax;
 import com.zarbosoft.bonestruct.syntax.back.*;
 import com.zarbosoft.bonestruct.syntax.front.*;
@@ -27,7 +25,6 @@ import com.zarbosoft.bonestruct.syntax.symbol.SymbolText;
 import com.zarbosoft.luxem.write.RawWriter;
 import com.zarbosoft.rendaw.common.DeadCode;
 import org.junit.ComparisonFailure;
-import org.pcollections.HashTreePSet;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -40,10 +37,10 @@ public class Helper {
 		uncheck(() -> {
 			if (value.getClass() == ValueArray.class) {
 				writer.arrayBegin();
-				((ValueArray) value).get().stream().forEach(element -> dump(element, writer));
+				((ValueArray) value).data.stream().forEach(element -> dump(element, writer));
 				writer.arrayEnd();
-			} else if (value.getClass() == ValueNode.class) {
-				dump(((ValueNode) value).get(), writer);
+			} else if (value.getClass() == ValueAtom.class) {
+				dump(((ValueAtom) value).get(), writer);
 			} else if (value.getClass() == ValuePrimitive.class) {
 				writer.quotedPrimitive(((ValuePrimitive) value).get().getBytes(StandardCharsets.UTF_8));
 			} else
@@ -51,7 +48,7 @@ public class Helper {
 		});
 	}
 
-	private static void dump(final Node value, final RawWriter writer) {
+	private static void dump(final Atom value, final RawWriter writer) {
 		uncheck(() -> {
 			writer.type(value.type.id.getBytes(StandardCharsets.UTF_8));
 			writer.recordBegin();
@@ -90,7 +87,7 @@ public class Helper {
 			syntax.root.type = root;
 		}
 
-		public SyntaxBuilder type(final FreeNodeType type) {
+		public SyntaxBuilder type(final FreeAtomType type) {
 			syntax.types.add(type);
 			return this;
 		}
@@ -114,7 +111,7 @@ public class Helper {
 	public static class GroupBuilder {
 		Set<String> subtypes = new HashSet<>();
 
-		public GroupBuilder type(final FreeNodeType type) {
+		public GroupBuilder type(final FreeAtomType type) {
 			subtypes.add(type.id);
 			return this;
 		}
@@ -130,10 +127,10 @@ public class Helper {
 	}
 
 	public static class TypeBuilder {
-		private final FreeNodeType type;
+		private final FreeAtomType type;
 
 		public TypeBuilder(final String id) {
-			this.type = new FreeNodeType();
+			this.type = new FreeAtomType();
 			type.id = id;
 			type.name = id;
 			type.back = new ArrayList<>();
@@ -146,7 +143,7 @@ public class Helper {
 			return this;
 		}
 
-		public FreeNodeType build() {
+		public FreeAtomType build() {
 			return type;
 		}
 
@@ -161,7 +158,7 @@ public class Helper {
 		}
 
 		public TypeBuilder frontDataNode(final String middle) {
-			final FrontDataNode part = new FrontDataNode();
+			final FrontDataAtom part = new FrontDataAtom();
 			part.middle = middle;
 			type.front.add(part);
 			return this;
@@ -196,7 +193,7 @@ public class Helper {
 		}
 
 		public TypeBuilder middleNode(final String id, final String type) {
-			final MiddleNode middle = new MiddleNode();
+			final MiddleAtom middle = new MiddleAtom();
 			middle.type = type;
 			middle.id = id;
 			this.type.middle.put(id, middle);
@@ -249,7 +246,7 @@ public class Helper {
 	}
 
 	public static BackPart buildBackDataNode(final String middle) {
-		final BackDataNode back = new BackDataNode();
+		final BackDataAtom back = new BackDataAtom();
 		back.middle = middle;
 		return back;
 	}
@@ -336,20 +333,20 @@ public class Helper {
 	}
 
 	public static class TreeBuilder {
-		private final NodeType type;
+		private final AtomType type;
 		private final Map<String, Value> data = new HashMap<>();
 
-		public TreeBuilder(final NodeType type) {
+		public TreeBuilder(final AtomType type) {
 			this.type = type;
 		}
 
 		public TreeBuilder add(final String key, final TreeBuilder builder) {
-			data.put(key, new ValueNode((MiddleNode) type.middle().get(key), builder.build()));
+			data.put(key, new ValueAtom((MiddleAtom) type.middle().get(key), builder.build()));
 			return this;
 		}
 
-		public TreeBuilder add(final String key, final Node node) {
-			data.put(key, new ValueNode((MiddleNode) type.middle().get(key), node));
+		public TreeBuilder add(final String key, final Atom atom) {
+			data.put(key, new ValueAtom((MiddleAtom) type.middle().get(key), atom));
 			return this;
 		}
 
@@ -363,34 +360,34 @@ public class Helper {
 			return this;
 		}
 
-		public TreeBuilder addArray(final String key, final List<Node> values) {
+		public TreeBuilder addArray(final String key, final List<Atom> values) {
 			data.put(key, new ValueArray(type.getDataArray(key), values));
 			return this;
 		}
 
-		public TreeBuilder addArray(final String key, final Node... values) {
+		public TreeBuilder addArray(final String key, final Atom... values) {
 			data.put(key, new ValueArray(type.getDataArray(key), Arrays.asList(values)));
 			return this;
 		}
 
-		public TreeBuilder addRecord(final String key, final Node... values) {
+		public TreeBuilder addRecord(final String key, final Atom... values) {
 			data.put(key, new ValueArray(type.getDataRecord(key), Arrays.asList(values)));
 			return this;
 		}
 
-		public Node build() {
-			return new Node(type, data);
+		public Atom build() {
+			return new Atom(type, data);
 		}
 
 		public Value buildArray() {
-			return new ValueArray(null, Arrays.asList(new Node(type, data)));
+			return new ValueArray(null, Arrays.asList(new Atom(type, data)));
 		}
 
 	}
 
-	public static void assertTreeEqual(final Node expected, final Node got) {
+	public static void assertTreeEqual(final Atom expected, final Atom got) {
 		if (expected.type != got.type)
-			throw new AssertionError(String.format("Node type mismatch.\nExpected: %s\nGot: %s\nAt: %s",
+			throw new AssertionError(String.format("Atom type mismatch.\nExpected: %s\nGot: %s\nAt: %s",
 					expected.type,
 					got.type,
 					got.getPath()
@@ -418,18 +415,18 @@ public class Helper {
 		if (expected.getClass() == ValueArray.class) {
 			final ValueArray expectedValue = (ValueArray) expected;
 			final ValueArray gotValue = (ValueArray) got;
-			if (expectedValue.get().size() != gotValue.get().size())
+			if (expectedValue.data.size() != gotValue.data.size())
 				throw new AssertionError(String.format("Array length mismatch.\nExpected: %s\nGot: %s\nAt: %s",
-						expectedValue.get().size(),
-						gotValue.get().size(),
+						expectedValue.data.size(),
+						gotValue.data.size(),
 						got.getPath()
 				));
-			zip(expectedValue.get().stream(), gotValue.get().stream()).forEach(pair -> assertTreeEqual(pair.first,
+			zip(expectedValue.data.stream(), gotValue.data.stream()).forEach(pair -> assertTreeEqual(pair.first,
 					pair.second
 			));
-		} else if (expected.getClass() == ValueNode.class) {
-			final ValueNode expectedValue = (ValueNode) expected;
-			final ValueNode gotValue = (ValueNode) got;
+		} else if (expected.getClass() == ValueAtom.class) {
+			final ValueAtom expectedValue = (ValueAtom) expected;
+			final ValueAtom gotValue = (ValueAtom) got;
 			assertTreeEqual(expectedValue.get(), gotValue.get());
 		} else if (expected.getClass() == ValuePrimitive.class) {
 			final ValuePrimitive expectedValue = (ValuePrimitive) expected;
@@ -440,7 +437,7 @@ public class Helper {
 						gotValue.get()
 				);
 		} else
-			throw new AssertionError(String.format("Node type mismatch.\nExpected: %s\nGot: %s\nAt: %s",
+			throw new AssertionError(String.format("Atom type mismatch.\nExpected: %s\nGot: %s\nAt: %s",
 					expected.getClass(),
 					got.getClass(),
 					got.getPath()
@@ -448,17 +445,17 @@ public class Helper {
 	}
 
 	public static void assertTreeEqual(
-			final Context context, final Node expected, final Value got
+			final Context context, final Atom expected, final Value got
 	) {
 		assertTreeEqual(new ValueArray(context.syntax.root, ImmutableList.of(expected)), got);
 	}
 
-	public static Context buildDoc(final Syntax syntax, final Node... root) {
+	public static Context buildDoc(final Syntax syntax, final Atom... root) {
 		return buildDoc(idleTask -> {
 		}, syntax, root);
 	}
 
-	public static Context buildDoc(final Consumer<IdleTask> idleAdd, final Syntax syntax, final Node... root) {
+	public static Context buildDoc(final Consumer<IdleTask> idleAdd, final Syntax syntax, final Atom... root) {
 		final Document doc = new Document(syntax, new ValueArray(syntax.root, Arrays.asList(root)));
 		final Context context = new Context(syntax, doc, new MockeryDisplay(), idleAdd, new History());
 		context.clipboardEngine = new ClipboardEngine() {
@@ -485,9 +482,6 @@ public class Helper {
 				return string;
 			}
 		};
-		final Node rootNode = new Node(ImmutableMap.of("value", doc.top));
-		final VisualPart visual = syntax.rootFront.createVisual(context, rootNode, HashTreePSet.empty());
-		visual.selectDown(context);
 		return context;
 	}
 

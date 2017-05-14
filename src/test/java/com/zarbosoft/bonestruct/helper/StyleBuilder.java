@@ -11,8 +11,8 @@ public class StyleBuilder {
 		return this;
 	}
 
-	public StyleBuilder broken() {
-		style.broken = true;
+	public StyleBuilder broken(final boolean on) {
+		style.broken = on;
 		return this;
 	}
 

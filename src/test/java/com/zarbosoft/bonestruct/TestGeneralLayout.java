@@ -1,29 +1,35 @@
 package com.zarbosoft.bonestruct;
 
-import com.zarbosoft.bonestruct.document.Node;
+import com.zarbosoft.bonestruct.document.Atom;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.banner.BannerMessage;
 import com.zarbosoft.bonestruct.editor.details.DetailsPage;
 import com.zarbosoft.bonestruct.editor.display.DisplayNode;
 import com.zarbosoft.bonestruct.editor.display.Drawing;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
+import com.zarbosoft.bonestruct.editor.visual.Visual;
+import com.zarbosoft.bonestruct.editor.wall.Brick;
 import com.zarbosoft.bonestruct.editor.wall.Course;
+import com.zarbosoft.bonestruct.editor.wall.bricks.BrickText;
 import com.zarbosoft.bonestruct.helper.Helper;
 import com.zarbosoft.bonestruct.helper.StyleBuilder;
 import com.zarbosoft.bonestruct.helper.TestWizard;
-import com.zarbosoft.bonestruct.syntax.FreeNodeType;
+import com.zarbosoft.bonestruct.syntax.FreeAtomType;
 import com.zarbosoft.bonestruct.syntax.Syntax;
 import org.junit.Test;
 
 import java.util.function.Consumer;
 
+import static com.zarbosoft.bonestruct.helper.Helper.dump;
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.number.OrderingComparison.greaterThan;
 import static org.junit.Assert.assertThat;
 
 public class TestGeneralLayout {
-	final static FreeNodeType one;
-	final static FreeNodeType two;
+	final static FreeAtomType one;
+	final static FreeAtomType two;
+	final static FreeAtomType array;
 	final static Syntax syntax;
 
 	static {
@@ -35,19 +41,31 @@ public class TestGeneralLayout {
 				.back(Helper.buildBackPrimitive("two"))
 				.front(new Helper.FrontMarkBuilder("two").build())
 				.build();
+		array = new Helper.TypeBuilder("array")
+				.middleArray("value", "any")
+				.back(Helper.buildBackDataArray("value"))
+				.frontMark("[")
+				.front(new Helper.FrontDataArrayBuilder("value")
+						.addSeparator(new Helper.FrontMarkBuilder(", ").build())
+						.build())
+				.frontMark("]")
+				.autoComplete(99)
+				.build();
 		syntax = new Helper.SyntaxBuilder("any")
 				.type(one)
 				.type(two)
-				.group("any", new Helper.GroupBuilder().type(one).type(two).build())
-				.style(new StyleBuilder().broken().build())
+				.type(array)
+				.group("any", new Helper.GroupBuilder().type(one).type(two).type(array).build())
+				.style(new StyleBuilder().broken(true).build())
+				.style(new StyleBuilder().tag(new Visual.PartTag("separator")).broken(false).build())
 				.build();
 	}
 
 	public static class GeneralTestWizard {
 		TestWizard inner;
 
-		public GeneralTestWizard(final Syntax syntax, final Node... nodes) {
-			inner = new TestWizard(syntax, nodes);
+		public GeneralTestWizard(final Syntax syntax, final Atom... atoms) {
+			inner = new TestWizard(syntax, atoms);
 			inner.context.banner.addMessage(inner.context, new BannerMessage() {
 
 			});
@@ -109,6 +127,16 @@ public class TestGeneralLayout {
 			return this;
 		}
 
+		public GeneralTestWizard checkTextBrick(final int courseIndex, final int brickIndex, final String text) {
+			assertThat(inner.context.foreground.children.size(), greaterThan(courseIndex));
+			final Course course = inner.context.foreground.children.get(courseIndex);
+			assertThat(course.children.size(), greaterThan(brickIndex));
+			final Brick brick = course.children.get(brickIndex);
+			assertThat(brick, instanceOf(BrickText.class));
+			assertThat(((BrickText) brick).text.text(), equalTo(text));
+			return this;
+		}
+
 		public GeneralTestWizard run(final Consumer<Context> r) {
 			r.accept(inner.context);
 			inner.runner.flush();
@@ -155,7 +183,7 @@ public class TestGeneralLayout {
 		)
 				.resizeTransitive(40)
 				.run(context -> {
-					context.document.top.get().get(4).getVisual().selectUp(context);
+					context.document.top.data.get(4).parent.selectUp(context);
 				})
 				.checkScroll(24)
 				.checkCourse(4, 47, 57)
@@ -163,5 +191,30 @@ public class TestGeneralLayout {
 				.checkCourse(5, 64, 74)
 				.checkBanner(21, 23)
 				.checkDetails(33, 40);
+	}
+
+	@Test
+	public void testStaticArrayLayout() {
+		new GeneralTestWizard(
+				syntax,
+				new Helper.TreeBuilder(array)
+						.addArray("value", new Helper.TreeBuilder(one).build(), new Helper.TreeBuilder(two).build())
+						.build()
+		)
+				.checkTextBrick(0, 0, "[")
+				.checkTextBrick(1, 0, "one")
+				.checkTextBrick(1, 1, ", ")
+				.checkTextBrick(2, 0, "two")
+				.checkTextBrick(3, 0, "]");
+	}
+
+	@Test
+	public void testDynamicArrayLayout() {
+		final Atom gap = syntax.gap.create();
+		new GeneralTestWizard(syntax, gap).run(context -> {
+			gap.data.get("gap").selectDown(context);
+			context.selection.receiveText(context, "[");
+			dump(context.document.top);
+		}).checkTextBrick(0, 0, "[").checkTextBrick(1, 0, "").checkTextBrick(2, 0, "]");
 	}
 }

@@ -1,17 +1,17 @@
 package com.zarbosoft.bonestruct.editor.history.changes;
 
-import com.zarbosoft.bonestruct.document.Node;
-import com.zarbosoft.bonestruct.document.values.ValueNode;
+import com.zarbosoft.bonestruct.document.Atom;
+import com.zarbosoft.bonestruct.document.values.ValueAtom;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.history.Change;
 
 public class ChangeNodeSet extends Change {
-	private final ValueNode value;
-	private Node node;
+	private final ValueAtom value;
+	private Atom atom;
 
-	public ChangeNodeSet(final ValueNode value, final Node newValue) {
+	public ChangeNodeSet(final ValueAtom value, final Atom newValue) {
 		this.value = value;
-		node = newValue;
+		atom = newValue;
 	}
 
 	@Override
@@ -24,17 +24,17 @@ public class ChangeNodeSet extends Change {
 		}
 		if (other2.value != value)
 			return false;
-		node = other2.node;
+		atom = other2.atom;
 		return true;
 	}
 
 	public Change apply(final Context context) {
 		final Change reverse = new ChangeNodeSet(value, value.data);
 		value.data.setParent(null);
-		value.data = node;
-		node.setParent(value.new NodeParent());
-		for (final ValueNode.Listener listener : value.listeners)
-			listener.set(context, node);
+		value.data = atom;
+		atom.setParent(value.new NodeParent());
+		for (final ValueAtom.Listener listener : value.listeners)
+			listener.set(context, atom);
 		return reverse;
 	}
 }

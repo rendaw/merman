@@ -1,8 +1,8 @@
 package com.zarbosoft.bonestruct.editor.visual.visuals;
 
 import com.google.common.collect.ImmutableList;
-import com.zarbosoft.bonestruct.document.Node;
-import com.zarbosoft.bonestruct.document.values.Value;
+import com.google.common.collect.ImmutableMap;
+import com.zarbosoft.bonestruct.document.Atom;
 import com.zarbosoft.bonestruct.document.values.ValueArray;
 import com.zarbosoft.bonestruct.editor.*;
 import com.zarbosoft.bonestruct.editor.history.changes.ChangeArray;
@@ -13,10 +13,8 @@ import com.zarbosoft.bonestruct.editor.visual.attachments.VisualAttachmentAdapte
 import com.zarbosoft.bonestruct.editor.visual.attachments.VisualBorderAttachment;
 import com.zarbosoft.bonestruct.editor.wall.Brick;
 import com.zarbosoft.bonestruct.editor.wall.BrickInterface;
-import com.zarbosoft.bonestruct.syntax.FreeNodeType;
 import com.zarbosoft.bonestruct.syntax.front.FrontSymbol;
 import com.zarbosoft.bonestruct.syntax.middle.MiddleArray;
-import com.zarbosoft.bonestruct.syntax.middle.MiddleArrayBase;
 import com.zarbosoft.bonestruct.syntax.style.Style;
 import com.zarbosoft.bonestruct.syntax.symbol.Symbol;
 import com.zarbosoft.rendaw.common.Pair;
@@ -24,9 +22,9 @@ import org.pcollections.HashTreePSet;
 import org.pcollections.PSet;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import static com.zarbosoft.rendaw.common.Common.last;
 
@@ -36,22 +34,31 @@ public abstract class VisualArray extends VisualGroup {
 	private final ValueArray data;
 	private Brick ellipsis = null;
 
-	public VisualArray(final Context context, final ValueArray data, final PSet<Visual.Tag> tags) {
+	public VisualArray(
+			final Context context,
+			final VisualParent parent,
+			final ValueArray data,
+			final PSet<Visual.Tag> tags,
+			final Map<String, Alignment> alignments,
+			final int depth
+	) {
 		super(tags);
 		this.data = data;
 		dataListener = new ValueArray.Listener() {
 
 			@Override
-			public void changed(final Context context, final int index, final int remove, final List<Node> add) {
+			public void changed(final Context context, final int index, final int remove, final List<Atom> add) {
+				if (ellipsize(context))
+					return;
 				change(context, index, remove, add);
 			}
 		};
 		data.addListener(dataListener);
-		coreChange(context, 0, 0, data.get());
 		data.visual = this;
+		root(context, parent, alignments, depth);
 	}
 
-	private void change(final Context context, final int index, final int remove, final List<Node> add) {
+	private void change(final Context context, final int index, final int remove, final List<Atom> add) {
 		// Prep to fix selection if deep under an element
 		Integer fixDeepSelectionIndex = null;
 		Integer fixDeepHoverIndex = null;
@@ -84,6 +91,17 @@ public abstract class VisualArray extends VisualGroup {
 		}
 
 		coreChange(context, index, remove, add);
+		if (!add.isEmpty()) {
+			final int layIndex = visualIndex(index);
+			context.idleLayBricks(parent,
+					layIndex,
+					visualIndex(index + add.size()) - layIndex,
+					children.size(),
+					i -> children.get(i).getFirstBrick(context),
+					i -> children.get(i).getLastBrick(context),
+					i -> children.get(i).createFirstBrick(context)
+			);
+		}
 
 		if (hoverable != null) {
 			if (hoverable.index >= index + remove) {
@@ -95,29 +113,29 @@ public abstract class VisualArray extends VisualGroup {
 			context.clearHover();
 		}
 		if (oldSelectionBeginIndex != null) {
-			if (data.get().isEmpty())
-				parent.selectUp(context);
+			if (data.data.isEmpty())
+				data.parent.selectUp(context);
 			else {
 				if (oldSelectionBeginIndex >= index + remove)
 					selection.setBegin(context, oldSelectionBeginIndex - remove + add.size());
 				else if (oldSelectionBeginIndex >= index)
-					selection.setBegin(context, Math.min(data.get().size() - 1, index + Math.max(0, add.size() - 1)));
+					selection.setBegin(context, Math.min(data.data.size() - 1, index + Math.max(0, add.size() - 1)));
 				if (oldSelectionEndIndex >= index + remove)
 					selection.setEnd(context, oldSelectionEndIndex - remove + add.size());
 				else if (oldSelectionEndIndex >= index)
-					selection.setEnd(context, Math.min(data.get().size() - 1, index + Math.max(0, add.size() - 1)));
+					selection.setEnd(context, Math.min(data.data.size() - 1, index + Math.max(0, add.size() - 1)));
 			}
 		} else if (fixDeepSelectionIndex != null) {
-			if (data.get().isEmpty())
-				parent.selectUp(context);
+			if (data.data.isEmpty())
+				data.parent.selectUp(context);
 			else if (fixDeepSelectionIndex >= index && fixDeepSelectionIndex < index + remove) {
-				final int newIndex = Math.min(data.get().size() - 1, index + Math.max(0, add.size() - 1));
+				final int newIndex = Math.min(data.data.size() - 1, index + Math.max(0, add.size() - 1));
 				select(context, newIndex, newIndex);
 			}
 		}
 	}
 
-	private void coreChange(final Context context, final int index, final int remove, final List<Node> add) {
+	private void coreChange(final Context context, final int index, final int remove, final List<Atom> add) {
 		int visualIndex = index;
 		int visualRemove = remove;
 		int visualAdd = add.size();
@@ -142,43 +160,47 @@ public abstract class VisualArray extends VisualGroup {
 		final PSet<Visual.Tag> tags = tags(context);
 		int addIndex = visualIndex;
 		final Consumer<Integer> addSeparator = addAt -> {
-			final ChildGroup group = new ChildGroup(HashTreePSet.empty(), false);
-			for (final FrontSymbol fix : getSeparator())
-				group.add(context, fix.createVisual(context, tags.plus(new Visual.PartTag("separator"))));
+			final ChildGroup group = new ChildGroup(context,
+					new ArrayVisualParent(addAt, false),
+					HashTreePSet.empty(),
+					alignments,
+					depth()
+			);
+			for (int fixIndex = 0; fixIndex < getSeparator().size(); ++fixIndex) {
+				final FrontSymbol fix = getSeparator().get(fixIndex);
+				group.add(context, fix.createVisual(context,
+						group.createParent(fixIndex),
+						tags.plus(new Visual.PartTag("separator")),
+						alignments,
+						depth()
+				));
+			}
 			super.add(context, group, addAt);
 		};
-		for (final Node node : add) {
+		for (final Atom atom : add) {
 			if (!getSeparator().isEmpty() && addIndex > 0)
 				addSeparator.accept(addIndex++);
-			final ChildGroup group = new ChildGroup(HashTreePSet.singleton(new PartTag("element")), true);
+			final ChildGroup group = new ChildGroup(context,
+					new ArrayVisualParent(addIndex, true),
+					HashTreePSet.singleton(new PartTag("element")),
+					alignments,
+					depth()
+			);
+			int groupIndex = 0;
 			for (final FrontSymbol fix : getPrefix())
-				group.add(context, fix.createVisual(context, tags.plus(new Visual.PartTag("prefix"))));
-			final Visual nodeVisual = node.createVisual(context);
+				group.add(context, fix.createVisual(context,
+						group.createParent(groupIndex++),
+						tags.plus(new Visual.PartTag("prefix")),
+						alignments,
+						depth()
+				));
+			final VisualAtomType nodeVisual =
+					(VisualAtomType) atom.createVisual(context, group.createParent(groupIndex++), alignments, depth());
 			final int addIndex2 = addIndex;
 			group.add(context, new VisualPart(tags.plus(new Visual.PartTag("nested"))) {
 				@Override
-				public void setParent(final VisualParent parent) {
-					nodeVisual.setParent(parent);
-				}
-
-				@Override
 				public VisualParent parent() {
 					return nodeVisual.parent();
-				}
-
-				@Override
-				public boolean selectDown(final Context context) {
-					return nodeVisual.selectDown(context);
-				}
-
-				@Override
-				public void select(final Context context) {
-					nodeVisual.select(context);
-				}
-
-				@Override
-				public void selectUp(final Context context) {
-					VisualArray.this.select(context, addIndex2, addIndex2);
 				}
 
 				@Override
@@ -209,13 +231,23 @@ public abstract class VisualArray extends VisualGroup {
 				}
 
 				@Override
-				public void destroy(final Context context) {
-					nodeVisual.destroy(context);
+				public void uproot(final Context context, final Visual root) {
+					nodeVisual.uproot(context, root);
 				}
 
 				@Override
-				public boolean isAt(final Value value) {
-					return VisualArray.this.isAt(value);
+				public void root(
+						final Context context,
+						final VisualParent parent,
+						final Map<String, Alignment> alignments,
+						final int depth
+				) {
+					nodeVisual.root(context, parent, alignments, depth);
+				}
+
+				@Override
+				public boolean selectDown(final Context context) {
+					return nodeVisual.selectDown(context);
 				}
 
 				@Override
@@ -224,7 +256,12 @@ public abstract class VisualArray extends VisualGroup {
 				}
 			});
 			for (final FrontSymbol fix : getSuffix())
-				group.add(context, fix.createVisual(context, tags.plus(new Visual.PartTag("suffix"))));
+				group.add(context, fix.createVisual(context,
+						group.createParent(groupIndex++),
+						tags.plus(new Visual.PartTag("suffix")),
+						alignments,
+						depth()
+				));
 			super.add(context, group, addIndex++);
 		}
 		if (!getSeparator().isEmpty() && addIndex < children.size()) {
@@ -240,36 +277,6 @@ public abstract class VisualArray extends VisualGroup {
 		}
 	}
 
-	@Override
-	public void destroy(final Context context) {
-		data.removeListener(dataListener);
-		data.visual = null;
-		super.destroy(context);
-	}
-
-	@Override
-	public boolean selectDown(final Context context) {
-		if (children.isEmpty()) {
-			final List<FreeNodeType> childTypes =
-					context.syntax.getLeafTypes(((MiddleArrayBase) data.middle()).type).collect(Collectors.toList());
-			final Node element;
-			if (childTypes.size() == 1) {
-				element = childTypes.get(0).create(context.syntax);
-			} else {
-				element = context.syntax.gap.create();
-			}
-			context.history.apply(context, new ChangeArray(data, 0, 0, ImmutableList.of(element)));
-		}
-		select(context, 0, 0);
-		return true;
-	}
-
-	@Override
-	protected VisualParent createParent(final int index) {
-		final boolean selectable = ((ChildGroup) children.get(index)).selectable;
-		return new ArrayVisualParent(index, selectable);
-	}
-
 	protected abstract boolean tagLast();
 
 	protected abstract boolean tagFirst();
@@ -280,11 +287,14 @@ public abstract class VisualArray extends VisualGroup {
 
 	private class ChildGroup extends VisualGroup {
 
-		private final boolean selectable;
-
-		public ChildGroup(final PSet<Visual.Tag> tags, final boolean selectable) {
-			super(tags);
-			this.selectable = selectable;
+		public ChildGroup(
+				final Context context,
+				final VisualParent parent,
+				final PSet<Visual.Tag> tags,
+				final Map<String, Alignment> alignments,
+				final int depth
+		) {
+			super(context, parent, tags, alignments, depth);
 		}
 
 		@Override
@@ -367,9 +377,17 @@ public abstract class VisualArray extends VisualGroup {
 		return ellipsis;
 	}
 
+	private boolean ellipsize(final Context context) {
+		if (!context.window)
+			return false;
+		if (parent == null)
+			return false;
+		return parent.getNodeVisual().depth >= ellipsizeThreshold();
+	}
+
 	@Override
 	public Brick createFirstBrick(final Context context) {
-		if (data.parent.node().getVisual().depth >= ellipsizeThreshold()) {
+		if (ellipsize(context)) {
 			return createEllipsis(context);
 		} else
 			return super.createFirstBrick(context);
@@ -377,10 +395,56 @@ public abstract class VisualArray extends VisualGroup {
 
 	@Override
 	public Brick createLastBrick(final Context context) {
-		if (data.parent.node().getVisual().depth >= ellipsizeThreshold()) {
+		if (ellipsize(context)) {
 			return createEllipsis(context);
 		} else
 			return super.createLastBrick(context);
+	}
+
+	@Override
+	public Brick getFirstBrick(final Context context) {
+		if (ellipsize(context))
+			return ellipsis;
+		return super.getFirstBrick(context);
+	}
+
+	@Override
+	public Brick getLastBrick(final Context context) {
+		if (ellipsize(context))
+			return ellipsis;
+		return super.getLastBrick(context);
+	}
+
+	@Override
+	public void root(
+			final Context context, final VisualParent parent, final Map<String, Alignment> alignments, final int depth
+	) {
+		if (ellipsize(context)) {
+			if (!children.isEmpty()) {
+				remove(context, 0, children.size());
+			}
+		} else {
+			if (children.isEmpty()) {
+				coreChange(context, 0, 0, data.data);
+			}
+		}
+		super.root(context, parent, alignments, depth);
+	}
+
+	@Override
+	public void uproot(final Context context, final Visual root) {
+		if (root == this) {
+			// Only root array
+			root(context, null, ImmutableMap.of(), 0);
+		} else {
+			if (selection != null)
+				context.clearSelection();
+			if (hoverable != null)
+				context.clearHover();
+			data.removeListener(dataListener);
+			data.visual = null;
+			super.uproot(context, root);
+		}
 	}
 
 	@Override
@@ -420,7 +484,7 @@ public abstract class VisualArray extends VisualGroup {
 		}
 
 		@Override
-		public VisualNodeType node() {
+		public VisualAtomType node() {
 			if (VisualArray.this.parent == null)
 				return null;
 			return VisualArray.this.parent.getNodeVisual();
@@ -473,7 +537,7 @@ public abstract class VisualArray extends VisualGroup {
 				@Override
 				public void run(final Context context) {
 					context.history.finishChange(context);
-					children.get(beginIndex).selectDown(context);
+					data.data.get(beginIndex).visual.selectDown(context);
 				}
 
 				@Override
@@ -483,10 +547,10 @@ public abstract class VisualArray extends VisualGroup {
 			}, new Action() {
 				@Override
 				public void run(final Context context) {
-					if (parent == null)
+					if (data.parent == null)
 						return;
 					context.history.finishChange(context);
-					parent.selectUp(context);
+					data.parent.selectUp(context);
 				}
 
 				@Override
@@ -497,7 +561,7 @@ public abstract class VisualArray extends VisualGroup {
 				@Override
 				public void run(final Context context) {
 					context.history.finishChange(context);
-					setPosition(context, Math.min(data.get().size() - 1, endIndex + 1));
+					setPosition(context, Math.min(data.data.size() - 1, endIndex + 1));
 				}
 
 				@Override
@@ -554,7 +618,7 @@ public abstract class VisualArray extends VisualGroup {
 			}, new Action() {
 				@Override
 				public void run(final Context context) {
-					context.copy(data.get().subList(beginIndex, endIndex + 1));
+					context.copy(data.data.subList(beginIndex, endIndex + 1));
 				}
 
 				@Override
@@ -565,7 +629,7 @@ public abstract class VisualArray extends VisualGroup {
 				@Override
 				public void run(final Context context) {
 					context.history.finishChange(context);
-					context.copy(data.get().subList(beginIndex, endIndex + 1));
+					context.copy(data.data.subList(beginIndex, endIndex + 1));
 					context.history.apply(context,
 							new ChangeArray(data, beginIndex, endIndex - beginIndex + 1, ImmutableList.of())
 					);
@@ -580,10 +644,10 @@ public abstract class VisualArray extends VisualGroup {
 				@Override
 				public void run(final Context context) {
 					context.history.finishChange(context);
-					final List<Node> nodes = context.uncopy(((MiddleArray) data.middle()).type);
-					if (nodes.isEmpty())
+					final List<Atom> atoms = context.uncopy(((MiddleArray) data.middle()).type);
+					if (atoms.isEmpty())
 						return;
-					context.history.apply(context, new ChangeArray(data, beginIndex, endIndex - beginIndex + 1, nodes));
+					context.history.apply(context, new ChangeArray(data, beginIndex, endIndex - beginIndex + 1, atoms));
 					context.history.finishChange(context);
 				}
 
@@ -595,7 +659,7 @@ public abstract class VisualArray extends VisualGroup {
 				@Override
 				public void run(final Context context) {
 					context.history.finishChange(context);
-					setEnd(context, Math.min(data.get().size() - 1, endIndex + 1));
+					setEnd(context, Math.min(data.data.size() - 1, endIndex + 1));
 				}
 
 				@Override
@@ -641,12 +705,12 @@ public abstract class VisualArray extends VisualGroup {
 					if (beginIndex == 0)
 						return;
 					int index = beginIndex;
-					final List<Node> nodes = ImmutableList.copyOf(data.get().subList(index, endIndex + 1));
-					context.history.apply(context, new ChangeArray(data, index, nodes.size(), ImmutableList.of()));
+					final List<Atom> atoms = ImmutableList.copyOf(data.data.subList(index, endIndex + 1));
+					context.history.apply(context, new ChangeArray(data, index, atoms.size(), ImmutableList.of()));
 					setBegin(context, --index);
-					context.history.apply(context, new ChangeArray(data, index, 0, nodes));
+					context.history.apply(context, new ChangeArray(data, index, 0, atoms));
 					setBegin(context, index);
-					setEnd(context, index + nodes.size() - 1);
+					setEnd(context, index + atoms.size() - 1);
 				}
 
 				@Override
@@ -656,15 +720,15 @@ public abstract class VisualArray extends VisualGroup {
 			}, new Action() {
 				@Override
 				public void run(final Context context) {
-					if (endIndex == data.get().size() - 1)
+					if (endIndex == data.data.size() - 1)
 						return;
 					int index = beginIndex;
-					final List<Node> nodes = ImmutableList.copyOf(data.get().subList(index, endIndex + 1));
-					context.history.apply(context, new ChangeArray(data, index, nodes.size(), ImmutableList.of()));
+					final List<Atom> atoms = ImmutableList.copyOf(data.data.subList(index, endIndex + 1));
+					context.history.apply(context, new ChangeArray(data, index, atoms.size(), ImmutableList.of()));
 					setPosition(context, ++index);
-					context.history.apply(context, new ChangeArray(data, index, 0, nodes));
+					context.history.apply(context, new ChangeArray(data, index, 0, atoms));
 					setBegin(context, index);
-					setEnd(context, index + nodes.size() - 1);
+					setEnd(context, index + atoms.size() - 1);
 				}
 
 				@Override
@@ -674,7 +738,9 @@ public abstract class VisualArray extends VisualGroup {
 			}, new Action() {
 				@Override
 				public void run(final Context context) {
-					context.window(data.data.get(beginIndex));
+					final Atom root = data.data.get(beginIndex);
+					context.setAtomWindow(root);
+					root.visual.selectDown(context);
 				}
 
 				@Override
@@ -757,13 +823,8 @@ public abstract class VisualArray extends VisualGroup {
 
 		@Override
 		public void select(final Context context) {
-			((VisualArray) value.visual).select(context, start, end);
+			value.select(context, start, end);
 		}
-	}
-
-	@Override
-	public boolean isAt(final Value value) {
-		return data == value;
 	}
 
 	public void select(final Context context, final int start, final int end) {
@@ -780,8 +841,9 @@ public abstract class VisualArray extends VisualGroup {
 	}
 
 	@Override
-	public void select(final Context context) {
-		select(context, 0, 0);
+	public boolean selectDown(final Context context) {
+		data.select(context, 0, 0);
+		return true;
 	}
 
 	private class ArrayVisualParent extends Parent {
@@ -797,11 +859,6 @@ public abstract class VisualArray extends VisualGroup {
 			if (getSeparator().isEmpty())
 				return index;
 			return index / 2;
-		}
-
-		@Override
-		public void selectUp(final Context context) {
-			select(context, valueIndex(), valueIndex());
 		}
 
 		@Override
@@ -825,12 +882,12 @@ public abstract class VisualArray extends VisualGroup {
 
 		@Override
 		public Brick createPreviousBrick(final Context context) {
-			final Brick next = super.createNextBrick(context);
+			final Brick previous = super.createPreviousBrick(context);
 			if (selection != null && valueIndex() == selection.beginIndex)
-				selection.adapter.notifyPreviousBrickPastEdge(context, next);
+				selection.adapter.notifyPreviousBrickPastEdge(context, previous);
 			if (hoverable != null && valueIndex() == hoverable.index)
-				hoverable.border.notifyPreviousBrickPastEdge(context, next);
-			return next;
+				hoverable.border.notifyPreviousBrickPastEdge(context, previous);
+			return previous;
 		}
 
 		@Override

@@ -1,6 +1,6 @@
 package com.zarbosoft.bonestruct.syntax.middle;
 
-import com.zarbosoft.bonestruct.document.Node;
+import com.zarbosoft.bonestruct.document.Atom;
 import com.zarbosoft.bonestruct.document.values.ValueArray;
 import com.zarbosoft.bonestruct.document.values.ValuePrimitive;
 import com.zarbosoft.bonestruct.editor.Path;
@@ -11,7 +11,7 @@ import com.zarbosoft.interface1.Configuration;
 public class MiddleRecord extends MiddleArrayBase {
 	@Override
 	public Path getPath(final ValueArray value, final int actualIndex) {
-		final Node element = value.get().get(actualIndex / 2);
+		final Atom element = value.data.get(actualIndex / 2);
 		final String segment =
 				((ValuePrimitive) element.data.get(((BackDataKey) element.type.back().get(0)).middle)).get();
 		return value.getPath().add(segment);

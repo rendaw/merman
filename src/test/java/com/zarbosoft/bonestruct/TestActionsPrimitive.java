@@ -18,7 +18,7 @@ public class TestActionsPrimitive {
 	public static Context build(final String string) {
 		final Context context =
 				buildDoc(MiscSyntax.syntax, new Helper.TreeBuilder(MiscSyntax.quoted).add("value", string).build());
-		context.document.top.get().get(0).data.get("value").getVisual().select(context);
+		context.document.top.data.get(0).data.get("value").selectDown(context);
 		return context;
 	}
 

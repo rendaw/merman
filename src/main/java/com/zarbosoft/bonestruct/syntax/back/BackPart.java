@@ -1,7 +1,7 @@
 package com.zarbosoft.bonestruct.syntax.back;
 
 import com.zarbosoft.bonestruct.editor.Path;
-import com.zarbosoft.bonestruct.syntax.NodeType;
+import com.zarbosoft.bonestruct.syntax.AtomType;
 import com.zarbosoft.bonestruct.syntax.Syntax;
 import com.zarbosoft.interface1.Configuration;
 import com.zarbosoft.pidgoon.Node;
@@ -12,16 +12,16 @@ import java.util.Set;
 
 @Configuration
 public abstract class BackPart {
-	public abstract Node buildBackRule(Syntax syntax, NodeType nodeType);
+	public abstract Node buildBackRule(Syntax syntax, AtomType atomType);
 
 	public Parent parent = null;
 
-	public void finish(final Syntax syntax, final NodeType nodeType, final Set<String> middleUsed) {
+	public void finish(final Syntax syntax, final AtomType atomType, final Set<String> middleUsed) {
 	}
 
 	final public Pair<Integer, Path> getSubpath() {
-		if (parent instanceof NodeType.NodeBackParent)
-			return new Pair<>(((NodeType.NodeBackParent) parent).index, new Path());
+		if (parent instanceof AtomType.NodeBackParent)
+			return new Pair<>(((AtomType.NodeBackParent) parent).index, new Path());
 		else if (parent instanceof PartParent) {
 			final Pair<Integer, Path> base = ((PartParent) parent).part().getSubpath();
 			final String section = ((PartParent) parent).pathSection();

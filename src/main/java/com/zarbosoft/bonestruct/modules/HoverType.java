@@ -5,16 +5,16 @@ import com.zarbosoft.bonestruct.editor.Hoverable;
 import com.zarbosoft.bonestruct.editor.banner.BannerMessage;
 import com.zarbosoft.bonestruct.editor.visual.VisualPart;
 import com.zarbosoft.bonestruct.editor.visual.visuals.VisualArray;
-import com.zarbosoft.bonestruct.editor.visual.visuals.VisualNodeBase;
-import com.zarbosoft.bonestruct.editor.visual.visuals.VisualNodeType;
+import com.zarbosoft.bonestruct.editor.visual.visuals.VisualAtomBase;
+import com.zarbosoft.bonestruct.editor.visual.visuals.VisualAtomType;
 import com.zarbosoft.bonestruct.editor.visual.visuals.VisualPrimitive;
 import com.zarbosoft.interface1.Configuration;
 
 @Configuration(name = "hover_type", description = "Shows the type of the element being hovered in the banner.")
 public class HoverType extends Module {
-	@Configuration(optional = true, description = "Include the type of the node.")
+	@Configuration(optional = true, description = "Include the type of the atom.")
 	public boolean node = true;
-	@Configuration(optional = true, description = "Include the type of the node part.")
+	@Configuration(optional = true, description = "Include the type of the atom part.")
 	public boolean part = true;
 
 	private BannerMessage message;
@@ -32,7 +32,7 @@ public class HoverType extends Module {
 					message.priority = 100;
 					final StringBuilder text = new StringBuilder();
 					if (node) {
-						final VisualNodeType nodeType = hoverable.node();
+						final VisualAtomType nodeType = hoverable.node();
 						if (nodeType == null)
 							text.append("Root Element");
 						else
@@ -45,7 +45,7 @@ public class HoverType extends Module {
 							temp = "array";
 						} else if (part instanceof VisualPrimitive) {
 							temp = "primitive";
-						} else if (part instanceof VisualNodeBase) {
+						} else if (part instanceof VisualAtomBase) {
 							temp = "nested";
 						} else
 							temp = part.getClass().getSimpleName();

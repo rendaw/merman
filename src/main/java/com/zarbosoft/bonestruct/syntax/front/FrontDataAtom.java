@@ -1,12 +1,15 @@
 package com.zarbosoft.bonestruct.syntax.front;
 
+import com.zarbosoft.bonestruct.document.Atom;
 import com.zarbosoft.bonestruct.editor.Context;
+import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.Visual;
+import com.zarbosoft.bonestruct.editor.visual.VisualParent;
 import com.zarbosoft.bonestruct.editor.visual.VisualPart;
-import com.zarbosoft.bonestruct.editor.visual.visuals.VisualNode;
+import com.zarbosoft.bonestruct.editor.visual.visuals.VisualAtom;
 import com.zarbosoft.bonestruct.modules.hotkeys.grammar.Node;
-import com.zarbosoft.bonestruct.syntax.NodeType;
-import com.zarbosoft.bonestruct.syntax.middle.MiddleNode;
+import com.zarbosoft.bonestruct.syntax.AtomType;
+import com.zarbosoft.bonestruct.syntax.middle.MiddleAtom;
 import com.zarbosoft.bonestruct.syntax.symbol.Symbol;
 import com.zarbosoft.interface1.Configuration;
 import org.pcollections.HashTreePSet;
@@ -17,8 +20,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@Configuration(name = "node")
-public class FrontDataNode extends FrontPart {
+@Configuration(name = "atom")
+public class FrontDataAtom extends FrontPart {
 
 	@Override
 	public String middle() {
@@ -27,7 +30,7 @@ public class FrontDataNode extends FrontPart {
 
 	@Configuration
 	public String middle;
-	private MiddleNode dataType;
+	private MiddleAtom dataType;
 
 	@Configuration(optional = true)
 	public Map<String, Node> hotkeys = new HashMap<>();
@@ -41,15 +44,23 @@ public class FrontDataNode extends FrontPart {
 
 	@Override
 	public VisualPart createVisual(
-			final Context context, final com.zarbosoft.bonestruct.document.Node node, final PSet<Visual.Tag> tags
+			final Context context,
+			final VisualParent parent,
+			final Atom atom,
+			final PSet<Visual.Tag> tags,
+			final Map<String, Alignment> alignments,
+			final int depth
 	) {
-		return new VisualNode(
+		return new VisualAtom(
 				context,
-				dataType.get(node.data),
+				parent,
+				dataType.get(atom.data),
 				HashTreePSet
 						.from(tags)
 						.plus(new Visual.PartTag("nested"))
-						.plusAll(this.tags.stream().map(s -> new Visual.FreeTag(s)).collect(Collectors.toSet()))
+						.plusAll(this.tags.stream().map(s -> new Visual.FreeTag(s)).collect(Collectors.toSet())),
+				alignments,
+				depth
 		) {
 
 			@Override
@@ -65,9 +76,9 @@ public class FrontDataNode extends FrontPart {
 	}
 
 	@Override
-	public void finish(final NodeType nodeType, final Set<String> middleUsed) {
+	public void finish(final AtomType atomType, final Set<String> middleUsed) {
 		middleUsed.add(middle);
-		dataType = nodeType.getDataNode(middle);
+		dataType = atomType.getDataNode(middle);
 	}
 
 	@Override

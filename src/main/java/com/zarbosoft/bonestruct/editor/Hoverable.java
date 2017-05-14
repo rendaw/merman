@@ -2,7 +2,7 @@ package com.zarbosoft.bonestruct.editor;
 
 import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.VisualPart;
-import com.zarbosoft.bonestruct.editor.visual.visuals.VisualNodeType;
+import com.zarbosoft.bonestruct.editor.visual.visuals.VisualAtomType;
 import com.zarbosoft.bonestruct.syntax.style.Style;
 
 public abstract class Hoverable {
@@ -10,7 +10,7 @@ public abstract class Hoverable {
 
 	public abstract void click(Context context);
 
-	public abstract VisualNodeType node();
+	public abstract VisualAtomType node();
 
 	public abstract VisualPart part();
 

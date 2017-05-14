@@ -1,6 +1,6 @@
 package com.zarbosoft.bonestruct.syntax.back;
 
-import com.zarbosoft.bonestruct.syntax.NodeType;
+import com.zarbosoft.bonestruct.syntax.AtomType;
 import com.zarbosoft.bonestruct.syntax.Syntax;
 import com.zarbosoft.interface1.Configuration;
 import com.zarbosoft.luxem.read.source.LTypeEvent;
@@ -19,9 +19,9 @@ public class BackType extends BackPart {
 	public BackPart child;
 
 	@Override
-	public void finish(final Syntax syntax, final NodeType nodeType, final Set<String> middleUsed) {
-		super.finish(syntax, nodeType, middleUsed);
-		child.finish(syntax, nodeType, middleUsed);
+	public void finish(final Syntax syntax, final AtomType atomType, final Set<String> middleUsed) {
+		super.finish(syntax, atomType, middleUsed);
+		child.finish(syntax, atomType, middleUsed);
 		child.parent = new PartParent() {
 			@Override
 			public BackPart part() {
@@ -37,7 +37,7 @@ public class BackType extends BackPart {
 	}
 
 	@Override
-	public Node buildBackRule(final Syntax syntax, final NodeType nodeType) {
-		return new Sequence().add(new Terminal(new LTypeEvent(value))).add(child.buildBackRule(syntax, nodeType));
+	public Node buildBackRule(final Syntax syntax, final AtomType atomType) {
+		return new Sequence().add(new Terminal(new LTypeEvent(value))).add(child.buildBackRule(syntax, atomType));
 	}
 }

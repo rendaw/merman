@@ -3,10 +3,10 @@ package com.zarbosoft.bonestruct.syntax;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
-import com.zarbosoft.bonestruct.document.Node;
+import com.zarbosoft.bonestruct.document.Atom;
 import com.zarbosoft.bonestruct.document.values.Value;
 import com.zarbosoft.bonestruct.document.values.ValueArray;
-import com.zarbosoft.bonestruct.document.values.ValueNode;
+import com.zarbosoft.bonestruct.document.values.ValueAtom;
 import com.zarbosoft.bonestruct.document.values.ValuePrimitive;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.history.changes.ChangeArray;
@@ -15,7 +15,7 @@ import com.zarbosoft.bonestruct.syntax.alignments.AlignmentDefinition;
 import com.zarbosoft.bonestruct.syntax.back.*;
 import com.zarbosoft.bonestruct.syntax.front.*;
 import com.zarbosoft.bonestruct.syntax.middle.MiddleArray;
-import com.zarbosoft.bonestruct.syntax.middle.MiddleElement;
+import com.zarbosoft.bonestruct.syntax.middle.MiddlePart;
 import com.zarbosoft.bonestruct.syntax.middle.MiddlePrimitive;
 import com.zarbosoft.interface1.Configuration;
 import com.zarbosoft.pidgoon.ParseContext;
@@ -38,19 +38,19 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Configuration
-public class SuffixGapNodeType extends NodeType {
+public class SuffixGapAtomType extends AtomType {
 	private final MiddleArray dataValue;
 	private final MiddlePrimitive dataGap;
 	@Configuration(name = "prefix", optional = true)
-	public List<FrontConstantPart> frontPrefix = new ArrayList<>();
+	public List<FrontSymbol> frontPrefix = new ArrayList<>();
 	@Configuration(name = "infix", optional = true)
-	public List<FrontConstantPart> frontInfix = new ArrayList<>();
+	public List<FrontSymbol> frontInfix = new ArrayList<>();
 	@Configuration(name = "suffix", optional = true)
-	public List<FrontConstantPart> frontSuffix = new ArrayList<>();
+	public List<FrontSymbol> frontSuffix = new ArrayList<>();
 
 	private final List<FrontPart> front;
 	private final List<BackPart> back;
-	private final Map<String, MiddleElement> middle;
+	private final Map<String, MiddlePart> middle;
 
 	/**
 	 * @param type
@@ -58,12 +58,12 @@ public class SuffixGapNodeType extends NodeType {
 	 * @param allowed type is allowed to be placed here. Only for sliding suffix gaps.
 	 * @return
 	 */
-	public static boolean isPrecedent(final FreeNodeType type, final Value.Parent test, final boolean allowed) {
-		final Node testNode = test.value().parent.node();
+	public static boolean isPrecedent(final FreeAtomType type, final Value.Parent test, final boolean allowed) {
+		final Atom testAtom = test.value().parent.node();
 
 		// Can't move up if current level is bounded by any other front parts
-		final int index = getIndexOfData(test, testNode);
-		final List<FrontPart> front = testNode.type.front();
+		final int index = getIndexOfData(test, testAtom);
+		final List<FrontPart> front = testAtom.type.front();
 		if (index != front.size() - 1)
 			return false;
 		final FrontPart frontNext = front.get(index);
@@ -72,43 +72,43 @@ public class SuffixGapNodeType extends NodeType {
 
 		if (allowed) {
 			// Can't move up if next level has lower precedence
-			if (testNode.type.precedence() < type.precedence)
+			if (testAtom.type.precedence() < type.precedence)
 				return false;
 
 			// Can't move up if next level has same precedence and parent is forward-associative
-			if (testNode.type.precedence() == type.precedence && !testNode.type.frontAssociative())
+			if (testAtom.type.precedence() == type.precedence && !testAtom.type.frontAssociative())
 				return false;
 		}
 
 		return true;
 	}
 
-	private static int getIndexOfData(final Value.Parent parent, final Node node) {
-		return Common.enumerate(node.type.front().stream()).filter(pair -> {
+	private static int getIndexOfData(final Value.Parent parent, final Atom atom) {
+		return Common.enumerate(atom.type.front().stream()).filter(pair -> {
 			FrontPart front = pair.second;
 			String id = null;
-			if (front instanceof FrontDataNode)
-				id = ((FrontDataNode) front).middle;
+			if (front instanceof FrontDataAtom)
+				id = ((FrontDataAtom) front).middle;
 			else if (front instanceof FrontDataArray)
 				id = ((FrontDataArray) front).middle;
 			return parent.id().equals(id);
 		}).map(pair -> pair.first).findFirst().get();
 	}
 
-	public SuffixGapNodeType() {
+	public SuffixGapAtomType() {
 		id = "__suffix_gap";
 		{
-			final FrontDataArrayAsNode value = new FrontDataArrayAsNode();
+			final FrontDataArrayAsAtom value = new FrontDataArrayAsAtom();
 			value.middle = "value";
 			final FrontGapBase gap = new FrontGapBase() {
-				private Pair<Value.Parent, Node> findReplacementPoint(
-						final Context context, final Value.Parent start, final FreeNodeType type
+				private Pair<Value.Parent, Atom> findReplacementPoint(
+						final Context context, final Value.Parent start, final FreeAtomType type
 				) {
 					Value.Parent parent = null;
-					Node child = null;
+					Atom child = null;
 					Value.Parent test = start;
-					//Node testNode = test.value().parent().node();
-					Node testNode = null;
+					//Atom testAtom = test.value().parent().atom();
+					Atom testAtom = null;
 					while (test != null) {
 						boolean allowed = false;
 
@@ -118,31 +118,31 @@ public class SuffixGapNodeType extends NodeType {
 								.collect(Collectors.toSet())
 								.contains(type.id)) {
 							parent = test;
-							child = testNode;
+							child = testAtom;
 							allowed = true;
 						}
 
 						if (test.value().parent == null)
 							break;
-						testNode = test.value().parent.node();
+						testAtom = test.value().parent.node();
 
 						if (!isPrecedent(type, test, allowed))
 							break;
 
-						test = testNode.parent;
+						test = testAtom.parent;
 					}
 					return new Pair<>(parent, child);
 				}
 
 				@Override
 				protected List<? extends Choice> process(
-						final Context context, final Node self, final String string, final Common.UserData store
+						final Context context, final Atom self, final String string, final Common.UserData store
 				) {
 					class SuffixChoice extends Choice {
-						private final FreeNodeType type;
+						private final FreeAtomType type;
 						private final GapKey key;
 
-						public SuffixChoice(final FreeNodeType type, final GapKey key) {
+						public SuffixChoice(final FreeAtomType type, final GapKey key) {
 							this.type = type;
 							this.key = key;
 						}
@@ -152,31 +152,31 @@ public class SuffixGapNodeType extends NodeType {
 						}
 
 						public void choose(final Context context, final String string) {
-							final SuffixGapNode suffixSelf = (SuffixGapNode) self;
+							final SuffixGapAtom suffixSelf = (SuffixGapAtom) self;
 
-							Node root;
+							Atom root;
 							Value.Parent rootPlacement;
-							Node child;
+							Atom child;
 							final Value childPlacement;
-							Node child2 = null;
+							Atom child2 = null;
 							Value.Parent child2Placement = null;
 
-							// Parse text into node as possible
+							// Parse text into atom as possible
 							final GapKey.ParseResult parsed = key.parse(context, type, string);
-							final Node node = parsed.node;
+							final Atom atom = parsed.atom;
 							final String remainder = parsed.remainder;
-							root = node;
-							child = ((ValueArray) suffixSelf.data.get("value")).get().get(0);
-							childPlacement = node.data.get(node.type.front().get(key.indexBefore).middle());
+							root = atom;
+							child = ((ValueArray) suffixSelf.data.get("value")).data.get(0);
+							childPlacement = atom.data.get(atom.type.front().get(key.indexBefore).middle());
 							final Value.Parent valuePlacementPoint2 = null;
 
-							// Find the new node placement point
+							// Find the new atom placement point
 							rootPlacement = suffixSelf.parent;
 							if (suffixSelf.raise) {
-								final Pair<Value.Parent, Node> found =
-										findReplacementPoint(context, rootPlacement, (FreeNodeType) parsed.node.type);
+								final Pair<Value.Parent, Atom> found =
+										findReplacementPoint(context, rootPlacement, (FreeAtomType) parsed.atom.type);
 								if (found.first != rootPlacement) {
-									// Raising new node up; the value will be placed at the original parent
+									// Raising new atom up; the value will be placed at the original parent
 									child2 = child;
 									child = found.second;
 									child2Placement = suffixSelf.parent;
@@ -188,15 +188,15 @@ public class SuffixGapNodeType extends NodeType {
 							final ValuePrimitive selectNext;
 							if (parsed.nextInput == null) {
 								if (key.indexAfter == -1) {
-									// No such place exists - wrap the placement node in a suffix gap
-									root = context.syntax.suffixGap.create(true, node);
+									// No such place exists - wrap the placement atom in a suffix gap
+									root = context.syntax.suffixGap.create(true, atom);
 									selectNext = (ValuePrimitive) root.data.get("gap");
 								} else {
-									final Value nextNode = node.data.get(type.front.get(key.indexAfter).middle());
-									if (nextNode instanceof ValueNode) {
-										selectNext = (ValuePrimitive) ((ValueNode) nextNode).get().data.get("gap");
+									final Value nextNode = atom.data.get(type.front.get(key.indexAfter).middle());
+									if (nextNode instanceof ValueAtom) {
+										selectNext = (ValuePrimitive) ((ValueAtom) nextNode).data.data.get("gap");
 									} else if (nextNode instanceof ValueArray) {
-										final Node gap = context.syntax.gap.create();
+										final Atom gap = context.syntax.gap.create();
 										context.history.apply(context,
 												new ChangeArray((ValueArray) nextNode, 0, 0, ImmutableList.of(gap))
 										);
@@ -205,15 +205,15 @@ public class SuffixGapNodeType extends NodeType {
 										throw new DeadCode();
 								}
 							} else if (parsed.nextInput instanceof FrontDataPrimitive) {
-								selectNext = (ValuePrimitive) node.data.get(parsed.nextInput.middle());
-							} else if (parsed.nextInput instanceof FrontDataNode) {
-								final ValueNode value1 = (ValueNode) node.data.get(parsed.nextInput.middle());
-								final Node newGap = context.syntax.gap.create();
+								selectNext = (ValuePrimitive) atom.data.get(parsed.nextInput.middle());
+							} else if (parsed.nextInput instanceof FrontDataAtom) {
+								final ValueAtom value1 = (ValueAtom) atom.data.get(parsed.nextInput.middle());
+								final Atom newGap = context.syntax.gap.create();
 								context.history.apply(context, new ChangeNodeSet(value1, newGap));
 								selectNext = (ValuePrimitive) newGap.data.get("gap");
 							} else if (parsed.nextInput instanceof FrontDataArrayBase) {
-								final ValueArray value1 = (ValueArray) node.data.get(parsed.nextInput.middle());
-								final Node newGap = context.syntax.gap.create();
+								final ValueArray value1 = (ValueArray) atom.data.get(parsed.nextInput.middle());
+								final Atom newGap = context.syntax.gap.create();
 								context.history.apply(context, new ChangeArray(value1, 0, 0, ImmutableList.of(newGap)));
 								selectNext = (ValuePrimitive) newGap.data.get("gap");
 							} else
@@ -221,8 +221,8 @@ public class SuffixGapNodeType extends NodeType {
 
 							// Place everything starting from the bottom
 							rootPlacement.replace(context, root);
-							if (childPlacement instanceof ValueNode)
-								context.history.apply(context, new ChangeNodeSet((ValueNode) childPlacement, child));
+							if (childPlacement instanceof ValueAtom)
+								context.history.apply(context, new ChangeNodeSet((ValueAtom) childPlacement, child));
 							else if (childPlacement instanceof ValueArray)
 								context.history.apply(context,
 										new ChangeArray((ValueArray) childPlacement, 0, 0, ImmutableList.of(child))
@@ -252,8 +252,8 @@ public class SuffixGapNodeType extends NodeType {
 					// Get or build gap grammar
 					final Grammar grammar = store.get(() -> {
 						final Union union = new Union();
-						for (final FreeNodeType type : context.syntax.types) {
-							final Pair<Value.Parent, Node> replacementPoint =
+						for (final FreeAtomType type : context.syntax.types) {
+							final Pair<Value.Parent, Atom> replacementPoint =
 									findReplacementPoint(context, self.parent, type);
 							if (replacementPoint.first == null)
 								continue;
@@ -299,10 +299,10 @@ public class SuffixGapNodeType extends NodeType {
 
 				@Override
 				protected void deselect(
-						final Context context, final Node self, final String string, final Common.UserData userData
+						final Context context, final Atom self, final String string, final Common.UserData userData
 				) {
 					if (self.getVisual() != null && string.isEmpty()) {
-						self.parent.replace(context, ((ValueArray) self.data.get("value")).get().get(0));
+						self.parent.replace(context, ((ValueArray) self.data.get("value")).data.get(0));
 					}
 				}
 			};
@@ -341,7 +341,7 @@ public class SuffixGapNodeType extends NodeType {
 	}
 
 	@Override
-	public Map<String, MiddleElement> middle() {
+	public Map<String, MiddlePart> middle() {
 		return middle;
 	}
 
@@ -370,19 +370,19 @@ public class SuffixGapNodeType extends NodeType {
 		return "Gap (suffix)";
 	}
 
-	private class SuffixGapNode extends Node {
+	private class SuffixGapAtom extends Atom {
 		private final boolean raise;
 
-		public SuffixGapNode(
-				final NodeType type, final Map<String, Value> data, final boolean raise
+		public SuffixGapAtom(
+				final AtomType type, final Map<String, Value> data, final boolean raise
 		) {
 			super(type, data);
 			this.raise = raise;
 		}
 	}
 
-	public Node create(final boolean raise, final Node value) {
-		return new SuffixGapNode(this,
+	public Atom create(final boolean raise, final Atom value) {
+		return new SuffixGapAtom(this,
 				ImmutableMap.of("value",
 						new ValueArray(dataValue, ImmutableList.of(value)),
 						"gap",

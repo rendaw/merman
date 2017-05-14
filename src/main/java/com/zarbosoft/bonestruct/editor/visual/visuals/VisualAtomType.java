@@ -1,7 +1,6 @@
 package com.zarbosoft.bonestruct.editor.visual.visuals;
 
-import com.zarbosoft.bonestruct.document.Node;
-import com.zarbosoft.bonestruct.document.values.Value;
+import com.zarbosoft.bonestruct.document.Atom;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.Hoverable;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
@@ -9,57 +8,59 @@ import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.VisualParent;
 import com.zarbosoft.bonestruct.editor.visual.VisualPart;
 import com.zarbosoft.bonestruct.editor.wall.Brick;
-import com.zarbosoft.bonestruct.syntax.NodeType;
+import com.zarbosoft.bonestruct.syntax.AtomType;
 import com.zarbosoft.bonestruct.syntax.alignments.AlignmentDefinition;
 import com.zarbosoft.rendaw.common.Common;
-import com.zarbosoft.rendaw.common.DeadCode;
 import com.zarbosoft.rendaw.common.Pair;
 import org.pcollections.HashTreePSet;
 import org.pcollections.PSet;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import static com.zarbosoft.rendaw.common.Common.enumerate;
 
-public class VisualNodeType extends Visual {
-	private final NodeType nodeType;
+public class VisualAtomType extends Visual {
+	private final AtomType atomType;
 	private final VisualGroup body;
-	private final Node node;
+	public final Atom atom;
 	private boolean compact;
 	private VisualParent parent;
 	public int depth = 0;
 
-	public VisualNodeType(final NodeType nodeType, final Context context, final Node node) {
-		super(HashTreePSet.<Tag>empty().plus(new TypeTag(nodeType.id)).plus(new PartTag("node")));
-		this.nodeType = nodeType;
-		this.node = node;
-		final PSet<Tag> tags = HashTreePSet.singleton(new TypeTag(nodeType.id));
+	public VisualAtomType(
+			final Context context,
+			final VisualParent parent,
+			final AtomType atomType,
+			final Atom atom,
+			final Map<String, Alignment> alignments,
+			final int depth
+	) {
+		super(HashTreePSet.<Tag>empty().plus(new TypeTag(atomType.id)).plus(new PartTag("atom")));
+		this.atomType = atomType;
+		this.atom = atom;
+		final PSet<Tag> tags = HashTreePSet.singleton(new TypeTag(atomType.id));
 		compact = false;
-		body = new VisualGroup(HashTreePSet.empty());
-		for (final Map.Entry<String, AlignmentDefinition> entry : nodeType.alignments().entrySet()) {
-			body.alignments.put(entry.getKey(), entry.getValue().create());
+		final Map<String, Alignment> bodyAlignments = new HashMap<>(alignments);
+		for (final Map.Entry<String, AlignmentDefinition> entry : atomType.alignments().entrySet()) {
+			bodyAlignments.put(entry.getKey(), entry.getValue().create());
 		}
-		enumerate(Common.stream(nodeType.front())).forEach(pair -> {
-			final VisualPart visual = pair.second.createVisual(context, node, tags);
-			body.add(context, visual);
-		});
-		body.setParent(new VisualParent() {
-
+		body = new VisualGroup(context, new VisualParent() {
 			@Override
-			public void selectUp(final Context context) {
-				parent.selectUp(context);
+			public VisualParent parent() {
+				return parent;
 			}
 
 			@Override
 			public Brick createNextBrick(final Context context) {
-				if (context.window == VisualNodeType.this)
+				if (context.windowAtom == VisualAtomType.this.atom)
 					return null;
 				return parent.createNextBrick(context);
 			}
 
 			@Override
 			public Brick createPreviousBrick(final Context context) {
-				if (context.window == VisualNodeType.this)
+				if (context.windowAtom == VisualAtomType.this.atom)
 					return null;
 				return parent.createPreviousBrick(context);
 			}
@@ -70,8 +71,8 @@ public class VisualNodeType extends Visual {
 			}
 
 			@Override
-			public VisualNodeType getNodeVisual() {
-				return VisualNodeType.this;
+			public VisualAtomType getNodeVisual() {
+				return VisualAtomType.this;
 			}
 
 			@Override
@@ -81,7 +82,7 @@ public class VisualNodeType extends Visual {
 
 			@Override
 			public Brick getPreviousBrick(final Context context) {
-				if (context.window == VisualNodeType.this)
+				if (context.windowAtom == VisualAtomType.this.atom)
 					return null;
 				if (parent == null)
 					return null;
@@ -90,7 +91,7 @@ public class VisualNodeType extends Visual {
 
 			@Override
 			public Brick getNextBrick(final Context context) {
-				if (context.window == VisualNodeType.this)
+				if (context.windowAtom == VisualAtomType.this.atom)
 					return null;
 				if (parent == null)
 					return null;
@@ -105,13 +106,13 @@ public class VisualNodeType extends Visual {
 					return null;
 				return parent.hover(context, point);
 			}
+		}, HashTreePSet.empty(), bodyAlignments, depth + atomType.depthScore);
+		enumerate(Common.stream(atomType.front())).forEach(pair -> {
+			final VisualPart visual =
+					pair.second.createVisual(context, body.createParent(pair.first), atom, tags, alignments, depth);
+			body.add(context, visual);
 		});
-		node.visual = this;
-	}
-
-	@Override
-	public void setParent(final VisualParent parent) {
-		this.parent = parent;
+		atom.visual = this;
 	}
 
 	@Override
@@ -122,18 +123,6 @@ public class VisualNodeType extends Visual {
 	@Override
 	public boolean selectDown(final Context context) {
 		return body.selectDown(context);
-	}
-
-	@Override
-	public void select(final Context context) {
-		throw new DeadCode();
-	}
-
-	@Override
-	public void selectUp(final Context context) {
-		if (parent == null)
-			return;
-		parent.selectUp(context);
 	}
 
 	@Override
@@ -158,7 +147,7 @@ public class VisualNodeType extends Visual {
 
 	@Override
 	public int spacePriority() {
-		return -nodeType.precedence();
+		return -atomType.precedence();
 	}
 
 	@Override
@@ -190,23 +179,25 @@ public class VisualNodeType extends Visual {
 		return body.getPropertiesForTagsChange(context, change);
 	}
 
-	@Override
-	public void anchor(
-			final Context context, final Map<String, Alignment> alignments, final int depth
-	) {
+	private void rootInner(final Context context, final int depth) {
 		this.depth = depth;
-		body.anchor(context, alignments, depth + nodeType.depthScore);
 	}
 
 	@Override
-	public void destroy(final Context context) {
-		node.visual = null;
-		body.destroy(context);
+	public void root(
+			final Context context, final VisualParent parent, final Map<String, Alignment> alignments, final int depth
+	) {
+		this.parent = parent;
+		rootInner(context, depth);
+		body.root(context, body.parent, alignments, depth + atomType.depthScore);
 	}
 
 	@Override
-	public boolean isAt(final Value value) {
-		return false;
+	public void uproot(final Context context, final Visual root) {
+		if (root == this)
+			return;
+		atom.visual = null;
+		body.uproot(context, root);
 	}
 
 	@Override
@@ -214,7 +205,7 @@ public class VisualNodeType extends Visual {
 
 	}
 
-	public NodeType getType() {
-		return nodeType;
+	public AtomType getType() {
+		return atomType;
 	}
 }

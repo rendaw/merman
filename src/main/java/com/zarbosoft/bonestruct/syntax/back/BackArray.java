@@ -1,6 +1,6 @@
 package com.zarbosoft.bonestruct.syntax.back;
 
-import com.zarbosoft.bonestruct.syntax.NodeType;
+import com.zarbosoft.bonestruct.syntax.AtomType;
 import com.zarbosoft.bonestruct.syntax.Syntax;
 import com.zarbosoft.interface1.Configuration;
 import com.zarbosoft.luxem.read.source.LArrayCloseEvent;
@@ -23,21 +23,21 @@ public class BackArray extends BackPart {
 	public List<BackPart> elements = new ArrayList<>();
 
 	@Override
-	public Node buildBackRule(final Syntax syntax, final NodeType nodeType) {
+	public Node buildBackRule(final Syntax syntax, final AtomType atomType) {
 		final Sequence sequence;
 		sequence = new Sequence();
 		sequence.add(new Terminal(new LArrayOpenEvent()));
 		for (final BackPart element : elements) {
-			sequence.add(element.buildBackRule(syntax, nodeType));
+			sequence.add(element.buildBackRule(syntax, atomType));
 		}
 		sequence.add(new Terminal(new LArrayCloseEvent()));
 		return sequence;
 	}
 
 	@Override
-	public void finish(final Syntax syntax, final NodeType nodeType, final Set<String> middleUsed) {
+	public void finish(final Syntax syntax, final AtomType atomType, final Set<String> middleUsed) {
 		enumerate(elements.stream()).forEach(pair -> {
-			pair.second.finish(syntax, nodeType, middleUsed);
+			pair.second.finish(syntax, atomType, middleUsed);
 			pair.second.parent = new PartParent() {
 				@Override
 				public BackPart part() {

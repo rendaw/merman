@@ -5,18 +5,21 @@ import com.zarbosoft.bonestruct.document.values.ValueArray;
 import com.zarbosoft.bonestruct.editor.Path;
 import com.zarbosoft.bonestruct.syntax.InvalidSyntax;
 import com.zarbosoft.bonestruct.syntax.Syntax;
+import com.zarbosoft.bonestruct.syntax.front.FrontDataArrayBase;
 import com.zarbosoft.interface1.Configuration;
 
 import java.util.Map;
 import java.util.Set;
 
 @Configuration
-public abstract class MiddleArrayBase extends MiddleElement {
+public abstract class MiddleArrayBase extends MiddlePart {
 
 	public abstract Path getPath(final ValueArray value, final int actualIndex);
 
 	@Configuration
 	public String type;
+
+	public FrontDataArrayBase front;
 
 	@Override
 	public void finish(final Set<String> allTypes, final Set<String> scalarTypes) {

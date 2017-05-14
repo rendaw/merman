@@ -1,6 +1,6 @@
 package com.zarbosoft.bonestruct.syntax.back;
 
-import com.zarbosoft.bonestruct.syntax.NodeType;
+import com.zarbosoft.bonestruct.syntax.AtomType;
 import com.zarbosoft.bonestruct.syntax.Syntax;
 import com.zarbosoft.interface1.Configuration;
 import com.zarbosoft.luxem.read.source.LPrimitiveEvent;
@@ -13,7 +13,7 @@ public class BackPrimitive extends BackPart {
 	public String value;
 
 	@Override
-	public Node buildBackRule(final Syntax syntax, final NodeType nodeType) {
+	public Node buildBackRule(final Syntax syntax, final AtomType atomType) {
 		return new Terminal(new LPrimitiveEvent(value));
 	}
 }

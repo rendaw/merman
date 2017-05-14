@@ -1,11 +1,11 @@
 package com.zarbosoft.bonestruct.syntax;
 
-import com.zarbosoft.bonestruct.document.Node;
+import com.zarbosoft.bonestruct.document.Atom;
 import com.zarbosoft.bonestruct.document.values.Value;
 import com.zarbosoft.bonestruct.syntax.alignments.AlignmentDefinition;
 import com.zarbosoft.bonestruct.syntax.back.BackPart;
 import com.zarbosoft.bonestruct.syntax.front.FrontPart;
-import com.zarbosoft.bonestruct.syntax.middle.MiddleElement;
+import com.zarbosoft.bonestruct.syntax.middle.MiddlePart;
 import com.zarbosoft.interface1.Configuration;
 
 import java.util.ArrayList;
@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 @Configuration
-public class FreeNodeType extends NodeType {
+public class FreeAtomType extends AtomType {
 	@Configuration
 	public String name;
 
@@ -25,19 +25,19 @@ public class FreeNodeType extends NodeType {
 	public List<BackPart> back = new ArrayList<>();
 
 	@Configuration
-	public Map<String, MiddleElement> middle = new HashMap<>();
+	public Map<String, MiddlePart> middle = new HashMap<>();
 
 	@Configuration
 	public Map<String, AlignmentDefinition> alignments = new HashMap<>();
 
 	@Configuration(optional = true, description = "If this is an operator, the operator precedence.  This is " +
-			"used when filling in a suffix gap to raise the new node to the appropriate level.  This is also used " +
+			"used when filling in a suffix gap to raise the new atom to the appropriate level.  This is also used " +
 			"when wrapping lines - lower precedence nodes will be compacted first, expanded last.")
 	public int precedence = 0;
 
 	@Configuration(name = "associate_forward", optional = true, description =
 			"If this is an operator, the operator associativity.  This is used when filling in a " +
-					"suffix gap to raise the new node to the appropriate level.  If two operators have the same " +
+					"suffix gap to raise the new atom to the appropriate level.  If two operators have the same " +
 					"precedence, if the higher operator is back associative the lower operator will not be raised.")
 	public boolean frontAssociative = false;
 
@@ -51,7 +51,7 @@ public class FreeNodeType extends NodeType {
 	}
 
 	@Override
-	public Map<String, MiddleElement> middle() {
+	public Map<String, MiddlePart> middle() {
 		return middle;
 	}
 
@@ -80,9 +80,9 @@ public class FreeNodeType extends NodeType {
 		return name;
 	}
 
-	public Node create(final Syntax syntax) {
+	public Atom create(final Syntax syntax) {
 		final Map<String, Value> data = new HashMap<>();
 		middle.entrySet().stream().forEach(e -> data.put(e.getKey(), e.getValue().create(syntax)));
-		return new Node(this, data);
+		return new Atom(this, data);
 	}
 }

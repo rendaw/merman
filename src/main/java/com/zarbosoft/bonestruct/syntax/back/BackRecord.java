@@ -1,6 +1,6 @@
 package com.zarbosoft.bonestruct.syntax.back;
 
-import com.zarbosoft.bonestruct.syntax.NodeType;
+import com.zarbosoft.bonestruct.syntax.AtomType;
 import com.zarbosoft.bonestruct.syntax.Syntax;
 import com.zarbosoft.interface1.Configuration;
 import com.zarbosoft.luxem.read.source.LKeyEvent;
@@ -20,13 +20,13 @@ public class BackRecord extends BackPart {
 	public Map<String, BackPart> pairs = new HashMap<>();
 
 	@Override
-	public Node buildBackRule(final Syntax syntax, final NodeType nodeType) {
+	public Node buildBackRule(final Syntax syntax, final AtomType atomType) {
 		final Sequence sequence;
 		sequence = new Sequence();
 		sequence.add(new Terminal(new LObjectOpenEvent()));
 		final Set set = new Set();
 		pairs.forEach((key, value) -> {
-			set.add(new Sequence().add(new Terminal(new LKeyEvent(key))).add(value.buildBackRule(syntax, nodeType)));
+			set.add(new Sequence().add(new Terminal(new LKeyEvent(key))).add(value.buildBackRule(syntax, atomType)));
 		});
 		sequence.add(set);
 		sequence.add(new Terminal(new LObjectCloseEvent()));
@@ -34,9 +34,9 @@ public class BackRecord extends BackPart {
 	}
 
 	@Override
-	public void finish(final Syntax syntax, final NodeType nodeType, final java.util.Set<String> middleUsed) {
+	public void finish(final Syntax syntax, final AtomType atomType, final java.util.Set<String> middleUsed) {
 		pairs.forEach((k, v) -> {
-			v.finish(syntax, nodeType, middleUsed);
+			v.finish(syntax, atomType, middleUsed);
 			v.parent = new PartParent() {
 				@Override
 				public BackPart part() {

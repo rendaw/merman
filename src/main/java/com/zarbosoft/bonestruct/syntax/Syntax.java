@@ -1,8 +1,8 @@
 package com.zarbosoft.bonestruct.syntax;
 
 import com.google.common.collect.ImmutableSet;
+import com.zarbosoft.bonestruct.document.Atom;
 import com.zarbosoft.bonestruct.document.Document;
-import com.zarbosoft.bonestruct.document.Node;
 import com.zarbosoft.bonestruct.document.values.ValueArray;
 import com.zarbosoft.bonestruct.modules.Module;
 import com.zarbosoft.bonestruct.syntax.front.FrontDataRootArray;
@@ -72,19 +72,19 @@ public class Syntax {
 	@Configuration(description = "The definitions of all distinct element types in a document.\n" +
 			"A type with the id '__gap' and a single middle primitive element named 'value' must exist.  This will " +
 			"be used as a placeholder when entering text before it is distinguishable as any other defined element.")
-	public List<FreeNodeType> types = new ArrayList<>();
+	public List<FreeAtomType> types = new ArrayList<>();
 
 	@Configuration(optional = true, description = "The gap type is used when editing the document, for " +
 			"new data whose type is not yet known.")
-	public GapNodeType gap = new GapNodeType();
+	public GapAtomType gap = new GapAtomType();
 	@Configuration(name = "prefix_gap", optional = true, description =
 			"The prefix gap type is similar to the gap type, but is used when enclosing an " +
-					"existing node in a new node, where the new node visually precedes the existing node.")
-	public PrefixGapNodeType prefixGap = new PrefixGapNodeType();
+					"existing atom in a new atom, where the new atom visually precedes the existing atom.")
+	public PrefixGapAtomType prefixGap = new PrefixGapAtomType();
 	@Configuration(name = "suffix_gap", optional = true, description =
 			"The suffix gap type is similar to the gap type, but is used when enclosing an " +
-					"existing node in a new node, where the new node visually succeeds the existing node.")
-	public SuffixGapNodeType suffixGap = new SuffixGapNodeType();
+					"existing atom in a new atom, where the new atom visually succeeds the existing atom.")
+	public SuffixGapAtomType suffixGap = new SuffixGapAtomType();
 	@Configuration(name = "gap_placeholder", optional = true,
 			description = "Placeholder for text in gap choice previews.")
 	public Symbol gapPlaceholder = new SymbolText("•");
@@ -110,6 +110,13 @@ public class Syntax {
 
 	@Configuration(optional = true, name = "animate_course_placement")
 	public boolean animateCoursePlacement = false;
+
+	@Configuration(optional = true, name = "start_windowed")
+	public boolean startWindowed = false;
+
+	@Configuration(optional = true, name = "ellipsize_threshold", description = "Limit the window to this depth span.")
+	public int ellipsizeThreshold = Integer.MAX_VALUE;
+
 	public String id; // Fake final - don't modify (set in loadSyntax)
 
 	@Configuration
@@ -191,7 +198,7 @@ public class Syntax {
 		boolean foundRoot = false;
 		final Set<String> scalarTypes = new HashSet<>(); // Types that only have one back element
 		final Set<String> allTypes = new HashSet<>();
-		for (final FreeNodeType t : types) {
+		for (final FreeAtomType t : types) {
 			if (t.back.isEmpty())
 				throw new InvalidSyntax(String.format("Type [%s] has no back parts.", t.id));
 			if (allTypes.contains(t.id))
@@ -225,7 +232,7 @@ public class Syntax {
 		}
 		if (!foundRoot)
 			throw new InvalidSyntax(String.format("No type or tag id matches root id [%s]", root.type));
-		for (final FreeNodeType t : types) {
+		for (final FreeAtomType t : types) {
 			if (t.back.size() == 1)
 				continue;
 			final Deque<Iterator<String>> stack = new ArrayDeque<>();
@@ -243,7 +250,7 @@ public class Syntax {
 			}
 		}
 		scalarTypes.addAll(potentiallyScalarGroups);
-		for (final FreeNodeType t : types) {
+		for (final FreeAtomType t : types) {
 			t.finish(this, allTypes, scalarTypes);
 		}
 		root.finish(allTypes, scalarTypes);
@@ -272,7 +279,7 @@ public class Syntax {
 
 	public Document create() {
 		return new Document(this, new ValueArray(root,
-				new Parse<Node>()
+				new Parse<Atom>()
 						.grammar(getGrammar())
 						.parse(template.stream().map(e -> (LuxemEvent) e))
 						.collect(Collectors.toList())
@@ -293,15 +300,15 @@ public class Syntax {
 
 	public Document load(final InputStream data) {
 		return new Document(this,
-				new ValueArray(root, new Parse<Node>().grammar(getGrammar()).parse(data).collect(Collectors.toList()))
+				new ValueArray(root, new Parse<Atom>().grammar(getGrammar()).parse(data).collect(Collectors.toList()))
 		);
 	}
 
-	public FreeNodeType getType(final String type) {
+	public FreeAtomType getType(final String type) {
 		return types.stream().filter(t -> t.id.equals(type)).findFirst().get();
 	}
 
-	public Stream<FreeNodeType> getLeafTypes(final String type) {
+	public Stream<FreeAtomType> getLeafTypes(final String type) {
 		if (type == null)
 			return types.stream(); // Gap types
 		final Set<String> group = groups.get(type);
@@ -309,14 +316,14 @@ public class Syntax {
 			return Stream.of(getType(type));
 		final Deque<Iterator<String>> stack = new ArrayDeque<>();
 		stack.addLast(group.iterator());
-		return stream(new Iterator<FreeNodeType>() {
+		return stream(new Iterator<FreeAtomType>() {
 			@Override
 			public boolean hasNext() {
 				return !stack.isEmpty();
 			}
 
 			@Override
-			public FreeNodeType next() {
+			public FreeAtomType next() {
 				final Iterator<String> top = stack.pollLast();
 				if (!top.hasNext())
 					return null;

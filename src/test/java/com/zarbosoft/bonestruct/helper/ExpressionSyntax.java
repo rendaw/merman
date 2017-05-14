@@ -1,17 +1,17 @@
 package com.zarbosoft.bonestruct.helper;
 
-import com.zarbosoft.bonestruct.syntax.FreeNodeType;
+import com.zarbosoft.bonestruct.syntax.FreeAtomType;
 import com.zarbosoft.bonestruct.syntax.Syntax;
 
 public class ExpressionSyntax {
-	final public static FreeNodeType infinity;
-	final public static FreeNodeType factorial;
-	final public static FreeNodeType plus;
-	final public static FreeNodeType minus;
-	final public static FreeNodeType multiply;
-	final public static FreeNodeType divide;
-	final public static FreeNodeType subscript;
-	final public static FreeNodeType inclusiveRange;
+	final public static FreeAtomType infinity;
+	final public static FreeAtomType factorial;
+	final public static FreeAtomType plus;
+	final public static FreeAtomType minus;
+	final public static FreeAtomType multiply;
+	final public static FreeAtomType divide;
+	final public static FreeAtomType subscript;
+	final public static FreeAtomType inclusiveRange;
 	final public static Syntax syntax;
 
 	static {

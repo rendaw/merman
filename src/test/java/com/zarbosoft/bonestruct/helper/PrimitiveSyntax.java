@@ -1,10 +1,10 @@
 package com.zarbosoft.bonestruct.helper;
 
-import com.zarbosoft.bonestruct.syntax.FreeNodeType;
+import com.zarbosoft.bonestruct.syntax.FreeAtomType;
 import com.zarbosoft.bonestruct.syntax.Syntax;
 
 public class PrimitiveSyntax {
-	public final static FreeNodeType primitive;
+	public final static FreeAtomType primitive;
 	public final static Syntax syntax;
 
 	static {
