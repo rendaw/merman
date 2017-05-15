@@ -66,12 +66,12 @@ public class VisualAtomType extends Visual {
 			}
 
 			@Override
-			public Visual getTarget() {
-				return parent.getTarget();
+			public Visual visual() {
+				return parent.visual();
 			}
 
 			@Override
-			public VisualAtomType getNodeVisual() {
+			public VisualAtomType atomVisual() {
 				return VisualAtomType.this;
 			}
 

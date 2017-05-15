@@ -119,14 +119,14 @@ public class Context {
 				// Hits neither edge
 				final Brick nextBrick = accessFirst.apply(index + addCount);
 				if (nextBrick != null) {
-					fillFromStartBrick(previousBrick);
+					idleLayBricksBeforeStart(previousBrick);
 				}
 			} else {
 				// Hits end edge
 				final boolean nextEdge = parent == null ? true : parent.isNextWindowEdge(this);
 				if (!nextEdge && parent.getNextBrick(this) == null)
 					return;
-				fillFromStartBrick(previousBrick);
+				idleLayBricksBeforeStart(previousBrick);
 			}
 		} else {
 			final boolean previousEdge = parent == null ? true : parent.isPreviousWindowEdge(this);
@@ -136,9 +136,9 @@ public class Context {
 				final Brick nextBrick = accessFirst.apply(index + addCount);
 				if (nextBrick != null) {
 					if (previousEdge) {
-						fillFromEndBrick(nextBrick);
+						idleLayBricksAfterEnd(nextBrick);
 					} else if (previousBrick != null) {
-						fillFromStartBrick(previousBrick);
+						idleLayBricksBeforeStart(previousBrick);
 					}
 				}
 			} else {
@@ -149,11 +149,11 @@ public class Context {
 				} else {
 					final Brick nextBrick = parent.getNextBrick(this);
 					if (previousEdge && nextBrick != null) {
-						fillFromEndBrick(nextBrick);
+						idleLayBricksAfterEnd(nextBrick);
 					} else if (nextEdge && previousBrick != null) {
-						fillFromStartBrick(previousBrick);
+						idleLayBricksBeforeStart(previousBrick);
 					} else if (previousBrick != null && nextBrick != null) {
-						fillFromStartBrick(previousBrick);
+						idleLayBricksBeforeStart(previousBrick);
 					}
 				}
 			}
@@ -412,20 +412,20 @@ public class Context {
 		this.keyListeners.remove(listener);
 	}
 
-	public void fillFromEndBrick(final Brick end) {
-		if (idleFill == null) {
-			idleFill = new IdleFill();
-			addIdle(idleFill);
+	public void idleLayBricksAfterEnd(final Brick end) {
+		if (idleLayBricks == null) {
+			idleLayBricks = new IdleLayBricks();
+			addIdle(idleLayBricks);
 		}
-		idleFill.ends.addLast(end);
+		idleLayBricks.ends.addLast(end);
 	}
 
-	public void fillFromStartBrick(final Brick start) {
-		if (idleFill == null) {
-			idleFill = new IdleFill();
-			addIdle(idleFill);
+	public void idleLayBricksBeforeStart(final Brick start) {
+		if (idleLayBricks == null) {
+			idleLayBricks = new IdleLayBricks();
+			addIdle(idleLayBricks);
 		}
-		idleFill.starts.addLast(start);
+		idleLayBricks.starts.addLast(start);
 	}
 
 	public void clearHover() {
@@ -436,7 +436,7 @@ public class Context {
 		}
 	}
 
-	public class IdleFill extends IdleTask {
+	public class IdleLayBricks extends IdleTask {
 		public Deque<Brick> ends = new ArrayDeque<>();
 		public Deque<Brick> starts = new ArrayDeque<>();
 
@@ -448,7 +448,7 @@ public class Context {
 		@Override
 		public boolean runImplementation() {
 			if (ends.isEmpty() && starts.isEmpty()) {
-				idleFill = null;
+				idleLayBricks = null;
 				return false;
 			}
 			if (!ends.isEmpty()) {
@@ -476,11 +476,11 @@ public class Context {
 
 		@Override
 		protected void destroyed() {
-			idleFill = null;
+			idleLayBricks = null;
 		}
 	}
 
-	public IdleFill idleFill = null;
+	public IdleLayBricks idleLayBricks = null;
 
 	private boolean overlapsWindow(final Visual visual) {
 		Visual at = visual;
@@ -489,7 +489,7 @@ public class Context {
 				return true;
 			if (at.parent() == null)
 				break;
-			at = at.parent().getTarget();
+			at = at.parent().visual();
 		}
 		return false;
 	}
@@ -497,7 +497,7 @@ public class Context {
 	public void createWindowForSelection(final Value value, final int depthThreshold) {
 		final Visual oldWindow = windowAtom == null ? document.top.visual : windowAtom.visual;
 
-		windowAtom = value.parent.node();
+		windowAtom = value.parent.atom();
 		int depth = 0;
 		while (true) {
 			depth += windowAtom.type.depthScore;
@@ -505,7 +505,7 @@ public class Context {
 				break;
 			if (windowAtom.parent.value().parent == null)
 				break;
-			windowAtom = windowAtom.parent.value().parent.node();
+			windowAtom = windowAtom.parent.value().parent.atom();
 		}
 
 		if (depth <= depthThreshold) {
@@ -537,12 +537,12 @@ public class Context {
 			oldWindow.uproot(this, windowVisual);
 		if (!tagsChange.add.isEmpty() || !tagsChange.remove.isEmpty())
 			changeGlobalTags(tagsChange);
-		fillOutward();
+		idleLayBricksOutward();
 	}
 
-	private void fillOutward() {
-		fillFromStartBrick(foreground.children.get(0).children.get(0));
-		fillFromEndBrick(last(last(foreground.children).children));
+	private void idleLayBricksOutward() {
+		idleLayBricksBeforeStart(foreground.children.get(0).children.get(0));
+		idleLayBricksAfterEnd(last(last(foreground.children).children));
 	}
 
 	public void clearSelection() {
@@ -567,8 +567,8 @@ public class Context {
 		if (first == null)
 			first = visual.createFirstBrick(this);
 		foreground.setCornerstone(this, first);
-		fillFromStartBrick(first);
-		fillFromEndBrick(first);
+		idleLayBricksBeforeStart(first);
+		idleLayBricksAfterEnd(first);
 
 		selection.addBrickListener(this, new VisualAttachmentAdapter.BoundsListener() {
 			@Override
@@ -674,11 +674,11 @@ public class Context {
 	public Selection selection;
 
 	public void windowClear() {
-		windowClearNoFill();
-		fillOutward();
+		windowClearNoLayBricks();
+		idleLayBricksOutward();
 	}
 
-	public void windowClearNoFill() {
+	public void windowClearNoLayBricks() {
 		window = false;
 		windowAtom = null;
 		syntax.rootFront.createVisual(this,
@@ -730,9 +730,9 @@ public class Context {
 							0
 					);
 				} else {
-					windowVisual = atom.parent.value().parent.node().createVisual(context, null, ImmutableMap.of(), 0);
+					windowVisual = atom.parent.value().parent.atom().createVisual(context, null, ImmutableMap.of(), 0);
 				}
-				fillOutward();
+				idleLayBricksOutward();
 			}
 
 			@Override
@@ -748,14 +748,14 @@ public class Context {
 				final VisualAtomType stop = windowAtom.visual;
 				if (selection.getVisual().parent() == null)
 					return;
-				VisualAtomType at = selection.getVisual().parent().getNodeVisual();
+				VisualAtomType at = selection.getVisual().parent().atomVisual();
 				while (at != null) {
 					if (at == stop)
 						break;
 					if (at.parent() == null)
 						break;
 					chain.add(at);
-					at = at.parent().getNodeVisual();
+					at = at.parent().atomVisual();
 				}
 				if (chain.isEmpty())
 					return;
@@ -764,7 +764,7 @@ public class Context {
 				windowAtom = windowVisual.atom;
 				last(chain).root(context, null, ImmutableMap.of(), 0);
 				oldWindowVisual.uproot(context, windowVisual);
-				fillOutward();
+				idleLayBricksOutward();
 			}
 
 			@Override
@@ -835,9 +835,9 @@ public class Context {
 			}
 		});
 		if (!syntax.startWindowed)
-			windowClearNoFill();
+			windowClearNoLayBricks();
 		document.top.selectDown(this);
-		fillOutward();
+		idleLayBricksOutward();
 	}
 
 	private void scrollVisible() {

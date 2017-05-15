@@ -35,7 +35,7 @@ public class TestActionsArray {
 	}
 
 	public static VisualArray visual(final Context context) {
-		return (VisualArray) context.selection.getVisual().parent().getTarget();
+		return (VisualArray) context.selection.getVisual().parent().visual();
 	}
 
 	public static void assertSelection(final Context context, final int begin, final int end) {
@@ -155,7 +155,7 @@ public class TestActionsArray {
 	@Test
 	public void testReleaseNext() {
 		final Context context = buildFive();
-		((VisualArray) ((Atom) context.locateShort(new Path("0"))).data.get("value").getVisual()).select(context, 2, 3);
+		((VisualArray) ((Atom) context.locateShort(new Path("0"))).data.get("value").visual()).select(context, 2, 3);
 		Helper.act(context, "release_next");
 		final VisualArray.ArraySelection selection = (VisualArray.ArraySelection) context.selection;
 		assertThat(selection.beginIndex, equalTo(2));
@@ -175,7 +175,7 @@ public class TestActionsArray {
 	@Test
 	public void testReleasePrevious() {
 		final Context context = buildFive();
-		((VisualArray) ((Atom) context.locateShort(new Path("0"))).data.get("value").getVisual()).select(context, 1, 2);
+		((VisualArray) ((Atom) context.locateShort(new Path("0"))).data.get("value").visual()).select(context, 1, 2);
 		Helper.act(context, "release_previous");
 		final VisualArray.ArraySelection selection = (VisualArray.ArraySelection) context.selection;
 		assertThat(selection.beginIndex, equalTo(2));
@@ -195,7 +195,7 @@ public class TestActionsArray {
 	@Test
 	public void testDelete() {
 		final Context context = buildFive();
-		((VisualArray) ((Atom) context.locateShort(new Path("0"))).data.get("value").getVisual()).select(context, 1, 2);
+		((VisualArray) ((Atom) context.locateShort(new Path("0"))).data.get("value").visual()).select(context, 1, 2);
 		Helper.act(context, "delete");
 		assertTreeEqual(context, new Helper.TreeBuilder(MiscSyntax.array).addArray(
 				"value",
@@ -209,7 +209,7 @@ public class TestActionsArray {
 	@Test
 	public void testMoveBefore() {
 		final Context context = buildFive();
-		((VisualArray) ((Atom) context.locateShort(new Path("0"))).data.get("value").getVisual()).select(context, 1, 2);
+		((VisualArray) ((Atom) context.locateShort(new Path("0"))).data.get("value").visual()).select(context, 1, 2);
 		Helper.act(context, "move_before");
 		assertTreeEqual(context, new Helper.TreeBuilder(MiscSyntax.array).addArray(
 				"value",
@@ -227,7 +227,7 @@ public class TestActionsArray {
 	@Test
 	public void testMoveBeforeStart() {
 		final Context context = buildFive();
-		((VisualArray) ((Atom) context.locateShort(new Path("0"))).data.get("value").getVisual()).select(context, 0, 1);
+		((VisualArray) ((Atom) context.locateShort(new Path("0"))).data.get("value").visual()).select(context, 0, 1);
 		Helper.act(context, "move_before");
 		assertTreeEqual(context, new Helper.TreeBuilder(MiscSyntax.array).addArray(
 				"value",
@@ -245,7 +245,7 @@ public class TestActionsArray {
 	@Test
 	public void testMoveAfter() {
 		final Context context = buildFive();
-		((VisualArray) ((Atom) context.locateShort(new Path("0"))).data.get("value").getVisual()).select(context, 1, 2);
+		((VisualArray) ((Atom) context.locateShort(new Path("0"))).data.get("value").visual()).select(context, 1, 2);
 		Helper.act(context, "move_after");
 		assertTreeEqual(context, new Helper.TreeBuilder(MiscSyntax.array).addArray(
 				"value",
@@ -263,7 +263,7 @@ public class TestActionsArray {
 	@Test
 	public void testMoveAfterEnd() {
 		final Context context = buildFive();
-		((VisualArray) ((Atom) context.locateShort(new Path("0"))).data.get("value").getVisual()).select(context, 3, 4);
+		((VisualArray) ((Atom) context.locateShort(new Path("0"))).data.get("value").visual()).select(context, 3, 4);
 		Helper.act(context, "move_after");
 		assertTreeEqual(context, new Helper.TreeBuilder(MiscSyntax.array).addArray(
 				"value",
@@ -281,8 +281,7 @@ public class TestActionsArray {
 	@Test
 	public void testCopyPaste() {
 		final Context context = buildFive();
-		final VisualArray visual =
-				(VisualArray) ((Atom) context.locateShort(new Path("0"))).data.get("value").getVisual();
+		final VisualArray visual = (VisualArray) ((Atom) context.locateShort(new Path("0"))).data.get("value").visual();
 		visual.select(context, 1, 2);
 		Helper.act(context, "copy");
 		visual.select(context, 4, 4);
@@ -305,14 +304,14 @@ public class TestActionsArray {
 	@Test
 	public void testCutPaste() {
 		final Context context = buildFive();
-		((VisualArray) ((Atom) context.locateShort(new Path("0"))).data.get("value").getVisual()).select(context, 1, 2);
+		((VisualArray) ((Atom) context.locateShort(new Path("0"))).data.get("value").visual()).select(context, 1, 2);
 		Helper.act(context, "cut");
 		{
 			final VisualArray.ArraySelection selection = (VisualArray.ArraySelection) context.selection;
 			assertThat(selection.beginIndex, equalTo(1));
 			assertThat(selection.endIndex, equalTo(1));
 		}
-		((VisualArray) ((Atom) context.locateShort(new Path("0"))).data.get("value").getVisual()).select(context, 2, 2);
+		((VisualArray) ((Atom) context.locateShort(new Path("0"))).data.get("value").visual()).select(context, 2, 2);
 		Helper.act(context, "paste");
 		assertTreeEqual(context, new Helper.TreeBuilder(MiscSyntax.array).addArray(
 				"value",

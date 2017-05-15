@@ -247,7 +247,7 @@ public abstract class FrontGapBase extends FrontPart {
 			@Override
 			public void receiveText(final Context context, final String text) {
 				super.receiveText(context, text);
-				final List<? extends Choice> choices = process(context, self.parent.node(), self.get(), userData);
+				final List<? extends Choice> choices = process(context, self.parent.atom(), self.get(), userData);
 				if (!choices.isEmpty()) {
 					if (gapDetails != null) {
 						context.details.removePage(context, gapDetails);
@@ -261,7 +261,7 @@ public abstract class FrontGapBase extends FrontPart {
 			@Override
 			public void clear(final Context context) {
 				super.clear(context);
-				deselect(context, self.parent.node(), self.get(), userData);
+				deselect(context, self.parent.atom(), self.get(), userData);
 				if (gapDetails != null) {
 					context.details.removePage(context, gapDetails);
 					gapDetails.destroy(context);

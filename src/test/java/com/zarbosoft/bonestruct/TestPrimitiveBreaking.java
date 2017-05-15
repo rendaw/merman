@@ -98,7 +98,7 @@ public class TestPrimitiveBreaking {
 					PrimitiveSyntax.syntax,
 					new Helper.TreeBuilder(PrimitiveSyntax.primitive).add("value", string).build()
 			);
-			this.primitive = (VisualPrimitive) inner.context.document.top.data.get(0).data.get("value").getVisual();
+			this.primitive = (VisualPrimitive) inner.context.document.top.data.get(0).data.get("value").visual();
 		}
 
 		public PrimitiveTestWizard check(final String... lines) {

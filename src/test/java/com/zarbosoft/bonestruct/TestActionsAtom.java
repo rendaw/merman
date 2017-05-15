@@ -69,9 +69,9 @@ public class TestActionsAtom {
 						.add("second", ExpressionSyntax.syntax.gap.create())
 						.build()
 		);
-		((ValueAtom) context.locateShort(new Path("0", "first"))).getVisual().select(context);
+		((ValueAtom) context.locateShort(new Path("0", "first"))).visual().select(context);
 		Helper.act(context, "copy");
-		((ValueAtom) context.locateShort(new Path("0", "second"))).getVisual().select(context);
+		((ValueAtom) context.locateShort(new Path("0", "second"))).visual().select(context);
 		Helper.act(context, "paste");
 		assertTreeEqual(
 				context,
@@ -91,7 +91,7 @@ public class TestActionsAtom {
 						.add("value", new Helper.TreeBuilder(ExpressionSyntax.infinity).build())
 						.build()
 		);
-		((ValueAtom) context.locateShort(new Path("0", "value"))).getVisual().select(context);
+		((ValueAtom) context.locateShort(new Path("0", "value"))).visual().select(context);
 		Helper.act(context, "cut");
 		assertTreeEqual(
 				context,

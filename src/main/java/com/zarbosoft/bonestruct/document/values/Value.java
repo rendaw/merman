@@ -29,7 +29,7 @@ public abstract class Value extends DocumentNode {
 	final public Path getPath() {
 		if (parent == null)
 			return new Path();
-		final Atom atom = parent.node();
+		final Atom atom = parent.atom();
 		final Pair<Integer, Path> subpath = atom.type.getBackPart(middle().id).getSubpath();
 		final Value parentValue = atom.parent.value();
 		final Path parentPath = parentValue.getPath();
@@ -75,6 +75,6 @@ public abstract class Value extends DocumentNode {
 			return middle().id;
 		}
 
-		public abstract Path getPath();
+		public abstract Path path();
 	}
 }

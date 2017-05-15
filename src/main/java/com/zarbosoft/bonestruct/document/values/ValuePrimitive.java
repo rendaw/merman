@@ -23,7 +23,7 @@ public class ValuePrimitive extends com.zarbosoft.bonestruct.document.values.Val
 	}
 
 	@Override
-	public VisualPrimitive getVisual() {
+	public VisualPrimitive visual() {
 		return visual;
 	}
 

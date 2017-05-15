@@ -156,9 +156,9 @@ public abstract class VisualAtomBase extends VisualPart {
 	private boolean ellipsize(final Context context) {
 		if (!context.window)
 			return false;
-		if (parent.getNodeVisual() == null)
+		if (parent.atomVisual() == null)
 			return false;
-		return parent.getNodeVisual().depth >= ellipsizeThreshold();
+		return parent.atomVisual().depth >= ellipsizeThreshold();
 	}
 
 	@Override
@@ -375,7 +375,7 @@ public abstract class VisualAtomBase extends VisualPart {
 		if (context.selection != null) {
 			VisualParent parent = context.selection.getVisual().parent();
 			while (parent != null) {
-				final Visual visual = parent.getTarget();
+				final Visual visual = parent.visual();
 				if (visual == this) {
 					fixDeepSelection = true;
 					break;
@@ -386,7 +386,7 @@ public abstract class VisualAtomBase extends VisualPart {
 		if (hoverable == null && context.hover != null) {
 			VisualParent parent = context.hover.part().parent();
 			while (parent != null) {
-				final Visual visual = parent.getTarget();
+				final Visual visual = parent.visual();
 				if (visual == this) {
 					fixDeepHover = true;
 					break;
@@ -407,11 +407,8 @@ public abstract class VisualAtomBase extends VisualPart {
 	private void coreSet(final Context context, final Atom data) {
 		if (body != null)
 			body.uproot(context, null);
-		this.body = (VisualAtomType) data.createVisual(context,
-				new NestedParent(),
-				parent.getTarget().alignments(),
-				depth()
-		);
+		this.body =
+				(VisualAtomType) data.createVisual(context, new NestedParent(), parent.visual().alignments(), depth());
 		if (adapter != null) {
 			adapter.setBase(context, body);
 		}
@@ -424,12 +421,12 @@ public abstract class VisualAtomBase extends VisualPart {
 		}
 
 		@Override
-		public Visual getTarget() {
+		public Visual visual() {
 			return VisualAtomBase.this;
 		}
 
 		@Override
-		public VisualAtomType getNodeVisual() {
+		public VisualAtomType atomVisual() {
 			throw new DeadCode();
 		}
 
@@ -511,7 +508,7 @@ public abstract class VisualAtomBase extends VisualPart {
 				public VisualAtomType node() {
 					if (VisualAtomBase.this.parent == null)
 						return null;
-					return VisualAtomBase.this.parent.getNodeVisual();
+					return VisualAtomBase.this.parent.atomVisual();
 				}
 
 				@Override

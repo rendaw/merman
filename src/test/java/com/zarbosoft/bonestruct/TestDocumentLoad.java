@@ -34,7 +34,7 @@ public class TestDocumentLoad {
 			final List<Atom> top = doc.top.data;
 			assertThat(top.size(), equalTo(1));
 			assertThat(top.get(0).type, equalTo(type1));
-			assertThat(top.get(0).parent.getPath(), equalTo(new Path("0")));
+			assertThat(top.get(0).parent.path(), equalTo(new Path("0")));
 		}
 	}
 
@@ -47,8 +47,8 @@ public class TestDocumentLoad {
 			assertThat(top.get(0).type, equalTo(type1));
 			assertThat(top.get(1).type, equalTo(type1));
 			assertThat(top.get(0), not(equalTo(top.get(1))));
-			assertThat(top.get(0).parent.getPath(), equalTo(new Path("0")));
-			assertThat(top.get(1).parent.getPath(), equalTo(new Path("1")));
+			assertThat(top.get(0).parent.path(), equalTo(new Path("0")));
+			assertThat(top.get(1).parent.path(), equalTo(new Path("1")));
 		}
 	}
 }

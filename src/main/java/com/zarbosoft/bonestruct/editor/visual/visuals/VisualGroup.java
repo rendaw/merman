@@ -106,7 +106,7 @@ public class VisualGroup extends VisualPart {
 				(parent == null ? null : parent.getNextBrick(context)) :
 				children.get(index + 1).getFirstBrick(context);
 		if (previousBrick != null && nextBrick != null)
-			context.fillFromEndBrick(previousBrick);
+			context.idleLayBricksAfterEnd(previousBrick);
 	}
 
 	protected VisualParent createParent(final int index) {
@@ -237,15 +237,15 @@ public class VisualGroup extends VisualPart {
 		}
 
 		@Override
-		public Visual getTarget() {
+		public Visual visual() {
 			return target;
 		}
 
 		@Override
-		public VisualAtomType getNodeVisual() {
+		public VisualAtomType atomVisual() {
 			if (target.parent == null)
 				return null;
-			return target.parent.getNodeVisual();
+			return target.parent.atomVisual();
 		}
 
 		@Override

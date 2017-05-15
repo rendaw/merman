@@ -49,12 +49,12 @@ public class ValueAtom extends Value {
 		}
 
 		@Override
-		public Path getPath() {
+		public Path path() {
 			return ValueAtom.this.getPath();
 		}
 
 		@Override
-		public DocumentNode node() {
+		public DocumentNode atom() {
 			return ValueAtom.this;
 		}
 
@@ -99,7 +99,7 @@ public class ValueAtom extends Value {
 	}
 
 	@Override
-	public VisualAtom getVisual() {
+	public VisualAtom visual() {
 		return visual;
 	}
 

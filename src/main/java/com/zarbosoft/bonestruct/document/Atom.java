@@ -23,7 +23,7 @@ public class Atom extends DocumentNode {
 		data.forEach((k, v) -> {
 			v.setParent(new Parent() {
 				@Override
-				public Atom node() {
+				public Atom atom() {
 					return Atom.this;
 				}
 
@@ -49,7 +49,7 @@ public class Atom extends DocumentNode {
 		if (parent == null)
 			return new Path();
 		else
-			return parent.getPath();
+			return parent.path();
 	}
 
 	public Visual createVisual(
@@ -73,12 +73,12 @@ public class Atom extends DocumentNode {
 	}
 
 	@Override
-	public VisualAtomType getVisual() {
+	public VisualAtomType visual() {
 		return visual;
 	}
 
 	public static abstract class Parent extends DocumentNodeParent {
-		public abstract Atom node();
+		public abstract Atom atom();
 	}
 
 }

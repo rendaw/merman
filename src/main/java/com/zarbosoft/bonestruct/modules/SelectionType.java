@@ -29,7 +29,7 @@ public class SelectionType extends Module {
 				message.priority = 100;
 				final StringBuilder text = new StringBuilder();
 				if (node) {
-					final VisualAtomType nodeType = selection.getVisual().parent().getNodeVisual();
+					final VisualAtomType nodeType = selection.getVisual().parent().atomVisual();
 					if (nodeType == null)
 						text.append("Root Element");
 					else

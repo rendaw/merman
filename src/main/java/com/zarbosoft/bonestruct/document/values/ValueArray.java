@@ -60,12 +60,12 @@ public class ValueArray extends Value {
 		}
 
 		@Override
-		public Path getPath() {
+		public Path path() {
 			return middle.getPath(ValueArray.this, actualIndex);
 		}
 
 		@Override
-		public DocumentNode node() {
+		public DocumentNode atom() {
 			return ValueArray.this;
 		}
 
@@ -114,7 +114,7 @@ public class ValueArray extends Value {
 	}
 
 	@Override
-	public Visual getVisual() {
+	public Visual visual() {
 		return visual;
 	}
 

@@ -209,7 +209,7 @@ public class TestSelectionChanges {
 						.build(),
 				new Helper.TreeBuilder(MiscSyntax.infinity).build()
 		).build(), new Path("0", "1", "0"), (context, selected) -> {
-			((Value) context.locateLong(new Path("0", "1"))).parent.node().parent.delete(context);
+			((Value) context.locateLong(new Path("0", "1"))).parent.atom().parent.delete(context);
 		}, new Helper.TreeBuilder(MiscSyntax.array).addArray("value",
 				new Helper.TreeBuilder(MiscSyntax.infinity).build(),
 				new Helper.TreeBuilder(MiscSyntax.infinity).build()
@@ -397,7 +397,7 @@ public class TestSelectionChanges {
 				).build(),
 				new Path("0", "value", "0"),
 				(context, selected) -> {
-					((ValueArray) context.locateLong(new Path("0", "value"))).parent.node().parent.delete(context);
+					((ValueArray) context.locateLong(new Path("0", "value"))).parent.atom().parent.delete(context);
 				},
 				new Helper.TreeBuilder(MiscSyntax.snooze).add("value", MiscSyntax.syntax.gap.create()).build(),
 				new Path("0", "value")

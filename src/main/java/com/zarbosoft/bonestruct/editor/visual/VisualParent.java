@@ -10,7 +10,7 @@ public abstract class VisualParent {
 
 	public abstract Brick createNextBrick(Context context);
 
-	public abstract VisualAtomType getNodeVisual();
+	public abstract VisualAtomType atomVisual();
 
 	public abstract Alignment getAlignment(String alignment);
 
@@ -30,5 +30,5 @@ public abstract class VisualParent {
 
 	public abstract Brick createPreviousBrick(Context context);
 
-	public abstract Visual getTarget();
+	public abstract Visual visual();
 }

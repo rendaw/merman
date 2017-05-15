@@ -60,7 +60,7 @@ public abstract class Visual {
 		final VisualParent parent = parent();
 		if (parent == null)
 			return 0;
-		final VisualAtomType atomVisual = parent.getNodeVisual();
+		final VisualAtomType atomVisual = parent.atomVisual();
 		if (atomVisual == null)
 			return 0;
 		return atomVisual.depth;
@@ -78,13 +78,13 @@ public abstract class Visual {
 		final Brick previousBrick = parent() == null ? null : parent().getPreviousBrick(context);
 		final Brick nextBrick = parent() == null ? null : parent().getNextBrick(context);
 		if (previousBrick != null && nextBrick != null)
-			context.fillFromEndBrick(previousBrick);
+			context.idleLayBricksAfterEnd(previousBrick);
 	}
 
 	public Map<String, Alignment> alignments() {
 		if (parent() == null)
 			return ImmutableMap.of();
-		return parent().getTarget().alignments();
+		return parent().visual().alignments();
 	}
 
 	@Configuration
