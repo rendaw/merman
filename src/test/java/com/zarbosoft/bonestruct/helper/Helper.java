@@ -237,6 +237,11 @@ public class Helper {
 			this.type.frontAssociative = true;
 			return this;
 		}
+
+		public TypeBuilder depthScore(final int i) {
+			this.type.depthScore = i;
+			return this;
+		}
 	}
 
 	public static BackPart buildBackPrimitive(final String value) {

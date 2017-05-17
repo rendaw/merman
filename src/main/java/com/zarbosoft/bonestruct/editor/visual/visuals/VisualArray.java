@@ -1,7 +1,6 @@
 package com.zarbosoft.bonestruct.editor.visual.visuals;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.zarbosoft.bonestruct.document.Atom;
 import com.zarbosoft.bonestruct.document.values.ValueArray;
 import com.zarbosoft.bonestruct.editor.*;
@@ -281,8 +280,6 @@ public abstract class VisualArray extends VisualGroup {
 
 	protected abstract boolean tagFirst();
 
-	public abstract int ellipsizeThreshold();
-
 	protected abstract Symbol ellipsis();
 
 	private class ChildGroup extends VisualGroup {
@@ -374,6 +371,8 @@ public abstract class VisualArray extends VisualGroup {
 				return ellipsisTags(context);
 			}
 		});
+		final Style.Baked style = context.getStyle(ellipsisTags(context));
+		ellipsis.setStyle(context, style);
 		return ellipsis;
 	}
 
@@ -382,7 +381,7 @@ public abstract class VisualArray extends VisualGroup {
 			return false;
 		if (parent == null)
 			return false;
-		return parent.atomVisual().depth >= ellipsizeThreshold();
+		return parent.atomVisual().depth >= context.syntax.ellipsizeThreshold;
 	}
 
 	@Override
@@ -419,32 +418,40 @@ public abstract class VisualArray extends VisualGroup {
 	public void root(
 			final Context context, final VisualParent parent, final Map<String, Alignment> alignments, final int depth
 	) {
+		this.parent = parent;
 		if (ellipsize(context)) {
 			if (!children.isEmpty()) {
 				remove(context, 0, children.size());
 			}
+			super.root(context, parent, alignments, depth);
+			context.idleLayBricks(parent, 0, 1, 1, null, null, i -> createEllipsis(context));
 		} else {
-			if (children.isEmpty()) {
+			if (ellipsis != null)
+				ellipsis.destroy(context);
+			super.root(context, parent, alignments, depth);
+			if (!value.data.isEmpty() && children.isEmpty()) {
 				coreChange(context, 0, 0, value.data);
+				context.idleLayBricks(parent, 0, 1, 1, null, null, i -> children.get(0).createFirstBrick(context));
 			}
 		}
-		super.root(context, parent, alignments, depth);
 	}
 
 	@Override
 	public void uproot(final Context context, final Visual root) {
 		if (root == this) {
-			// Only root array
-			root(context, null, ImmutableMap.of(), 0);
-		} else {
-			if (selection != null)
-				context.clearSelection();
-			if (hoverable != null)
-				context.clearHover();
-			value.removeListener(dataListener);
-			value.visual = null;
-			super.uproot(context, root);
+			// Only root array, which should never be uprooted with itself as the stop point
+			throw new AssertionError();
 		}
+		if (selection != null)
+			context.clearSelection();
+		if (hoverable != null)
+			context.clearHover();
+		if (ellipsis != null)
+			ellipsis.destroy(context);
+		value.removeListener(dataListener);
+		value.visual = null;
+		super.uproot(context, root);
+		children.clear();
 	}
 
 	@Override
@@ -741,8 +748,8 @@ public abstract class VisualArray extends VisualGroup {
 				@Override
 				public void run(final Context context) {
 					final Atom root = value.data.get(beginIndex);
-					context.setAtomWindow(root);
-					root.visual.selectDown(context);
+					if (root.visual.selectDown(context))
+						context.setAtomWindow(root);
 				}
 
 				@Override

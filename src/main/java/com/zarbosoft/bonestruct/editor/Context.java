@@ -100,66 +100,6 @@ public class Context {
 		transverseEdgeListeners.remove(listener);
 	}
 
-	public void idleLayBricks(
-			final VisualParent parent,
-			final int index,
-			final int addCount,
-			final int size,
-			final Function<Integer, Brick> accessFirst,
-			final Function<Integer, Brick> accessLast,
-			final Function<Integer, Brick> create
-	) {
-		if (size == 0)
-			return;
-		if (index > 0) {
-			final Brick previousBrick = accessLast.apply(index - 1);
-			if (previousBrick == null)
-				return;
-			if (index + addCount < size) {
-				// Hits neither edge
-				final Brick nextBrick = accessFirst.apply(index + addCount);
-				if (nextBrick != null) {
-					idleLayBricksBeforeStart(previousBrick);
-				}
-			} else {
-				// Hits end edge
-				final boolean nextEdge = parent == null ? true : parent.isNextWindowEdge(this);
-				if (!nextEdge && parent.getNextBrick(this) == null)
-					return;
-				idleLayBricksBeforeStart(previousBrick);
-			}
-		} else {
-			final boolean previousEdge = parent == null ? true : parent.isPreviousWindowEdge(this);
-			final Brick previousBrick = parent == null ? null : parent.getPreviousBrick(this);
-			if (index + addCount < size) {
-				// Hits index edge
-				final Brick nextBrick = accessFirst.apply(index + addCount);
-				if (nextBrick != null) {
-					if (previousEdge) {
-						idleLayBricksAfterEnd(nextBrick);
-					} else if (previousBrick != null) {
-						idleLayBricksBeforeStart(previousBrick);
-					}
-				}
-			} else {
-				// Hits both edges
-				final boolean nextEdge = parent == null ? true : parent.isNextWindowEdge(this);
-				if (previousEdge && nextEdge) {
-					foreground.setCornerstone(this, create.apply(index));
-				} else {
-					final Brick nextBrick = parent.getNextBrick(this);
-					if (previousEdge && nextBrick != null) {
-						idleLayBricksAfterEnd(nextBrick);
-					} else if (nextEdge && previousBrick != null) {
-						idleLayBricksBeforeStart(previousBrick);
-					} else if (previousBrick != null && nextBrick != null) {
-						idleLayBricksBeforeStart(previousBrick);
-					}
-				}
-			}
-		}
-	}
-
 	@FunctionalInterface
 	public interface KeyListener {
 		boolean handleKey(Context context, HIDEvent event);
@@ -412,6 +352,72 @@ public class Context {
 		this.keyListeners.remove(listener);
 	}
 
+	private void idleLayBricksOutward() {
+		idleLayBricksBeforeStart(foreground.children.get(0).children.get(0));
+		idleLayBricksAfterEnd(last(last(foreground.children).children));
+	}
+
+	public void idleLayBricks(
+			final VisualParent parent,
+			final int index,
+			final int addCount,
+			final int size,
+			final Function<Integer, Brick> accessFirst,
+			final Function<Integer, Brick> accessLast,
+			final Function<Integer, Brick> create
+	) {
+		if (size == 0)
+			throw new AssertionError();
+		if (index > 0) {
+			final Brick previousBrick = accessLast.apply(index - 1);
+			if (previousBrick != null) {
+				idleLayBricksAfterEnd(previousBrick);
+				return;
+			}
+			if (index + addCount < size) {
+				// Hits neither edge
+				final Brick nextBrick = accessFirst.apply(index + addCount);
+				if (nextBrick == null)
+					return;
+				idleLayBricksBeforeStart(nextBrick);
+			} else {
+				// Hits end edge
+				if (parent == null)
+					return;
+				final Brick nextBrick = parent.getNextBrick(this);
+				if (nextBrick == null)
+					return;
+				idleLayBricksBeforeStart(nextBrick);
+			}
+		} else {
+			if (index + addCount < size) {
+				// Hits index edge
+				final Brick nextBrick = accessFirst.apply(index + addCount);
+				if (nextBrick != null) {
+					idleLayBricksBeforeStart(nextBrick);
+					return;
+				}
+				final Brick previousBrick = parent.getPreviousBrick(this);
+				if (previousBrick == null)
+					return;
+				idleLayBricksAfterEnd(previousBrick);
+			} else {
+				// Hits both edges
+				if (parent == null)
+					return;
+				final Brick previousBrick = parent.getPreviousBrick(this);
+				if (previousBrick != null) {
+					idleLayBricksAfterEnd(previousBrick);
+					return;
+				}
+				final Brick nextBrick = parent.getNextBrick(this);
+				if (nextBrick == null)
+					return;
+				idleLayBricksBeforeStart(nextBrick);
+			}
+		}
+	}
+
 	public void idleLayBricksAfterEnd(final Brick end) {
 		if (idleLayBricks == null) {
 			idleLayBricks = new IdleLayBricks();
@@ -483,9 +489,10 @@ public class Context {
 	public IdleLayBricks idleLayBricks = null;
 
 	private boolean overlapsWindow(final Visual visual) {
+		final Visual stop = windowAtom == null ? document.top.visual : windowAtom.visual;
 		Visual at = visual;
 		while (true) {
-			if (at == windowAtom.visual)
+			if (at == stop)
 				return true;
 			if (at.parent() == null)
 				break;
@@ -496,40 +503,57 @@ public class Context {
 
 	public void createWindowForSelection(final Value value, final int depthThreshold) {
 		final Visual oldWindow = windowAtom == null ? document.top.visual : windowAtom.visual;
+		Visual windowVisual = null;
 
-		windowAtom = value.parent.atom();
-		int depth = 0;
-		while (true) {
-			depth += windowAtom.type.depthScore;
-			if (depth > depthThreshold)
-				break;
-			if (windowAtom.parent.value().parent == null)
-				break;
-			windowAtom = windowAtom.parent.value().parent.atom();
+		// Try just going up
+		if (windowAtom != null) {
+			Value at = windowAtom.parent.value();
+			while (true) {
+				if (at.parent == null)
+					break;
+				if (at == value) {
+					windowAtom = at.parent.atom();
+					windowVisual = windowAtom.createVisual(this, null, ImmutableMap.of(), 0);
+				}
+				at = at.parent.atom().parent.value();
+			}
 		}
 
-		if (depth <= depthThreshold) {
-			windowAtom = null;
-			final Atom rootAtom = new Atom(ImmutableMap.of("value", document.top));
-			final Visual windowVisual =
-					syntax.rootFront.createVisual(this, null, rootAtom, HashTreePSet.empty(), ImmutableMap.of(), 0);
-		} else {
-			final Visual windowVisual = windowAtom.createVisual(this, null, ImmutableMap.of(), 0);
+		// Otherwise go up from the selection to find the highest parent where this is still visible
+		if (windowVisual == null) {
+			windowAtom = value.parent.atom();
+			int depth = 0;
+			while (true) {
+				depth += windowAtom.type.depthScore;
+				if (depth >= depthThreshold)
+					break;
+				if (windowAtom.parent.value().parent == null)
+					break;
+				windowAtom = windowAtom.parent.value().parent.atom();
+			}
+
+			if (depth < depthThreshold) {
+				windowAtom = null;
+				final Atom rootAtom = new Atom(ImmutableMap.of("value", document.top));
+				windowVisual =
+						syntax.rootFront.createVisual(this, null, rootAtom, HashTreePSet.empty(), ImmutableMap.of(), 0);
+			} else {
+				windowVisual = windowAtom.createVisual(this, null, ImmutableMap.of(), 0);
+			}
 		}
 
 		if (!overlapsWindow(oldWindow))
-			oldWindow.uproot(this, null);
+			oldWindow.uproot(this, windowVisual);
 	}
 
 	public void setAtomWindow(final Atom atom) {
 		Visual.TagsChange tagsChange = new Visual.TagsChange();
-		if (window) {
-			if (windowAtom == null)
-				tagsChange = tagsChange.remove(new Visual.StateTag("root_window"));
-		} else {
+		if (!window) {
 			window = true;
-			tagsChange = tagsChange.add(new Visual.StateTag("windowed")).remove(new Visual.StateTag("root_window"));
+			tagsChange = tagsChange.add(new Visual.StateTag("windowed"));
 		}
+		if (windowAtom == null)
+			tagsChange = tagsChange.remove(new Visual.StateTag("root_window"));
 		final Visual oldWindow = windowAtom == null ? document.top.visual : windowAtom.visual;
 		windowAtom = atom;
 		final Visual windowVisual = atom.createVisual(this, null, ImmutableMap.of(), 0);
@@ -538,11 +562,6 @@ public class Context {
 		if (!tagsChange.add.isEmpty() || !tagsChange.remove.isEmpty())
 			changeGlobalTags(tagsChange);
 		idleLayBricksOutward();
-	}
-
-	private void idleLayBricksOutward() {
-		idleLayBricksBeforeStart(foreground.children.get(0).children.get(0));
-		idleLayBricksAfterEnd(last(last(foreground.children).children));
 	}
 
 	public void clearSelection() {
@@ -721,6 +740,7 @@ public class Context {
 				final Visual oldWindowVisual = windowAtom.visual;
 				final Visual windowVisual;
 				if (atom.parent.value().parent == null) {
+					windowAtom = null;
 					final Atom rootAtom = new Atom(ImmutableMap.of("value", document.top));
 					windowVisual = syntax.rootFront.createVisual(context,
 							null,
@@ -730,7 +750,8 @@ public class Context {
 							0
 					);
 				} else {
-					windowVisual = atom.parent.value().parent.atom().createVisual(context, null, ImmutableMap.of(), 0);
+					windowAtom = atom.parent.value().parent.atom();
+					windowVisual = windowAtom.createVisual(context, null, ImmutableMap.of(), 0);
 				}
 				idleLayBricksOutward();
 			}
@@ -836,6 +857,20 @@ public class Context {
 		});
 		if (!syntax.startWindowed)
 			windowClearNoLayBricks();
+		else {
+			window = true;
+			windowAtom = null;
+			syntax.rootFront.createVisual(this,
+					null,
+					new Atom(ImmutableMap.of("value", document.top)),
+					HashTreePSet.empty(),
+					ImmutableMap.of(),
+					0
+			);
+			changeGlobalTags(new Visual.TagsChange(ImmutableSet.of(new Visual.StateTag("windowed"),
+					new Visual.StateTag("root_window")
+			), ImmutableSet.of()));
+		}
 		document.top.selectDown(this);
 		idleLayBricksOutward();
 	}

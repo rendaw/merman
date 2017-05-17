@@ -45,8 +45,6 @@ public abstract class VisualAtomBase extends VisualPart {
 
 	protected abstract Path getSelectionPath();
 
-	public abstract int ellipsizeThreshold();
-
 	protected abstract Symbol ellipsis();
 
 	@Override
@@ -58,6 +56,8 @@ public abstract class VisualAtomBase extends VisualPart {
 	public Brick getFirstBrick(final Context context) {
 		if (ellipsize(context))
 			return ellipsis;
+		if (body == null)
+			return parent.getNextBrick(context);
 		return body.getFirstBrick(context);
 	}
 
@@ -65,6 +65,8 @@ public abstract class VisualAtomBase extends VisualPart {
 	public Brick getLastBrick(final Context context) {
 		if (ellipsize(context))
 			return ellipsis;
+		if (body == null)
+			return parent.getPreviousBrick(context);
 		return body.getLastBrick(context);
 	}
 
@@ -74,13 +76,19 @@ public abstract class VisualAtomBase extends VisualPart {
 	) {
 		this.parent = parent;
 		if (ellipsize(context)) {
-			if (body != null)
+			if (body != null) {
 				body.uproot(context, null);
+				body = null;
+				context.idleLayBricks(parent, 0, 1, 1, null, null, i -> createEllipsis(context));
+			}
 		} else {
+			if (ellipsis != null)
+				ellipsis.destroy(context);
 			if (body == null) {
 				coreSet(context, atomGet());
-			}
-			body.root(context, new NestedParent(), alignments, depth);
+				context.idleLayBricks(parent, 0, 1, 1, null, null, i -> body.createFirstBrick(context));
+			} else
+				body.root(context, new NestedParent(), alignments, depth);
 		}
 	}
 
@@ -90,9 +98,8 @@ public abstract class VisualAtomBase extends VisualPart {
 			context.clearSelection();
 		if (hoverable != null)
 			context.clearHover();
-		if (ellipsis != null) {
+		if (ellipsis != null)
 			ellipsis.destroy(context);
-		}
 		if (body != null)
 			body.uproot(context, root);
 	}
@@ -142,6 +149,8 @@ public abstract class VisualAtomBase extends VisualPart {
 				return ellipsisTags(context);
 			}
 		});
+		final Style.Baked style = context.getStyle(ellipsisTags(context));
+		ellipsis.setStyle(context, style);
 		return ellipsis;
 	}
 
@@ -158,7 +167,7 @@ public abstract class VisualAtomBase extends VisualPart {
 			return false;
 		if (parent.atomVisual() == null)
 			return false;
-		return parent.atomVisual().depth >= ellipsizeThreshold();
+		return parent.atomVisual().depth >= context.syntax.ellipsizeThreshold;
 	}
 
 	@Override
@@ -296,8 +305,8 @@ public abstract class VisualAtomBase extends VisualPart {
 			@Override
 			public void run(final Context context) {
 				final Atom root = atomGet();
-				context.setAtomWindow(root);
-				root.visual.selectDown(context);
+				if (root.visual.selectDown(context))
+					context.setAtomWindow(root);
 			}
 
 			@Override
@@ -396,7 +405,7 @@ public abstract class VisualAtomBase extends VisualPart {
 		}
 
 		coreSet(context, data);
-		context.idleLayBricks(parent, 0, 0, 0, i -> null, i -> null, i -> body.createFirstBrick(context));
+		context.idleLayBricks(parent, 0, 1, 1, null, null, i -> body.createFirstBrick(context));
 
 		if (fixDeepSelection)
 			select(context);

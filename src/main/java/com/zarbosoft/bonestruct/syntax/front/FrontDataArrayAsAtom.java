@@ -56,12 +56,6 @@ public class FrontDataArrayAsAtom extends FrontPart {
 		) {
 
 			@Override
-			public int ellipsizeThreshold() {
-				// Only used for gaps; don't worry about gap ellipsizing
-				return Integer.MAX_VALUE;
-			}
-
-			@Override
 			protected Symbol ellipsis() {
 				return null;
 			}

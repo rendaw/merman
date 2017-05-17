@@ -39,77 +39,22 @@ public class VisualAtomType extends Visual {
 		super(HashTreePSet.<Tag>empty().plus(new TypeTag(atomType.id)).plus(new PartTag("atom")));
 		this.atomType = atomType;
 		this.atom = atom;
+		rootInner(context, parent, depth);
 		final PSet<Tag> tags = HashTreePSet.singleton(new TypeTag(atomType.id));
 		compact = false;
 		final Map<String, Alignment> bodyAlignments = new HashMap<>(alignments);
 		for (final Map.Entry<String, AlignmentDefinition> entry : atomType.alignments().entrySet()) {
 			bodyAlignments.put(entry.getKey(), entry.getValue().create());
 		}
-		body = new VisualGroup(context, new VisualParent() {
-			@Override
-			public VisualParent parent() {
-				return parent;
-			}
-
-			@Override
-			public Brick createNextBrick(final Context context) {
-				if (context.windowAtom == VisualAtomType.this.atom)
-					return null;
-				return parent.createNextBrick(context);
-			}
-
-			@Override
-			public Brick createPreviousBrick(final Context context) {
-				if (context.windowAtom == VisualAtomType.this.atom)
-					return null;
-				return parent.createPreviousBrick(context);
-			}
-
-			@Override
-			public Visual visual() {
-				return parent.visual();
-			}
-
-			@Override
-			public VisualAtomType atomVisual() {
-				return VisualAtomType.this;
-			}
-
-			@Override
-			public Alignment getAlignment(final String alignment) {
-				return parent.getAlignment(alignment);
-			}
-
-			@Override
-			public Brick getPreviousBrick(final Context context) {
-				if (context.windowAtom == VisualAtomType.this.atom)
-					return null;
-				if (parent == null)
-					return null;
-				return parent.getPreviousBrick(context);
-			}
-
-			@Override
-			public Brick getNextBrick(final Context context) {
-				if (context.windowAtom == VisualAtomType.this.atom)
-					return null;
-				if (parent == null)
-					return null;
-				return parent.getNextBrick(context);
-			}
-
-			@Override
-			public Hoverable hover(
-					final Context context, final com.zarbosoft.bonestruct.editor.visual.Vector point
-			) {
-				if (parent == null)
-					return null;
-				return parent.hover(context, point);
-			}
-		}, HashTreePSet.empty(), bodyAlignments, depth + atomType.depthScore);
+		body = new VisualGroup(context, new BodyParent(), HashTreePSet.empty(), bodyAlignments, this.depth);
 		enumerate(Common.stream(atomType.front())).forEach(pair -> {
-			final VisualPart visual =
-					pair.second.createVisual(context, body.createParent(pair.first), atom, tags, alignments, depth);
+			final VisualPart visual = pair.second.createVisual(context,
+					body.createParent(pair.first),
+					atom,
+					tags,
+					bodyAlignments,
+					this.depth
+			);
 			body.add(context, visual);
 		});
 		atom.visual = this;
@@ -117,7 +62,7 @@ public class VisualAtomType extends Visual {
 
 	@Override
 	public VisualParent parent() {
-		return body.parent();
+		return parent;
 	}
 
 	@Override
@@ -179,17 +124,20 @@ public class VisualAtomType extends Visual {
 		return body.getPropertiesForTagsChange(context, change);
 	}
 
-	private void rootInner(final Context context, final int depth) {
-		this.depth = depth;
+	private void rootInner(final Context context, final VisualParent parent, final int depth) {
+		this.parent = parent;
+		if (parent == null)
+			this.depth = 0;
+		else
+			this.depth = depth + atomType.depthScore;
 	}
 
 	@Override
 	public void root(
 			final Context context, final VisualParent parent, final Map<String, Alignment> alignments, final int depth
 	) {
-		this.parent = parent;
-		rootInner(context, depth);
-		body.root(context, body.parent, alignments, depth + atomType.depthScore);
+		rootInner(context, parent, depth);
+		body.root(context, body.parent, alignments, this.depth);
 	}
 
 	@Override
@@ -207,5 +155,68 @@ public class VisualAtomType extends Visual {
 
 	public AtomType getType() {
 		return atomType;
+	}
+
+	private class BodyParent extends VisualParent {
+		@Override
+		public VisualParent parent() {
+			return parent;
+		}
+
+		@Override
+		public Brick createNextBrick(final Context context) {
+			if (context.windowAtom == VisualAtomType.this.atom)
+				return null;
+			return parent.createNextBrick(context);
+		}
+
+		@Override
+		public Brick createPreviousBrick(final Context context) {
+			if (context.windowAtom == VisualAtomType.this.atom)
+				return null;
+			return parent.createPreviousBrick(context);
+		}
+
+		@Override
+		public Visual visual() {
+			return VisualAtomType.this;
+		}
+
+		@Override
+		public VisualAtomType atomVisual() {
+			return VisualAtomType.this;
+		}
+
+		@Override
+		public Alignment getAlignment(final String alignment) {
+			return null;
+		}
+
+		@Override
+		public Brick getPreviousBrick(final Context context) {
+			if (context.windowAtom == VisualAtomType.this.atom)
+				return null;
+			if (parent == null)
+				return null;
+			return parent.getPreviousBrick(context);
+		}
+
+		@Override
+		public Brick getNextBrick(final Context context) {
+			if (context.windowAtom == VisualAtomType.this.atom)
+				return null;
+			if (parent == null)
+				return null;
+			return parent.getNextBrick(context);
+		}
+
+		@Override
+		public Hoverable hover(
+				final Context context, final com.zarbosoft.bonestruct.editor.visual.Vector point
+		) {
+			if (parent == null)
+				return null;
+			return parent.hover(context, point);
+		}
 	}
 }

@@ -18,7 +18,7 @@ public class Editor {
 	 * - Bricks are only created
 	 * -- outward from the cornerstone when the selection changes
 	 * -- when the window expands
-	 * -- when the model changes
+	 * -- when the model changes, at the visual level where the change occurs
 	 * <p>
 	 * The whole document is always loaded.
 	 * Visuals exist for everything in the window.
