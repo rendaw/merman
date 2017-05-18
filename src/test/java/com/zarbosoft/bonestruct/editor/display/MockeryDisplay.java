@@ -14,6 +14,7 @@ public class MockeryDisplay implements Display {
 	int transverseEdge = 10000;
 	List<IntListener> converseEdgeListeners = new ArrayList<>();
 	List<IntListener> transverseEdgeListeners = new ArrayList<>();
+	List<Consumer<HIDEvent>> hidEventListeners = new ArrayList<>();
 	List<DisplayNode> nodes = new ArrayList<>();
 
 	@Override
@@ -58,7 +59,7 @@ public class MockeryDisplay implements Display {
 
 	@Override
 	public void addHIDEventListener(final Consumer<HIDEvent> listener) {
-
+		hidEventListeners.add(listener);
 	}
 
 	@Override
@@ -131,5 +132,9 @@ public class MockeryDisplay implements Display {
 		final int oldEdge = transverseEdge;
 		transverseEdge = transverse;
 		transverseEdgeListeners.forEach(listener -> listener.changed(oldEdge, transverse));
+	}
+
+	public void sendHIDEvent(final HIDEvent event) {
+		hidEventListeners.forEach(listener -> listener.accept(event));
 	}
 }

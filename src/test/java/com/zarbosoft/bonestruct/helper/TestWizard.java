@@ -3,6 +3,7 @@ package com.zarbosoft.bonestruct.helper;
 import com.zarbosoft.bonestruct.document.Atom;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.display.MockeryDisplay;
+import com.zarbosoft.bonestruct.editor.hid.HIDEvent;
 import com.zarbosoft.bonestruct.syntax.Syntax;
 
 import static com.zarbosoft.bonestruct.helper.Helper.buildDoc;
@@ -28,6 +29,11 @@ public class TestWizard {
 	public TestWizard resizeTransitive(final int size) {
 		display.setTransverseEdge(context, size);
 		runner.flush();
+		return this;
+	}
+
+	public TestWizard sendHIDEvent(final HIDEvent event) {
+		display.sendHIDEvent(event);
 		return this;
 	}
 }

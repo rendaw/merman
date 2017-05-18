@@ -7,6 +7,7 @@ import com.zarbosoft.bonestruct.editor.banner.BannerMessage;
 import com.zarbosoft.bonestruct.editor.details.DetailsPage;
 import com.zarbosoft.bonestruct.editor.display.DisplayNode;
 import com.zarbosoft.bonestruct.editor.display.Drawing;
+import com.zarbosoft.bonestruct.editor.hid.HIDEvent;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.editor.wall.Brick;
 import com.zarbosoft.bonestruct.editor.wall.Course;
@@ -14,8 +15,10 @@ import com.zarbosoft.bonestruct.editor.wall.bricks.BrickText;
 import com.zarbosoft.bonestruct.syntax.Syntax;
 
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import static com.zarbosoft.rendaw.common.Common.iterable;
+import static com.zarbosoft.rendaw.common.Common.zip;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -123,6 +126,18 @@ public class GeneralTestWizard {
 
 	public GeneralTestWizard checkCourseCount(final int i) {
 		assertThat(inner.context.foreground.children.size(), equalTo(i));
+		return this;
+	}
+
+	public GeneralTestWizard sendHIDEvent(final HIDEvent event) {
+		inner.sendHIDEvent(event);
+		return this;
+	}
+
+	public GeneralTestWizard checkTree(final Atom... atoms) {
+		zip(Stream.of(atoms), inner.context.document.top.data.stream()).forEach(pair -> {
+			Helper.assertTreeEqual(pair.first, pair.second);
+		});
 		return this;
 	}
 }

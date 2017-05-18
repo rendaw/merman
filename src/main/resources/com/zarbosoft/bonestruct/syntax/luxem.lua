@@ -98,17 +98,17 @@ return {
         {
             id = 'luxem_object_element',
             name = 'Luxem Object Element',
-            back = { data_key 'key', data_node 'value' },
+            back = { data_key 'key', data_atom 'value' },
             middle = {
                 key = primitive {},
-                value = node 'value',
+                value = atom 'value',
             },
             front = {
                 symbol { type = space {}, tags = { 'indent', 'break' } },
                 primitive 'key',
                 symbol { type = text ':' },
                 symbol { type = space {}, tags = { 'record_table' } },
-                node 'value',
+                atom 'value',
             },
         },
         {

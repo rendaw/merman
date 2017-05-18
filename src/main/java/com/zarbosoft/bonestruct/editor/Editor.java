@@ -4,13 +4,11 @@ import com.google.common.collect.ImmutableList;
 import com.zarbosoft.bonestruct.document.Document;
 import com.zarbosoft.bonestruct.editor.display.Display;
 import com.zarbosoft.bonestruct.editor.history.History;
-import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.syntax.Syntax;
 
 import java.nio.file.Path;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 public class Editor {
 	/**
@@ -29,7 +27,6 @@ public class Editor {
 	 */
 	private final Context context;
 	private final Display visual;
-	boolean keyIgnore = false;
 
 	public Editor(
 			final Syntax syntax,
@@ -73,39 +70,7 @@ public class Editor {
 				return "click_hovered";
 			}
 		}));
-		context.modules = doc.syntax.modules.stream().map(p -> p.initialize(context)).collect(Collectors.toList());
 		this.visual = display;
-		display.addHIDEventListener(hidEvent -> {
-			keyIgnore = false;
-			if (!context.keyListeners.stream().allMatch(l -> l.handleKey(context, hidEvent)))
-				return;
-			keyIgnore = true;
-		});
-		display.addTypingListener(text -> {
-			if (keyIgnore) {
-				keyIgnore = false;
-				return;
-			}
-			if (text.isEmpty())
-				return;
-			context.selection.receiveText(context, text);
-		});
-		display.addMouseExitListener(() -> {
-			if (context.hoverIdle != null) {
-				context.hoverIdle.point = null;
-			} else if (context.hover != null) {
-				context.clearHover();
-				context.hover = null;
-				context.hoverBrick = null;
-			}
-		});
-		display.addMouseMoveListener(vector -> {
-			if (context.hoverIdle == null) {
-				context.hoverIdle = context.new HoverIdle(context);
-				addIdle.accept(context.hoverIdle);
-			}
-			context.hoverIdle.point = vector.add(new Vector(-context.syntax.padConverse, context.scroll));
-		});
 		visual.setBackgroundColor(context.syntax.background);
 		visual.add(context.background);
 		visual.add(context.midground);

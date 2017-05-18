@@ -79,6 +79,7 @@ public class Context {
 	int scrollStartBeddingAfter;
 	public int scroll;
 	int selectToken = 0;
+	boolean keyIgnore = false;
 
 	public static interface ContextIntListener {
 		void changed(Context context, int oldValue, int newValue);
@@ -821,6 +822,37 @@ public class Context {
 					transverseEdgeListeners.forEach(listener -> listener.changed(this, oldValue, newValue));
 				}
 		));
+		display.addHIDEventListener(hidEvent -> {
+			keyIgnore = false;
+			if (!keyListeners.stream().allMatch(l -> l.handleKey(this, hidEvent)))
+				return;
+			keyIgnore = true;
+		});
+		display.addTypingListener(text -> {
+			if (keyIgnore) {
+				keyIgnore = false;
+				return;
+			}
+			if (text.isEmpty())
+				return;
+			selection.receiveText(this, text);
+		});
+		display.addMouseExitListener(() -> {
+			if (hoverIdle != null) {
+				hoverIdle.point = null;
+			} else if (hover != null) {
+				clearHover();
+				hover = null;
+				hoverBrick = null;
+			}
+		});
+		display.addMouseMoveListener(vector -> {
+			if (hoverIdle == null) {
+				hoverIdle = new HoverIdle(this);
+				addIdle.accept(hoverIdle);
+			}
+			hoverIdle.point = vector.add(new Vector(-syntax.padConverse, scroll));
+		});
 		history.addListener(new History.Listener() {
 			@Override
 			public void applied(final Context context, final Change change) {
@@ -871,6 +903,7 @@ public class Context {
 					new Visual.StateTag("root_window")
 			), ImmutableSet.of()));
 		}
+		modules = document.syntax.modules.stream().map(p -> p.initialize(this)).collect(Collectors.toList());
 		document.top.selectDown(this);
 		idleLayBricksOutward();
 	}

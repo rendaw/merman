@@ -19,7 +19,7 @@ import java.util.Set;
 
 import static com.zarbosoft.rendaw.common.Common.iterable;
 
-@Configuration(name = "data_node")
+@Configuration(name = "data_atom")
 public class BackDataAtom extends BackPart {
 	@Configuration
 	public String middle;
