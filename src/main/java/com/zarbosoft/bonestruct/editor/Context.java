@@ -436,8 +436,10 @@ public class Context {
 	}
 
 	public void clearHover() {
-		hover.clear(this);
-		hover = null;
+		if (hover != null) {
+			hover.clear(this);
+			hover = null;
+		}
 		if (hoverIdle != null) {
 			hoverIdle.destroy();
 		}

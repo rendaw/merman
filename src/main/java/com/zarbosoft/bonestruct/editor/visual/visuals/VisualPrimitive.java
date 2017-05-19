@@ -758,6 +758,7 @@ public class VisualPrimitive extends VisualPart {
 
 		@Override
 		public void clear(final Context context) {
+			context.actions.remove(this);
 			range.destroy(context);
 			selection = null;
 			commit(context);

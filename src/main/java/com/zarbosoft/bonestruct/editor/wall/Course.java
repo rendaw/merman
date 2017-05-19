@@ -119,10 +119,11 @@ public class Course {
 		if (children.isEmpty()) {
 			destroyInner(context);
 		} else {
-			if (at == 0) {
+			if (at == 0 && this.index > 0) {
 				joinPreviousCourse(context);
 			} else {
 				visual.remove(at);
+				renumber(at);
 				getIdlePlace(context);
 				idlePlace.at(at);
 				idlePlace.removeMaxAscent = Math.max(idlePlace.removeMaxAscent, brick.properties(context).ascent);

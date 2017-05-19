@@ -21,6 +21,7 @@ import com.zarbosoft.bonestruct.syntax.back.*;
 import com.zarbosoft.bonestruct.syntax.front.*;
 import com.zarbosoft.bonestruct.syntax.middle.*;
 import com.zarbosoft.bonestruct.syntax.style.Style;
+import com.zarbosoft.bonestruct.syntax.symbol.SymbolSpace;
 import com.zarbosoft.bonestruct.syntax.symbol.SymbolText;
 import com.zarbosoft.luxem.write.RawWriter;
 import com.zarbosoft.rendaw.common.DeadCode;
@@ -185,6 +186,13 @@ public class Helper {
 			return this;
 		}
 
+		public TypeBuilder frontSpace() {
+			final FrontSymbol part = new FrontSymbol();
+			part.type = new SymbolSpace();
+			type.front.add(part);
+			return this;
+		}
+
 		public TypeBuilder middlePrimitive(final String id) {
 			final MiddlePrimitive middle = new MiddlePrimitive();
 			middle.id = id;
@@ -242,6 +250,7 @@ public class Helper {
 			this.type.depthScore = i;
 			return this;
 		}
+
 	}
 
 	public static BackPart buildBackPrimitive(final String value) {

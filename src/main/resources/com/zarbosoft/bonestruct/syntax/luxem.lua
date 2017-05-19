@@ -125,13 +125,13 @@ return {
                 indent = relative { base = 'indent', offset = 16 },
             },
             front = {
-                symbol { type = text '{' },
+                symbol { type = text '[' },
                 array {
                     middle = 'data',
                     prefix = { { type = space {}, tags = { 'indent', 'break' } } },
                     separator = { { type = text ',' } },
                 },
-                symbol { type = text '}', tags = { 'break', 'base' }, }
+                symbol { type = text ']', tags = { 'break', 'base' }, }
             },
             auto_choose_ambiguity = 999,
         },

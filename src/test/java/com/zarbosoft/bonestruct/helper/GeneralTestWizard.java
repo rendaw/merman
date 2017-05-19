@@ -11,6 +11,7 @@ import com.zarbosoft.bonestruct.editor.hid.HIDEvent;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.editor.wall.Brick;
 import com.zarbosoft.bonestruct.editor.wall.Course;
+import com.zarbosoft.bonestruct.editor.wall.bricks.BrickSpace;
 import com.zarbosoft.bonestruct.editor.wall.bricks.BrickText;
 import com.zarbosoft.bonestruct.syntax.Syntax;
 
@@ -102,6 +103,15 @@ public class GeneralTestWizard {
 		return this;
 	}
 
+	public GeneralTestWizard checkSpaceBrick(final int courseIndex, final int brickIndex) {
+		assertThat(inner.context.foreground.children.size(), greaterThan(courseIndex));
+		final Course course = inner.context.foreground.children.get(courseIndex);
+		assertThat(course.children.size(), greaterThan(brickIndex));
+		final Brick brick = course.children.get(brickIndex);
+		assertThat(brick, instanceOf(BrickSpace.class));
+		return this;
+	}
+
 	public GeneralTestWizard run(final Consumer<Context> r) {
 		r.accept(inner.context);
 		assertThat(inner.context.selection, is(notNullValue()));
@@ -126,6 +136,14 @@ public class GeneralTestWizard {
 
 	public GeneralTestWizard checkCourseCount(final int i) {
 		assertThat(inner.context.foreground.children.size(), equalTo(i));
+		return this;
+	}
+
+	public GeneralTestWizard checkBrickCount(final int i) {
+		assertThat(
+				inner.context.foreground.children.stream().mapToInt(course -> course.children.size()).sum(),
+				equalTo(i)
+		);
 		return this;
 	}
 

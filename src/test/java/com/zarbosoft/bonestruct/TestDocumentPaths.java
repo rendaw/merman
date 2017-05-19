@@ -109,14 +109,11 @@ public class TestDocumentPaths {
 						.build())
 				.group("any", ImmutableSet.of("base"))
 				.build();
-		final Context context = buildDoc(
-				syntax,
-				new Helper.TreeBuilder(syntax.types.get(0))
-						.addArray("a",
-								ImmutableList.of(new Helper.TreeBuilder(syntax.types.get(1)).add("b", "").build())
-						)
-						.build()
-		);
+		final Context context = buildDoc(syntax, new Helper.TreeBuilder(syntax.types.get(0))
+				.addArray("a",
+						ImmutableList.of(new Helper.TreeBuilder(syntax.types.get(1)).add("b", "").build())
+				)
+				.build());
 		final Value value1 = ((ValueArray) context.document.top.data.get(0).data.get("a")).data.get(0).data.get("b");
 		assertThat(value1.getPath().toList(), equalTo(ImmutableList.of("0", "0")));
 		assertThat(context.locateLong(value1.getPath()), equalTo(value1));
@@ -280,12 +277,15 @@ public class TestDocumentPaths {
 
 	@Test
 	public void testLocateDataArrayElement() {
-		final Context context = buildDoc(MiscSyntax.syntax, new Helper.TreeBuilder(MiscSyntax.array)
-				.addArray("value",
-						new TreeBuilder(MiscSyntax.one).build(),
-						new TreeBuilder(MiscSyntax.one).build()
-				)
-				.build());
+		final Context context = buildDoc(
+				MiscSyntax.syntax,
+				new Helper.TreeBuilder(MiscSyntax.array)
+						.addArray("value",
+								new TreeBuilder(MiscSyntax.one).build(),
+								new TreeBuilder(MiscSyntax.one).build()
+						)
+						.build()
+		);
 		assertThat(context.locateLong(new Path("0", "0")),
 				equalTo(((ValueArray) context.document.top.data.get(0).data.get("value")).data.get(0))
 		);

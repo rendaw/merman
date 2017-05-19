@@ -12,7 +12,6 @@ import com.zarbosoft.bonestruct.syntax.style.Style;
 
 public class BrickSpace extends Brick implements AlignmentListener {
 	private int converse = 0;
-	private Style.Baked style;
 	private Alignment alignment;
 	private final Blank visual;
 	private int minConverse;
@@ -29,6 +28,7 @@ public class BrickSpace extends Brick implements AlignmentListener {
 		alignment = inter.getAlignment(style);
 		if (alignment != null)
 			alignment.addListener(context, this);
+		this.style = style;
 		changed(context);
 	}
 

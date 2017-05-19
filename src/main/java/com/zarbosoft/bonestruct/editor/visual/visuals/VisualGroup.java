@@ -2,6 +2,7 @@ package com.zarbosoft.bonestruct.editor.visual.visuals;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
+import com.google.common.collect.Lists;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.Hoverable;
 import com.zarbosoft.bonestruct.editor.IdleTask;
@@ -195,7 +196,7 @@ public class VisualGroup extends VisualPart {
 
 	@Override
 	public void uproot(final Context context, final Visual root) {
-		for (final VisualPart child : children)
+		for (final VisualPart child : Lists.reverse(children))
 			child.uproot(context, root);
 	}
 

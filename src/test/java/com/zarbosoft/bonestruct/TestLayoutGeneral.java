@@ -11,7 +11,7 @@ import org.junit.Test;
 
 import static com.zarbosoft.bonestruct.helper.Helper.dump;
 
-public class TestGeneralLayout {
+public class TestLayoutGeneral {
 	final public static FreeAtomType one;
 	final public static FreeAtomType two;
 	final public static FreeAtomType array;
