@@ -1,7 +1,7 @@
 package com.zarbosoft.bonestruct.editor.visual.attachments;
 
 import com.zarbosoft.bonestruct.editor.Context;
-import com.zarbosoft.bonestruct.editor.displaynodes.Obbox;
+import com.zarbosoft.bonestruct.editor.display.derived.Obbox;
 import com.zarbosoft.bonestruct.editor.wall.Attachment;
 import com.zarbosoft.bonestruct.editor.wall.bricks.BrickText;
 import com.zarbosoft.bonestruct.syntax.style.ObboxStyle;

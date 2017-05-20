@@ -4,18 +4,19 @@ import com.zarbosoft.bonestruct.editor.Context;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class MockeryGroup extends MockeryDisplayNode implements Group {
-	List<DisplayNode> nodes = new ArrayList<>();
+	List<MockeryDisplayNode> nodes = new ArrayList<>();
 
 	@Override
 	public void add(final int index, final DisplayNode node) {
-		nodes.add(index, node);
+		nodes.add(index, (MockeryDisplayNode) node);
 	}
 
 	@Override
 	public void addAll(final int index, final List<DisplayNode> nodes) {
-		this.nodes.addAll(index, nodes);
+		this.nodes.addAll(index, nodes.stream().map(node -> (MockeryDisplayNode) node).collect(Collectors.toList()));
 	}
 
 	@Override
@@ -46,5 +47,13 @@ public class MockeryGroup extends MockeryDisplayNode implements Group {
 	@Override
 	public int transverseSpan(final Context context) {
 		return nodes.stream().mapToInt(n -> n.transverseEdge(context)).max().orElse(0);
+	}
+
+	public int count() {
+		return nodes.size();
+	}
+
+	public MockeryDisplayNode get(final int index) {
+		return nodes.get(index);
 	}
 }

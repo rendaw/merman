@@ -62,10 +62,12 @@ public class JavaFXDisplay implements Display {
 		node.setOnKeyPressed(e -> {
 			final HIDEvent event = new HIDEvent(convertButton(e.getCode()), true);
 			ImmutableList.copyOf(hidEventListeners).forEach(l -> l.accept(event));
+			e.consume();
 		});
 		node.setOnKeyReleased(e -> {
 			final HIDEvent event = new HIDEvent(convertButton(e.getCode()), false);
 			ImmutableList.copyOf(hidEventListeners).forEach(l -> l.accept(event));
+			e.consume();
 		});
 		node.setOnKeyTyped(e -> {
 			final String text;
@@ -74,6 +76,7 @@ public class JavaFXDisplay implements Display {
 			else
 				text = e.getCharacter();
 			ImmutableList.copyOf(typingListeners).forEach(l -> l.accept(text));
+			e.consume();
 		});
 		final ChangeListener<Number> converseSizeListener = (observable, oldValue, newValue) -> {
 			ImmutableList

@@ -81,10 +81,7 @@ public class Details {
 	}
 
 	private void setPosition(final Context context) {
-		current.node.setTransverse(context, Math.min(
-				context.transverseEdge - current.node.transverseSpan(context),
-				transverse + transverseSpan - documentScroll
-		), false);
+		current.node.setTransverse(context, transverse + transverseSpan - documentScroll, false);
 	}
 
 	public Details(final Context context) {
@@ -109,18 +106,17 @@ public class Details {
 		if (queue.isEmpty()) {
 			if (current != null) {
 				context.foreground.removeBedding(context, bedding);
+				context.midground.remove(current.node);
 				bedding = null;
 				current = null;
 			}
 		} else if (queue.peek() != current) {
 			if (current != null) {
 				context.midground.remove(current.node);
+				context.foreground.removeBedding(context, bedding);
 			}
 			current = queue.peek();
 			context.midground.add(current.node);
-			if (bedding != null) {
-				context.foreground.removeBedding(context, bedding);
-			}
 			bedding = new Bedding(0, current.node.transverseSpan(context));
 			context.foreground.addBedding(context, bedding);
 			setPosition(context);
@@ -130,9 +126,6 @@ public class Details {
 	public void removePage(final Context context, final DetailsPage page) {
 		if (queue.isEmpty())
 			return;
-		if (current == page) {
-			context.midground.remove(page.node);
-		}
 		queue.remove(page);
 		update(context);
 	}

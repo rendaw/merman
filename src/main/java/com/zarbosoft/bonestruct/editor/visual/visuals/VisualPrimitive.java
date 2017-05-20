@@ -5,7 +5,7 @@ import com.google.common.collect.Iterables;
 import com.zarbosoft.bonestruct.document.values.ValuePrimitive;
 import com.zarbosoft.bonestruct.editor.*;
 import com.zarbosoft.bonestruct.editor.display.Font;
-import com.zarbosoft.bonestruct.editor.displaynodes.Obbox;
+import com.zarbosoft.bonestruct.editor.display.derived.Obbox;
 import com.zarbosoft.bonestruct.editor.visual.*;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.editor.visual.attachments.CursorAttachment;

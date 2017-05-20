@@ -7,12 +7,13 @@ import com.zarbosoft.bonestruct.document.values.ValuePrimitive;
 import com.zarbosoft.bonestruct.editor.Action;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.details.DetailsPage;
+import com.zarbosoft.bonestruct.editor.display.Blank;
 import com.zarbosoft.bonestruct.editor.display.DisplayNode;
 import com.zarbosoft.bonestruct.editor.display.Group;
 import com.zarbosoft.bonestruct.editor.display.Text;
-import com.zarbosoft.bonestruct.editor.displaynodes.Box;
-import com.zarbosoft.bonestruct.editor.displaynodes.CLayout;
-import com.zarbosoft.bonestruct.editor.displaynodes.ColumnarTableLayout;
+import com.zarbosoft.bonestruct.editor.display.derived.Box;
+import com.zarbosoft.bonestruct.editor.display.derived.ColumnarTableLayout;
+import com.zarbosoft.bonestruct.editor.display.derived.RowLayout;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.VisualParent;
@@ -168,8 +169,7 @@ public abstract class FrontGapBase extends FrontPart {
 							.plus(new PartTag("details")));
 					final int transverse = 0;
 					for (final Choice choice : choices) {
-						final Group preview = context.display.group();
-						final CLayout previewLayout = new CLayout(preview);
+						final RowLayout previewLayout = new RowLayout(context.display);
 						for (final FrontPart part : choice.parts()) {
 							final DisplayNode node;
 							if (part instanceof FrontSymbol) {
@@ -181,6 +181,9 @@ public abstract class FrontGapBase extends FrontPart {
 								throw new DeadCode();
 							previewLayout.add(node);
 						}
+						final Blank space = context.display.blank();
+						space.setConverseSpan(context, 8);
+						previewLayout.add(space);
 						previewLayout.layout(context);
 
 						final Text text = context.display.text();
@@ -188,8 +191,8 @@ public abstract class FrontGapBase extends FrontPart {
 						text.setFont(context, lineStyle.getFont(context));
 						text.setText(context, choice.name());
 
-						rows.add(new Pair<>(preview, text));
-						table.add(ImmutableList.of(preview, text));
+						rows.add(new Pair<>(previewLayout.group, text));
+						table.add(ImmutableList.of(previewLayout.group, text));
 					}
 					table.layout(context);
 					changeChoice(context, 0);

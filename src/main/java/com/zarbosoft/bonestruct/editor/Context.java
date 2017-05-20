@@ -52,7 +52,6 @@ import static com.zarbosoft.rendaw.common.Common.last;
 
 public class Context {
 	public final History history;
-	private final Attachment selectionBrickAttachment;
 	WeakCache<Set<Visual.Tag>, Style.Baked> styleCache = new WeakCache<>(v -> v.tags);
 	public boolean window;
 	public Atom windowAtom;
@@ -856,28 +855,28 @@ public class Context {
 				}
 			}
 		});
-		selectionBrickAttachment = new Attachment() {
-			@Override
-			public void setTransverse(final Context context, final int transverse) {
-				final int oldScrollStart = scrollStart;
-				scrollStart = transverse;
-				scrollEnd += scrollStart - oldScrollStart;
-				scrollVisible();
-			}
-
-			@Override
-			public void setTransverseSpan(final Context context, final int ascent, final int descent) {
-				scrollEnd = scrollStart + ascent + descent;
-				scrollVisible();
-			}
-
-			@Override
-			public void destroy(final Context context) {
-
-			}
-		};
 		foreground.addCornerstoneListener(this, new Wall.CornerstoneListener() {
 			Brick cornerstone = null;
+			private final Attachment selectionBrickAttachment = new Attachment() {
+				@Override
+				public void setTransverse(final Context context, final int transverse) {
+					final int oldScrollStart = scrollStart;
+					scrollStart = transverse;
+					scrollEnd += scrollStart - oldScrollStart;
+					scrollVisible();
+				}
+
+				@Override
+				public void setTransverseSpan(final Context context, final int ascent, final int descent) {
+					scrollEnd = scrollStart + ascent + descent;
+					scrollVisible();
+				}
+
+				@Override
+				public void destroy(final Context context) {
+					cornerstone = null;
+				}
+			};
 
 			@Override
 			public void cornerstoneChanged(final Context context, final Brick brick) {

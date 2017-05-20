@@ -127,10 +127,12 @@ public class Main extends Application {
 		//fix save modifications on empty doc
 		//test windowing
 		//add window up/down actions
-		fix details position
-		fix banner position
+		//fix details position
+		//fix -> up arrow if not bound
+		display methods take display, not context; add default methods to turn context -> display
+		//fix banner position
 		add prefix/suffix actions in atom/array vis
-		add actions for choice 1-9-0
+		add actions for choice 1-9,0
 		array leadFirst
 		syntax documenter
 		action documenter
@@ -144,7 +146,6 @@ public class Main extends Application {
 			__ details templates that have substitution points in nested symbols and layouts, backgrounds
 		comment toc with jumps (plugin?)
 		exit primitive when next mark key; escaping (?)
-		plugin add colored bar to side if dirty
 		banner background
 		persistent history
 		selection history

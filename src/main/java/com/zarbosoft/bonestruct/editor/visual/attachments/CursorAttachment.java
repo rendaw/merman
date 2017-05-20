@@ -56,7 +56,7 @@ public class CursorAttachment {
 
 	public CursorAttachment(final Context context) {
 		drawing = context.display.drawing();
-		context.foreground.visual.add(drawing);
+		context.overlay.add(drawing);
 	}
 
 	public void setPosition(final Context context, final BrickText brick, final int index) {
@@ -132,7 +132,7 @@ public class CursorAttachment {
 	public void destroy(final Context context) {
 		if (brick != null)
 			brick.removeAttachment(context, this.attachment);
-		context.foreground.visual.remove(drawing);
+		context.overlay.remove(drawing);
 	}
 
 	public void setStyle(final Context context, final ObboxStyle.Baked style) {

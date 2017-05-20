@@ -1,4 +1,4 @@
-package com.zarbosoft.bonestruct.editor.displaynodes;
+package com.zarbosoft.bonestruct.editor.display.derived;
 
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.display.DisplayNode;
@@ -7,11 +7,11 @@ import com.zarbosoft.bonestruct.editor.display.Group;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CLayout {
+public class TLayout {
 	private final Group group;
 	List<DisplayNode> nodes = new ArrayList<>();
 
-	public CLayout(final Group group) {
+	public TLayout(final Group group) {
 		this.group = group;
 	}
 
@@ -20,10 +20,10 @@ public class CLayout {
 	}
 
 	public void layout(final Context context) {
-		int converse = 0;
+		int transverse = 0;
 		for (final DisplayNode node : nodes) {
-			node.setConverse(context, converse, false);
-			converse += node.converseSpan(context);
+			node.setTransverse(context, transverse, false);
+			transverse += node.transverseSpan(context);
 		}
 	}
 }

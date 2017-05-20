@@ -1,4 +1,4 @@
-package com.zarbosoft.bonestruct.editor.displaynodes;
+package com.zarbosoft.bonestruct.editor.display.derived;
 
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.display.Drawing;

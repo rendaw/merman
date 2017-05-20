@@ -1,29 +1,35 @@
-package com.zarbosoft.bonestruct.editor.displaynodes;
+package com.zarbosoft.bonestruct.editor.display.derived;
 
 import com.zarbosoft.bonestruct.editor.Context;
+import com.zarbosoft.bonestruct.editor.display.Display;
 import com.zarbosoft.bonestruct.editor.display.DisplayNode;
 import com.zarbosoft.bonestruct.editor.display.Group;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class TLayout {
-	private final Group group;
+public class CLayout {
+	public final Group group;
 	List<DisplayNode> nodes = new ArrayList<>();
 
-	public TLayout(final Group group) {
+	public CLayout(final Group group) {
 		this.group = group;
+	}
+
+	public CLayout(final Display display) {
+		this.group = display.group();
 	}
 
 	public void add(final DisplayNode node) {
 		group.add(node);
+		nodes.add(node);
 	}
 
 	public void layout(final Context context) {
-		int transverse = 0;
+		int converse = 0;
 		for (final DisplayNode node : nodes) {
-			node.setTransverse(context, transverse, false);
-			transverse += node.transverseSpan(context);
+			node.setConverse(context, converse, false);
+			converse += node.converseSpan(context);
 		}
 	}
 }

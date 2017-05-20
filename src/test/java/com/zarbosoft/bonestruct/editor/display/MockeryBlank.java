@@ -3,13 +3,26 @@ package com.zarbosoft.bonestruct.editor.display;
 import com.zarbosoft.bonestruct.editor.Context;
 
 public class MockeryBlank extends MockeryDisplayNode implements Blank {
+	private int converse;
+	private int transverse;
+
 	@Override
 	public int converseSpan(final Context context) {
-		return 0;
+		return converse;
 	}
 
 	@Override
 	public int transverseSpan(final Context context) {
-		return 0;
+		return transverse;
+	}
+
+	@Override
+	public void setConverseSpan(final Context context, final int converse) {
+		this.converse = converse;
+	}
+
+	@Override
+	public void setTransverseSpan(final Context context, final int transverse) {
+		this.transverse = transverse;
 	}
 }
