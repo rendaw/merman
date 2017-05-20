@@ -132,7 +132,7 @@ public class CursorAttachment {
 	public void destroy(final Context context) {
 		if (brick != null)
 			brick.removeAttachment(context, this.attachment);
-		context.background.remove(drawing);
+		context.foreground.visual.remove(drawing);
 	}
 
 	public void setStyle(final Context context, final ObboxStyle.Baked style) {

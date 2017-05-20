@@ -66,6 +66,7 @@ public class Context {
 	List<ContextIntListener> transverseEdgeListeners = new ArrayList<>();
 	public Map<Object, List<Action>> actions = new HashMap<>();
 	public ClipboardEngine clipboardEngine;
+	public final Group overlay;
 	public final Wall foreground;
 	public Group midground;
 	public Group background;
@@ -785,12 +786,18 @@ public class Context {
 		this.syntax = syntax;
 		this.document = document;
 		this.display = display;
+		display.setBackgroundColor(syntax.background);
 		edge = display.edge(this);
 		transverseEdge = display.transverseEdge(this);
 		background = display.group();
 		midground = display.group();
-		this.addIdle = addIdle;
 		this.foreground = new Wall(this);
+		this.overlay = display.group();
+		display.add(background);
+		display.add(midground);
+		display.add(foreground.visual);
+		display.add(overlay);
+		this.addIdle = addIdle;
 		banner = new Banner(this);
 		details = new Details(this);
 		this.history = history;

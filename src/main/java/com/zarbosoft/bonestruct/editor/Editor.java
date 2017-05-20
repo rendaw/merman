@@ -71,11 +71,6 @@ public class Editor {
 			}
 		}));
 		this.visual = display;
-		visual.setBackgroundColor(context.syntax.background);
-		visual.add(context.background);
-		visual.add(context.midground);
-		visual.add(context.foreground.visual);
-		context.document.top.selectDown(context);
 	}
 
 	public void destroy() {
