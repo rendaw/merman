@@ -36,12 +36,12 @@ public class JavaFXGroup extends JavaFXNode implements Group {
 
 	@Override
 	public int size() {
-		return 0;
+		return group.getChildren().size();
 	}
 
 	@Override
 	public void clear() {
-
+		group.getChildren().clear();
 	}
 
 	@Override

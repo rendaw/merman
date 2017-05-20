@@ -125,10 +125,17 @@ public class Main extends Application {
 		//hotkey preview details
 		//	columns: 1:rule 2:action name
 		//fix save modifications on empty doc
-		test windowing
-		add window up/down actions
+		//test windowing
+		//add window up/down actions
+		fix details position
+		fix banner position
+		add prefix/suffix actions in atom/array vis
+		add actions for choice 1-9-0
+		array leadFirst
+		syntax documenter
+		action documenter
 		test merging changes; finishing history on actions
-		test brick layout
+		//test brick layout
 		move scroll to wall with listener for banner/details?
 
 		sed (led) substitution
