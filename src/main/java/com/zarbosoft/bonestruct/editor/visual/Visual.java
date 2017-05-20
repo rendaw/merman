@@ -24,6 +24,8 @@ public abstract class Visual {
 
 	public abstract VisualParent parent();
 
+	public abstract Brick createOrGetFirstBrick(Context context);
+
 	public abstract Brick createFirstBrick(Context context);
 
 	public abstract Brick createLastBrick(Context context);

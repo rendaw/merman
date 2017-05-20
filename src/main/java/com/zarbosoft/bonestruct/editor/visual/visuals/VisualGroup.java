@@ -67,6 +67,13 @@ public class VisualGroup extends VisualPart {
 	}
 
 	@Override
+	public Brick createOrGetFirstBrick(final Context context) {
+		if (children.isEmpty())
+			throw new AssertionError();
+		return children.get(0).createOrGetFirstBrick(context);
+	}
+
+	@Override
 	public Brick createFirstBrick(final Context context) {
 		if (children.isEmpty())
 			return null;

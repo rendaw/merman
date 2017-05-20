@@ -203,6 +203,11 @@ public abstract class VisualArray extends VisualGroup {
 				}
 
 				@Override
+				public Brick createOrGetFirstBrick(final Context context) {
+					return nodeVisual.createOrGetFirstBrick(context);
+				}
+
+				@Override
 				public Brick createFirstBrick(final Context context) {
 					return nodeVisual.createFirstBrick(context);
 				}
@@ -385,6 +390,17 @@ public abstract class VisualArray extends VisualGroup {
 	}
 
 	@Override
+	public Brick createOrGetFirstBrick(final Context context) {
+		if (ellipsize(context)) {
+			if (ellipsis != null)
+				return ellipsis;
+			else
+				return createEllipsis(context);
+		} else
+			return super.createOrGetFirstBrick(context);
+	}
+
+	@Override
 	public Brick createFirstBrick(final Context context) {
 		if (ellipsize(context)) {
 			return createEllipsis(context);
@@ -522,6 +538,7 @@ public abstract class VisualArray extends VisualGroup {
 		BorderAttachment border;
 		public int beginIndex;
 		public int endIndex;
+		public boolean leadFirst = true;
 
 		public ArraySelection(final Context context, final int start, final int end) {
 			border = new BorderAttachment(context);
@@ -538,8 +555,7 @@ public abstract class VisualArray extends VisualGroup {
 					border.setLast(context, brick);
 				}
 			});
-			setBegin(context, start);
-			setEnd(context, end);
+			setRange(context, start, end);
 			context.actions.put(this, ImmutableList.of(new Action() {
 				@Override
 				public void run(final Context context) {
@@ -568,6 +584,7 @@ public abstract class VisualArray extends VisualGroup {
 				@Override
 				public void run(final Context context) {
 					context.history.finishChange(context);
+					leadFirst = true;
 					setPosition(context, Math.min(value.data.size() - 1, endIndex + 1));
 				}
 
@@ -579,6 +596,7 @@ public abstract class VisualArray extends VisualGroup {
 				@Override
 				public void run(final Context context) {
 					context.history.finishChange(context);
+					leadFirst = true;
 					setPosition(context, Math.max(0, beginIndex - 1));
 				}
 
@@ -718,8 +736,8 @@ public abstract class VisualArray extends VisualGroup {
 					context.history.apply(context, new ChangeArray(value, index, atoms.size(), ImmutableList.of()));
 					setBegin(context, --index);
 					context.history.apply(context, new ChangeArray(value, index, 0, atoms));
-					setBegin(context, index);
-					setEnd(context, index + atoms.size() - 1);
+					leadFirst = true;
+					setRange(context, index, index + atoms.size() - 1);
 				}
 
 				@Override
@@ -736,8 +754,8 @@ public abstract class VisualArray extends VisualGroup {
 					context.history.apply(context, new ChangeArray(value, index, atoms.size(), ImmutableList.of()));
 					setPosition(context, ++index);
 					context.history.apply(context, new ChangeArray(value, index, 0, atoms));
-					setBegin(context, index);
-					setEnd(context, index + atoms.size() - 1);
+					leadFirst = false;
+					setRange(context, index, index + atoms.size() - 1);
 				}
 
 				@Override
@@ -759,19 +777,44 @@ public abstract class VisualArray extends VisualGroup {
 			}));
 		}
 
-		private void setEnd(final Context context, final int index) {
+		private void setEndInternal(final Context context, final int index) {
 			endIndex = index;
 			adapter.setLast(context, children.get(visualIndex(index)));
 		}
 
-		private void setBegin(final Context context, final int index) {
+		private void setBeginInternal(final Context context, final int index) {
 			beginIndex = index;
 			adapter.setFirst(context, children.get(visualIndex(index)));
 		}
 
+		private void setBegin(final Context context, final int index) {
+			leadFirst = true;
+			setBeginInternal(context, index);
+			updateCornerstone(context);
+		}
+
+		private void setEnd(final Context context, final int index) {
+			leadFirst = false;
+			setEndInternal(context, index);
+			updateCornerstone(context);
+		}
+
+		private void setRange(final Context context, final int begin, final int end) {
+			setBeginInternal(context, begin);
+			setEndInternal(context, end);
+			updateCornerstone(context);
+		}
+
 		private void setPosition(final Context context, final int index) {
-			setEnd(context, index);
-			setBegin(context, index);
+			setEndInternal(context, index);
+			setBeginInternal(context, index);
+			updateCornerstone(context);
+		}
+
+		private void updateCornerstone(final Context context) {
+			context.foreground.setCornerstone(context,
+					children.get(visualIndex(leadFirst ? beginIndex : endIndex)).createOrGetFirstBrick(context)
+			);
 		}
 
 		@Override
@@ -780,22 +823,6 @@ public abstract class VisualArray extends VisualGroup {
 			border.destroy(context);
 			selection = null;
 			context.actions.remove(this);
-		}
-
-		@Override
-		public void addBrickListener(final Context context, final VisualAttachmentAdapter.BoundsListener listener) {
-			adapter.addListener(context, listener);
-			final Brick first = getVisual().getFirstBrick(context);
-			final Brick last = getVisual().getLastBrick(context);
-			if (first != null)
-				listener.firstChanged(context, first);
-			if (last != null)
-				listener.lastChanged(context, last);
-		}
-
-		@Override
-		public void removeBrickListener(final Context context, final VisualAttachmentAdapter.BoundsListener listener) {
-			adapter.removeListener(context, listener);
 		}
 
 		@Override
@@ -844,8 +871,7 @@ public abstract class VisualArray extends VisualGroup {
 			selection = new ArraySelection(context, start, end);
 			context.setSelection(selection);
 		} else {
-			selection.setBegin(context, start);
-			selection.setEnd(context, end);
+			selection.setRange(context, start, end);
 		}
 	}
 

@@ -20,11 +20,17 @@ public class Wall {
 	private IdleAdjustTask idleAdjust;
 	private IdleCompactTask idleCompact;
 	private IdleExpandTask idleExpand;
+	private Brick cornerstone;
 	private Course cornerstoneCourse;
 	Set<Bedding> bedding = new HashSet<>();
 	public int beddingBefore = 0;
 	int beddingAfter = 0;
 	Set<BeddingListener> beddingListeners = new HashSet<>();
+	Set<CornerstoneListener> cornerstoneListeners = new HashSet<>();
+
+	public static abstract class CornerstoneListener {
+		public abstract void cornerstoneChanged(Context context, Brick brick);
+	}
 
 	public static abstract class BeddingListener {
 
@@ -119,6 +125,16 @@ public class Wall {
 		beddingListeners.remove(listener);
 	}
 
+	public void addCornerstoneListener(final Context context, final CornerstoneListener listener) {
+		cornerstoneListeners.add(listener);
+		if (cornerstone != null)
+			listener.cornerstoneChanged(context, cornerstone);
+	}
+
+	public void removeCornerstoneListener(final CornerstoneListener listener) {
+		cornerstoneListeners.remove(listener);
+	}
+
 	public void addBedding(final Context context, final Bedding bedding) {
 		this.bedding.add(bedding);
 		beddingChanged(context);
@@ -146,6 +162,7 @@ public class Wall {
 	}
 
 	public void setCornerstone(final Context context, final Brick cornerstone) {
+		this.cornerstone = cornerstone;
 		if (cornerstone.parent == null) {
 			clear(context);
 			final Course course = new Course(context);
@@ -155,6 +172,9 @@ public class Wall {
 		this.cornerstoneCourse = cornerstone.parent;
 		if (beddingBefore > 0 || beddingAfter > 0)
 			adjust(context, cornerstoneCourse.index);
+		ImmutableList
+				.copyOf(cornerstoneListeners)
+				.forEach(listener -> listener.cornerstoneChanged(context, cornerstone));
 	}
 
 	class IdleCompactTask extends IdleTask {

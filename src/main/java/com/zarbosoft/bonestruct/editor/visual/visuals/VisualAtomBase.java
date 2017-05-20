@@ -6,7 +6,6 @@ import com.zarbosoft.bonestruct.document.values.Value;
 import com.zarbosoft.bonestruct.editor.*;
 import com.zarbosoft.bonestruct.editor.visual.*;
 import com.zarbosoft.bonestruct.editor.visual.attachments.BorderAttachment;
-import com.zarbosoft.bonestruct.editor.visual.attachments.VisualAttachmentAdapter;
 import com.zarbosoft.bonestruct.editor.wall.Brick;
 import com.zarbosoft.bonestruct.editor.wall.BrickInterface;
 import com.zarbosoft.bonestruct.syntax.style.Style;
@@ -24,8 +23,6 @@ import java.util.stream.Stream;
 public abstract class VisualAtomBase extends VisualPart {
 	protected VisualAtomType body;
 	VisualParent parent;
-	boolean selected = false;
-	private VisualAttachmentAdapter adapter;
 	private BorderAttachment border;
 	Hoverable hoverable;
 	private NestedSelection selection;
@@ -171,16 +168,21 @@ public abstract class VisualAtomBase extends VisualPart {
 	}
 
 	@Override
+	public Brick createOrGetFirstBrick(final Context context) {
+		if (ellipsize(context)) {
+			if (ellipsis != null)
+				return ellipsis;
+			return createEllipsis(context);
+		} else
+			return body.createOrGetFirstBrick(context);
+	}
+
+	@Override
 	public Brick createFirstBrick(final Context context) {
 		if (ellipsize(context)) {
 			return createEllipsis(context);
 		} else {
-			final Brick out = body.createFirstBrick(context);
-			if (adapter != null) {
-				adapter.setFirst(context, out);
-				adapter.notifySeedBrick(context, out);
-			}
-			return out;
+			return body.createFirstBrick(context);
 		}
 	}
 
@@ -189,43 +191,21 @@ public abstract class VisualAtomBase extends VisualPart {
 		if (ellipsize(context)) {
 			return createEllipsis(context);
 		} else {
-			final Brick out = body.createLastBrick(context);
-			if (adapter != null) {
-				adapter.setLast(context, out);
-				adapter.notifySeedBrick(context, out);
-			}
-			return out;
+			return body.createLastBrick(context);
 		}
 	}
 
-	private void createAdapter(final Context context) {
-		adapter = new VisualAttachmentAdapter();
-		adapter.setBase(context, body);
-		adapter.addListener(context, new VisualAttachmentAdapter.BoundsListener() {
-			@Override
-			public void firstChanged(final Context context, final Brick brick) {
-				border.setFirst(context, brick);
-			}
-
-			@Override
-			public void lastChanged(final Context context, final Brick brick) {
-				border.setLast(context, brick);
-			}
-		});
-	}
-
 	public void select(final Context context) {
-		if (selected)
+		if (selection != null)
 			return;
 		else if (border != null) {
 			context.clearHover();
 		}
-		final Selection selection = new NestedSelection(context);
-		selected = true;
+		selection = new NestedSelection(context);
 		border = new BorderAttachment(context);
 		border.setStyle(context, selection.getStyle(context).obbox);
-		createAdapter(context);
 		context.setSelection(selection);
+		context.foreground.setCornerstone(context, body.createOrGetFirstBrick(context));
 	}
 
 	protected Stream<Action> getActions(final Context context) {
@@ -325,9 +305,7 @@ public abstract class VisualAtomBase extends VisualPart {
 		public void clear(final Context context) {
 			border.destroy(context);
 			border = null;
-			adapter.destroy(context);
-			adapter = null;
-			selected = false;
+			selection = null;
 			context.actions.remove(this);
 		}
 
@@ -349,17 +327,6 @@ public abstract class VisualAtomBase extends VisualPart {
 		@Override
 		public void globalTagsChanged(final Context context) {
 			border.setStyle(context, getStyle(context).obbox);
-		}
-
-		@Override
-		public void addBrickListener(final Context context, final VisualAttachmentAdapter.BoundsListener listener) {
-			adapter.addListener(context, listener);
-
-		}
-
-		@Override
-		public void removeBrickListener(final Context context, final VisualAttachmentAdapter.BoundsListener listener) {
-			adapter.removeListener(context, listener);
 		}
 	}
 
@@ -418,9 +385,8 @@ public abstract class VisualAtomBase extends VisualPart {
 			body.uproot(context, null);
 		this.body =
 				(VisualAtomType) data.createVisual(context, new NestedParent(), parent.visual().alignments(), depth());
-		if (adapter != null) {
-			adapter.setBase(context, body);
-		}
+		if (selection != null)
+			context.foreground.setCornerstone(context, body.createOrGetFirstBrick(context));
 	}
 
 	private class NestedParent extends VisualParent {
@@ -465,8 +431,6 @@ public abstract class VisualAtomBase extends VisualPart {
 				out = null;
 			else
 				out = parent.createNextBrick(context);
-			if (adapter != null)
-				adapter.notifyNextBrickPastEdge(context, out);
 			return out;
 		}
 
@@ -477,14 +441,12 @@ public abstract class VisualAtomBase extends VisualPart {
 				out = null;
 			else
 				out = parent.createPreviousBrick(context);
-			if (adapter != null)
-				adapter.notifyPreviousBrickPastEdge(context, out);
 			return out;
 		}
 
 		@Override
 		public Hoverable hover(final Context context, final Vector point) {
-			if (selected)
+			if (selection != null)
 				return null;
 			{
 				final Hoverable parentHoverable;
@@ -497,14 +459,11 @@ public abstract class VisualAtomBase extends VisualPart {
 			}
 			if (hoverable != null)
 				return hoverable;
-			createAdapter(context);
 			hoverable = new Hoverable() {
 				@Override
 				public void clear(final Context context) {
 					border.destroy(context);
 					border = null;
-					adapter.destroy(context);
-					adapter = null;
 					hoverable = null;
 				}
 

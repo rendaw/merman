@@ -2,13 +2,12 @@ package com.zarbosoft.bonestruct.editor.banner;
 
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.IdleTask;
-import com.zarbosoft.bonestruct.editor.Selection;
 import com.zarbosoft.bonestruct.editor.display.Text;
 import com.zarbosoft.bonestruct.editor.visual.Visual;
-import com.zarbosoft.bonestruct.editor.visual.attachments.VisualAttachmentAdapter;
 import com.zarbosoft.bonestruct.editor.wall.Attachment;
 import com.zarbosoft.bonestruct.editor.wall.Bedding;
 import com.zarbosoft.bonestruct.editor.wall.Brick;
+import com.zarbosoft.bonestruct.editor.wall.Wall;
 import com.zarbosoft.bonestruct.syntax.style.Style;
 import com.zarbosoft.rendaw.common.ChainComparator;
 import org.pcollections.HashTreePSet;
@@ -86,24 +85,15 @@ public class Banner {
 	}
 
 	public Banner(final Context context) {
-		context.addSelectionListener(new Context.SelectionListener() {
+		context.foreground.addCornerstoneListener(context, new Wall.CornerstoneListener() {
+
 			@Override
-			public void selectionChanged(final Context context, final Selection selection) {
-				selection.addBrickListener(context, new VisualAttachmentAdapter.BoundsListener() {
-					@Override
-					public void firstChanged(final Context context, final Brick first) {
-						if (brick != null) {
-							brick.removeAttachment(context, attachment);
-						}
-						brick = first;
-						brick.addAttachment(context, attachment);
-					}
-
-					@Override
-					public void lastChanged(final Context context, final Brick last) {
-
-					}
-				});
+			public void cornerstoneChanged(final Context context, final Brick cornerstone) {
+				if (brick != null) {
+					brick.removeAttachment(context, attachment);
+				}
+				brick = cornerstone;
+				brick.addAttachment(context, attachment);
 			}
 		});
 	}

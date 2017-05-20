@@ -117,7 +117,7 @@ public class VisualPrimitive extends VisualPart {
 		private RangeAttachment() {
 		}
 
-		private void setOffsets(final Context context, final int beginOffset, final int endOffset) {
+		private void setOffsetsInternal(final Context context, final int beginOffset, final int endOffset) {
 			final boolean wasPoint = this.beginOffset == this.endOffset;
 			this.beginOffset = Math.max(0, Math.min(value.length(), beginOffset));
 			this.endOffset = Math.max(beginOffset, Math.min(value.length(), endOffset));
@@ -173,16 +173,24 @@ public class VisualPrimitive extends VisualPart {
 			}
 		}
 
+		private void setOffsets(final Context context, final int beginOffset, final int endOffset) {
+			setOffsetsInternal(context, beginOffset, endOffset);
+			context.foreground.setCornerstone(context, beginLine.createOrGetBrick(context));
+		}
+
 		private void setOffsets(final Context context, final int offset) {
-			setOffsets(context, offset, offset);
+			setOffsetsInternal(context, offset, offset);
+			context.foreground.setCornerstone(context, beginLine.createOrGetBrick(context));
 		}
 
 		private void setBeginOffset(final Context context, final int offset) {
-			setOffsets(context, offset, endOffset);
+			setOffsetsInternal(context, offset, endOffset);
+			context.foreground.setCornerstone(context, beginLine.createOrGetBrick(context));
 		}
 
 		private void setEndOffset(final Context context, final int offset) {
-			setOffsets(context, beginOffset, offset);
+			setOffsetsInternal(context, beginOffset, offset);
+			context.foreground.setCornerstone(context, endLine.createOrGetBrick(context));
 		}
 
 		public void destroy(final Context context) {
@@ -193,7 +201,8 @@ public class VisualPrimitive extends VisualPart {
 		}
 
 		public void nudge(final Context context) {
-			setOffsets(context, beginOffset, endOffset);
+			setOffsetsInternal(context, beginOffset, endOffset);
+			context.foreground.setCornerstone(context, beginLine.createOrGetBrick(context));
 		}
 
 		public void addListener(final Context context, final VisualAttachmentAdapter.BoundsListener listener) {
@@ -747,16 +756,6 @@ public class VisualPrimitive extends VisualPart {
 		}
 
 		@Override
-		public void addBrickListener(final Context context, final VisualAttachmentAdapter.BoundsListener listener) {
-			range.addListener(context, listener);
-		}
-
-		@Override
-		public void removeBrickListener(final Context context, final VisualAttachmentAdapter.BoundsListener listener) {
-			range.removeListener(context, listener);
-		}
-
-		@Override
 		public void clear(final Context context) {
 			context.actions.remove(this);
 			range.destroy(context);
@@ -987,6 +986,12 @@ public class VisualPrimitive extends VisualPart {
 			brick.setStyle(context, index == 0 ? style.firstStyle : hard ? style.hardStyle : style.softStyle);
 			brick.changed(context);
 		}
+
+		public Brick createOrGetBrick(final Context context) {
+			if (brick != null)
+				return brick;
+			return createBrick(context);
+		}
 	}
 
 	public List<Line> lines = new ArrayList<>();
@@ -1161,6 +1166,11 @@ public class VisualPrimitive extends VisualPart {
 	@Override
 	public VisualParent parent() {
 		return parent;
+	}
+
+	@Override
+	public Brick createOrGetFirstBrick(final Context context) {
+		return lines.get(0).createOrGetBrick(context);
 	}
 
 	@Override

@@ -71,6 +71,11 @@ public class VisualAtomType extends Visual {
 	}
 
 	@Override
+	public Brick createOrGetFirstBrick(final Context context) {
+		return body.createOrGetFirstBrick(context);
+	}
+
+	@Override
 	public Brick createFirstBrick(final Context context) {
 		return body.createFirstBrick(context);
 	}

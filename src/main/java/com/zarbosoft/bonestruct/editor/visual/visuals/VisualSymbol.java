@@ -60,6 +60,13 @@ public class VisualSymbol extends VisualPart implements ConditionAttachment.List
 	}
 
 	@Override
+	public Brick createOrGetFirstBrick(final Context context) {
+		if (brick != null)
+			return brick;
+		return createFirstBrick(context);
+	}
+
+	@Override
 	public Brick createFirstBrick(final Context context) {
 		if (brick != null)
 			return null;

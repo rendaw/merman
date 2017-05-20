@@ -22,9 +22,8 @@ import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.VisualParent;
 import com.zarbosoft.bonestruct.editor.visual.VisualPart;
-import com.zarbosoft.bonestruct.editor.visual.attachments.TransverseExtentsAdapter;
-import com.zarbosoft.bonestruct.editor.visual.attachments.VisualAttachmentAdapter;
 import com.zarbosoft.bonestruct.editor.visual.visuals.VisualAtomType;
+import com.zarbosoft.bonestruct.editor.wall.Attachment;
 import com.zarbosoft.bonestruct.editor.wall.Brick;
 import com.zarbosoft.bonestruct.editor.wall.Wall;
 import com.zarbosoft.bonestruct.modules.Module;
@@ -53,13 +52,13 @@ import static com.zarbosoft.rendaw.common.Common.last;
 
 public class Context {
 	public final History history;
+	private final Attachment selectionBrickAttachment;
 	WeakCache<Set<Visual.Tag>, Style.Baked> styleCache = new WeakCache<>(v -> v.tags);
 	public boolean window;
 	public Atom windowAtom;
 	private final Set<SelectionListener> selectionListeners = new HashSet<>();
 	private final Set<HoverListener> hoverListeners = new HashSet<>();
 	private final Set<TagsListener> selectionTagsChangeListeners = new HashSet<>();
-	public final TransverseExtentsAdapter selectionExtentsAdapter;
 	public List<Module.State> modules;
 	public PSet<Visual.Tag> globalTags = HashTreePSet.empty();
 	public List<KeyListener> keyListeners = new ArrayList<>();
@@ -592,19 +591,6 @@ public class Context {
 		idleLayBricksBeforeStart(first);
 		idleLayBricksAfterEnd(first);
 
-		selection.addBrickListener(this, new VisualAttachmentAdapter.BoundsListener() {
-			@Override
-			public void firstChanged(final Context context, final Brick brick) {
-				foreground.setCornerstone(context, brick);
-			}
-
-			@Override
-			public void lastChanged(final Context context, final Brick brick) {
-
-			}
-		});
-		selection.addBrickListener(this, selectionExtentsAdapter.boundsListener);
-
 		ImmutableSet.copyOf(selectionListeners).forEach(l -> l.selectionChanged(this, selection));
 		selectionTagsChanged();
 	}
@@ -803,10 +789,10 @@ public class Context {
 		transverseEdge = display.transverseEdge(this);
 		background = display.group();
 		midground = display.group();
-		banner = new Banner(this);
-		details = new Details(this);
 		this.addIdle = addIdle;
 		this.foreground = new Wall(this);
+		banner = new Banner(this);
+		details = new Details(this);
 		this.history = history;
 		display.addConverseEdgeListener((oldValue, newValue) -> {
 			edge = Math.max(0, newValue - document.syntax.padConverse * 2);
@@ -863,29 +849,43 @@ public class Context {
 				}
 			}
 		});
-		selectionExtentsAdapter = new TransverseExtentsAdapter(this);
-		selectionExtentsAdapter.addListener(this, new TransverseExtentsAdapter.Listener() {
+		selectionBrickAttachment = new Attachment() {
 			@Override
-			public void transverseChanged(final Context context, final int transverse) {
+			public void setTransverse(final Context context, final int transverse) {
+				final int oldScrollStart = scrollStart;
 				scrollStart = transverse;
+				scrollEnd += scrollStart - oldScrollStart;
 				scrollVisible();
 			}
 
 			@Override
-			public void transverseEdgeChanged(final Context context, final int transverse) {
-				scrollEnd = transverse;
+			public void setTransverseSpan(final Context context, final int ascent, final int descent) {
+				scrollEnd = scrollStart + ascent + descent;
 				scrollVisible();
 			}
 
 			@Override
-			public void beddingAfterChanged(final Context context, final int beddingAfter) {
-				scrollStartBeddingAfter = beddingAfter;
-				scrollVisible();
+			public void destroy(final Context context) {
+
 			}
+		};
+		foreground.addCornerstoneListener(this, new Wall.CornerstoneListener() {
+			Brick cornerstone = null;
 
 			@Override
-			public void beddingBeforeChanged(final Context context, final int beddingBefore) {
+			public void cornerstoneChanged(final Context context, final Brick brick) {
+				if (cornerstone != null) {
+					cornerstone.removeAttachment(context, selectionBrickAttachment);
+				}
+				this.cornerstone = brick;
+				cornerstone.addAttachment(context, selectionBrickAttachment);
+			}
+		});
+		foreground.addBeddingListener(this, new Wall.BeddingListener() {
+			@Override
+			public void beddingChanged(final Context context, final int beddingBefore, final int beddingAfter) {
 				scrollStartBeddingBefore = beddingBefore;
+				scrollStartBeddingAfter = beddingAfter;
 				scrollVisible();
 			}
 		});
