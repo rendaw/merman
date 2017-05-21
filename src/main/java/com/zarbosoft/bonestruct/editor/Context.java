@@ -65,9 +65,21 @@ public class Context {
 	List<ContextIntListener> transverseEdgeListeners = new ArrayList<>();
 	public Map<Object, List<Action>> actions = new HashMap<>();
 	public ClipboardEngine clipboardEngine;
+	/**
+	 * Contains the cursor and other marks.  Scrolls.
+	 */
 	public final Group overlay;
+	/**
+	 * Contains the source code.  Scrolls.
+	 */
 	public final Wall foreground;
+	/**
+	 * Contains banner/details and icons.  Doesn't scroll.
+	 */
 	public Group midground;
+	/**
+	 * Contains source borders.  Scrolls.
+	 */
 	public Group background;
 	public Banner banner;
 	public Details details;
@@ -932,6 +944,7 @@ public class Context {
 					syntax.animateCoursePlacement
 			);
 			background.setPosition(this, new Vector(syntax.padConverse, -newScroll), syntax.animateCoursePlacement);
+			overlay.setPosition(this, new Vector(syntax.padConverse, -newScroll), syntax.animateCoursePlacement);
 			scroll = newScroll;
 			banner.setScroll(this, newScroll);
 			details.setScroll(this, newScroll);

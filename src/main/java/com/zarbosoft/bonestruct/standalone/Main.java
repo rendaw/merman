@@ -129,6 +129,9 @@ public class Main extends Application {
 		//add window up/down actions
 		//fix details position
 		//fix -> up arrow if not bound
+		fix cursor (overlay padding + scroll?); still duplicating
+		separate lrtb padding
+		remove part tags (explicit only)
 		display methods take display, not context; add default methods to turn context -> display
 		//fix banner position
 		add prefix/suffix actions in atom/array vis
