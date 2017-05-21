@@ -3,6 +3,7 @@ package com.zarbosoft.bonestruct.editor.banner;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.IdleTask;
 import com.zarbosoft.bonestruct.editor.display.Text;
+import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.wall.Attachment;
 import com.zarbosoft.bonestruct.editor.wall.Bedding;
@@ -67,7 +68,7 @@ public class Banner {
 
 		@Override
 		protected boolean runImplementation() {
-			setTransverse(context);
+			setPosition(context);
 			idle = null;
 			return false;
 		}
@@ -78,10 +79,13 @@ public class Banner {
 		}
 	}
 
-	private void setTransverse(final Context context) {
+	private void setPosition(final Context context) {
 		if (text == null)
 			return;
-		text.setTransverse(context, Banner.this.transverse - (int) text.font().getDescent() - scroll, false);
+		text.setPosition(context, new Vector(
+				context.syntax.bannerPad.converseStart,
+				transverse - text.font().getDescent() - context.syntax.bannerPad.transverseEnd - scroll
+		), false);
 	}
 
 	public Banner(final Context context) {
@@ -105,9 +109,11 @@ public class Banner {
 			text.setFont(context, style.getFont(context));
 			text.setColor(context, style.color);
 			context.midground.add(text);
-			bedding = new Bedding(text.transverseSpan(context), 0);
+			bedding = new Bedding(text.transverseSpan(context) +
+					context.syntax.bannerPad.transverseStart +
+					context.syntax.bannerPad.transverseEnd, 0);
 			context.foreground.addBedding(context, bedding);
-			setTransverse(context);
+			setPosition(context);
 		}
 		queue.add(message);
 		update(context);
@@ -124,7 +130,9 @@ public class Banner {
 		text.setFont(context, style.getFont(context));
 		text.setColor(context, style.color);
 		context.foreground.removeBedding(context, bedding);
-		bedding = new Bedding(text.transverseSpan(context), 0);
+		bedding = new Bedding(text.transverseSpan(context) +
+				context.syntax.bannerPad.transverseStart +
+				context.syntax.bannerPad.transverseEnd, 0);
 		context.foreground.addBedding(context, bedding);
 		idlePlace(context);
 	}

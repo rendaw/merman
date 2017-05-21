@@ -47,13 +47,8 @@ public class Syntax {
 	@Configuration(optional = true, description = "The background color of the document.")
 	public ModelColor background = ModelColor.RGB.white;
 
-	@Configuration(optional = true, name = "pad_converse",
-			description = "Pad the converse edge of the document by this many pixels.")
-	public int padConverse = 0;
-
-	@Configuration(optional = true, name = "pad_transverse",
-			description = "Pad the transverse edge of the document by this many pixels.")
-	public int padTransverse = 0;
+	@Configuration(optional = true, name = "pad", description = "Pad the document.")
+	public Padding pad = new Padding();
 
 	@Configuration(optional = true, description =
 			"If the path to a writable document does not yet exist, a new document will be created " +
@@ -66,7 +61,13 @@ public class Syntax {
 	@Configuration(optional = true)
 	public List<Style> styles = new ArrayList<>();
 
-	@Configuration(optional = true, description = "The max transverse span for details panes.")
+	@Configuration(optional = true, name = "banner_pad", description = "Pad the banner pane.")
+	public Padding bannerPad = new Padding();
+	@Configuration(optional = true, name = "detail_pad", description = "Pad the detail pane.")
+	public Padding detailPad = new Padding();
+
+	@Configuration(optional = true, name = "detail_span",
+			description = "The max transverse span for details panes, excluding padding.")
 	public int detailSpan = 300;
 
 	@Configuration(description = "The definitions of all distinct element types in a document.\n" +
@@ -110,6 +111,8 @@ public class Syntax {
 
 	@Configuration(optional = true, name = "animate_course_placement")
 	public boolean animateCoursePlacement = false;
+	@Configuration(optional = true, name = "animate_details")
+	public boolean animateDetails = false;
 
 	@Configuration(optional = true, name = "start_windowed")
 	public boolean startWindowed = false;

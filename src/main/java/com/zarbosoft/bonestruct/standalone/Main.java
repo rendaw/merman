@@ -129,34 +129,38 @@ public class Main extends Application {
 		//add window up/down actions
 		//fix details position
 		//fix -> up arrow if not bound
-		fix cursor (overlay padding + scroll?); still duplicating
-		separate lrtb padding
-		remove part tags (explicit only)
-		display methods take display, not context; add default methods to turn context -> display
+		//fix cursor (overlay padding + scroll?); still duplicating
 		//fix banner position
+		//syntaxes from dir && install reference syntaxes automatically
+		//separate lrtb padding
+		//box lrtb padding
+		remove part tags (explicit only)
 		add prefix/suffix actions in atom/array vis
+		add array prefix/suffix gaps
+		show details on gap select if nonempty
+		banner and details padding
 		add actions for choice 1-9,0
 		array leadFirst
 		syntax documenter
 		action documenter
 		test merging changes; finishing history on actions
+		abstract xy origin for alternative converse/transverse directions
 		//test brick layout
-		move scroll to wall with listener for banner/details?
 
 		sed (led) substitution
 
-		details + banner styling (background/lines, padding, alignment(?), etc)
-			__ details templates that have substitution points in nested symbols and layouts, backgrounds
-		comment toc with jumps (plugin?)
-		exit primitive when next mark key; escaping (?)
-		banner background
-		persistent history
-		selection history
-		modules from dir
-		//syntaxes from dir && install reference syntaxes automatically
-		document distributing modules
-		document distributions
-		lua actions
+		move scroll to wall with listener for banner/details?
+		display methods take display, not context; add default methods to turn context -> display
+
+		long range goals
+		_modules from dir
+		_document distributing modules
+		_document distributions
+		_lua actions
+		_layout templates for complete details + banner styling
+		_vertical text
+		_toc plugin
+		_persistent history ~ changes relative to back, watch syntax and autoreload
 		 */
 		final EditorGlobal global = new EditorGlobal();
 		{

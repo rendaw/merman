@@ -2,6 +2,7 @@ package com.zarbosoft.bonestruct.editor.details;
 
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.IdleTask;
+import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.editor.wall.Attachment;
 import com.zarbosoft.bonestruct.editor.wall.Bedding;
 import com.zarbosoft.bonestruct.editor.wall.Brick;
@@ -81,7 +82,10 @@ public class Details {
 	}
 
 	private void setPosition(final Context context) {
-		current.node.setTransverse(context, transverse + transverseSpan - documentScroll, false);
+		current.node.setPosition(context, new Vector(
+				context.syntax.detailPad.converseStart,
+				transverse + transverseSpan + context.syntax.detailPad.transverseStart - documentScroll
+		), false);
 	}
 
 	public Details(final Context context) {
@@ -117,7 +121,12 @@ public class Details {
 			}
 			current = queue.peek();
 			context.midground.add(current.node);
-			bedding = new Bedding(0, current.node.transverseSpan(context));
+			bedding = new Bedding(
+					0,
+					context.syntax.detailPad.transverseStart +
+							current.node.transverseSpan(context) +
+							context.syntax.detailPad.transverseEnd
+			);
 			context.foreground.addBedding(context, bedding);
 			setPosition(context);
 		}

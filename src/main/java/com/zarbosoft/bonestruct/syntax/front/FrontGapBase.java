@@ -127,7 +127,7 @@ public abstract class FrontGapBase extends FrontPart {
 					final int converse = preview.converse(context);
 					final int converseEdge = text.converseEdge(context);
 					scroll = Math.min(converse, Math.max(converseEdge - context.edge, scroll));
-					tableGroup.setConverse(context, scroll, true);
+					tableGroup.setConverse(context, scroll, context.syntax.animateDetails);
 				}
 
 				private void changeChoice(final Context context, final int index) {

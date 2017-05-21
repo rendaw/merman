@@ -93,15 +93,12 @@ public class Hotkeys extends Module {
 		context.addSelectionTagsChangeListener(new Context.TagsListener() {
 			@Override
 			public void tagsChanged(final Context context, final PSet<Visual.Tag> tags) {
-				System.out.format("\n\n\nresetting hotkeys tags [%s]\n", tags);
 				clean(context);
 				hotkeys = new HashMap<>();
 				freeTyping = true;
 				for (final HotkeyRule rule : rules) {
-					System.out.format("rule [%s]\n", rule.with);
 					if (!tags.containsAll(rule.with) || !Sets.intersection(tags, rule.without).isEmpty())
 						continue;
-					System.out.format("\tmatches\n");
 					hotkeys.putAll(rule.hotkeys);
 					freeTyping = freeTyping && rule.freeTyping;
 				}
@@ -113,7 +110,6 @@ public class Hotkeys extends Module {
 						.flatMap(e -> e.getValue().stream()))) {
 					if (hotkeys.containsKey(action.getName())) {
 						for (final Node hotkey : hotkeys.get(action.getName())) {
-							System.out.format("action [%s] adding hotkey [%s]\n", action.getName(), hotkey);
 							union.add(new Operator(hotkey.build(), store -> store.pushStack(action)));
 						}
 					}
@@ -142,7 +138,6 @@ public class Hotkeys extends Module {
 			if (hotkeyParse.ended()) {
 				final Action action = hotkeyParse.finish();
 				clean(context);
-				System.out.format("running [%s]\n", action.getName());
 				action.run(context);
 			} else {
 				if (showDetails) {
@@ -152,7 +147,6 @@ public class Hotkeys extends Module {
 					context.details.addPage(context, hotkeyDetails);
 				}
 			}
-			System.out.format("key consumed\n");
 			return true;
 		} catch (final InvalidStream e) {
 			clean(context);

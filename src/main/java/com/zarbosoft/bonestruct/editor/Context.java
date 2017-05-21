@@ -813,7 +813,7 @@ public class Context {
 		details = new Details(this);
 		this.history = history;
 		display.addConverseEdgeListener((oldValue, newValue) -> {
-			edge = Math.max(0, newValue - document.syntax.padConverse * 2);
+			edge = Math.max(0, newValue - document.syntax.pad.converseStart - document.syntax.pad.converseEnd);
 			if (newValue < oldValue) {
 				foreground.idleCompact(this);
 			} else if (newValue > oldValue) {
@@ -823,7 +823,9 @@ public class Context {
 		});
 		display.addTransverseEdgeListener((
 				(oldValue, newValue) -> {
-					transverseEdge = Math.max(0, newValue - document.syntax.padTransverse * 2);
+					transverseEdge = Math.max(0,
+							newValue - document.syntax.pad.transverseStart - document.syntax.pad.transverseEnd
+					);
 					scrollVisible();
 					transverseEdgeListeners.forEach(listener -> listener.changed(this, oldValue, newValue));
 				}
@@ -857,7 +859,7 @@ public class Context {
 				hoverIdle = new HoverIdle(this);
 				addIdle.accept(hoverIdle);
 			}
-			hoverIdle.point = vector.add(new Vector(-syntax.padConverse, scroll));
+			hoverIdle.point = vector.add(new Vector(-syntax.pad.converseStart, scroll));
 		});
 		history.addListener(new History.Listener() {
 			@Override
@@ -929,8 +931,8 @@ public class Context {
 	}
 
 	private void scrollVisible() {
-		final int minimum = scrollStart - scrollStartBeddingBefore - syntax.padTransverse;
-		final int maximum = scrollEnd + scrollStartBeddingAfter + syntax.padTransverse;
+		final int minimum = scrollStart - scrollStartBeddingBefore - syntax.pad.transverseStart;
+		final int maximum = scrollEnd + scrollStartBeddingAfter + syntax.pad.transverseEnd;
 		final int maxDiff = maximum - transverseEdge - scroll;
 		Integer newScroll = null;
 		if (minimum < scroll) {
@@ -940,11 +942,14 @@ public class Context {
 		}
 		if (newScroll != null) {
 			foreground.visual.setPosition(this,
-					new Vector(syntax.padConverse, -newScroll),
+					new Vector(syntax.pad.converseStart, -newScroll),
 					syntax.animateCoursePlacement
 			);
-			background.setPosition(this, new Vector(syntax.padConverse, -newScroll), syntax.animateCoursePlacement);
-			overlay.setPosition(this, new Vector(syntax.padConverse, -newScroll), syntax.animateCoursePlacement);
+			background.setPosition(this,
+					new Vector(syntax.pad.converseStart, -newScroll),
+					syntax.animateCoursePlacement
+			);
+			overlay.setPosition(this, new Vector(syntax.pad.converseStart, -newScroll), syntax.animateCoursePlacement);
 			scroll = newScroll;
 			banner.setScroll(this, newScroll);
 			details.setScroll(this, newScroll);
