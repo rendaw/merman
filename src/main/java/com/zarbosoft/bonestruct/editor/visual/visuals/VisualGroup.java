@@ -9,7 +9,7 @@ import com.zarbosoft.bonestruct.editor.IdleTask;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.VisualParent;
-import com.zarbosoft.bonestruct.editor.visual.VisualPart;
+import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.tags.TagsChange;
 import com.zarbosoft.bonestruct.editor.wall.Brick;
 import com.zarbosoft.rendaw.common.Pair;
@@ -21,7 +21,7 @@ import java.util.function.IntFunction;
 
 import static com.zarbosoft.rendaw.common.Common.last;
 
-public class VisualGroup extends VisualPart {
+public class VisualGroup extends Visual {
 
 	public VisualGroup(
 			final Context context, final VisualParent parent, final Map<String, Alignment> alignments, final int depth
@@ -63,7 +63,7 @@ public class VisualGroup extends VisualPart {
 
 	@Override
 	public boolean selectDown(final Context context) {
-		for (final VisualPart child : children) {
+		for (final Visual child : children) {
 			if (child.selectDown(context))
 				return true;
 		}
@@ -96,7 +96,7 @@ public class VisualGroup extends VisualPart {
 
 	// State
 	IdleTask idle;
-	protected List<VisualPart> children = new ArrayList<>();
+	protected List<Visual> children = new ArrayList<>();
 	boolean compact = false;
 
 	@Override
@@ -104,7 +104,7 @@ public class VisualGroup extends VisualPart {
 		return parent;
 	}
 
-	public void add(final Context context, final VisualPart node, final int index) {
+	public void add(final Context context, final Visual node, final int index) {
 		if (index < 0)
 			throw new AssertionError("Inserting visual atom at negative index.");
 		if (index >= this.children.size() + 1)
@@ -125,7 +125,7 @@ public class VisualGroup extends VisualPart {
 		return new Parent(this, index);
 	}
 
-	public void add(final Context context, final VisualPart node) {
+	public void add(final Context context, final Visual node) {
 		add(context, node, children.size());
 	}
 
@@ -134,7 +134,7 @@ public class VisualGroup extends VisualPart {
 			throw new AssertionError("Removing visual atom at negative index.");
 		if (index >= this.children.size())
 			throw new AssertionError("Removing visual atom after group end.");
-		final VisualPart node = children.get(index);
+		final Visual node = children.get(index);
 		node.uproot(context, null);
 		this.children.remove(index);
 		this.children.stream().skip(index).forEach(n -> ((Parent) n.parent()).index -= 1);
@@ -198,14 +198,14 @@ public class VisualGroup extends VisualPart {
 			derived = derived.plus(e.getKey(), alignment);
 		}
 		for (int index = 0; index < children.size(); ++index) {
-			final VisualPart child = children.get(index);
+			final Visual child = children.get(index);
 			child.root(context, child.parent(), derived, depth);
 		}
 	}
 
 	@Override
 	public void uproot(final Context context, final Visual root) {
-		for (final VisualPart child : Lists.reverse(children))
+		for (final Visual child : Lists.reverse(children))
 			child.uproot(context, root);
 	}
 

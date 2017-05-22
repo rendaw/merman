@@ -3,7 +3,7 @@ package com.zarbosoft.bonestruct.modules;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.Selection;
 import com.zarbosoft.bonestruct.editor.banner.BannerMessage;
-import com.zarbosoft.bonestruct.editor.visual.VisualPart;
+import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.visuals.VisualArray;
 import com.zarbosoft.bonestruct.editor.visual.visuals.VisualAtom;
 import com.zarbosoft.bonestruct.editor.visual.visuals.VisualNestedBase;
@@ -36,7 +36,7 @@ public class SelectionType extends Module {
 						text.append(nodeType.type().name());
 				}
 				if (part) {
-					final VisualPart part = selection.getVisual();
+					final Visual part = selection.getVisual();
 					final String temp;
 					if (part instanceof VisualArray) {
 						temp = "array";

@@ -19,11 +19,12 @@ public class BrickSpace extends Brick implements AlignmentListener {
 	public BrickSpace(final Context context, final BrickInterface inter) {
 		super(inter);
 		visual = context.display.blank();
+		tagsChanged(context);
 	}
 
 	@Override
 	public void tagsChanged(final Context context) {
-		this.style = context.getStyle(inter.getTags(context));
+		this.style = context.getStyle(context.globalTags.plusAll(inter.getTags(context)));
 		if (alignment != null)
 			alignment.removeListener(context, this);
 		alignment = inter.getAlignment(style);

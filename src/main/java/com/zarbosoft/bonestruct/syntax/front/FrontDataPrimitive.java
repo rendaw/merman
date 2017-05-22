@@ -3,8 +3,8 @@ package com.zarbosoft.bonestruct.syntax.front;
 import com.zarbosoft.bonestruct.document.Atom;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
+import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.VisualParent;
-import com.zarbosoft.bonestruct.editor.visual.VisualPart;
 import com.zarbosoft.bonestruct.editor.visual.tags.FreeTag;
 import com.zarbosoft.bonestruct.editor.visual.tags.PartTag;
 import com.zarbosoft.bonestruct.editor.visual.tags.Tag;
@@ -17,12 +17,15 @@ import org.pcollections.HashTreePSet;
 import org.pcollections.PSet;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 @Configuration(name = "primitive")
 public class FrontDataPrimitive extends FrontPart {
+	@Configuration
+	public Set<String> tags = new HashSet<>();
 
 	@Configuration
 	public String middle;
@@ -33,7 +36,7 @@ public class FrontDataPrimitive extends FrontPart {
 	public Map<String, Node> hotkeys = new HashMap<>();
 
 	@Override
-	public VisualPart createVisual(
+	public Visual createVisual(
 			final Context context,
 			final VisualParent parent,
 			final Atom atom,

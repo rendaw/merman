@@ -4,7 +4,7 @@ import com.zarbosoft.bonestruct.document.Atom;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.VisualParent;
-import com.zarbosoft.bonestruct.editor.visual.VisualPart;
+import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.tags.FreeTag;
 import com.zarbosoft.bonestruct.editor.visual.tags.PartTag;
 import com.zarbosoft.bonestruct.editor.visual.tags.Tag;
@@ -37,7 +37,7 @@ public class FrontDataArrayAsAtom extends FrontPart {
 	public Map<String, Node> hotkeys = new HashMap<>();
 
 	@Override
-	public VisualPart createVisual(
+	public Visual createVisual(
 			final Context context,
 			final VisualParent parent,
 			final Atom atom,

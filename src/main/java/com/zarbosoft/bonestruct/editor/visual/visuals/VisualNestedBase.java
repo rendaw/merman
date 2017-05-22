@@ -15,7 +15,6 @@ import com.zarbosoft.bonestruct.syntax.style.Style;
 import com.zarbosoft.bonestruct.syntax.symbol.Symbol;
 import com.zarbosoft.rendaw.common.DeadCode;
 import com.zarbosoft.rendaw.common.Pair;
-import org.pcollections.HashTreePSet;
 import org.pcollections.PSet;
 
 import java.util.List;
@@ -23,14 +22,18 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public abstract class VisualNestedBase extends VisualPart implements VisualLeaf {
-	PSet<Tag> tags = HashTreePSet.empty();
+public abstract class VisualNestedBase extends Visual implements VisualLeaf {
+	PSet<Tag> tags;
 	protected VisualAtom body;
 	VisualParent parent;
 	private BorderAttachment border;
 	Hoverable hoverable;
 	private NestedSelection selection;
 	private Brick ellipsis = null;
+
+	public VisualNestedBase(final PSet<Tag> tags) {
+		this.tags = tags.plus(new PartTag("atom"));
+	}
 
 	protected abstract void nodeSet(Context context, Atom value);
 
@@ -109,7 +112,7 @@ public abstract class VisualNestedBase extends VisualPart implements VisualLeaf 
 	}
 
 	private PSet<Tag> ellipsisTags(final Context context) {
-		return context.globalTags.plusAll(tags).plus(new PartTag("ellipsis"));
+		return tags.plus(new PartTag("ellipsis"));
 	}
 
 	private Brick createEllipsis(final Context context) {
@@ -324,7 +327,7 @@ public abstract class VisualNestedBase extends VisualPart implements VisualLeaf 
 		}
 
 		@Override
-		public VisualPart getVisual() {
+		public Visual getVisual() {
 			return VisualNestedBase.this;
 		}
 
@@ -501,7 +504,7 @@ public abstract class VisualNestedBase extends VisualPart implements VisualLeaf 
 				}
 
 				@Override
-				public VisualPart visual() {
+				public Visual visual() {
 					return VisualNestedBase.this;
 				}
 
@@ -521,5 +524,29 @@ public abstract class VisualNestedBase extends VisualPart implements VisualLeaf 
 	@Override
 	public boolean selectDown(final Context context) {
 		return value().selectDown(context);
+	}
+
+	@Override
+	public boolean canExpand() {
+		if (ellipsis == null)
+			throw new AssertionError();
+		return parent.atomVisual().compact;
+	}
+
+	@Override
+	public boolean canCompact() {
+		if (ellipsis == null)
+			throw new AssertionError();
+		return !parent.atomVisual().compact;
+	}
+
+	@Override
+	public void compact(final Context context) {
+		changeTagsCompact(context);
+	}
+
+	@Override
+	public void expand(final Context context) {
+		changeTagsExpand(context);
 	}
 }

@@ -106,7 +106,7 @@ public class Syntax {
 			"pasting code; in that case the context is used to determine the paste's potential root type.")
 	public MiddleArray root;
 
-	@Configuration(optional = true, description = "Root front-end configuration.")
+	@Configuration(name = "root_front", optional = true, description = "Root front-end configuration.")
 	public FrontDataRootArray rootFront = new FrontDataRootArray();
 
 	@Configuration(optional = true, name = "animate_course_placement")

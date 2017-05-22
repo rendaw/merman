@@ -33,7 +33,7 @@ import java.util.stream.Stream;
 
 import static com.zarbosoft.rendaw.common.Common.*;
 
-public class VisualPrimitive extends VisualPart implements VisualLeaf {
+public class VisualPrimitive extends Visual implements VisualLeaf {
 	// INVARIANT: Leaf nodes must always create at least one brick
 	// TODO index line offsets for faster insert/remove
 	private final ValuePrimitive.Listener dataListener;
@@ -56,9 +56,9 @@ public class VisualPrimitive extends VisualPart implements VisualLeaf {
 		}
 
 		public void update(final Context context) {
-			firstStyle = context.getStyle(context.globalTags.plusAll(firstTags));
-			hardStyle = context.getStyle(context.globalTags.plusAll(hardTags));
-			softStyle = context.getStyle(context.globalTags.plusAll(softTags));
+			firstStyle = context.getStyle(context.globalTags.plusAll(firstTags()));
+			hardStyle = context.getStyle(context.globalTags.plusAll(hardTags()));
+			softStyle = context.getStyle(context.globalTags.plusAll(softTags()));
 			firstAlignment = getAlignment(firstStyle.alignment);
 			hardAlignment = getAlignment(hardStyle.alignment);
 			softAlignment = getAlignment(softStyle.alignment);
@@ -67,9 +67,6 @@ public class VisualPrimitive extends VisualPart implements VisualLeaf {
 
 	private WeakReference<BrickStyle> brickStyle = new WeakReference<>(null);
 	public PSet<Tag> tags;
-	public PSet<Tag> softTags;
-	public PSet<Tag> firstTags;
-	public PSet<Tag> hardTags;
 	public int brickCount = 0;
 	public PrimitiveHoverable hoverable;
 
@@ -94,10 +91,19 @@ public class VisualPrimitive extends VisualPart implements VisualLeaf {
 	@Override
 	public void changeTags(final Context context, final TagsChange change) {
 		tags = change.apply(tags);
-		softTags = tags.plus(new StateTag("soft"));
-		hardTags = tags.plus(new StateTag("hard"));
-		firstTags = hardTags.plus(new StateTag("first"));
 		tagsChanged(context);
+	}
+
+	public PSet<Tag> softTags() {
+		return tags.plus(new StateTag("soft"));
+	}
+
+	public PSet<Tag> hardTags() {
+		return tags.plus(new StateTag("hard"));
+	}
+
+	public PSet<Tag> firstTags() {
+		return hardTags().plus(new StateTag("first"));
 	}
 
 	@Override
@@ -799,7 +805,7 @@ public class VisualPrimitive extends VisualPart implements VisualLeaf {
 		}
 
 		@Override
-		public VisualPart getVisual() {
+		public Visual getVisual() {
 			return VisualPrimitive.this;
 		}
 
@@ -818,6 +824,7 @@ public class VisualPrimitive extends VisualPart implements VisualLeaf {
 				final Context context
 		) {
 			range.setStyle(context, getBorderStyle(context, tags).obbox);
+			super.tagsChanged(context);
 		}
 	}
 
@@ -883,7 +890,7 @@ public class VisualPrimitive extends VisualPart implements VisualLeaf {
 		}
 
 		@Override
-		public VisualPart visual() {
+		public Visual visual() {
 			return VisualPrimitive.this;
 		}
 
@@ -1006,7 +1013,7 @@ public class VisualPrimitive extends VisualPart implements VisualLeaf {
 
 		@Override
 		public PSet<Tag> getTags(final Context context) {
-			return index == 0 ? firstTags : hard ? hardTags : softTags;
+			return index == 0 ? firstTags() : hard ? hardTags() : softTags();
 		}
 
 		public void styleChanged(final Context context, final BrickStyle style) {
@@ -1050,9 +1057,6 @@ public class VisualPrimitive extends VisualPart implements VisualLeaf {
 			final Context context, final VisualParent parent, final ValuePrimitive value, final PSet<Tag> tags
 	) {
 		this.tags = tags.plus(new PartTag("primitive"));
-		hardTags = this.tags.plus(new StateTag("hard"));
-		firstTags = hardTags.plus(new StateTag("first"));
-		softTags = tags.plus(new StateTag("soft"));
 		this.parent = parent;
 		value.visual = this;
 		dataListener = new ValuePrimitive.Listener() {

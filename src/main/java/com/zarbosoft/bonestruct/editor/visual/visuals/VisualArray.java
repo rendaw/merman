@@ -44,7 +44,7 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 			final Map<String, Alignment> alignments,
 			final int depth
 	) {
-		this.tags = tags.plus(new PartTag("array"));
+		this.tags = tags;
 		ellipsisTags = this.tags.plus(new PartTag("ellipsis"));
 		this.value = value;
 		dataListener = new ValueArray.Listener() {
@@ -165,12 +165,7 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 			final ChildGroup group = new ChildGroup(context, new ArrayVisualParent(addAt, false), alignments, depth());
 			for (int fixIndex = 0; fixIndex < getSeparator().size(); ++fixIndex) {
 				final FrontSymbol fix = getSeparator().get(fixIndex);
-				group.add(context, fix.createVisual(context,
-						group.createParent(fixIndex),
-						tags.plus(new PartTag("separator")),
-						alignments,
-						depth()
-				));
+				group.add(context, fix.createVisual(context, group.createParent(fixIndex), tags, alignments, depth()));
 			}
 			super.add(context, group, addAt);
 		};
@@ -181,16 +176,13 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 					new ChildGroup(context, new ArrayVisualParent(addIndex, true), alignments, depth());
 			int groupIndex = 0;
 			for (final FrontSymbol fix : getPrefix())
-				group.add(context, fix.createVisual(context,
-						group.createParent(groupIndex++),
-						tags.plus(new PartTag("prefix")),
-						alignments,
-						depth()
-				));
+				group.add(context,
+						fix.createVisual(context, group.createParent(groupIndex++), tags, alignments, depth())
+				);
 			final VisualAtom nodeVisual =
 					(VisualAtom) atom.createVisual(context, group.createParent(groupIndex++), alignments, depth());
 			final int addIndex2 = addIndex;
-			group.add(context, new VisualPart() {
+			group.add(context, new Visual() {
 				@Override
 				public VisualParent parent() {
 					return nodeVisual.parent();
@@ -267,12 +259,9 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 				}
 			});
 			for (final FrontSymbol fix : getSuffix())
-				group.add(context, fix.createVisual(context,
-						group.createParent(groupIndex++),
-						tags.plus(new PartTag("suffix")),
-						alignments,
-						depth()
-				));
+				group.add(context,
+						fix.createVisual(context, group.createParent(groupIndex++), tags, alignments, depth())
+				);
 			super.add(context, group, addIndex++);
 		}
 		if (!getSeparator().isEmpty() && addIndex < children.size()) {
@@ -345,7 +334,7 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 	protected abstract List<FrontSymbol> getSuffix();
 
 	private Set<Tag> ellipsisTags(final Context context) {
-		return context.globalTags.plus(new PartTag("ellipsis"));
+		return context.globalTags.plusAll(tags).plus(new PartTag("ellipsis"));
 	}
 
 	private Brick createEllipsis(final Context context) {
@@ -535,7 +524,7 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 		}
 
 		@Override
-		public VisualPart visual() {
+		public Visual visual() {
 			return VisualArray.this;
 		}
 
@@ -849,7 +838,7 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 		}
 
 		@Override
-		public VisualPart getVisual() {
+		public Visual getVisual() {
 			return children.get(beginIndex);
 		}
 
@@ -965,5 +954,29 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 				hoverable.border.notifyNextBrickPastEdge(context, next);
 			return next;
 		}
+	}
+
+	@Override
+	public boolean canExpand() {
+		if (ellipsis == null)
+			throw new AssertionError();
+		return parent.atomVisual().compact;
+	}
+
+	@Override
+	public boolean canCompact() {
+		if (ellipsis == null)
+			throw new AssertionError();
+		return !parent.atomVisual().compact;
+	}
+
+	@Override
+	public void compact(final Context context) {
+		changeTagsCompact(context);
+	}
+
+	@Override
+	public void expand(final Context context) {
+		changeTagsExpand(context);
 	}
 }

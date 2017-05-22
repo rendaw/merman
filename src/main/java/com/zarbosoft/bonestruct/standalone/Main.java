@@ -134,7 +134,8 @@ public class Main extends Application {
 		//syntaxes from dir && install reference syntaxes automatically
 		//separate lrtb padding
 		//box lrtb padding
-		remove part tags (explicit only)
+		//remove part tags (explicit only)
+		errors as detail pages not popups because popups are broken
 		add prefix/suffix actions in atom/array vis
 		add array prefix/suffix gaps
 		show details on gap select if nonempty

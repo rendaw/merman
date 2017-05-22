@@ -1,6 +1,6 @@
 package com.zarbosoft.bonestruct.editor;
 
-import com.zarbosoft.bonestruct.editor.visual.VisualPart;
+import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.tags.PartTag;
 import com.zarbosoft.bonestruct.editor.visual.tags.Tag;
 import com.zarbosoft.bonestruct.syntax.style.Style;
@@ -12,7 +12,7 @@ public abstract class Selection {
 	public void receiveText(final Context context, final String text) {
 	}
 
-	public abstract VisualPart getVisual();
+	public abstract Visual getVisual();
 
 	public abstract SelectionState saveState();
 

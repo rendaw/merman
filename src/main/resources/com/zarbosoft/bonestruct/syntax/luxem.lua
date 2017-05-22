@@ -1,7 +1,17 @@
 return {
     name = 'luxem',
-    pad_converse = 5,
-    pad_transverse = 60,
+    pad = {
+        converse_start = 15,
+        converse_end = 5,
+        transverse_start = 60,
+        transverse_end = 60,
+    },
+    banner_pad = {
+        converse_start = 15,
+    },
+    detail_pad = {
+        converse_start = 15,
+    },
     background = rgb { r = 74 / 255, g = 60 / 255, b = 89 / 255 },
     animate_course_placement = true,
     styles = {

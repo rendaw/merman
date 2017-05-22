@@ -38,7 +38,7 @@ public abstract class BrickText extends Brick implements AlignmentListener {
 
 	@Override
 	public void tagsChanged(final Context context) {
-		setStyle(context, context.getStyle(inter.getTags(context)));
+		setStyle(context, context.getStyle(context.globalTags.plusAll(inter.getTags(context))));
 	}
 
 	public void setStyle(final Context context, final Style.Baked style) {

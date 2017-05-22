@@ -8,7 +8,6 @@ import com.zarbosoft.bonestruct.editor.display.Text;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.editor.visual.tags.PartTag;
 import com.zarbosoft.bonestruct.editor.visual.tags.Tag;
-import com.zarbosoft.bonestruct.editor.visual.tags.TagsChange;
 import com.zarbosoft.bonestruct.editor.visual.tags.TypeTag;
 import com.zarbosoft.bonestruct.syntax.symbol.Symbol;
 import com.zarbosoft.interface1.Configuration;
@@ -112,8 +111,8 @@ public class Indicators extends Module {
 	public State initialize(final Context context) {
 		context.addSelectionTagsChangeListener(new Context.TagsListener() {
 			@Override
-			public void tagsChanged(final Context context, final TagsChange tags) {
-				update(context, tags);
+			public void tagsChanged(final Context context) {
+				update(context, context.globalTags.plusAll(context.selection.getTags(context)));
 			}
 		});
 		context.addConverseEdgeListener(resizeListener);

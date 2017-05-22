@@ -16,7 +16,7 @@ import com.zarbosoft.bonestruct.editor.display.derived.ColumnarTableLayout;
 import com.zarbosoft.bonestruct.editor.display.derived.RowLayout;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.VisualParent;
-import com.zarbosoft.bonestruct.editor.visual.VisualPart;
+import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.tags.FreeTag;
 import com.zarbosoft.bonestruct.editor.visual.tags.PartTag;
 import com.zarbosoft.bonestruct.editor.visual.tags.Tag;
@@ -51,7 +51,7 @@ public abstract class FrontGapBase extends FrontPart {
 	private MiddlePrimitive dataType;
 
 	@Override
-	public VisualPart createVisual(
+	public Visual createVisual(
 			final Context context,
 			final VisualParent parent,
 			final Atom atom,

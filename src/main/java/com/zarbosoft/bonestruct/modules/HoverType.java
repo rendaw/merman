@@ -3,7 +3,7 @@ package com.zarbosoft.bonestruct.modules;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.Hoverable;
 import com.zarbosoft.bonestruct.editor.banner.BannerMessage;
-import com.zarbosoft.bonestruct.editor.visual.VisualPart;
+import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.visuals.VisualArray;
 import com.zarbosoft.bonestruct.editor.visual.visuals.VisualAtom;
 import com.zarbosoft.bonestruct.editor.visual.visuals.VisualNestedBase;
@@ -39,7 +39,7 @@ public class HoverType extends Module {
 							text.append((hoverable.atom()).type().name());
 					}
 					if (part) {
-						final VisualPart part = hoverable.visual();
+						final Visual part = hoverable.visual();
 						final String temp;
 						if (part instanceof VisualArray) {
 							temp = "array";

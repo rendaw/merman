@@ -6,7 +6,7 @@ import com.zarbosoft.bonestruct.editor.Hoverable;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.VisualParent;
-import com.zarbosoft.bonestruct.editor.visual.VisualPart;
+import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.tags.TagsChange;
 import com.zarbosoft.bonestruct.editor.wall.Brick;
 import com.zarbosoft.bonestruct.syntax.AtomType;
@@ -43,7 +43,7 @@ public class VisualAtom extends Visual {
 		}
 		body = new VisualGroup(context, new BodyParent(), bodyAlignments, this.depth);
 		for (final Pair<Integer, FrontPart> pair : iterable(enumerate(Common.stream(atom.type.front())))) {
-			final VisualPart visual = pair.second.createVisual(context,
+			final Visual visual = pair.second.createVisual(context,
 					body.createParent(pair.first),
 					atom,
 					atom.tags,

@@ -21,7 +21,7 @@ import com.zarbosoft.bonestruct.editor.history.History;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.VisualParent;
-import com.zarbosoft.bonestruct.editor.visual.VisualPart;
+import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.tags.FreeTag;
 import com.zarbosoft.bonestruct.editor.visual.tags.StateTag;
 import com.zarbosoft.bonestruct.editor.visual.tags.Tag;
@@ -601,7 +601,7 @@ public class Context {
 		if (localToken != selectToken)
 			return;
 
-		final VisualPart visual = this.selection.getVisual();
+		final Visual visual = this.selection.getVisual();
 		Brick first = visual.getFirstBrick(this);
 		if (first == null)
 			first = visual.createFirstBrick(this);

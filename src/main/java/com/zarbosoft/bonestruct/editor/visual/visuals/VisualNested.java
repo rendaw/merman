@@ -76,4 +76,5 @@ public abstract class VisualNested extends VisualNestedBase {
 	public void tagsChanged(final Context context) {
 
 	}
+
 }

@@ -326,6 +326,11 @@ public class Helper {
 		public FrontSymbol build() {
 			return front;
 		}
+
+		public FrontMarkBuilder tag(final String tag) {
+			front.tags.add(tag);
+			return this;
+		}
 	}
 
 	public static class FrontDataArrayBuilder {

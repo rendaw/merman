@@ -4,19 +4,18 @@ import com.zarbosoft.bonestruct.document.Atom;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.display.DisplayNode;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
+import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.VisualParent;
-import com.zarbosoft.bonestruct.editor.visual.VisualPart;
-import com.zarbosoft.bonestruct.editor.visual.tags.FreeTag;
 import com.zarbosoft.bonestruct.editor.visual.tags.PartTag;
 import com.zarbosoft.bonestruct.editor.visual.tags.Tag;
 import com.zarbosoft.bonestruct.editor.visual.visuals.VisualSymbol;
 import com.zarbosoft.bonestruct.syntax.symbol.Symbol;
 import com.zarbosoft.interface1.Configuration;
 import com.zarbosoft.interface1.Walk;
+import org.pcollections.HashTreePSet;
 import org.pcollections.PSet;
 
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Configuration(name = "symbol")
 public class FrontSymbol extends FrontPart {
@@ -32,7 +31,7 @@ public class FrontSymbol extends FrontPart {
 	public String gapKey = "";
 
 	@Override
-	public VisualPart createVisual(
+	public Visual createVisual(
 			final Context context,
 			final VisualParent parent,
 			final Atom atom,
@@ -50,12 +49,10 @@ public class FrontSymbol extends FrontPart {
 	}
 
 	public PSet<Tag> getTags(final Context context, final PSet<Tag> tags) {
-		return tags
-				.plusAll(this.tags.stream().map(s -> new FreeTag(s)).collect(Collectors.toSet()))
-				.plus(new PartTag(Walk.decideName(type.getClass())));
+		return tags.plusAll(Context.asFreeTags(this.tags)).plus(new PartTag(Walk.decideName(type.getClass())));
 	}
 
-	public VisualPart createVisual(
+	public Visual createVisual(
 			final Context context,
 			final VisualParent parent,
 			final PSet<Tag> tags,
@@ -77,7 +74,8 @@ public class FrontSymbol extends FrontPart {
 
 	public DisplayNode createDisplay(final Context context) {
 		final DisplayNode out = type.createDisplay(context);
-		type.style(context, out, context.getStyle(getTags(context, context.globalTags)));
+		// TODO should include the AtomType id or atom's tags
+		type.style(context, out, context.getStyle(context.globalTags.plusAll(getTags(context, HashTreePSet.empty()))));
 		return out;
 	}
 }

@@ -1,6 +1,6 @@
 package com.zarbosoft.bonestruct.editor;
 
-import com.zarbosoft.bonestruct.editor.visual.VisualPart;
+import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.tags.PartTag;
 import com.zarbosoft.bonestruct.editor.visual.tags.Tag;
 import com.zarbosoft.bonestruct.editor.visual.visuals.VisualAtom;
@@ -14,7 +14,7 @@ public abstract class Hoverable {
 
 	public abstract VisualAtom atom();
 
-	public abstract VisualPart visual();
+	public abstract Visual visual();
 
 	public abstract void tagsChanged(
 			Context context

@@ -1,7 +1,7 @@
 package com.zarbosoft.bonestruct;
 
 import com.zarbosoft.bonestruct.document.Atom;
-import com.zarbosoft.bonestruct.editor.visual.tags.PartTag;
+import com.zarbosoft.bonestruct.editor.visual.tags.FreeTag;
 import com.zarbosoft.bonestruct.helper.GeneralTestWizard;
 import com.zarbosoft.bonestruct.helper.Helper;
 import com.zarbosoft.bonestruct.helper.StyleBuilder;
@@ -31,7 +31,7 @@ public class TestLayoutGeneral {
 				.back(Helper.buildBackDataArray("value"))
 				.frontMark("[")
 				.front(new Helper.FrontDataArrayBuilder("value")
-						.addSeparator(new Helper.FrontMarkBuilder(", ").build())
+						.addSeparator(new Helper.FrontMarkBuilder(", ").tag("separator").build())
 						.build())
 				.frontMark("]")
 				.autoComplete(99)
@@ -42,7 +42,7 @@ public class TestLayoutGeneral {
 				.type(array)
 				.group("any", new Helper.GroupBuilder().type(one).type(two).type(array).build())
 				.style(new StyleBuilder().broken(true).build())
-				.style(new StyleBuilder().tag(new PartTag("separator")).broken(false).build())
+				.style(new StyleBuilder().tag(new FreeTag("separator")).broken(false).build())
 				.build();
 	}
 

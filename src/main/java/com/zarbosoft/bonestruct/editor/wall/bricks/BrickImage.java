@@ -25,7 +25,7 @@ public class BrickImage extends Brick implements AlignmentListener {
 
 	@Override
 	public void tagsChanged(final Context context) {
-		this.style = context.getStyle(inter.getTags(context));
+		this.style = context.getStyle(context.globalTags.plusAll(inter.getTags(context)));
 		if (alignment != null)
 			alignment.removeListener(context, this);
 		alignment = inter.getAlignment(style);

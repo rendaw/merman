@@ -8,7 +8,6 @@ import com.zarbosoft.bonestruct.editor.display.DisplayNode;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.editor.visual.VisualLeaf;
-import com.zarbosoft.bonestruct.editor.visual.tags.Tag;
 import com.zarbosoft.bonestruct.editor.visual.tags.TagsChange;
 import com.zarbosoft.bonestruct.syntax.style.Style;
 
@@ -67,10 +66,7 @@ public abstract class Brick {
 	public Properties getPropertiesForTagsChange(
 			final Context context, final TagsChange change
 	) {
-		final Set<Tag> tags = new HashSet<>(inter.getTags(context));
-		tags.removeAll(change.remove);
-		tags.addAll(change.add);
-		return properties(context, context.getStyle(tags));
+		return properties(context, context.getStyle(change.apply(inter.getTags(context))));
 	}
 
 	public Hoverable hover(final Context context, final Vector point) {

@@ -11,7 +11,7 @@ import com.zarbosoft.bonestruct.editor.display.derived.ColumnarTableLayout;
 import com.zarbosoft.bonestruct.editor.display.derived.TLayout;
 import com.zarbosoft.bonestruct.editor.hid.HIDEvent;
 import com.zarbosoft.bonestruct.editor.visual.tags.PartTag;
-import com.zarbosoft.bonestruct.editor.visual.tags.TagsChange;
+import com.zarbosoft.bonestruct.editor.visual.tags.Tag;
 import com.zarbosoft.bonestruct.modules.Module;
 import com.zarbosoft.bonestruct.modules.hotkeys.grammar.Node;
 import com.zarbosoft.bonestruct.syntax.style.Style;
@@ -22,6 +22,7 @@ import com.zarbosoft.pidgoon.events.Grammar;
 import com.zarbosoft.pidgoon.events.Operator;
 import com.zarbosoft.pidgoon.events.Parse;
 import com.zarbosoft.pidgoon.nodes.Union;
+import org.pcollections.PSet;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -91,7 +92,8 @@ public class Hotkeys extends Module {
 		context.addKeyListener(this::handleEvent);
 		context.addSelectionTagsChangeListener(new Context.TagsListener() {
 			@Override
-			public void tagsChanged(final Context context, final TagsChange tags) {
+			public void tagsChanged(final Context context) {
+				final PSet<Tag> tags = context.globalTags.plusAll(context.selection.getTags(context));
 				clean(context);
 				hotkeys = new HashMap<>();
 				freeTyping = true;

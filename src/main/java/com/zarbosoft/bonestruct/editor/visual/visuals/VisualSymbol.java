@@ -2,7 +2,10 @@ package com.zarbosoft.bonestruct.editor.visual.visuals;
 
 import com.google.common.collect.Iterables;
 import com.zarbosoft.bonestruct.editor.Context;
-import com.zarbosoft.bonestruct.editor.visual.*;
+import com.zarbosoft.bonestruct.editor.visual.Alignment;
+import com.zarbosoft.bonestruct.editor.visual.Visual;
+import com.zarbosoft.bonestruct.editor.visual.VisualLeaf;
+import com.zarbosoft.bonestruct.editor.visual.VisualParent;
 import com.zarbosoft.bonestruct.editor.visual.condition.ConditionAttachment;
 import com.zarbosoft.bonestruct.editor.visual.tags.Tag;
 import com.zarbosoft.bonestruct.editor.visual.tags.TagsChange;
@@ -16,7 +19,7 @@ import org.pcollections.PSet;
 import java.util.Arrays;
 import java.util.Map;
 
-public class VisualSymbol extends VisualPart implements VisualLeaf, ConditionAttachment.Listener, BrickInterface {
+public class VisualSymbol extends Visual implements VisualLeaf, ConditionAttachment.Listener, BrickInterface {
 	private PSet<Tag> tags;
 	private final FrontSymbol frontSymbol;
 	public VisualParent parent;
@@ -178,6 +181,6 @@ public class VisualSymbol extends VisualPart implements VisualLeaf, ConditionAtt
 
 	@Override
 	public PSet<Tag> getTags(final Context context) {
-		return context.globalTags.plusAll(tags);
+		return tags;
 	}
 }

@@ -3,8 +3,8 @@ package com.zarbosoft.bonestruct.syntax.front;
 import com.zarbosoft.bonestruct.document.Atom;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
+import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.VisualParent;
-import com.zarbosoft.bonestruct.editor.visual.VisualPart;
 import com.zarbosoft.bonestruct.editor.visual.tags.Tag;
 import com.zarbosoft.bonestruct.syntax.AtomType;
 import com.zarbosoft.interface1.Configuration;
@@ -21,7 +21,7 @@ public abstract class FrontPart {
 	@Configuration
 	public Set<String> tags = new HashSet<>();
 
-	public abstract VisualPart createVisual(
+	public abstract Visual createVisual(
 			Context context,
 			VisualParent parent,
 			Atom atom,
