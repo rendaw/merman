@@ -10,11 +10,11 @@ import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.VisualParent;
 import com.zarbosoft.bonestruct.editor.visual.VisualPart;
+import com.zarbosoft.bonestruct.editor.visual.tags.TagsChange;
 import com.zarbosoft.bonestruct.editor.wall.Brick;
 import com.zarbosoft.rendaw.common.Pair;
 import org.pcollections.HashTreePMap;
 import org.pcollections.PMap;
-import org.pcollections.PSet;
 
 import java.util.*;
 import java.util.function.IntFunction;
@@ -24,18 +24,22 @@ import static com.zarbosoft.rendaw.common.Common.last;
 public class VisualGroup extends VisualPart {
 
 	public VisualGroup(
-			final Context context,
-			final VisualParent parent,
-			final PSet<Tag> tags,
-			final Map<String, Alignment> alignments,
-			final int depth
+			final Context context, final VisualParent parent, final Map<String, Alignment> alignments, final int depth
 	) {
-		super(tags);
 		root(context, parent, alignments, depth);
 	}
 
-	protected VisualGroup(final PSet<Tag> tags) { // Should only be called by inheritors... temp private
-		super(tags);
+	protected VisualGroup() { // Should only be called by inheritors... temp private
+	}
+
+	@Override
+	public void globalTagsChanged(final Context context) {
+		children.forEach(child -> child.globalTagsChanged(context));
+	}
+
+	@Override
+	public void changeTags(final Context context, final TagsChange tagsChange) {
+		children.forEach(child -> child.changeTags(context, tagsChange));
 	}
 
 	@Override
@@ -156,23 +160,21 @@ public class VisualGroup extends VisualPart {
 
 	@Override
 	public void compact(final Context context) {
-		super.compact(context);
 		children.forEach(c -> c.compact(context));
 	}
 
 	@Override
 	public void expand(final Context context) {
-		super.expand(context);
 		children.forEach(c -> c.expand(context));
 	}
 
 	@Override
-	public Iterable<Pair<Brick, Brick.Properties>> getPropertiesForTagsChange(
+	public Iterable<Pair<Brick, Brick.Properties>> getLeafPropertiesForTagsChange(
 			final Context context, final TagsChange change
 	) {
 		return Iterables.concat(children
 				.stream()
-				.map(c -> c.getPropertiesForTagsChange(context, change))
+				.map(c -> c.getLeafPropertiesForTagsChange(context, change))
 				.toArray(Iterable[]::new));
 	}
 
@@ -205,11 +207,6 @@ public class VisualGroup extends VisualPart {
 	public void uproot(final Context context, final Visual root) {
 		for (final VisualPart child : Lists.reverse(children))
 			child.uproot(context, root);
-	}
-
-	@Override
-	public void tagsChanged(final Context context) {
-
 	}
 
 	public static class Parent extends VisualParent {
@@ -250,7 +247,7 @@ public class VisualGroup extends VisualPart {
 		}
 
 		@Override
-		public VisualAtomType atomVisual() {
+		public VisualAtom atomVisual() {
 			if (target.parent == null)
 				return null;
 			return target.parent.atomVisual();

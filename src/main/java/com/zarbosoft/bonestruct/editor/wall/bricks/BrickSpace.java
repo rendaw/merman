@@ -22,13 +22,13 @@ public class BrickSpace extends Brick implements AlignmentListener {
 	}
 
 	@Override
-	public void setStyle(final Context context, final Style.Baked style) {
+	public void tagsChanged(final Context context) {
+		this.style = context.getStyle(inter.getTags(context));
 		if (alignment != null)
 			alignment.removeListener(context, this);
 		alignment = inter.getAlignment(style);
 		if (alignment != null)
 			alignment.addListener(context, this);
-		this.style = style;
 		changed(context);
 	}
 

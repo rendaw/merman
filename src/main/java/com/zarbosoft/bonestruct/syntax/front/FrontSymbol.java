@@ -4,9 +4,11 @@ import com.zarbosoft.bonestruct.document.Atom;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.display.DisplayNode;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
-import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.VisualParent;
 import com.zarbosoft.bonestruct.editor.visual.VisualPart;
+import com.zarbosoft.bonestruct.editor.visual.tags.FreeTag;
+import com.zarbosoft.bonestruct.editor.visual.tags.PartTag;
+import com.zarbosoft.bonestruct.editor.visual.tags.Tag;
 import com.zarbosoft.bonestruct.editor.visual.visuals.VisualSymbol;
 import com.zarbosoft.bonestruct.syntax.symbol.Symbol;
 import com.zarbosoft.interface1.Configuration;
@@ -34,7 +36,7 @@ public class FrontSymbol extends FrontPart {
 			final Context context,
 			final VisualParent parent,
 			final Atom atom,
-			final PSet<Visual.Tag> tags,
+			final PSet<Tag> tags,
 			final Map<String, Alignment> alignments,
 			final int depth
 	) {
@@ -47,16 +49,16 @@ public class FrontSymbol extends FrontPart {
 		);
 	}
 
-	public PSet<Visual.Tag> getTags(final Context context, final PSet<Visual.Tag> tags) {
+	public PSet<Tag> getTags(final Context context, final PSet<Tag> tags) {
 		return tags
-				.plusAll(this.tags.stream().map(s -> new Visual.FreeTag(s)).collect(Collectors.toSet()))
-				.plus(new Visual.PartTag(Walk.decideName(type.getClass())));
+				.plusAll(this.tags.stream().map(s -> new FreeTag(s)).collect(Collectors.toSet()))
+				.plus(new PartTag(Walk.decideName(type.getClass())));
 	}
 
 	public VisualPart createVisual(
 			final Context context,
 			final VisualParent parent,
-			final PSet<Visual.Tag> tags,
+			final PSet<Tag> tags,
 			final Map<String, Alignment> alignments,
 			final int depth
 	) {

@@ -3,7 +3,7 @@ package com.zarbosoft.bonestruct.syntax.style;
 import com.google.common.collect.ImmutableSet;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.display.Font;
-import com.zarbosoft.bonestruct.editor.visual.Visual;
+import com.zarbosoft.bonestruct.editor.visual.tags.Tag;
 import com.zarbosoft.interface1.Configuration;
 
 import java.lang.reflect.Field;
@@ -16,9 +16,9 @@ import static com.zarbosoft.rendaw.common.Common.uncheck;
 public class Style {
 
 	@Configuration(description = "These tags must be present.")
-	public Set<Visual.Tag> with = new HashSet<>();
+	public Set<Tag> with = new HashSet<>();
 	@Configuration(optional = true, description = "These tags must be absent.")
-	public Set<Visual.Tag> without = new HashSet<>();
+	public Set<Tag> without = new HashSet<>();
 
 	@Configuration(name = "break", optional = true)
 	public Boolean broken = null;
@@ -81,7 +81,7 @@ public class Style {
 	public ObboxStyle obbox = null;
 
 	public static class Baked {
-		public Set<Visual.Tag> tags = new HashSet<>();
+		public Set<Tag> tags = new HashSet<>();
 		public boolean broken = false;
 		public String alignment = null;
 		public int spaceBefore = 0;
@@ -99,7 +99,7 @@ public class Style {
 		public BoxStyle.Baked box = new BoxStyle.Baked();
 		public ObboxStyle.Baked obbox = new ObboxStyle.Baked();
 
-		public Baked(final Set<Visual.Tag> tags) {
+		public Baked(final Set<Tag> tags) {
 			this.tags.addAll(tags);
 		}
 

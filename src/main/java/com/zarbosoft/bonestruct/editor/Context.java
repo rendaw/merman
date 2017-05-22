@@ -22,7 +22,11 @@ import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.VisualParent;
 import com.zarbosoft.bonestruct.editor.visual.VisualPart;
-import com.zarbosoft.bonestruct.editor.visual.visuals.VisualAtomType;
+import com.zarbosoft.bonestruct.editor.visual.tags.FreeTag;
+import com.zarbosoft.bonestruct.editor.visual.tags.StateTag;
+import com.zarbosoft.bonestruct.editor.visual.tags.Tag;
+import com.zarbosoft.bonestruct.editor.visual.tags.TagsChange;
+import com.zarbosoft.bonestruct.editor.visual.visuals.VisualAtom;
 import com.zarbosoft.bonestruct.editor.wall.Attachment;
 import com.zarbosoft.bonestruct.editor.wall.Brick;
 import com.zarbosoft.bonestruct.editor.wall.Wall;
@@ -52,14 +56,14 @@ import static com.zarbosoft.rendaw.common.Common.last;
 
 public class Context {
 	public final History history;
-	WeakCache<Set<Visual.Tag>, Style.Baked> styleCache = new WeakCache<>(v -> v.tags);
+	WeakCache<Set<Tag>, Style.Baked> styleCache = new WeakCache<>(v -> v.tags);
 	public boolean window;
 	public Atom windowAtom;
 	private final Set<SelectionListener> selectionListeners = new HashSet<>();
 	private final Set<HoverListener> hoverListeners = new HashSet<>();
 	private final Set<TagsListener> selectionTagsChangeListeners = new HashSet<>();
 	public List<Module.State> modules;
-	public PSet<Visual.Tag> globalTags = HashTreePSet.empty();
+	public PSet<Tag> globalTags = HashTreePSet.empty();
 	public List<KeyListener> keyListeners = new ArrayList<>();
 	List<ContextIntListener> converseEdgeListeners = new ArrayList<>();
 	List<ContextIntListener> transverseEdgeListeners = new ArrayList<>();
@@ -91,6 +95,10 @@ public class Context {
 	public int scroll;
 	int selectToken = 0;
 	boolean keyIgnore = false;
+
+	public static PSet<Tag> asFreeTags(final Set<String> tags) {
+		return HashTreePSet.from(tags.stream().map(tag -> new FreeTag(tag)).collect(Collectors.toList()));
+	}
 
 	public static interface ContextIntListener {
 		void changed(Context context, int oldValue, int newValue);
@@ -152,14 +160,12 @@ public class Context {
 		return clipboardEngine.getString();
 	}
 
-	public void changeGlobalTags(final Visual.TagsChange change) {
-		globalTags = globalTags.minusAll(change.remove).plusAll(change.add);
-		if (hover != null)
-			hover.globalTagsChanged(this);
-		if (selection != null)
-			selection.globalTagsChanged(this);
-		selectionTagsChanged();
-		foreground.children.forEach(course -> course.children.forEach(brick -> brick.getVisual().tagsChanged(this)));
+	public void changeGlobalTags(final TagsChange change) {
+		globalTags = change.apply(globalTags);
+		if (windowAtom == null)
+			document.top.visual.globalTagsChanged(this);
+		else
+			windowAtom.visual.globalTagsChanged(this);
 	}
 
 	public void selectionTagsChanged() {
@@ -167,7 +173,7 @@ public class Context {
 			return;
 		banner.tagsChanged(this);
 		details.tagsChanged(this);
-		selectionTagsChangeListeners.forEach(listener -> listener.tagsChanged(this, selection.getVisual().tags(this)));
+		selectionTagsChangeListeners.forEach(listener -> listener.tagsChanged(this));
 	}
 
 	public Object locateLong(final Path path) {
@@ -329,7 +335,7 @@ public class Context {
 
 	public abstract static class TagsListener {
 
-		public abstract void tagsChanged(Context context, PSet<Visual.Tag> tags);
+		public abstract void tagsChanged(Context context);
 	}
 
 	public void addSelectionListener(final SelectionListener listener) {
@@ -561,13 +567,13 @@ public class Context {
 	}
 
 	public void setAtomWindow(final Atom atom) {
-		Visual.TagsChange tagsChange = new Visual.TagsChange();
+		TagsChange tagsChange = new TagsChange();
 		if (!window) {
 			window = true;
-			tagsChange = tagsChange.add(new Visual.StateTag("windowed"));
+			tagsChange = tagsChange.add(new StateTag("windowed"));
 		}
 		if (windowAtom == null)
-			tagsChange = tagsChange.remove(new Visual.StateTag("root_window"));
+			tagsChange = tagsChange.remove(new StateTag("root_window"));
 		final Visual oldWindow = windowAtom == null ? document.top.visual : windowAtom.visual;
 		windowAtom = atom;
 		final Visual windowVisual = atom.createVisual(this, null, ImmutableMap.of(), 0);
@@ -607,7 +613,7 @@ public class Context {
 		selectionTagsChanged();
 	}
 
-	public Style.Baked getStyle(final Set<Visual.Tag> tags) {
+	public Style.Baked getStyle(final Set<Tag> tags) {
 		return styleCache.getOrCreate(tags, tags1 -> {
 			final Style.Baked out = new Style.Baked(tags);
 			for (final Style style : syntax.styles) {
@@ -708,8 +714,8 @@ public class Context {
 				ImmutableMap.of(),
 				0
 		);
-		changeGlobalTags(new Visual.TagsChange(ImmutableSet.of(),
-				ImmutableSet.of(new Visual.StateTag("windowed"), new Visual.StateTag("root_window"))
+		changeGlobalTags(new TagsChange(ImmutableSet.of(),
+				ImmutableSet.of(new StateTag("windowed"), new StateTag("root_window"))
 		));
 	}
 
@@ -766,11 +772,11 @@ public class Context {
 			public void run(final Context context) {
 				if (!window)
 					return;
-				final List<VisualAtomType> chain = new ArrayList<>();
-				final VisualAtomType stop = windowAtom.visual;
+				final List<VisualAtom> chain = new ArrayList<>();
+				final VisualAtom stop = windowAtom.visual;
 				if (selection.getVisual().parent() == null)
 					return;
-				VisualAtomType at = selection.getVisual().parent().atomVisual();
+				VisualAtom at = selection.getVisual().parent().atomVisual();
 				while (at != null) {
 					if (at == stop)
 						break;
@@ -782,7 +788,7 @@ public class Context {
 				if (chain.isEmpty())
 					return;
 				final Visual oldWindowVisual = windowAtom.visual;
-				final VisualAtomType windowVisual = last(chain);
+				final VisualAtom windowVisual = last(chain);
 				windowAtom = windowVisual.atom;
 				last(chain).root(context, null, ImmutableMap.of(), 0);
 				oldWindowVisual.uproot(context, windowVisual);
@@ -921,9 +927,9 @@ public class Context {
 					ImmutableMap.of(),
 					0
 			);
-			changeGlobalTags(new Visual.TagsChange(ImmutableSet.of(new Visual.StateTag("windowed"),
-					new Visual.StateTag("root_window")
-			), ImmutableSet.of()));
+			changeGlobalTags(new TagsChange(ImmutableSet.of(new StateTag("windowed"), new StateTag("root_window")),
+					ImmutableSet.of()
+			));
 		}
 		modules = document.syntax.modules.stream().map(p -> p.initialize(this)).collect(Collectors.toList());
 		document.top.selectDown(this);

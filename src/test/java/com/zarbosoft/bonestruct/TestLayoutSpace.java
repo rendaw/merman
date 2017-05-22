@@ -1,6 +1,6 @@
 package com.zarbosoft.bonestruct;
 
-import com.zarbosoft.bonestruct.editor.visual.Visual;
+import com.zarbosoft.bonestruct.editor.visual.tags.PartTag;
 import com.zarbosoft.bonestruct.helper.GeneralTestWizard;
 import com.zarbosoft.bonestruct.helper.Helper;
 import com.zarbosoft.bonestruct.helper.StyleBuilder;
@@ -36,7 +36,7 @@ public class TestLayoutSpace {
 				.type(one)
 				.type(array)
 				.group("any", new Helper.GroupBuilder().type(one).type(array).build())
-				.style(new StyleBuilder().tag(new Visual.PartTag("space")).broken(true).build())
+				.style(new StyleBuilder().tag(new PartTag("space")).broken(true).build())
 				.build();
 	}
 

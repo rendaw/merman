@@ -2,15 +2,14 @@ package com.zarbosoft.bonestruct.editor.wall;
 
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
-import com.zarbosoft.bonestruct.editor.visual.Visual;
-import com.zarbosoft.bonestruct.editor.visual.VisualPart;
+import com.zarbosoft.bonestruct.editor.visual.VisualLeaf;
+import com.zarbosoft.bonestruct.editor.visual.tags.Tag;
 import com.zarbosoft.bonestruct.syntax.style.Style;
-
-import java.util.Set;
+import org.pcollections.PSet;
 
 public interface BrickInterface {
 
-	VisualPart getVisual();
+	VisualLeaf getVisual();
 
 	/**
 	 * @param context
@@ -28,5 +27,5 @@ public interface BrickInterface {
 
 	Alignment getAlignment(Style.Baked style);
 
-	Set<Visual.Tag> getTags(Context context);
+	PSet<Tag> getTags(Context context);
 }

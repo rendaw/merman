@@ -3,9 +3,11 @@ package com.zarbosoft.bonestruct.syntax.front;
 import com.zarbosoft.bonestruct.document.Atom;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
-import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.VisualParent;
 import com.zarbosoft.bonestruct.editor.visual.VisualPart;
+import com.zarbosoft.bonestruct.editor.visual.tags.FreeTag;
+import com.zarbosoft.bonestruct.editor.visual.tags.PartTag;
+import com.zarbosoft.bonestruct.editor.visual.tags.Tag;
 import com.zarbosoft.bonestruct.editor.visual.visuals.VisualPrimitive;
 import com.zarbosoft.bonestruct.modules.hotkeys.grammar.Node;
 import com.zarbosoft.bonestruct.syntax.AtomType;
@@ -35,7 +37,7 @@ public class FrontDataPrimitive extends FrontPart {
 			final Context context,
 			final VisualParent parent,
 			final Atom atom,
-			final PSet<Visual.Tag> tags,
+			final PSet<Tag> tags,
 			final Map<String, Alignment> alignments,
 			final int depth
 	) {
@@ -45,8 +47,8 @@ public class FrontDataPrimitive extends FrontPart {
 				dataType.get(atom.data),
 				HashTreePSet
 						.from(tags)
-						.plus(new Visual.PartTag("primitive"))
-						.plusAll(this.tags.stream().map(s -> new Visual.FreeTag(s)).collect(Collectors.toSet()))
+						.plus(new PartTag("primitive"))
+						.plusAll(this.tags.stream().map(s -> new FreeTag(s)).collect(Collectors.toSet()))
 		);
 	}
 

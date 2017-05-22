@@ -8,7 +8,7 @@ import com.zarbosoft.bonestruct.editor.Path;
 import com.zarbosoft.bonestruct.editor.history.changes.ChangeArray;
 import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.visuals.VisualArray;
-import com.zarbosoft.bonestruct.editor.visual.visuals.VisualAtomFromArray;
+import com.zarbosoft.bonestruct.editor.visual.visuals.VisualNestedFromArray;
 import com.zarbosoft.bonestruct.syntax.FreeAtomType;
 import com.zarbosoft.bonestruct.syntax.middle.MiddleArrayBase;
 import com.zarbosoft.bonestruct.syntax.middle.MiddlePart;
@@ -138,8 +138,8 @@ public class ValueArray extends Value {
 		}
 		if (visual instanceof VisualArray)
 			((VisualArray) visual).select(context, start, end);
-		else if (visual instanceof VisualAtomFromArray)
-			((VisualAtomFromArray) visual).select(context);
+		else if (visual instanceof VisualNestedFromArray)
+			((VisualNestedFromArray) visual).select(context);
 		else
 			throw new DeadCode();
 	}

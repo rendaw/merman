@@ -1,8 +1,10 @@
 package com.zarbosoft.bonestruct.editor;
 
-import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.VisualPart;
+import com.zarbosoft.bonestruct.editor.visual.tags.PartTag;
+import com.zarbosoft.bonestruct.editor.visual.tags.Tag;
 import com.zarbosoft.bonestruct.syntax.style.Style;
+import org.pcollections.PSet;
 
 public abstract class Selection {
 	protected abstract void clear(Context context);
@@ -16,13 +18,19 @@ public abstract class Selection {
 
 	public abstract Path getPath();
 
-	public abstract void globalTagsChanged(Context context);
+	public void tagsChanged(
+			final Context context
+	) {
+		context.selectionTagsChanged();
+	}
 
 	public abstract class VisualListener {
 
 	}
 
-	public Style.Baked getStyle(final Context context) {
-		return context.getStyle(context.globalTags.plus(new Visual.PartTag("select")));
+	public Style.Baked getBorderStyle(final Context context, final PSet<Tag> tags) {
+		return context.getStyle(context.globalTags.plusAll(tags).plus(new PartTag("selection")));
 	}
+
+	public abstract PSet<Tag> getTags(Context context);
 }

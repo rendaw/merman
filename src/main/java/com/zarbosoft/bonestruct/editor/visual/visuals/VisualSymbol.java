@@ -2,11 +2,10 @@ package com.zarbosoft.bonestruct.editor.visual.visuals;
 
 import com.google.common.collect.Iterables;
 import com.zarbosoft.bonestruct.editor.Context;
-import com.zarbosoft.bonestruct.editor.visual.Alignment;
-import com.zarbosoft.bonestruct.editor.visual.Visual;
-import com.zarbosoft.bonestruct.editor.visual.VisualParent;
-import com.zarbosoft.bonestruct.editor.visual.VisualPart;
+import com.zarbosoft.bonestruct.editor.visual.*;
 import com.zarbosoft.bonestruct.editor.visual.condition.ConditionAttachment;
+import com.zarbosoft.bonestruct.editor.visual.tags.Tag;
+import com.zarbosoft.bonestruct.editor.visual.tags.TagsChange;
 import com.zarbosoft.bonestruct.editor.wall.Brick;
 import com.zarbosoft.bonestruct.editor.wall.BrickInterface;
 import com.zarbosoft.bonestruct.syntax.front.FrontSymbol;
@@ -16,9 +15,9 @@ import org.pcollections.PSet;
 
 import java.util.Arrays;
 import java.util.Map;
-import java.util.Set;
 
-public class VisualSymbol extends VisualPart implements ConditionAttachment.Listener, BrickInterface {
+public class VisualSymbol extends VisualPart implements VisualLeaf, ConditionAttachment.Listener, BrickInterface {
+	private PSet<Tag> tags;
 	private final FrontSymbol frontSymbol;
 	public VisualParent parent;
 	public Brick brick = null;
@@ -31,7 +30,7 @@ public class VisualSymbol extends VisualPart implements ConditionAttachment.List
 			final PSet<Tag> tags,
 			final ConditionAttachment condition
 	) {
-		super(tags);
+		this.tags = tags;
 		this.parent = parent;
 		this.frontSymbol = frontSymbol;
 		if (condition != null) {
@@ -47,6 +46,17 @@ public class VisualSymbol extends VisualPart implements ConditionAttachment.List
 		} else if (brick != null) {
 			brick.destroy(context);
 		}
+	}
+
+	@Override
+	public void globalTagsChanged(final Context context) {
+		tagsChanged(context);
+	}
+
+	@Override
+	public void changeTags(final Context context, final TagsChange tagsChange) {
+		tags = tagsChange.apply(tags);
+		tagsChanged(context);
 	}
 
 	@Override
@@ -73,7 +83,6 @@ public class VisualSymbol extends VisualPart implements ConditionAttachment.List
 		if (condition != null && !condition.show())
 			return null;
 		brick = frontSymbol.type.createBrick(context, this);
-		brick.setStyle(context, context.getStyle(tags(context)));
 		return brick;
 	}
 
@@ -92,15 +101,14 @@ public class VisualSymbol extends VisualPart implements ConditionAttachment.List
 		return brick;
 	}
 
-	@Override
 	public void tagsChanged(final Context context) {
 		if (brick != null) {
-			brick.setStyle(context, context.getStyle(tags(context)));
+			brick.tagsChanged(context);
 		}
 	}
 
 	@Override
-	public Iterable<Pair<Brick, Brick.Properties>> getPropertiesForTagsChange(
+	public Iterable<Pair<Brick, Brick.Properties>> getLeafPropertiesForTagsChange(
 			final Context context, final TagsChange change
 	) {
 		if (brick == null)
@@ -125,16 +133,26 @@ public class VisualSymbol extends VisualPart implements ConditionAttachment.List
 
 	@Override
 	public boolean canCompact() {
-		return false;
+		return !parent.atomVisual().compact;
+	}
+
+	@Override
+	public void compact(final Context context) {
+		changeTagsCompact(context);
 	}
 
 	@Override
 	public boolean canExpand() {
-		return false;
+		return parent.atomVisual().compact;
 	}
 
 	@Override
-	public VisualPart getVisual() {
+	public void expand(final Context context) {
+		changeTagsExpand(context);
+	}
+
+	@Override
+	public VisualLeaf getVisual() {
 		return this;
 	}
 
@@ -159,7 +177,7 @@ public class VisualSymbol extends VisualPart implements ConditionAttachment.List
 	}
 
 	@Override
-	public Set<Tag> getTags(final Context context) {
-		return tags(context);
+	public PSet<Tag> getTags(final Context context) {
+		return context.globalTags.plusAll(tags);
 	}
 }

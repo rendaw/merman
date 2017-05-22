@@ -15,9 +15,11 @@ import com.zarbosoft.bonestruct.editor.display.derived.Box;
 import com.zarbosoft.bonestruct.editor.display.derived.ColumnarTableLayout;
 import com.zarbosoft.bonestruct.editor.display.derived.RowLayout;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
-import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.VisualParent;
 import com.zarbosoft.bonestruct.editor.visual.VisualPart;
+import com.zarbosoft.bonestruct.editor.visual.tags.FreeTag;
+import com.zarbosoft.bonestruct.editor.visual.tags.PartTag;
+import com.zarbosoft.bonestruct.editor.visual.tags.Tag;
 import com.zarbosoft.bonestruct.editor.visual.visuals.VisualPrimitive;
 import com.zarbosoft.bonestruct.syntax.AtomType;
 import com.zarbosoft.bonestruct.syntax.FreeAtomType;
@@ -53,7 +55,7 @@ public abstract class FrontGapBase extends FrontPart {
 			final Context context,
 			final VisualParent parent,
 			final Atom atom,
-			final PSet<Visual.Tag> tags,
+			final PSet<Tag> tags,
 			final Map<String, Alignment> alignments,
 			final int depth
 	) {
@@ -164,9 +166,8 @@ public abstract class FrontGapBase extends FrontPart {
 					group.add(table.group);
 
 					final PSet<Tag> tags = context.globalTags;
-					final Style.Baked lineStyle = context.getStyle(tags
-							.plus(new Visual.PartTag("details_choice"))
-							.plus(new PartTag("details")));
+					final Style.Baked lineStyle =
+							context.getStyle(tags.plus(new PartTag("details_choice")).plus(new PartTag("details")));
 					final int transverse = 0;
 					for (final Choice choice : choices) {
 						final RowLayout previewLayout = new RowLayout(context.display);

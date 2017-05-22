@@ -6,7 +6,10 @@ import com.zarbosoft.bonestruct.editor.display.Font;
 import com.zarbosoft.bonestruct.editor.display.Group;
 import com.zarbosoft.bonestruct.editor.display.Text;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
-import com.zarbosoft.bonestruct.editor.visual.Visual;
+import com.zarbosoft.bonestruct.editor.visual.tags.PartTag;
+import com.zarbosoft.bonestruct.editor.visual.tags.Tag;
+import com.zarbosoft.bonestruct.editor.visual.tags.TagsChange;
+import com.zarbosoft.bonestruct.editor.visual.tags.TypeTag;
 import com.zarbosoft.bonestruct.syntax.symbol.Symbol;
 import com.zarbosoft.interface1.Configuration;
 import org.pcollections.PSet;
@@ -24,7 +27,7 @@ public class Indicators extends Module {
 		public String id;
 
 		@Configuration
-		public Set<Visual.Tag> tags = new HashSet<>();
+		public Set<Tag> tags = new HashSet<>();
 
 		@Configuration
 		public Symbol symbol;
@@ -57,7 +60,7 @@ public class Indicators extends Module {
 		}
 	};
 
-	public void update(final Context context, final PSet<Visual.Tag> tags) {
+	public void update(final Context context, final PSet<Tag> tags) {
 		int transverse = 0;
 		int offset = 0;
 		for (final Indicator indicator : indicators) {
@@ -70,9 +73,7 @@ public class Indicators extends Module {
 				indicator.symbol.style(
 						context,
 						node,
-						context.getStyle(tags
-								.plus(new Visual.TypeTag(indicator.id))
-								.plus(new Visual.PartTag("indicator")))
+						context.getStyle(tags.plus(new TypeTag(indicator.id)).plus(new PartTag("indicator")))
 				);
 				final int ascent;
 				final int descent;
@@ -111,7 +112,7 @@ public class Indicators extends Module {
 	public State initialize(final Context context) {
 		context.addSelectionTagsChangeListener(new Context.TagsListener() {
 			@Override
-			public void tagsChanged(final Context context, final PSet<Visual.Tag> tags) {
+			public void tagsChanged(final Context context, final TagsChange tags) {
 				update(context, tags);
 			}
 		});

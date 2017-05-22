@@ -1,7 +1,7 @@
 package com.zarbosoft.bonestruct;
 
 import com.zarbosoft.bonestruct.document.Atom;
-import com.zarbosoft.bonestruct.editor.visual.Visual;
+import com.zarbosoft.bonestruct.editor.visual.tags.PartTag;
 import com.zarbosoft.bonestruct.helper.GeneralTestWizard;
 import com.zarbosoft.bonestruct.helper.Helper;
 import com.zarbosoft.bonestruct.helper.StyleBuilder;
@@ -42,7 +42,7 @@ public class TestLayoutGeneral {
 				.type(array)
 				.group("any", new Helper.GroupBuilder().type(one).type(two).type(array).build())
 				.style(new StyleBuilder().broken(true).build())
-				.style(new StyleBuilder().tag(new Visual.PartTag("separator")).broken(false).build())
+				.style(new StyleBuilder().tag(new PartTag("separator")).broken(false).build())
 				.build();
 	}
 

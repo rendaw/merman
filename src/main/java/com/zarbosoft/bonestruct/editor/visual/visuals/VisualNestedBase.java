@@ -6,31 +6,31 @@ import com.zarbosoft.bonestruct.document.values.Value;
 import com.zarbosoft.bonestruct.editor.*;
 import com.zarbosoft.bonestruct.editor.visual.*;
 import com.zarbosoft.bonestruct.editor.visual.attachments.BorderAttachment;
+import com.zarbosoft.bonestruct.editor.visual.tags.PartTag;
+import com.zarbosoft.bonestruct.editor.visual.tags.Tag;
+import com.zarbosoft.bonestruct.editor.visual.tags.TagsChange;
 import com.zarbosoft.bonestruct.editor.wall.Brick;
 import com.zarbosoft.bonestruct.editor.wall.BrickInterface;
 import com.zarbosoft.bonestruct.syntax.style.Style;
 import com.zarbosoft.bonestruct.syntax.symbol.Symbol;
 import com.zarbosoft.rendaw.common.DeadCode;
 import com.zarbosoft.rendaw.common.Pair;
+import org.pcollections.HashTreePSet;
 import org.pcollections.PSet;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public abstract class VisualAtomBase extends VisualPart {
-	protected VisualAtomType body;
+public abstract class VisualNestedBase extends VisualPart implements VisualLeaf {
+	PSet<Tag> tags = HashTreePSet.empty();
+	protected VisualAtom body;
 	VisualParent parent;
 	private BorderAttachment border;
 	Hoverable hoverable;
 	private NestedSelection selection;
 	private Brick ellipsis = null;
-
-	public VisualAtomBase(final PSet<Tag> tags) {
-		super(tags);
-	}
 
 	protected abstract void nodeSet(Context context, Atom value);
 
@@ -102,14 +102,14 @@ public abstract class VisualAtomBase extends VisualPart {
 	}
 
 	@Override
-	public Iterable<Pair<Brick, Brick.Properties>> getPropertiesForTagsChange(
+	public Iterable<Pair<Brick, Brick.Properties>> getLeafPropertiesForTagsChange(
 			final Context context, final TagsChange change
 	) {
-		return body.getPropertiesForTagsChange(context, change);
+		return body.getLeafPropertiesForTagsChange(context, change);
 	}
 
-	private Set<Tag> ellipsisTags(final Context context) {
-		return tags(context).plus(new PartTag("ellipsis"));
+	private PSet<Tag> ellipsisTags(final Context context) {
+		return context.globalTags.plusAll(tags).plus(new PartTag("ellipsis"));
 	}
 
 	private Brick createEllipsis(final Context context) {
@@ -117,8 +117,8 @@ public abstract class VisualAtomBase extends VisualPart {
 			return null;
 		ellipsis = ellipsis().createBrick(context, new BrickInterface() {
 			@Override
-			public VisualPart getVisual() {
-				return VisualAtomBase.this;
+			public VisualLeaf getVisual() {
+				return VisualNestedBase.this;
 			}
 
 			@Override
@@ -138,25 +138,39 @@ public abstract class VisualAtomBase extends VisualPart {
 
 			@Override
 			public Alignment getAlignment(final Style.Baked style) {
-				return VisualAtomBase.this.getAlignment(style.alignment);
+				return VisualNestedBase.this.getAlignment(style.alignment);
 			}
 
 			@Override
-			public Set<Tag> getTags(final Context context) {
+			public PSet<Tag> getTags(final Context context) {
 				return ellipsisTags(context);
 			}
 		});
 		final Style.Baked style = context.getStyle(ellipsisTags(context));
-		ellipsis.setStyle(context, style);
+		ellipsis.tagsChanged(context);
 		return ellipsis;
 	}
 
-	@Override
 	public void tagsChanged(final Context context) {
 		if (ellipsis != null) {
 			final Style.Baked style = context.getStyle(ellipsisTags(context));
-			ellipsis.setStyle(context, style);
+			ellipsis.tagsChanged(context);
 		}
+		if (selection != null)
+			selection.tagsChanged(context);
+		if (hoverable != null)
+			hoverable.tagsChanged(context);
+	}
+
+	@Override
+	public void globalTagsChanged(final Context context) {
+		tagsChanged(context);
+	}
+
+	@Override
+	public void changeTags(final Context context, final TagsChange change) {
+		tags = change.apply(tags);
+		tagsChanged(context);
 	}
 
 	private boolean ellipsize(final Context context) {
@@ -203,7 +217,7 @@ public abstract class VisualAtomBase extends VisualPart {
 		}
 		selection = new NestedSelection(context);
 		border = new BorderAttachment(context);
-		border.setStyle(context, selection.getStyle(context).obbox);
+		border.setStyle(context, selection.getBorderStyle(context, tags).obbox);
 		context.setSelection(selection);
 		context.foreground.setCornerstone(context, body.createOrGetFirstBrick(context));
 	}
@@ -298,7 +312,7 @@ public abstract class VisualAtomBase extends VisualPart {
 
 	private class NestedSelection extends Selection {
 		public NestedSelection(final Context context) {
-			context.actions.put(this, VisualAtomBase.this.getActions(context).collect(Collectors.toList()));
+			context.actions.put(this, VisualNestedBase.this.getActions(context).collect(Collectors.toList()));
 		}
 
 		@Override
@@ -311,7 +325,7 @@ public abstract class VisualAtomBase extends VisualPart {
 
 		@Override
 		public VisualPart getVisual() {
-			return VisualAtomBase.this;
+			return VisualNestedBase.this;
 		}
 
 		@Override
@@ -325,8 +339,16 @@ public abstract class VisualAtomBase extends VisualPart {
 		}
 
 		@Override
-		public void globalTagsChanged(final Context context) {
-			border.setStyle(context, getStyle(context).obbox);
+		public void tagsChanged(
+				final Context context
+		) {
+			border.setStyle(context, getBorderStyle(context, tags).obbox);
+			super.tagsChanged(context);
+		}
+
+		@Override
+		public PSet<Tag> getTags(final Context context) {
+			return tags;
 		}
 	}
 
@@ -360,7 +382,7 @@ public abstract class VisualAtomBase extends VisualPart {
 			}
 		}
 		if (hoverable == null && context.hover != null) {
-			VisualParent parent = context.hover.part().parent();
+			VisualParent parent = context.hover.visual().parent();
 			while (parent != null) {
 				final Visual visual = parent.visual();
 				if (visual == this) {
@@ -383,8 +405,7 @@ public abstract class VisualAtomBase extends VisualPart {
 	private void coreSet(final Context context, final Atom data) {
 		if (body != null)
 			body.uproot(context, null);
-		this.body =
-				(VisualAtomType) data.createVisual(context, new NestedParent(), parent.visual().alignments(), depth());
+		this.body = (VisualAtom) data.createVisual(context, new NestedParent(), parent.visual().alignments(), depth());
 		if (selection != null)
 			context.foreground.setCornerstone(context, body.createOrGetFirstBrick(context));
 	}
@@ -397,11 +418,11 @@ public abstract class VisualAtomBase extends VisualPart {
 
 		@Override
 		public Visual visual() {
-			return VisualAtomBase.this;
+			return VisualNestedBase.this;
 		}
 
 		@Override
-		public VisualAtomType atomVisual() {
+		public VisualAtom atomVisual() {
 			throw new DeadCode();
 		}
 
@@ -473,24 +494,26 @@ public abstract class VisualAtomBase extends VisualPart {
 				}
 
 				@Override
-				public VisualAtomType node() {
-					if (VisualAtomBase.this.parent == null)
+				public VisualAtom atom() {
+					if (VisualNestedBase.this.parent == null)
 						return null;
-					return VisualAtomBase.this.parent.atomVisual();
+					return VisualNestedBase.this.parent.atomVisual();
 				}
 
 				@Override
-				public VisualPart part() {
-					return VisualAtomBase.this;
+				public VisualPart visual() {
+					return VisualNestedBase.this;
 				}
 
 				@Override
-				public void globalTagsChanged(final Context context) {
-					border.setStyle(context, getStyle(context).obbox);
+				public void tagsChanged(
+						final Context context
+				) {
+					border.setStyle(context, getBorderStyle(context, tags).obbox);
 				}
 			};
 			border = new BorderAttachment(context);
-			border.setStyle(context, hoverable.getStyle(context).obbox);
+			border.setStyle(context, hoverable.getBorderStyle(context, tags).obbox);
 			return hoverable;
 		}
 	}

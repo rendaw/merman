@@ -3,9 +3,9 @@ package com.zarbosoft.bonestruct.syntax.front;
 import com.zarbosoft.bonestruct.document.Atom;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
-import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.VisualParent;
 import com.zarbosoft.bonestruct.editor.visual.VisualPart;
+import com.zarbosoft.bonestruct.editor.visual.tags.Tag;
 import com.zarbosoft.bonestruct.syntax.AtomType;
 import com.zarbosoft.interface1.Configuration;
 import com.zarbosoft.rendaw.common.DeadCode;
@@ -25,7 +25,7 @@ public abstract class FrontPart {
 			Context context,
 			VisualParent parent,
 			Atom atom,
-			PSet<Visual.Tag> tags,
+			PSet<Tag> tags,
 			Map<String, Alignment> alignments,
 			int depth
 	);

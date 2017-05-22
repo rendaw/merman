@@ -10,17 +10,18 @@ import com.zarbosoft.bonestruct.editor.history.changes.ChangeArray;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.VisualParent;
+import com.zarbosoft.bonestruct.editor.visual.tags.Tag;
 import com.zarbosoft.bonestruct.syntax.middle.MiddleArrayBase;
 import org.pcollections.PSet;
 
 import java.util.List;
 import java.util.Map;
 
-public abstract class VisualAtomFromArray extends VisualAtomBase {
+public abstract class VisualNestedFromArray extends VisualNestedBase {
 	final ValueArray value;
 	private final ValueArray.Listener dataListener;
 
-	public VisualAtomFromArray(
+	public VisualNestedFromArray(
 			final Context context,
 			final VisualParent parent,
 			final ValueArray value,

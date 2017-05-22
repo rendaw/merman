@@ -3,7 +3,9 @@ package com.zarbosoft.bonestruct.modules;
 import com.google.common.collect.ImmutableSet;
 import com.zarbosoft.bonestruct.editor.Action;
 import com.zarbosoft.bonestruct.editor.Context;
-import com.zarbosoft.bonestruct.editor.visual.Visual;
+import com.zarbosoft.bonestruct.editor.visual.tags.GlobalTag;
+import com.zarbosoft.bonestruct.editor.visual.tags.Tag;
+import com.zarbosoft.bonestruct.editor.visual.tags.TagsChange;
 import com.zarbosoft.interface1.Configuration;
 
 import java.util.List;
@@ -18,8 +20,8 @@ public class Modes extends Module {
 
 	private int state = 0;
 
-	private Visual.Tag getTag(final int state) {
-		return new Visual.GlobalTag(String.format("mode_%s", states.get(state)));
+	private Tag getTag(final int state) {
+		return new GlobalTag(String.format("mode_%s", states.get(state)));
 	}
 
 	@Override
@@ -28,7 +30,7 @@ public class Modes extends Module {
 			return new Action() {
 				@Override
 				public void run(final Context context) {
-					context.changeGlobalTags(new Visual.TagsChange(ImmutableSet.of(getTag(pair.first)),
+					context.changeGlobalTags(new TagsChange(ImmutableSet.of(getTag(pair.first)),
 							ImmutableSet.of(getTag(state))
 					));
 					state = pair.first;
@@ -40,11 +42,11 @@ public class Modes extends Module {
 				}
 			};
 		}).collect(Collectors.toList()));
-		context.changeGlobalTags(new Visual.TagsChange(ImmutableSet.of(getTag(state)), ImmutableSet.of()));
+		context.changeGlobalTags(new TagsChange(ImmutableSet.of(getTag(state)), ImmutableSet.of()));
 		return new State() {
 			@Override
 			public void destroy(final Context context) {
-				context.changeGlobalTags(new Visual.TagsChange(ImmutableSet.of(), ImmutableSet.of(getTag(state))));
+				context.changeGlobalTags(new TagsChange(ImmutableSet.of(), ImmutableSet.of(getTag(state))));
 				context.actions.remove(this);
 			}
 		};

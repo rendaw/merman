@@ -4,10 +4,6 @@ import com.google.common.collect.Iterators;
 import com.google.common.collect.Sets;
 import com.zarbosoft.bonestruct.document.Atom;
 import com.zarbosoft.bonestruct.document.values.Value;
-import com.zarbosoft.bonestruct.editor.Context;
-import com.zarbosoft.bonestruct.editor.visual.Alignment;
-import com.zarbosoft.bonestruct.editor.visual.VisualParent;
-import com.zarbosoft.bonestruct.editor.visual.visuals.VisualAtomType;
 import com.zarbosoft.bonestruct.syntax.alignments.AlignmentDefinition;
 import com.zarbosoft.bonestruct.syntax.back.*;
 import com.zarbosoft.bonestruct.syntax.front.FrontPart;
@@ -29,8 +25,11 @@ public abstract class AtomType {
 	@Configuration
 	public String id;
 
+	@Configuration
+	public Set<String> tags = new HashSet<>();
+
 	@Configuration(name = "depth_score", optional = true,
-			description = "Child nodes of this atom are deeper by this amount.")
+			description = "Children of this atom are deeper by this amount.")
 	public int depthScore = 0;
 
 	public abstract List<FrontPart> front();
@@ -97,16 +96,6 @@ public abstract class AtomType {
 			final Atom atom = new Atom(this, data);
 			return store.pushStack(atom);
 		});
-	}
-
-	public VisualAtomType createVisual(
-			final Context context,
-			final VisualParent parent,
-			final Atom atom,
-			final Map<String, Alignment> alignments,
-			final int depth
-	) {
-		return new VisualAtomType(context, parent, this, atom, alignments, depth);
 	}
 
 	public abstract String name();

@@ -7,6 +7,10 @@ import com.zarbosoft.bonestruct.editor.IdleTask;
 import com.zarbosoft.bonestruct.editor.display.Group;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.Visual;
+import com.zarbosoft.bonestruct.editor.visual.VisualLeaf;
+import com.zarbosoft.bonestruct.editor.visual.tags.StateTag;
+import com.zarbosoft.bonestruct.editor.visual.tags.TagsChange;
+import com.zarbosoft.bonestruct.editor.visual.visuals.VisualAtom;
 import com.zarbosoft.rendaw.common.ChainComparator;
 import com.zarbosoft.rendaw.common.Pair;
 
@@ -280,14 +284,15 @@ public class Course {
 	}
 
 	boolean compact(final Context context) {
-		final PriorityQueue<Visual> priorities =
-				new PriorityQueue<>(11, new ChainComparator<Visual>().greaterFirst(Visual::spacePriority).build());
+		final PriorityQueue<VisualAtom> priorities = new PriorityQueue<>(11,
+				new ChainComparator<VisualAtom>().greaterFirst(VisualAtom::spacePriority).build()
+		);
 		int converse = 0;
 		for (int index = 0; index < children.size(); ++index) {
 			final Brick brick = children.get(index);
-			final Visual visual = brick.getVisual();
+			final VisualLeaf visual = brick.getVisual();
 			if (visual.canCompact())
-				priorities.add(visual);
+				priorities.add(visual.parent().atomVisual());
 			converse = brick.converseEdge(context);
 			if (!priorities.isEmpty() && converse > context.edge)
 				break;
@@ -355,13 +360,14 @@ public class Course {
 		}
 
 		private boolean expand(final Context context) {
-			final PriorityQueue<Visual> priorities =
-					new PriorityQueue<>(11, new ChainComparator<Visual>().lesserFirst(Visual::spacePriority).build());
+			final PriorityQueue<VisualAtom> priorities = new PriorityQueue<>(11,
+					new ChainComparator<VisualAtom>().lesserFirst(VisualAtom::spacePriority).build()
+			);
 			for (int index = 0; index < children.size(); ++index) {
 				final Brick brick = children.get(index);
-				final Visual visual = brick.getVisual();
+				final VisualLeaf visual = brick.getVisual();
 				if (visual.canExpand())
-					priorities.add(visual);
+					priorities.add(visual.parent().atomVisual());
 			}
 			if (priorities.isEmpty())
 				return false;
@@ -369,10 +375,8 @@ public class Course {
 			if (top == lastTarget)
 				return false;
 			lastTarget = top;
-			final Iterable<Pair<Brick, Brick.Properties>> brickProperties = top.getPropertiesForTagsChange(context,
-					new Visual.TagsChange(ImmutableSet.of(new Visual.StateTag("expanded")),
-							ImmutableSet.of(new Visual.StateTag("compact"))
-					)
+			final Iterable<Pair<Brick, Brick.Properties>> brickProperties = top.getLeafPropertiesForTagsChange(context,
+					new TagsChange(ImmutableSet.of(), ImmutableSet.of(new StateTag("compact")))
 			);
 			final Map<Brick, Brick.Properties> lookup =
 					stream(brickProperties.iterator()).collect(Collectors.toMap(p -> p.first, p -> p.second));

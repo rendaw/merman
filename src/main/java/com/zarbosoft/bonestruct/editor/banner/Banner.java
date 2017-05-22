@@ -4,7 +4,7 @@ import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.IdleTask;
 import com.zarbosoft.bonestruct.editor.display.Text;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
-import com.zarbosoft.bonestruct.editor.visual.Visual;
+import com.zarbosoft.bonestruct.editor.visual.tags.PartTag;
 import com.zarbosoft.bonestruct.editor.wall.Attachment;
 import com.zarbosoft.bonestruct.editor.wall.Bedding;
 import com.zarbosoft.bonestruct.editor.wall.Brick;
@@ -120,7 +120,7 @@ public class Banner {
 	}
 
 	private Style.Baked getStyle(final Context context) {
-		return context.getStyle(HashTreePSet.from(context.globalTags).plus(new Visual.PartTag("banner")));
+		return context.getStyle(HashTreePSet.from(context.globalTags).plus(new PartTag("banner")));
 	}
 
 	private void updateStyle(final Context context) {

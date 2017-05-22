@@ -1,23 +1,27 @@
 package com.zarbosoft.bonestruct.editor;
 
-import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.VisualPart;
-import com.zarbosoft.bonestruct.editor.visual.visuals.VisualAtomType;
+import com.zarbosoft.bonestruct.editor.visual.tags.PartTag;
+import com.zarbosoft.bonestruct.editor.visual.tags.Tag;
+import com.zarbosoft.bonestruct.editor.visual.visuals.VisualAtom;
 import com.zarbosoft.bonestruct.syntax.style.Style;
+import org.pcollections.PSet;
 
 public abstract class Hoverable {
 	protected abstract void clear(Context context);
 
 	public abstract void click(Context context);
 
-	public abstract VisualAtomType node();
+	public abstract VisualAtom atom();
 
-	public abstract VisualPart part();
+	public abstract VisualPart visual();
 
-	public abstract void globalTagsChanged(Context context);
+	public abstract void tagsChanged(
+			Context context
+	);
 
-	public Style.Baked getStyle(final Context context) {
-		return context.getStyle(context.globalTags.plus(new Visual.PartTag("hover")));
+	public Style.Baked getBorderStyle(final Context context, final PSet<Tag> tags) {
+		return context.getStyle(context.globalTags.plusAll(tags).plus(new PartTag("hover")));
 	}
 
 }

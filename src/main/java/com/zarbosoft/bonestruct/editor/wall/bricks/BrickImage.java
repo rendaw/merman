@@ -20,11 +20,12 @@ public class BrickImage extends Brick implements AlignmentListener {
 	public BrickImage(final Context context, final BrickInterface inter) {
 		super(inter);
 		image = context.display.image();
+		tagsChanged(context);
 	}
 
 	@Override
-	public void setStyle(final Context context, final Style.Baked style) {
-		this.style = style;
+	public void tagsChanged(final Context context) {
+		this.style = context.getStyle(inter.getTags(context));
 		if (alignment != null)
 			alignment.removeListener(context, this);
 		alignment = inter.getAlignment(style);

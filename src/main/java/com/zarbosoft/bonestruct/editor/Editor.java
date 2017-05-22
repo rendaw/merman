@@ -24,6 +24,11 @@ public class Editor {
 	 * <p>
 	 * The selection may be null within a transaction but always exists afterwards.
 	 * The initial selection is set by default in context.
+	 * <p>
+	 * Tags are used:
+	 * -- In all visuals to style bricks
+	 * -- In selected visuals for tag listeners (hotkeys, indicators, etc)
+	 * therefore groups and atomtype visuals (array excepted) don't need tags - only primitive/constants
 	 */
 	private final Context context;
 	private final Display visual;

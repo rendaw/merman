@@ -6,8 +6,11 @@ import com.zarbosoft.bonestruct.editor.Path;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.VisualParent;
-import com.zarbosoft.bonestruct.editor.visual.visuals.VisualAtomType;
+import com.zarbosoft.bonestruct.editor.visual.tags.Tag;
+import com.zarbosoft.bonestruct.editor.visual.tags.TypeTag;
+import com.zarbosoft.bonestruct.editor.visual.visuals.VisualAtom;
 import com.zarbosoft.bonestruct.syntax.AtomType;
+import org.pcollections.PSet;
 
 import java.util.Map;
 
@@ -15,11 +18,13 @@ public class Atom extends DocumentNode {
 	public Value.Parent parent;
 	public AtomType type;
 	public final Map<String, Value> data;
-	public VisualAtomType visual;
+	public VisualAtom visual;
+	public PSet<Tag> tags;
 
 	public Atom(final AtomType type, final Map<String, Value> data) {
 		this.type = type;
 		this.data = data;
+		tags = Context.asFreeTags(type.tags).plus(new TypeTag(type.id));
 		data.forEach((k, v) -> {
 			v.setParent(new Parent() {
 				@Override
@@ -58,7 +63,7 @@ public class Atom extends DocumentNode {
 		if (visual != null) {
 			visual.root(context, parent, alignments, depth);
 		} else {
-			this.visual = type.createVisual(context, parent, this, alignments, depth);
+			this.visual = new VisualAtom(context, parent, this, alignments, depth);
 		}
 		return visual;
 	}
@@ -73,7 +78,7 @@ public class Atom extends DocumentNode {
 	}
 
 	@Override
-	public VisualAtomType visual() {
+	public VisualAtom visual() {
 		return visual;
 	}
 

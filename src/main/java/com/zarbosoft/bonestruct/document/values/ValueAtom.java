@@ -5,7 +5,7 @@ import com.zarbosoft.bonestruct.document.DocumentNode;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.Path;
 import com.zarbosoft.bonestruct.editor.history.changes.ChangeNodeSet;
-import com.zarbosoft.bonestruct.editor.visual.visuals.VisualAtom;
+import com.zarbosoft.bonestruct.editor.visual.visuals.VisualNested;
 import com.zarbosoft.bonestruct.syntax.middle.MiddleAtom;
 import com.zarbosoft.bonestruct.syntax.middle.MiddlePart;
 
@@ -13,7 +13,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class ValueAtom extends Value {
-	public VisualAtom visual;
+	public VisualNested visual;
 	private final MiddleAtom middle;
 	public Atom data = null; // INVARIANT: Never null when in tree
 	public final Set<Listener> listeners = new HashSet<>();
@@ -99,7 +99,7 @@ public class ValueAtom extends Value {
 	}
 
 	@Override
-	public VisualAtom visual() {
+	public VisualNested visual() {
 		return visual;
 	}
 

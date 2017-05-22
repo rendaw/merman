@@ -10,6 +10,9 @@ import com.zarbosoft.bonestruct.editor.visual.attachments.BorderAttachment;
 import com.zarbosoft.bonestruct.editor.visual.attachments.MultiVisualAttachmentAdapter;
 import com.zarbosoft.bonestruct.editor.visual.attachments.VisualAttachmentAdapter;
 import com.zarbosoft.bonestruct.editor.visual.attachments.VisualBorderAttachment;
+import com.zarbosoft.bonestruct.editor.visual.tags.PartTag;
+import com.zarbosoft.bonestruct.editor.visual.tags.Tag;
+import com.zarbosoft.bonestruct.editor.visual.tags.TagsChange;
 import com.zarbosoft.bonestruct.editor.wall.Brick;
 import com.zarbosoft.bonestruct.editor.wall.BrickInterface;
 import com.zarbosoft.bonestruct.syntax.front.FrontSymbol;
@@ -17,7 +20,6 @@ import com.zarbosoft.bonestruct.syntax.middle.MiddleArray;
 import com.zarbosoft.bonestruct.syntax.style.Style;
 import com.zarbosoft.bonestruct.syntax.symbol.Symbol;
 import com.zarbosoft.rendaw.common.Pair;
-import org.pcollections.HashTreePSet;
 import org.pcollections.PSet;
 
 import java.util.List;
@@ -27,8 +29,9 @@ import java.util.function.Consumer;
 
 import static com.zarbosoft.rendaw.common.Common.last;
 
-public abstract class VisualArray extends VisualGroup {
-
+public abstract class VisualArray extends VisualGroup implements VisualLeaf {
+	private PSet<Tag> tags;
+	private PSet<Tag> ellipsisTags;
 	private final ValueArray.Listener dataListener;
 	private final ValueArray value;
 	private Brick ellipsis = null;
@@ -37,11 +40,12 @@ public abstract class VisualArray extends VisualGroup {
 			final Context context,
 			final VisualParent parent,
 			final ValueArray value,
-			final PSet<Visual.Tag> tags,
+			final PSet<Tag> tags,
 			final Map<String, Alignment> alignments,
 			final int depth
 	) {
-		super(tags);
+		this.tags = tags.plus(new PartTag("array"));
+		ellipsisTags = this.tags.plus(new PartTag("ellipsis"));
 		this.value = value;
 		dataListener = new ValueArray.Listener() {
 
@@ -78,7 +82,7 @@ public abstract class VisualArray extends VisualGroup {
 			}
 		}
 		if (hoverable == null && context.hover != null) {
-			VisualParent parent = context.hover.part().parent();
+			VisualParent parent = context.hover.visual().parent();
 			while (parent != null) {
 				final Visual visual = parent.visual();
 				if (visual == this) {
@@ -147,29 +151,23 @@ public abstract class VisualArray extends VisualGroup {
 		final boolean retagLast = tagLast() && visualIndex + visualRemove == children.size();
 		if (!children.isEmpty() && !add.isEmpty()) {
 			if (retagFirst)
-				children.get(0).changeTags(context, new Visual.TagsChange().remove(new Visual.PartTag("first")));
+				((VisualLeaf) children.get(0)).changeTags(context, new TagsChange().remove(new PartTag("first")));
 			if (retagLast)
-				last(children).changeTags(context, new Visual.TagsChange().remove(new Visual.PartTag("last")));
+				((VisualLeaf) last(children)).changeTags(context, new TagsChange().remove(new PartTag("last")));
 		}
 
 		// Remove
 		remove(context, visualIndex, visualRemove);
 
 		// Add
-		final PSet<Visual.Tag> tags = tags(context);
 		int addIndex = visualIndex;
 		final Consumer<Integer> addSeparator = addAt -> {
-			final ChildGroup group = new ChildGroup(context,
-					new ArrayVisualParent(addAt, false),
-					HashTreePSet.empty(),
-					alignments,
-					depth()
-			);
+			final ChildGroup group = new ChildGroup(context, new ArrayVisualParent(addAt, false), alignments, depth());
 			for (int fixIndex = 0; fixIndex < getSeparator().size(); ++fixIndex) {
 				final FrontSymbol fix = getSeparator().get(fixIndex);
 				group.add(context, fix.createVisual(context,
 						group.createParent(fixIndex),
-						tags.plus(new Visual.PartTag("separator")),
+						tags.plus(new PartTag("separator")),
 						alignments,
 						depth()
 				));
@@ -179,27 +177,32 @@ public abstract class VisualArray extends VisualGroup {
 		for (final Atom atom : add) {
 			if (!getSeparator().isEmpty() && addIndex > 0)
 				addSeparator.accept(addIndex++);
-			final ChildGroup group = new ChildGroup(context,
-					new ArrayVisualParent(addIndex, true),
-					HashTreePSet.singleton(new PartTag("element")),
-					alignments,
-					depth()
-			);
+			final ChildGroup group =
+					new ChildGroup(context, new ArrayVisualParent(addIndex, true), alignments, depth());
 			int groupIndex = 0;
 			for (final FrontSymbol fix : getPrefix())
 				group.add(context, fix.createVisual(context,
 						group.createParent(groupIndex++),
-						tags.plus(new Visual.PartTag("prefix")),
+						tags.plus(new PartTag("prefix")),
 						alignments,
 						depth()
 				));
-			final VisualAtomType nodeVisual =
-					(VisualAtomType) atom.createVisual(context, group.createParent(groupIndex++), alignments, depth());
+			final VisualAtom nodeVisual =
+					(VisualAtom) atom.createVisual(context, group.createParent(groupIndex++), alignments, depth());
 			final int addIndex2 = addIndex;
-			group.add(context, new VisualPart(tags.plus(new Visual.PartTag("nested"))) {
+			group.add(context, new VisualPart() {
 				@Override
 				public VisualParent parent() {
 					return nodeVisual.parent();
+				}
+
+				@Override
+				public void globalTagsChanged(final Context context) {
+					nodeVisual.globalTagsChanged(context);
+				}
+
+				@Override
+				public void changeTags(final Context context, final TagsChange change) {
 				}
 
 				@Override
@@ -228,10 +231,19 @@ public abstract class VisualArray extends VisualGroup {
 				}
 
 				@Override
-				public Iterable<Pair<Brick, Brick.Properties>> getPropertiesForTagsChange(
+				public void compact(final Context context) {
+				}
+
+				@Override
+				public void expand(final Context context) {
+
+				}
+
+				@Override
+				public Iterable<Pair<Brick, Brick.Properties>> getLeafPropertiesForTagsChange(
 						final Context context, final TagsChange change
 				) {
-					return nodeVisual.getPropertiesForTagsChange(context, change);
+					return nodeVisual.getLeafPropertiesForTagsChange(context, change);
 				}
 
 				@Override
@@ -253,16 +265,11 @@ public abstract class VisualArray extends VisualGroup {
 				public boolean selectDown(final Context context) {
 					return nodeVisual.selectDown(context);
 				}
-
-				@Override
-				public void tagsChanged(final Context context) {
-
-				}
 			});
 			for (final FrontSymbol fix : getSuffix())
 				group.add(context, fix.createVisual(context,
 						group.createParent(groupIndex++),
-						tags.plus(new Visual.PartTag("suffix")),
+						tags.plus(new PartTag("suffix")),
 						alignments,
 						depth()
 				));
@@ -275,9 +282,9 @@ public abstract class VisualArray extends VisualGroup {
 		// Cleanup
 		if (!children.isEmpty()) {
 			if (retagFirst)
-				children.get(0).changeTags(context, new Visual.TagsChange().add(new Visual.PartTag("first")));
+				children.get(0).changeTags(context, new TagsChange().add(new PartTag("first")));
 			if (retagLast)
-				last(children).changeTags(context, new Visual.TagsChange().add(new Visual.PartTag("last")));
+				last(children).changeTags(context, new TagsChange().add(new PartTag("last")));
 		}
 	}
 
@@ -292,11 +299,10 @@ public abstract class VisualArray extends VisualGroup {
 		public ChildGroup(
 				final Context context,
 				final VisualParent parent,
-				final PSet<Visual.Tag> tags,
 				final Map<String, Alignment> alignments,
 				final int depth
 		) {
-			super(context, parent, tags, alignments, depth);
+			super(context, parent, alignments, depth);
 		}
 
 		@Override
@@ -339,7 +345,7 @@ public abstract class VisualArray extends VisualGroup {
 	protected abstract List<FrontSymbol> getSuffix();
 
 	private Set<Tag> ellipsisTags(final Context context) {
-		return tags(context).plus(new PartTag("ellipsis"));
+		return context.globalTags.plus(new PartTag("ellipsis"));
 	}
 
 	private Brick createEllipsis(final Context context) {
@@ -347,7 +353,7 @@ public abstract class VisualArray extends VisualGroup {
 			return null;
 		ellipsis = ellipsis().createBrick(context, new BrickInterface() {
 			@Override
-			public VisualPart getVisual() {
+			public VisualLeaf getVisual() {
 				return VisualArray.this;
 			}
 
@@ -372,12 +378,10 @@ public abstract class VisualArray extends VisualGroup {
 			}
 
 			@Override
-			public Set<Tag> getTags(final Context context) {
-				return ellipsisTags(context);
+			public PSet<Tag> getTags(final Context context) {
+				return context.globalTags.plusAll(ellipsisTags);
 			}
 		});
-		final Style.Baked style = context.getStyle(ellipsisTags(context));
-		ellipsis.setStyle(context, style);
 		return ellipsis;
 	}
 
@@ -470,13 +474,30 @@ public abstract class VisualArray extends VisualGroup {
 		children.clear();
 	}
 
-	@Override
 	public void tagsChanged(final Context context) {
-		super.tagsChanged(context);
 		if (ellipsis != null) {
-			final Style.Baked style = context.getStyle(ellipsisTags(context));
-			ellipsis.setStyle(context, style);
+			ellipsis.tagsChanged(context);
 		}
+		if (selection != null)
+			selection.tagsChanged(context);
+		if (hoverable != null)
+			hoverable.tagsChanged(context);
+	}
+
+	@Override
+	public void globalTagsChanged(
+			final Context context
+	) {
+		tagsChanged(context);
+		super.globalTagsChanged(context);
+	}
+
+	@Override
+	public void changeTags(final Context context, final TagsChange change) {
+		tags = change.apply(tags);
+		ellipsisTags = this.tags.plus(new PartTag("ellipsis"));
+		tagsChanged(context);
+		super.changeTags(context, change);
 	}
 
 	private ArrayHoverable hoverable;
@@ -486,7 +507,7 @@ public abstract class VisualArray extends VisualGroup {
 		VisualBorderAttachment border;
 
 		public ArrayHoverable(final Context context) {
-			border = new VisualBorderAttachment(context, getStyle(context).obbox);
+			border = new VisualBorderAttachment(context, getBorderStyle(context, tags).obbox);
 		}
 
 		public void setIndex(final Context context, final int index) {
@@ -507,20 +528,22 @@ public abstract class VisualArray extends VisualGroup {
 		}
 
 		@Override
-		public VisualAtomType node() {
+		public VisualAtom atom() {
 			if (VisualArray.this.parent == null)
 				return null;
 			return VisualArray.this.parent.atomVisual();
 		}
 
 		@Override
-		public VisualPart part() {
+		public VisualPart visual() {
 			return VisualArray.this;
 		}
 
 		@Override
-		public void globalTagsChanged(final Context context) {
-			border.setStyle(context, getStyle(context).obbox);
+		public void tagsChanged(
+				final Context context
+		) {
+			border.setStyle(context, getBorderStyle(context, tags).obbox);
 		}
 	}
 
@@ -542,7 +565,7 @@ public abstract class VisualArray extends VisualGroup {
 
 		public ArraySelection(final Context context, final int start, final int end) {
 			border = new BorderAttachment(context);
-			border.setStyle(context, getStyle(context).obbox);
+			border.setStyle(context, getBorderStyle(context, tags).obbox);
 			adapter = new MultiVisualAttachmentAdapter(context);
 			adapter.addListener(context, new VisualAttachmentAdapter.BoundsListener() {
 				@Override
@@ -841,8 +864,16 @@ public abstract class VisualArray extends VisualGroup {
 		}
 
 		@Override
-		public void globalTagsChanged(final Context context) {
-			border.setStyle(context, getStyle(context).obbox);
+		public void tagsChanged(
+				final Context context
+		) {
+			border.setStyle(context, getBorderStyle(context, tags).obbox);
+			super.tagsChanged(context);
+		}
+
+		@Override
+		public PSet<Tag> getTags(final Context context) {
+			return tags;
 		}
 	}
 

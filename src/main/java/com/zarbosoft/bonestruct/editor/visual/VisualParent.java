@@ -2,7 +2,7 @@ package com.zarbosoft.bonestruct.editor.visual;
 
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.Hoverable;
-import com.zarbosoft.bonestruct.editor.visual.visuals.VisualAtomType;
+import com.zarbosoft.bonestruct.editor.visual.visuals.VisualAtom;
 import com.zarbosoft.bonestruct.editor.wall.Brick;
 
 public abstract class VisualParent {
@@ -10,7 +10,7 @@ public abstract class VisualParent {
 
 	public abstract Brick createNextBrick(Context context);
 
-	public abstract VisualAtomType atomVisual();
+	public abstract VisualAtom atomVisual();
 
 	public abstract Alignment getAlignment(String alignment);
 

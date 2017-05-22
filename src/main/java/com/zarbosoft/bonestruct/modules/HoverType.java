@@ -5,8 +5,8 @@ import com.zarbosoft.bonestruct.editor.Hoverable;
 import com.zarbosoft.bonestruct.editor.banner.BannerMessage;
 import com.zarbosoft.bonestruct.editor.visual.VisualPart;
 import com.zarbosoft.bonestruct.editor.visual.visuals.VisualArray;
-import com.zarbosoft.bonestruct.editor.visual.visuals.VisualAtomBase;
-import com.zarbosoft.bonestruct.editor.visual.visuals.VisualAtomType;
+import com.zarbosoft.bonestruct.editor.visual.visuals.VisualAtom;
+import com.zarbosoft.bonestruct.editor.visual.visuals.VisualNestedBase;
 import com.zarbosoft.bonestruct.editor.visual.visuals.VisualPrimitive;
 import com.zarbosoft.interface1.Configuration;
 
@@ -32,20 +32,20 @@ public class HoverType extends Module {
 					message.priority = 100;
 					final StringBuilder text = new StringBuilder();
 					if (node) {
-						final VisualAtomType nodeType = hoverable.node();
+						final VisualAtom nodeType = hoverable.atom();
 						if (nodeType == null)
 							text.append("Root Element");
 						else
-							text.append((hoverable.node()).getType().name());
+							text.append((hoverable.atom()).type().name());
 					}
 					if (part) {
-						final VisualPart part = hoverable.part();
+						final VisualPart part = hoverable.visual();
 						final String temp;
 						if (part instanceof VisualArray) {
 							temp = "array";
 						} else if (part instanceof VisualPrimitive) {
 							temp = "primitive";
-						} else if (part instanceof VisualAtomBase) {
+						} else if (part instanceof VisualNestedBase) {
 							temp = "nested";
 						} else
 							temp = part.getClass().getSimpleName();
