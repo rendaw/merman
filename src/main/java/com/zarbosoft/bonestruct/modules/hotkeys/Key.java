@@ -86,34 +86,34 @@ public enum Key {
 	@Configuration(name = "slash")
 	SLASH,
 
-	@Configuration(name = "digit0")
+	@Configuration(name = "0")
 	DIGIT0,
 
-	@Configuration(name = "digit1")
+	@Configuration(name = "1")
 	DIGIT1,
 
-	@Configuration(name = "digit2")
+	@Configuration(name = "2")
 	DIGIT2,
 
-	@Configuration(name = "digit3")
+	@Configuration(name = "3")
 	DIGIT3,
 
-	@Configuration(name = "digit4")
+	@Configuration(name = "4")
 	DIGIT4,
 
-	@Configuration(name = "digit5")
+	@Configuration(name = "5")
 	DIGIT5,
 
-	@Configuration(name = "digit6")
+	@Configuration(name = "6")
 	DIGIT6,
 
-	@Configuration(name = "digit7")
+	@Configuration(name = "7")
 	DIGIT7,
 
-	@Configuration(name = "digit8")
+	@Configuration(name = "8")
 	DIGIT8,
 
-	@Configuration(name = "digit9")
+	@Configuration(name = "9")
 	DIGIT9,
 
 	@Configuration(name = "semicolon")
