@@ -251,4 +251,14 @@ public class PrefixGapAtomType extends AtomType {
 				)
 		);
 	}
+
+	public Atom create() {
+		return new Atom(this,
+				ImmutableMap.of("value",
+						new ValueArray(dataValue, ImmutableList.of()),
+						"gap",
+						new ValuePrimitive(dataGap, "")
+				)
+		);
+	}
 }

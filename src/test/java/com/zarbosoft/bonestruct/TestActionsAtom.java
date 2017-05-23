@@ -109,4 +109,45 @@ public class TestActionsAtom {
 				context.document.top
 		);
 	}
+
+	@Test
+	public void testPrefix() {
+		final Context context = buildDoc(
+				ExpressionSyntax.syntax,
+				new Helper.TreeBuilder(ExpressionSyntax.factorial)
+						.add("value", new Helper.TreeBuilder(ExpressionSyntax.infinity).build())
+						.build()
+		);
+		((ValueAtom) context.locateShort(new Path("0", "value"))).visual().select(context);
+		Helper.act(context, "prefix");
+		assertTreeEqual(context, new Helper.TreeBuilder(ExpressionSyntax.factorial).add(
+				"value",
+				ExpressionSyntax.syntax.prefixGap.create(new Helper.TreeBuilder(ExpressionSyntax.infinity).build())
+		).build(), context.document.top);
+		assertThat(context.selection.getPath().toList(), equalTo(ImmutableList.of("0", "value", "gap", "0")));
+	}
+
+	@Test
+	public void testSuffix() {
+		final Context context = buildDoc(
+				ExpressionSyntax.syntax,
+				new Helper.TreeBuilder(ExpressionSyntax.factorial)
+						.add("value", new Helper.TreeBuilder(ExpressionSyntax.infinity).build())
+						.build()
+		);
+		((ValueAtom) context.locateShort(new Path("0", "value"))).visual().select(context);
+		Helper.act(context, "suffix");
+		assertTreeEqual(
+				context,
+				new Helper.TreeBuilder(ExpressionSyntax.factorial)
+						.add("value",
+								ExpressionSyntax.syntax.suffixGap.create(false,
+										new Helper.TreeBuilder(ExpressionSyntax.infinity).build()
+								)
+						)
+						.build(),
+				context.document.top
+		);
+		assertThat(context.selection.getPath().toList(), equalTo(ImmutableList.of("0", "value", "gap", "0")));
+	}
 }

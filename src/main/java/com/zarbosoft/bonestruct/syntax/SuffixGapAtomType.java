@@ -391,4 +391,16 @@ public class SuffixGapAtomType extends AtomType {
 				raise
 		);
 	}
+
+	public Atom create(final boolean raise) {
+		return new SuffixGapAtom(this,
+				ImmutableMap.of("value",
+						new ValueArray(dataValue, ImmutableList.of()),
+						"gap",
+						new ValuePrimitive(dataGap, "")
+				),
+				raise
+		);
+	}
+
 }

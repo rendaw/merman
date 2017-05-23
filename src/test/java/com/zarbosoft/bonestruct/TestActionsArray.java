@@ -327,4 +327,38 @@ public class TestActionsArray {
 		}
 		assertThat(context.selection.getPath().toList(), equalTo(ImmutableList.of("0", "3")));
 	}
+
+	@Test
+	public void testPrefix() {
+		final Context context = buildFive();
+		final VisualArray visual = (VisualArray) ((Atom) context.locateShort(new Path("0"))).data.get("value").visual();
+		visual.select(context, 1, 1);
+		Helper.act(context, "prefix");
+		assertTreeEqual(context, new Helper.TreeBuilder(MiscSyntax.array).addArray(
+				"value",
+				new Helper.TreeBuilder(MiscSyntax.one).build(),
+				MiscSyntax.syntax.prefixGap.create(new Helper.TreeBuilder(MiscSyntax.two).build()),
+				new Helper.TreeBuilder(MiscSyntax.three).build(),
+				new Helper.TreeBuilder(MiscSyntax.four).build(),
+				new Helper.TreeBuilder(MiscSyntax.five).build()
+		).build(), context.document.top);
+		assertThat(context.selection.getPath().toList(), equalTo(ImmutableList.of("0", "1", "gap", "0")));
+	}
+
+	@Test
+	public void testSuffix() {
+		final Context context = buildFive();
+		final VisualArray visual = (VisualArray) ((Atom) context.locateShort(new Path("0"))).data.get("value").visual();
+		visual.select(context, 1, 1);
+		Helper.act(context, "suffix");
+		assertTreeEqual(context, new Helper.TreeBuilder(MiscSyntax.array).addArray(
+				"value",
+				new Helper.TreeBuilder(MiscSyntax.one).build(),
+				MiscSyntax.syntax.suffixGap.create(false, new Helper.TreeBuilder(MiscSyntax.two).build()),
+				new Helper.TreeBuilder(MiscSyntax.three).build(),
+				new Helper.TreeBuilder(MiscSyntax.four).build(),
+				new Helper.TreeBuilder(MiscSyntax.five).build()
+		).build(), context.document.top);
+		assertThat(context.selection.getPath().toList(), equalTo(ImmutableList.of("0", "1", "gap", "0")));
+	}
 }

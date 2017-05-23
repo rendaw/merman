@@ -786,6 +786,42 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 				public String getName() {
 					return "window";
 				}
+			}, new Action() {
+				@Override
+				public void run(final Context context) {
+					context.history.finishChange(context);
+					final int index = leadFirst ? beginIndex : endIndex;
+					final Atom old = value.data.get(index);
+					final Atom gap = context.syntax.prefixGap.create();
+					context.history.apply(context, new ChangeArray(value, index, 1, ImmutableList.of(gap)));
+					context.history.apply(context,
+							new ChangeArray((ValueArray) gap.data.get("value"), 0, 0, ImmutableList.of(old))
+					);
+					gap.data.get("gap").selectDown(context);
+				}
+
+				@Override
+				public String getName() {
+					return "prefix";
+				}
+			}, new Action() {
+				@Override
+				public void run(final Context context) {
+					context.history.finishChange(context);
+					final int index = leadFirst ? beginIndex : endIndex;
+					final Atom old = value.data.get(index);
+					final Atom gap = context.syntax.suffixGap.create(false);
+					context.history.apply(context, new ChangeArray(value, index, 1, ImmutableList.of(gap)));
+					context.history.apply(context,
+							new ChangeArray((ValueArray) gap.data.get("value"), 0, 0, ImmutableList.of(old))
+					);
+					gap.data.get("gap").selectDown(context);
+				}
+
+				@Override
+				public String getName() {
+					return "suffix";
+				}
 			}));
 		}
 

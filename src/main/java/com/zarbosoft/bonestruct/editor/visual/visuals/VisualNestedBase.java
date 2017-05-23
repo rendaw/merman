@@ -3,7 +3,9 @@ package com.zarbosoft.bonestruct.editor.visual.visuals;
 import com.google.common.collect.ImmutableList;
 import com.zarbosoft.bonestruct.document.Atom;
 import com.zarbosoft.bonestruct.document.values.Value;
+import com.zarbosoft.bonestruct.document.values.ValueArray;
 import com.zarbosoft.bonestruct.editor.*;
+import com.zarbosoft.bonestruct.editor.history.changes.ChangeArray;
 import com.zarbosoft.bonestruct.editor.visual.*;
 import com.zarbosoft.bonestruct.editor.visual.attachments.BorderAttachment;
 import com.zarbosoft.bonestruct.editor.visual.tags.PartTag;
@@ -84,11 +86,13 @@ public abstract class VisualNestedBase extends Visual implements VisualLeaf {
 		} else {
 			if (ellipsis != null)
 				ellipsis.destroy(context);
-			if (body == null) {
-				coreSet(context, atomGet());
-				context.idleLayBricks(parent, 0, 1, 1, null, null, i -> body.createFirstBrick(context));
-			} else
-				body.root(context, new NestedParent(), alignments, depth);
+			if (atomGet() != null) {
+				if (body == null) {
+					coreSet(context, atomGet());
+					context.idleLayBricks(parent, 0, 1, 1, null, null, i -> body.createFirstBrick(context));
+				} else
+					body.root(context, new NestedParent(), alignments, depth);
+			}
 		}
 	}
 
@@ -309,6 +313,40 @@ public abstract class VisualNestedBase extends Visual implements VisualLeaf {
 			@Override
 			public String getName() {
 				return "window";
+			}
+		}, new Action() {
+			@Override
+			public void run(final Context context) {
+				context.history.finishChange(context);
+				final Atom old = atomGet();
+				final Atom gap = context.syntax.prefixGap.create();
+				nodeSet(context, gap);
+				context.history.apply(context,
+						new ChangeArray((ValueArray) gap.data.get("value"), 0, 0, ImmutableList.of(old))
+				);
+				gap.data.get("gap").selectDown(context);
+			}
+
+			@Override
+			public String getName() {
+				return "prefix";
+			}
+		}, new Action() {
+			@Override
+			public void run(final Context context) {
+				context.history.finishChange(context);
+				final Atom old = atomGet();
+				final Atom gap = context.syntax.suffixGap.create(false);
+				nodeSet(context, gap);
+				context.history.apply(context,
+						new ChangeArray((ValueArray) gap.data.get("value"), 0, 0, ImmutableList.of(old))
+				);
+				gap.data.get("gap").selectDown(context);
+			}
+
+			@Override
+			public String getName() {
+				return "suffix";
 			}
 		});
 	}

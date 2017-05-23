@@ -135,23 +135,24 @@ public class Main extends Application {
 		//separate lrtb padding
 		//box lrtb padding
 		//remove part tags (explicit only)
-		errors as detail pages not popups because popups are broken
-		add prefix/suffix actions in atom/array vis
-		add array prefix/suffix gaps
+		dialogs as detail pages not popups because popups are broken
+		//add prefix/suffix actions in atom/array vis
 		show details on gap select if nonempty
-		banner and details padding
+		//banner and details padding
 		add actions for choice 1-9,0
-		array leadFirst
+		primitive leadFirst
+		store array/primitive leadFirst in sel saveState
 		syntax documenter
 		action documenter
 		test merging changes; finishing history on actions
-		abstract xy origin for alternative converse/transverse directions
+		abstract xy origin for alternative converse/transverse directions, reduce window resize listeners
 		//test brick layout
 
 		sed (led) substitution
 
 		move scroll to wall with listener for banner/details?
 		display methods take display, not context; add default methods to turn context -> display
+		add array prefix/suffix gaps (?)
 
 		long range goals
 		_modules from dir
