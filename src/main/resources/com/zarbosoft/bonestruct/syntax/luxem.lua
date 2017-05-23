@@ -1,4 +1,213 @@
-return {
+_append = function(table, value)
+    table[#table + 1] = value
+end
+
+_append_multiple = function(table, values)
+    for i, v in pairs(values) do
+        _append(table, v)
+    end
+end
+
+_indicators = indicators {
+    indicators = {
+        {
+            id = 'window',
+            symbol = text 'w',
+            tags = { global 'window' },
+        },
+    },
+}
+
+_modal_keys = function(config)
+    _append(config['modules'], modes {
+        states = {
+            'notyping',
+            'typing',
+        },
+    })
+    _append(config['modules'], modes {
+        states = {
+            'nogather',
+            'gather',
+            'reduce',
+        }
+    })
+    _append(config['modules'], hotkeys {
+        rules = {
+            {
+                with = { global 'mode_notyping' },
+                hotkeys = {
+                    exit = { key 'left', key 'h', key 'escape' },
+                    enter = { key 'right', key 'l', key 'enter', key 'space' },
+                    undo = { key 'u' },
+                    redo = { key { key = 'u', modifiers = { 'shift' } } },
+                    next = { key 'down', key 'j' },
+                    previous = { key 'up', key 'k' },
+                    gather_next = {
+                        key { key = 'down', modifiers = { 'shift' } },
+                        key { key = 'j', modifiers = { 'shift' } },
+                    },
+                    gather_previous = {
+                        key { key = 'up', modifiers = { 'shift' } },
+                        key { key = 'k', modifiers = { 'shift' } },
+                    },
+                    mode_gather = { key 'v' },
+                    mode_reduce = { key 'r' },
+                    cut = { key 'x' },
+                    paste_before = { key { key = 'p', modifiers = { 'shift' } } },
+                    paste_after = { key 'p' },
+                    create_before = { key 'i' },
+                    create_after = { key 'a' },
+                    prefix = { key { key = 'i', modifiers = { 'shift' } } },
+                    suffix = { key { key = 'a', modifiers = { 'shift' } } },
+                },
+                free_typing = false,
+            },
+            {
+                with = { global 'mode_gather' },
+                hotkeys = {
+                    mode_nogather = { key 'v' },
+                    next = {},
+                    previous = {},
+                    gather_next = { key 'down', key 'j' },
+                    gather_previous = { key 'up', key 'k' },
+                }
+            },
+            {
+                with = { global 'mode_reduce' },
+                hotkeys = {
+                    mode_nogather = { key 'r' },
+                    next = {},
+                    previous = {},
+                    reduce_next = { key 'down', key 'j' },
+                    reduce_previous = { key 'up', key 'k' },
+                }
+            },
+            {
+                with = { part 'primitive' },
+                hotkeys = {
+                    line_start = { key 'home' },
+                    line_end = { key 'end' },
+                },
+            },
+            {
+                with = { global 'mode_notyping', part 'primitive' },
+                hotkeys = {
+                    mode_typing = { key 'enter', key 'i' },
+                    next = { key 'right', key 'l' },
+                    previous = { key 'left', key 'h' },
+                    next_line = { key 'down', key 'j' },
+                    previous_line = { key 'up', key 'k' },
+                    gather_next = {
+                        key { key = 'right', modifiers = { 'shift' } },
+                        key { key = 'l', modifiers = { 'shift' } },
+                    },
+                    gather_previous = {
+                        key { key = 'left', modifiers = { 'shift' } },
+                        key { key = 'h', modifiers = { 'shift' } },
+                    },
+                    gather_next_line = {
+                        key { key = 'down', modifiers = { 'shift' } },
+                        key { key = 'j', modifiers = { 'shift' } },
+                    },
+                    gather_previous_line = {
+                        key { key = 'up', modifiers = { 'shift' } },
+                        key { key = 'k', modifiers = { 'shift' } },
+                    },
+                }
+            },
+            {
+                with = { global 'mode_typing', part 'primitive' },
+                hotkeys = {
+                    mode_notyping = { key 'escape' },
+                    delete_next = { key 'delete' },
+                    delete_previous = { key 'backspace' },
+                    next = { key 'right' },
+                    previous = { key 'left' },
+                    next_line = { key 'down' },
+                    previous_line = { key 'up' },
+                    gather_next = {
+                        key { key = 'right', modifiers = { 'shift' } },
+                    },
+                    gather_previous = {
+                        key { key = 'left', modifiers = { 'shift' } },
+                    },
+                    gather_next_line = {
+                        key { key = 'down', modifiers = { 'shift' } },
+                    },
+                    gather_previous_line = {
+                        key { key = 'up', modifiers = { 'shift' } },
+                    },
+                }
+            },
+        },
+    })
+    _append_multiple(indicators.indicators, {
+        {
+            id = 'typing',
+            symbol = text 't',
+            tags = { global 'mode_typing' },
+        },
+        {
+            id = 'notyping',
+            symbol = text 'n',
+            tags = { global 'mode_notyping' },
+        },
+        {
+            id = 'gather',
+            symbol = text 'g',
+            tags = { global 'mode_gather' },
+        },
+        {
+            id = 'reduce',
+            symbol = text 'g',
+            tags = { global 'mode_reduce' },
+        },
+    })
+    return config
+end
+
+_modeless_keys = function(config)
+    _append(config['modules'], hotkeys {
+        rules = {
+            {
+                hotkeys = {
+                    exit = { key 'escape' },
+                    enter = { key 'enter', key 'space' },
+                    undo = { key { key = 'z', modifiers = { 'control' } } },
+                    redo = { key { key = 'z', modifiers = { 'control', 'shift' } } },
+                    delete_next = { key 'delete' },
+                    delete_previous = { key 'backspace' },
+                    next = { key 'right' },
+                    previous = { key 'left' },
+                    next_word = { key { key = 'right', modifiers = { 'control' } }, },
+                    previous_word = { key { key = 'left', modifiers = { 'control' } }, },
+                    next_line = { key 'down' },
+                    previous_line = { key 'up' },
+                    line_start = { key 'home' },
+                    line_end = { key 'end' },
+                    gather_next = { key { key = 'right', modifiers = { 'shift' } }, },
+                    gather_previous = { key { key = 'left', modifiers = { 'shift' } }, },
+                    gather_next_line = { key { key = 'down', modifiers = { 'shift' } }, },
+                    gather_previous_line = { key { key = 'up', modifiers = { 'shift' } }, },
+                    gather_line_start = { key { key = 'home', modifiers = { 'shift' } }, },
+                    gather_line_end = { key { key = 'end', modifiers = { 'shift' } }, },
+                    copy = { key { key = 'c', modifiers = { 'control' } } },
+                    cut = { key { key = 'x', modifiers = { 'control' } } },
+                    paste = { key { key = 'v', modifiers = { 'control' } } },
+                    create_before = { key { key = 'b', modifiers = { 'control' } } },
+                    create_after = { key { key = 'a', modifiers = { 'control' } } },
+                    prefix = { key { key = 'i', modifiers = { 'control' } } },
+                    suffix = { key { key = 'a', modifiers = { 'control' } } },
+                },
+            }
+        }
+    })
+    return config
+end
+
+
+return _modeless_keys {
     name = 'luxem',
     pad = {
         converse_start = 15,
@@ -157,56 +366,6 @@ return {
     },
     modules = {
         selection_type {},
-        modes {
-            states = {
-                'nottyping',
-                'typing',
-            },
-        },
-        indicators {
-            indicators = {
-                {
-                    id = 'typing',
-                    symbol = text 't',
-                    tags = { global 'mode_typing' },
-                },
-                {
-                    id = 'nottyping',
-                    symbol = text 'n',
-                    tags = { global 'mode_nottyping' },
-                },
-            },
-        },
-        hotkeys {
-            rules = {
-                {
-                    with = { global 'mode_nottyping' },
-                    hotkeys = {
-                        exit = { key 'left', key 'h' },
-                        enter = { key 'right', key 'l' },
-                        next = { key 'down', key 'j' },
-                        previous = { key 'up', key 'k' },
-                        delete = { key 'x' },
-                    },
-                    free_typing = false,
-                },
-                {
-                    with = { global 'mode_nottyping', part 'primitive' },
-                    hotkeys = {
-                        mode_typing = { key 'right', key 'l' },
-                    }
-                },
-                {
-                    with = { global 'mode_typing', part 'primitive' },
-                    hotkeys = {
-                        mode_nottyping = { key 'escape' },
-                        next = { key 'right' },
-                        previous = { key 'left' },
-                        delete_next = { key 'delete' },
-                        delete_previous = { key 'backspace' },
-                    }
-                },
-            },
-        },
+        _indicators,
     },
 }

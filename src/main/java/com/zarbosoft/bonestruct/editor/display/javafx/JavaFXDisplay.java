@@ -1,6 +1,7 @@
 package com.zarbosoft.bonestruct.editor.display.javafx;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.display.*;
 import com.zarbosoft.bonestruct.editor.hid.HIDEvent;
@@ -20,7 +21,9 @@ import javafx.scene.layout.Pane;
 import javafx.scene.shape.Rectangle;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import static com.zarbosoft.bonestruct.modules.hotkeys.Key.*;
@@ -28,6 +31,7 @@ import static com.zarbosoft.bonestruct.modules.hotkeys.Key.*;
 public class JavaFXDisplay implements Display {
 	public Pane node = new Pane();
 
+	Set<Key> modifiers = new HashSet<>();
 	List<Runnable> mouseExitListeners = new ArrayList<>();
 	List<Consumer<Vector>> mouseMoveListeners = new ArrayList<>();
 	List<Consumer<HIDEvent>> hidEventListeners = new ArrayList<>();
@@ -46,26 +50,26 @@ public class JavaFXDisplay implements Display {
 		});
 		node.setOnMousePressed(e -> {
 			node.requestFocus();
-			final HIDEvent event = new HIDEvent(convertButton(e.getButton()), true);
+			final HIDEvent event = buildHIDEvent(convertButton(e.getButton()), true);
 			ImmutableList.copyOf(hidEventListeners).forEach(l -> l.accept(event));
 		});
 		node.setOnMouseReleased(e -> {
 			node.requestFocus();
-			final HIDEvent event = new HIDEvent(convertButton(e.getButton()), false);
+			final HIDEvent event = buildHIDEvent(convertButton(e.getButton()), false);
 			ImmutableList.copyOf(hidEventListeners).forEach(l -> l.accept(event));
 		});
 		node.setOnScroll(e -> {
 			node.requestFocus();
-			final HIDEvent event = new HIDEvent(e.getDeltaY() > 0 ? Key.MOUSE_SCROLL_DOWN : Key.MOUSE_SCROLL_UP, true);
+			final HIDEvent event = buildHIDEvent(e.getDeltaY() > 0 ? Key.MOUSE_SCROLL_DOWN : Key.MOUSE_SCROLL_UP, true);
 			ImmutableList.copyOf(hidEventListeners).forEach(l -> l.accept(event));
 		});
 		node.setOnKeyPressed(e -> {
-			final HIDEvent event = new HIDEvent(convertButton(e.getCode()), true);
+			final HIDEvent event = buildHIDEvent(convertButton(e.getCode()), true);
 			ImmutableList.copyOf(hidEventListeners).forEach(l -> l.accept(event));
 			e.consume();
 		});
 		node.setOnKeyReleased(e -> {
-			final HIDEvent event = new HIDEvent(convertButton(e.getCode()), false);
+			final HIDEvent event = buildHIDEvent(convertButton(e.getCode()), false);
 			ImmutableList.copyOf(hidEventListeners).forEach(l -> l.accept(event));
 			e.consume();
 		});
@@ -225,6 +229,15 @@ public class JavaFXDisplay implements Display {
 	@Override
 	public void setBackgroundColor(final ModelColor color) {
 		node.setBackground(new Background(new BackgroundFill(Helper.convert(color), null, null)));
+	}
+
+	public HIDEvent buildHIDEvent(final Key key, final boolean press) {
+		final HIDEvent out = new HIDEvent(key, press, ImmutableSet.copyOf(modifiers));
+		if (press)
+			modifiers.add(key);
+		else
+			modifiers.remove(key);
+		return out;
 	}
 
 	public static Key convertButton(final MouseButton button) {

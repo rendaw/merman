@@ -7,7 +7,7 @@ import com.zarbosoft.luxem.read.source.LKeyEvent;
 import com.zarbosoft.luxem.read.source.LObjectCloseEvent;
 import com.zarbosoft.luxem.read.source.LObjectOpenEvent;
 import com.zarbosoft.pidgoon.Node;
-import com.zarbosoft.pidgoon.events.Terminal;
+import com.zarbosoft.pidgoon.events.MatchingEventTerminal;
 import com.zarbosoft.pidgoon.nodes.Sequence;
 import com.zarbosoft.pidgoon.nodes.Set;
 
@@ -23,13 +23,15 @@ public class BackRecord extends BackPart {
 	public Node buildBackRule(final Syntax syntax, final AtomType atomType) {
 		final Sequence sequence;
 		sequence = new Sequence();
-		sequence.add(new Terminal(new LObjectOpenEvent()));
+		sequence.add(new MatchingEventTerminal(new LObjectOpenEvent()));
 		final Set set = new Set();
 		pairs.forEach((key, value) -> {
-			set.add(new Sequence().add(new Terminal(new LKeyEvent(key))).add(value.buildBackRule(syntax, atomType)));
+			set.add(new Sequence()
+					.add(new MatchingEventTerminal(new LKeyEvent(key)))
+					.add(value.buildBackRule(syntax, atomType)));
 		});
 		sequence.add(set);
-		sequence.add(new Terminal(new LObjectCloseEvent()));
+		sequence.add(new MatchingEventTerminal(new LObjectCloseEvent()));
 		return sequence;
 	}
 

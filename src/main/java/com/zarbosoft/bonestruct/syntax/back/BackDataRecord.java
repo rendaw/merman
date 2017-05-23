@@ -14,7 +14,7 @@ import com.zarbosoft.luxem.read.source.LObjectOpenEvent;
 import com.zarbosoft.pidgoon.Node;
 import com.zarbosoft.pidgoon.events.Operator;
 import com.zarbosoft.pidgoon.events.Store;
-import com.zarbosoft.pidgoon.events.Terminal;
+import com.zarbosoft.pidgoon.events.MatchingEventTerminal;
 import com.zarbosoft.pidgoon.internal.Helper;
 import com.zarbosoft.pidgoon.nodes.Reference;
 import com.zarbosoft.pidgoon.nodes.Repeat;
@@ -37,12 +37,12 @@ public class BackDataRecord extends BackPart {
 	public Node buildBackRule(final Syntax syntax, final AtomType atomType) {
 		final Sequence sequence;
 		sequence = new Sequence();
-		sequence.add(new Operator(new Terminal(new LObjectOpenEvent()), (store) -> store.pushStack(0)));
+		sequence.add(new Operator(new MatchingEventTerminal(new LObjectOpenEvent()), (store) -> store.pushStack(0)));
 		sequence.add(new Repeat(new Operator(
 				new Reference(atomType.getDataArray(middle).type),
 				(store) -> com.zarbosoft.pidgoon.internal.Helper.stackSingleElement(store)
 		)));
-		sequence.add(new Terminal(new LObjectCloseEvent()));
+		sequence.add(new MatchingEventTerminal(new LObjectCloseEvent()));
 		return new Operator(sequence, (store) -> {
 			final List<Atom> temp = new ArrayList<>();
 			store = (Store) com.zarbosoft.pidgoon.internal.Helper.<Atom>stackPopSingleList(store, temp::add);

@@ -139,7 +139,8 @@ public class Main extends Application {
 		//banner and details padding
 		//primitive leadFirst
 		//store array/primitive leadFirst in sel saveState
-		show details on gap select if nonempty
+		//show details on gap select if nonempty
+		//arbitrary key modifiers
 		dialogs as detail pages not popups because popups are broken
 		add actions for choice 1-9,0
 		syntax documenter
@@ -148,13 +149,8 @@ public class Main extends Application {
 		abstract xy origin for alternative converse/transverse directions, reduce window resize listeners
 		//test brick layout
 
-		sed (led) substitution
-
-		move scroll to wall with listener for banner/details?
-		display methods take display, not context; add default methods to turn context -> display
-		add array prefix/suffix gaps (?)
-
 		long range goals
+		_sed (led) substitution
 		_modules from dir
 		_document distributing modules
 		_document distributions
@@ -163,6 +159,12 @@ public class Main extends Application {
 		_vertical text
 		_toc plugin
 		_persistent history ~ changes relative to back, watch syntax and autoreload
+
+		?
+		move scroll to wall with listener for banner/details?
+		display methods take display, not context; add default methods to turn context -> display
+		add array prefix/suffix gaps (?)
+		store selection position in visual? restore on selectDown
 		 */
 		final EditorGlobal global = new EditorGlobal();
 		{

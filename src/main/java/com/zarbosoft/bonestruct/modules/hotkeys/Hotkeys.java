@@ -134,6 +134,7 @@ public class Hotkeys extends Module {
 			hotkeySequence += event.toString();
 		else
 			hotkeySequence += " " + event.toString();
+		boolean result;
 		try {
 			hotkeyParse = hotkeyParse.push(event, hotkeySequence);
 			if (hotkeyParse.ended()) {
@@ -148,11 +149,12 @@ public class Hotkeys extends Module {
 					context.details.addPage(context, hotkeyDetails);
 				}
 			}
-			return true;
+			result = true;
 		} catch (final InvalidStream e) {
 			clean(context);
-			return freeTyping ? false : true;
+			result = freeTyping ? false : true;
 		}
+		return result;
 	}
 
 	private void clean(final Context context) {

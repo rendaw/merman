@@ -6,9 +6,9 @@ import com.zarbosoft.bonestruct.syntax.Syntax;
 import com.zarbosoft.interface1.Configuration;
 import com.zarbosoft.luxem.read.source.LPrimitiveEvent;
 import com.zarbosoft.pidgoon.Node;
+import com.zarbosoft.pidgoon.events.MatchingEventTerminal;
 import com.zarbosoft.pidgoon.events.Operator;
 import com.zarbosoft.pidgoon.events.Store;
-import com.zarbosoft.pidgoon.events.Terminal;
 import com.zarbosoft.pidgoon.internal.Helper;
 import com.zarbosoft.rendaw.common.Pair;
 
@@ -21,7 +21,7 @@ public class BackDataPrimitive extends BackPart {
 
 	@Override
 	public Node buildBackRule(final Syntax syntax, final AtomType atomType) {
-		return new Operator(new Terminal(new LPrimitiveEvent(null)), store -> {
+		return new Operator(new MatchingEventTerminal(new LPrimitiveEvent(null)), store -> {
 			store = (Store) store.pushStack(new Pair<>(
 					middle,
 					new ValuePrimitive(atomType.getDataPrimitive(middle), ((LPrimitiveEvent) store.top()).value)

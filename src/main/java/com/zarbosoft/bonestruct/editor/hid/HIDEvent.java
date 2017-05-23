@@ -2,24 +2,25 @@ package com.zarbosoft.bonestruct.editor.hid;
 
 import com.zarbosoft.bonestruct.modules.hotkeys.Key;
 import com.zarbosoft.interface1.Walk;
+import com.zarbosoft.pidgoon.events.MatchingEvent;
+import com.zarbosoft.rendaw.common.DeadCode;
 
-public class HIDEvent implements com.zarbosoft.pidgoon.events.Event {
-	public HIDEvent(final Key key, final boolean press) {
+import java.util.HashSet;
+import java.util.Set;
+
+public class HIDEvent implements MatchingEvent {
+	public HIDEvent(final Key key, final boolean press, final Set<Key> modifiers) {
 		this.key = key;
 		this.press = press;
 	}
 
 	public final Key key;
 	public final boolean press;
+	public Set<Key> modifiers = new HashSet<>();
 
 	@Override
-	public boolean matches(final com.zarbosoft.pidgoon.events.Event event) {
-		final HIDEvent keyEvent = (HIDEvent) event;
-		if (key != keyEvent.key)
-			return false;
-		if (press != keyEvent.press)
-			return false;
-		return true;
+	public boolean matches(final MatchingEvent event) {
+		throw new DeadCode();
 	}
 
 	@Override
