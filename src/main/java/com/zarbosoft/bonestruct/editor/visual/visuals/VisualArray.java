@@ -377,8 +377,6 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 	private boolean ellipsize(final Context context) {
 		if (!context.window)
 			return false;
-		if (parent == null)
-			return false;
 		return parent.atomVisual().depth >= context.syntax.ellipsizeThreshold;
 	}
 
@@ -518,8 +516,6 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 
 		@Override
 		public VisualAtom atom() {
-			if (VisualArray.this.parent == null)
-				return null;
 			return VisualArray.this.parent.atomVisual();
 		}
 
@@ -569,7 +565,7 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 			});
 			this.leadFirst = leadFirst;
 			setRange(context, start, end);
-			context.actions.put(this, ImmutableList.of(new Action() {
+			context.addActions(this, ImmutableList.of(new Action() {
 				@Override
 				public void run(final Context context) {
 					context.history.finishChange(context);
@@ -583,8 +579,6 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 			}, new Action() {
 				@Override
 				public void run(final Context context) {
-					if (value.parent == null)
-						return;
 					context.history.finishChange(context);
 					value.parent.selectUp(context);
 				}
@@ -632,9 +626,9 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 			}, new Action() {
 				@Override
 				public void run(final Context context) {
-					context.history.apply(context,
-							new ChangeArray(value, beginIndex, 0, ImmutableList.of(context.syntax.gap.create()))
-					);
+					final Atom gap = context.syntax.gap.create();
+					context.history.apply(context, new ChangeArray(value, beginIndex, 0, ImmutableList.of(gap)));
+					gap.data.get("gap").selectDown(context);
 				}
 
 				@Override
@@ -644,9 +638,9 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 			}, new Action() {
 				@Override
 				public void run(final Context context) {
-					context.history.apply(context,
-							new ChangeArray(value, beginIndex + 1, 0, ImmutableList.of(context.syntax.gap.create()))
-					);
+					final Atom gap = context.syntax.gap.create();
+					context.history.apply(context, new ChangeArray(value, endIndex + 1, 0, ImmutableList.of(gap)));
+					gap.data.get("gap").selectDown(context);
 				}
 
 				@Override
@@ -871,7 +865,7 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 			adapter.destroy(context);
 			border.destroy(context);
 			selection = null;
-			context.actions.remove(this);
+			context.removeActions(this);
 		}
 
 		@Override

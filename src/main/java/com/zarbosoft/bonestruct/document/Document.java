@@ -1,8 +1,14 @@
 package com.zarbosoft.bonestruct.document;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.zarbosoft.bonestruct.document.values.*;
+import com.zarbosoft.bonestruct.syntax.AtomType;
 import com.zarbosoft.bonestruct.syntax.Syntax;
+import com.zarbosoft.bonestruct.syntax.alignments.AlignmentDefinition;
 import com.zarbosoft.bonestruct.syntax.back.*;
+import com.zarbosoft.bonestruct.syntax.front.FrontPart;
+import com.zarbosoft.bonestruct.syntax.middle.MiddlePart;
 import com.zarbosoft.luxem.write.RawWriter;
 import com.zarbosoft.rendaw.common.DeadCode;
 import com.zarbosoft.rendaw.common.Pair;
@@ -12,6 +18,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.List;
 import java.util.Map;
 
 import static com.google.common.collect.Lists.reverse;
@@ -20,18 +27,55 @@ import static com.zarbosoft.rendaw.common.Common.uncheck;
 public class Document {
 
 	final public Syntax syntax;
-	public ValueArray top;
+	public ValueArray rootArray;
+	public Atom root;
 
-	public Document(final Syntax syntax, final ValueArray top) {
+	public Document(final Syntax syntax, final ValueArray rootArray) {
 		this.syntax = syntax;
-		this.top = top;
+		this.rootArray = rootArray;
+		root = new Atom(new AtomType() {
+			@Override
+			public List<FrontPart> front() {
+				return ImmutableList.of(syntax.rootFront);
+			}
+
+			@Override
+			public Map<String, MiddlePart> middle() {
+				return ImmutableMap.of("value", syntax.root);
+			}
+
+			@Override
+			public List<BackPart> back() {
+				return null;
+			}
+
+			@Override
+			public Map<String, AlignmentDefinition> alignments() {
+				return syntax.rootAlignments;
+			}
+
+			@Override
+			public int precedence() {
+				return Integer.MIN_VALUE;
+			}
+
+			@Override
+			public boolean frontAssociative() {
+				return false;
+			}
+
+			@Override
+			public String name() {
+				return "root array";
+			}
+		}, ImmutableMap.of("value", rootArray));
 	}
 
 	public void write(final Path out) {
 		uncheck(() -> {
 			try (OutputStream stream = Files.newOutputStream(out)) {
 				final RawWriter writer = new RawWriter(stream, (byte) ' ', 4);
-				top.data.forEach(node -> write(node, writer));
+				rootArray.data.forEach(node -> write(node, writer));
 				stream.write('\n');
 				stream.flush();
 			}

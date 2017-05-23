@@ -56,7 +56,7 @@ public class TestActionsAtom {
 		assertTreeEqual(
 				context,
 				new Helper.TreeBuilder(MiscSyntax.snooze).add("value", MiscSyntax.syntax.gap.create()).build(),
-				context.document.top
+				context.document.rootArray
 		);
 	}
 
@@ -79,7 +79,7 @@ public class TestActionsAtom {
 						.add("first", new Helper.TreeBuilder(ExpressionSyntax.infinity).build())
 						.add("second", new Helper.TreeBuilder(ExpressionSyntax.infinity).build())
 						.build(),
-				context.document.top
+				context.document.rootArray
 		);
 	}
 
@@ -98,7 +98,7 @@ public class TestActionsAtom {
 				new Helper.TreeBuilder(ExpressionSyntax.factorial)
 						.add("value", ExpressionSyntax.syntax.gap.create())
 						.build(),
-				context.document.top
+				context.document.rootArray
 		);
 		Helper.act(context, "paste");
 		assertTreeEqual(
@@ -106,7 +106,7 @@ public class TestActionsAtom {
 				new Helper.TreeBuilder(ExpressionSyntax.factorial)
 						.add("value", new Helper.TreeBuilder(ExpressionSyntax.infinity).build())
 						.build(),
-				context.document.top
+				context.document.rootArray
 		);
 	}
 
@@ -123,7 +123,7 @@ public class TestActionsAtom {
 		assertTreeEqual(context, new Helper.TreeBuilder(ExpressionSyntax.factorial).add(
 				"value",
 				ExpressionSyntax.syntax.prefixGap.create(new Helper.TreeBuilder(ExpressionSyntax.infinity).build())
-		).build(), context.document.top);
+		).build(), context.document.rootArray);
 		assertThat(context.selection.getPath().toList(), equalTo(ImmutableList.of("0", "value", "gap", "0")));
 	}
 
@@ -146,7 +146,7 @@ public class TestActionsAtom {
 								)
 						)
 						.build(),
-				context.document.top
+				context.document.rootArray
 		);
 		assertThat(context.selection.getPath().toList(), equalTo(ImmutableList.of("0", "value", "gap", "0")));
 	}

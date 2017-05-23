@@ -363,7 +363,7 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 			range.setOffsets(context, beginOffset, endOffset);
 			clusterIterator.setText(value.get());
 			value.addListener(this.clusterListener);
-			context.actions.put(this, Stream.concat(Stream.of(new Action() {
+			context.addActions(this, Stream.concat(Stream.of(new Action() {
 				@Override
 				public void run(final Context context) {
 					context.history.finishChange(context);
@@ -792,7 +792,7 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 
 		@Override
 		public void clear(final Context context) {
-			context.actions.remove(this);
+			context.removeActions(this);
 			range.destroy(context);
 			selection = null;
 			commit(context);

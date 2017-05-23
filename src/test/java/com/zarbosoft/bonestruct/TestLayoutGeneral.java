@@ -85,7 +85,7 @@ public class TestLayoutGeneral {
 		)
 				.resizeTransitive(40)
 				.run(context -> {
-					context.document.top.data.get(4).parent.selectUp(context);
+					context.document.rootArray.data.get(4).parent.selectUp(context);
 				})
 				.checkScroll(24)
 				.checkCourse(4, 47, 57)
@@ -116,7 +116,7 @@ public class TestLayoutGeneral {
 		new GeneralTestWizard(syntax, gap).run(context -> {
 			gap.data.get("gap").selectDown(context);
 			context.selection.receiveText(context, "[");
-			dump(context.document.top);
+			dump(context.document.rootArray);
 		}).checkTextBrick(0, 0, "[").checkTextBrick(1, 0, "").checkTextBrick(2, 0, "]");
 	}
 }

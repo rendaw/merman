@@ -38,7 +38,7 @@ public class BrickImage extends Brick implements AlignmentListener {
 
 	public Properties properties(final Context context, final Style.Baked style) {
 		return new Properties(
-				style.broken,
+				style.split,
 				(int) image.transverseSpan(context),
 				(int) 0,
 				inter.getAlignment(style),

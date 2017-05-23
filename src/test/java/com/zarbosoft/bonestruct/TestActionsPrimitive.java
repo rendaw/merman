@@ -18,7 +18,7 @@ public class TestActionsPrimitive {
 	public static Context build(final String string) {
 		final Context context =
 				buildDoc(MiscSyntax.syntax, new Helper.TreeBuilder(MiscSyntax.quoted).add("value", string).build());
-		context.document.top.data.get(0).data.get("value").selectDown(context);
+		context.document.rootArray.data.get(0).data.get("value").selectDown(context);
 		return context;
 	}
 
@@ -41,7 +41,7 @@ public class TestActionsPrimitive {
 		final Context context = buildFive();
 		assertThat(context.selection.getVisual(), instanceOf(VisualPrimitive.class));
 		Helper.act(context, "exit");
-		assertNotNull(((VisualArray) context.document.top.visual).selection);
+		assertNotNull(((VisualArray) context.document.rootArray.visual).selection);
 	}
 
 	@Test
@@ -433,9 +433,10 @@ public class TestActionsPrimitive {
 		final Context context = build("ab");
 		visual(context).select(context, true, 0, 0);
 		Helper.act(context, "split");
-		assertTreeEqual(context,
+		assertTreeEqual(
+				context,
 				new Helper.TreeBuilder(MiscSyntax.quoted).add("value", "\nab").build(),
-				context.document.top
+				context.document.rootArray
 		);
 		assertSelection(context, 1, 1);
 	}
@@ -445,9 +446,10 @@ public class TestActionsPrimitive {
 		final Context context = build("ab");
 		visual(context).select(context, true, 1, 1);
 		Helper.act(context, "split");
-		assertTreeEqual(context,
+		assertTreeEqual(
+				context,
 				new Helper.TreeBuilder(MiscSyntax.quoted).add("value", "a\nb").build(),
-				context.document.top
+				context.document.rootArray
 		);
 		assertSelection(context, 2, 2);
 	}
@@ -457,9 +459,10 @@ public class TestActionsPrimitive {
 		final Context context = build("ab");
 		visual(context).select(context, true, 2, 2);
 		Helper.act(context, "split");
-		assertTreeEqual(context,
+		assertTreeEqual(
+				context,
 				new Helper.TreeBuilder(MiscSyntax.quoted).add("value", "ab\n").build(),
-				context.document.top
+				context.document.rootArray
 		);
 		assertSelection(context, 3, 3);
 	}
@@ -469,9 +472,10 @@ public class TestActionsPrimitive {
 		final Context context = build("1\nab\n2");
 		visual(context).select(context, true, 2, 2);
 		Helper.act(context, "split");
-		assertTreeEqual(context,
+		assertTreeEqual(
+				context,
 				new Helper.TreeBuilder(MiscSyntax.quoted).add("value", "1\n\nab\n2").build(),
-				context.document.top
+				context.document.rootArray
 		);
 		assertSelection(context, 3, 3);
 	}
@@ -481,9 +485,10 @@ public class TestActionsPrimitive {
 		final Context context = build("1\nab\n2");
 		visual(context).select(context, true, 3, 3);
 		Helper.act(context, "split");
-		assertTreeEqual(context,
+		assertTreeEqual(
+				context,
 				new Helper.TreeBuilder(MiscSyntax.quoted).add("value", "1\na\nb\n2").build(),
-				context.document.top
+				context.document.rootArray
 		);
 		assertSelection(context, 4, 4);
 	}
@@ -493,9 +498,10 @@ public class TestActionsPrimitive {
 		final Context context = build("1\nab\n2");
 		visual(context).select(context, true, 4, 4);
 		Helper.act(context, "split");
-		assertTreeEqual(context,
+		assertTreeEqual(
+				context,
 				new Helper.TreeBuilder(MiscSyntax.quoted).add("value", "1\nab\n\n2").build(),
-				context.document.top
+				context.document.rootArray
 		);
 		assertSelection(context, 5, 5);
 	}
@@ -505,9 +511,10 @@ public class TestActionsPrimitive {
 		final Context context = build("");
 		visual(context).select(context, true, 0, 0);
 		Helper.act(context, "split");
-		assertTreeEqual(context,
+		assertTreeEqual(
+				context,
 				new Helper.TreeBuilder(MiscSyntax.quoted).add("value", "\n").build(),
-				context.document.top
+				context.document.rootArray
 		);
 		assertSelection(context, 1, 1);
 	}
@@ -517,9 +524,10 @@ public class TestActionsPrimitive {
 		final Context context = build("abcd");
 		visual(context).select(context, true, 1, 3);
 		Helper.act(context, "split");
-		assertTreeEqual(context,
+		assertTreeEqual(
+				context,
 				new Helper.TreeBuilder(MiscSyntax.quoted).add("value", "a\nd").build(),
-				context.document.top
+				context.document.rootArray
 		);
 		assertSelection(context, 2, 2);
 	}
@@ -537,9 +545,10 @@ public class TestActionsPrimitive {
 		final Context context = build("\n");
 		visual(context).select(context, true, 0, 0);
 		Helper.act(context, "join");
-		assertTreeEqual(context,
+		assertTreeEqual(
+				context,
 				new Helper.TreeBuilder(MiscSyntax.quoted).add("value", "").build(),
-				context.document.top
+				context.document.rootArray
 		);
 		assertSelection(context, 0, 0);
 	}
@@ -549,9 +558,10 @@ public class TestActionsPrimitive {
 		final Context context = build("a\nb");
 		visual(context).select(context, true, 0, 0);
 		Helper.act(context, "join");
-		assertTreeEqual(context,
+		assertTreeEqual(
+				context,
 				new Helper.TreeBuilder(MiscSyntax.quoted).add("value", "ab").build(),
-				context.document.top
+				context.document.rootArray
 		);
 		assertSelection(context, 1, 1);
 	}
@@ -561,9 +571,10 @@ public class TestActionsPrimitive {
 		final Context context = build("ab\nc\nde");
 		visual(context).select(context, true, 1, 6);
 		Helper.act(context, "join");
-		assertTreeEqual(context,
+		assertTreeEqual(
+				context,
 				new Helper.TreeBuilder(MiscSyntax.quoted).add("value", "abcde").build(),
-				context.document.top
+				context.document.rootArray
 		);
 		assertSelection(context, 1, 4);
 	}
@@ -573,9 +584,10 @@ public class TestActionsPrimitive {
 		final Context context = buildFive();
 		visual(context).select(context, true, 2, 2);
 		Helper.act(context, "delete_previous");
-		assertTreeEqual(context,
+		assertTreeEqual(
+				context,
 				new Helper.TreeBuilder(MiscSyntax.quoted).add("value", "1345").build(),
-				context.document.top
+				context.document.rootArray
 		);
 		assertSelection(context, 1, 1);
 	}
@@ -585,9 +597,10 @@ public class TestActionsPrimitive {
 		final Context context = build("a\nb");
 		visual(context).select(context, true, 2, 2);
 		Helper.act(context, "delete_previous");
-		assertTreeEqual(context,
+		assertTreeEqual(
+				context,
 				new Helper.TreeBuilder(MiscSyntax.quoted).add("value", "ab").build(),
-				context.document.top
+				context.document.rootArray
 		);
 		assertSelection(context, 1, 1);
 	}
@@ -597,9 +610,10 @@ public class TestActionsPrimitive {
 		final Context context = build("a");
 		visual(context).select(context, true, 0, 0);
 		Helper.act(context, "delete_previous");
-		assertTreeEqual(context,
+		assertTreeEqual(
+				context,
 				new Helper.TreeBuilder(MiscSyntax.quoted).add("value", "a").build(),
-				context.document.top
+				context.document.rootArray
 		);
 		assertSelection(context, 0, 0);
 	}
@@ -609,9 +623,10 @@ public class TestActionsPrimitive {
 		final Context context = buildFive();
 		visual(context).select(context, true, 1, 2);
 		Helper.act(context, "delete_previous");
-		assertTreeEqual(context,
+		assertTreeEqual(
+				context,
 				new Helper.TreeBuilder(MiscSyntax.quoted).add("value", "1345").build(),
-				context.document.top
+				context.document.rootArray
 		);
 		assertSelection(context, 1, 1);
 	}
@@ -621,9 +636,10 @@ public class TestActionsPrimitive {
 		final Context context = build("ab\ncd");
 		visual(context).select(context, true, 1, 4);
 		Helper.act(context, "delete_previous");
-		assertTreeEqual(context,
+		assertTreeEqual(
+				context,
 				new Helper.TreeBuilder(MiscSyntax.quoted).add("value", "ad").build(),
-				context.document.top
+				context.document.rootArray
 		);
 		assertSelection(context, 1, 1);
 	}
@@ -633,9 +649,10 @@ public class TestActionsPrimitive {
 		final Context context = buildFive();
 		visual(context).select(context, true, 2, 2);
 		Helper.act(context, "delete_next");
-		assertTreeEqual(context,
+		assertTreeEqual(
+				context,
 				new Helper.TreeBuilder(MiscSyntax.quoted).add("value", "1245").build(),
-				context.document.top
+				context.document.rootArray
 		);
 		assertSelection(context, 2, 2);
 	}
@@ -645,9 +662,10 @@ public class TestActionsPrimitive {
 		final Context context = build("a\nb");
 		visual(context).select(context, true, 1, 1);
 		Helper.act(context, "delete_next");
-		assertTreeEqual(context,
+		assertTreeEqual(
+				context,
 				new Helper.TreeBuilder(MiscSyntax.quoted).add("value", "ab").build(),
-				context.document.top
+				context.document.rootArray
 		);
 		assertSelection(context, 1, 1);
 	}
@@ -657,9 +675,10 @@ public class TestActionsPrimitive {
 		final Context context = build("a");
 		visual(context).select(context, true, 1, 1);
 		Helper.act(context, "delete_next");
-		assertTreeEqual(context,
+		assertTreeEqual(
+				context,
 				new Helper.TreeBuilder(MiscSyntax.quoted).add("value", "a").build(),
-				context.document.top
+				context.document.rootArray
 		);
 		assertSelection(context, 1, 1);
 	}
@@ -669,9 +688,10 @@ public class TestActionsPrimitive {
 		final Context context = buildFive();
 		visual(context).select(context, true, 1, 2);
 		Helper.act(context, "delete_next");
-		assertTreeEqual(context,
+		assertTreeEqual(
+				context,
 				new Helper.TreeBuilder(MiscSyntax.quoted).add("value", "1345").build(),
-				context.document.top
+				context.document.rootArray
 		);
 		assertSelection(context, 1, 1);
 	}
@@ -681,9 +701,10 @@ public class TestActionsPrimitive {
 		final Context context = build("ab\ncd");
 		visual(context).select(context, true, 1, 4);
 		Helper.act(context, "delete_next");
-		assertTreeEqual(context,
+		assertTreeEqual(
+				context,
 				new Helper.TreeBuilder(MiscSyntax.quoted).add("value", "ad").build(),
-				context.document.top
+				context.document.rootArray
 		);
 		assertSelection(context, 1, 1);
 	}
@@ -695,9 +716,10 @@ public class TestActionsPrimitive {
 		Helper.act(context, "copy");
 		visual(context).select(context, true, 4, 4);
 		Helper.act(context, "paste");
-		assertTreeEqual(context,
+		assertTreeEqual(
+				context,
 				new Helper.TreeBuilder(MiscSyntax.quoted).add("value", "1234235").build(),
-				context.document.top
+				context.document.rootArray
 		);
 		assertSelection(context, 6, 6);
 	}
@@ -709,9 +731,10 @@ public class TestActionsPrimitive {
 		Helper.act(context, "copy");
 		visual(context).select(context, true, 4, 5);
 		Helper.act(context, "paste");
-		assertTreeEqual(context,
+		assertTreeEqual(
+				context,
 				new Helper.TreeBuilder(MiscSyntax.quoted).add("value", "123423").build(),
-				context.document.top
+				context.document.rootArray
 		);
 		assertSelection(context, 6, 6);
 	}
@@ -724,9 +747,10 @@ public class TestActionsPrimitive {
 		assertSelection(context, 1, 1);
 		visual(context).select(context, true, 2, 3);
 		Helper.act(context, "paste");
-		assertTreeEqual(context,
+		assertTreeEqual(
+				context,
 				new Helper.TreeBuilder(MiscSyntax.quoted).add("value", "1423").build(),
-				context.document.top
+				context.document.rootArray
 		);
 		assertSelection(context, 4, 4);
 	}

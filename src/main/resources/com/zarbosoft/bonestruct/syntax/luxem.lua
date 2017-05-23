@@ -56,8 +56,8 @@ _modal_keys = function(config)
                     cut = { key 'x' },
                     paste_before = { key { key = 'p', modifiers = { 'shift' } } },
                     paste_after = { key 'p' },
-                    create_before = { key 'i' },
-                    create_after = { key 'a' },
+                    insert_before = { key 'i' },
+                    insert_after = { key 'a' },
                     prefix = { key { key = 'i', modifiers = { 'shift' } } },
                     suffix = { key { key = 'a', modifiers = { 'shift' } } },
                 },
@@ -167,7 +167,7 @@ _modal_keys = function(config)
     return config
 end
 
-_modeless_keys = function(config)
+_lessmodal_keys = function(config)
     _append(config['modules'], hotkeys {
         rules = {
             {
@@ -176,7 +176,7 @@ _modeless_keys = function(config)
                     enter = { key 'enter' },
                     undo = { key { key = 'z', modifiers = { 'control' } } },
                     redo = { key { key = 'z', modifiers = { 'control', 'shift' } } },
-                    choose = { key 'space' },
+                    choose = { key { key = 'space', modifiers = { 'control' } } },
                     choose_0 = { key { key = '0', modifiers = { 'control' } } },
                     choose_1 = { key { key = '1', modifiers = { 'control' } } },
                     choose_2 = { key { key = '2', modifiers = { 'control' } } },
@@ -187,6 +187,7 @@ _modeless_keys = function(config)
                     choose_7 = { key { key = '7', modifiers = { 'control' } } },
                     choose_8 = { key { key = '8', modifiers = { 'control' } } },
                     choose_9 = { key { key = '9', modifiers = { 'control' } } },
+                    delete = { key 'x' },
                     delete_next = { key 'delete' },
                     delete_previous = { key 'backspace' },
                     next = { key 'right' },
@@ -206,8 +207,8 @@ _modeless_keys = function(config)
                     copy = { key { key = 'c', modifiers = { 'control' } } },
                     cut = { key { key = 'x', modifiers = { 'control' } } },
                     paste = { key { key = 'v', modifiers = { 'control' } } },
-                    create_before = { key { key = 'b', modifiers = { 'control' } } },
-                    create_after = { key { key = 'a', modifiers = { 'control' } } },
+                    insert_before = { key 'b' },
+                    insert_after = { key 'a' },
                     prefix = { key { key = 'i', modifiers = { 'control' } } },
                     suffix = { key { key = 'a', modifiers = { 'control' } } },
                     next_choice = { key { key = 'down', modifiers = { 'control' } } },
@@ -220,7 +221,7 @@ _modeless_keys = function(config)
 end
 
 
-return _modeless_keys {
+return _lessmodal_keys {
     name = 'luxem',
     pad = {
         converse_start = 15,
@@ -270,8 +271,12 @@ return _modeless_keys {
             },
         },
         {
-            with = { free 'break', state 'compact' },
-            ['break'] = true,
+            with = { state 'compact' },
+            color = rgb { r = 255 / 255, g = 0 / 255, b = 0 / 255 },
+        },
+        {
+            with = { free 'split', state 'compact' },
+            split = true,
         },
         {
             with = { free 'base', state 'compact' },
@@ -287,11 +292,16 @@ return _modeless_keys {
         },
         {
             with = { part 'primitive', state 'hard' },
-            ['break'] = true,
+            without = { state 'first' },
+            split = true,
+        },
+        {
+            with = { part 'primitive', state 'first', state 'compact' },
+            split = true,
         },
         {
             with = { part 'primitive', state 'soft' },
-            ['break'] = true,
+            split = true,
         }
     },
     groups = {
@@ -302,6 +312,13 @@ return _modeless_keys {
         },
     },
     root = 'value',
+    root_alignments = {
+        indent = absolute { offset = 16 },
+    },
+    root_front = {
+        prefix = { { type = space {}, tags = { 'indent', 'split' } } },
+        separator = { { type = text ',' } },
+    },
     types = {
         {
             id = 'luxem_object',
@@ -323,7 +340,7 @@ return _modeless_keys {
                     middle = 'data',
                     separator = { text ',' },
                 },
-                symbol { type = text '}', tags = { 'break', 'base' }, },
+                symbol { type = text '}', tags = { 'split', 'base' }, },
             },
             auto_choose_ambiguity = 999,
         },
@@ -336,7 +353,7 @@ return _modeless_keys {
                 value = atom 'value',
             },
             front = {
-                symbol { type = space {}, tags = { 'indent', 'break' } },
+                symbol { type = space {}, tags = { 'indent', 'split' } },
                 primitive 'key',
                 symbol { type = text ':' },
                 symbol { type = space {}, tags = { 'record_table' } },
@@ -360,10 +377,10 @@ return _modeless_keys {
                 symbol { type = text '[' },
                 array {
                     middle = 'data',
-                    prefix = { { type = space {}, tags = { 'indent', 'break' } } },
+                    prefix = { { type = space {}, tags = { 'indent', 'split' } } },
                     separator = { { type = text ',' } },
                 },
-                symbol { type = text ']', tags = { 'break', 'base' }, }
+                symbol { type = text ']', tags = { 'split', 'base' }, }
             },
             auto_choose_ambiguity = 999,
         },

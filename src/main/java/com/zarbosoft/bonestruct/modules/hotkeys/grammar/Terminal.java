@@ -28,12 +28,23 @@ public class Terminal implements Node {
 			@Override
 			protected boolean matches(final Event event) {
 				final HIDEvent event1 = (HIDEvent) event;
-				return (
-						key.equals(event1.key) &&
-								press == event1.press &&
-								event1.modifiers.containsAll(modifiers) &&
-								Sets.intersection(event1.modifiers, withoutModifiers).isEmpty()
+				final boolean a = key.equals(event1.key);
+				final boolean b = press == event1.press;
+				final boolean c = event1.modifiers.containsAll(modifiers);
+				final boolean d = Sets.intersection(event1.modifiers, withoutModifiers).isEmpty();
+				System.out.format(
+						"%s %s mod %s wm %s VS %s => %s %s %s %s\n",
+						key,
+						press,
+						modifiers,
+						withoutModifiers,
+						event,
+						a,
+						b,
+						c,
+						d
 				);
+				return a && b && c && d;
 			}
 		};
 	}

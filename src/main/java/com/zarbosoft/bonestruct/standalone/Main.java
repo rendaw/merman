@@ -6,7 +6,6 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.FileAppender;
 import com.google.common.collect.ImmutableList;
 import com.zarbosoft.bonestruct.document.Document;
-import com.zarbosoft.bonestruct.document.values.ValueArray;
 import com.zarbosoft.bonestruct.editor.*;
 import com.zarbosoft.bonestruct.editor.display.javafx.JavaFXDisplay;
 import com.zarbosoft.bonestruct.editor.history.History;
@@ -153,9 +152,16 @@ public class Main extends Application {
 		//show details on gap select if nonempty
 		//arbitrary key modifiers
 		//fix dialogs
-		add actions for choice 1-9,0
+		//add actions for choice 1-9,0
 		//abstract xy origin for alternative converse/transverse directions, reduce window resize listeners
 		//test brick layout
+		fix indent/breaking
+		rename break -> split
+		//fix hotkey modifiers
+		fix hover
+		fix compact (root array)
+		cornerstone on wrong element (visual array selectup)
+		translation bounce on array element enter/exit
 
 		syntax documenter
 		action documenter
@@ -170,6 +176,8 @@ public class Main extends Application {
 		_vertical text
 		_toc plugin
 		_persistent history ~ changes relative to back, watch syntax and autoreload
+		_better visibility into action bindings
+		_better syntax lua parse error messages
 
 		?
 		move scroll to wall with listener for banner/details?
@@ -207,8 +215,8 @@ public class Main extends Application {
 			doc = uncheck(() -> syntax.load(path));
 		else
 			doc = syntax.create();
-		if (doc.top.data.isEmpty()) {
-			doc.top = new ValueArray(doc.syntax.root, ImmutableList.of(syntax.gap.create()));
+		if (doc.rootArray.data.isEmpty()) {
+			doc.rootArray.sideload(syntax.gap.create());
 		}
 		this.display = new JavaFXDisplay(syntax);
 		final Editor editor = new Editor(syntax, doc, display, this::addIdle, path, history);

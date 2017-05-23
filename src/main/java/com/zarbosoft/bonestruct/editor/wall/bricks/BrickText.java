@@ -28,7 +28,7 @@ public abstract class BrickText extends Brick implements AlignmentListener {
 	public Properties properties(final Context context, final Style.Baked style) {
 		final Font font = style.getFont(context);
 		return new Properties(
-				style.broken,
+				style.split,
 				font.getAscent(),
 				font.getDescent(),
 				inter.getAlignment(style),

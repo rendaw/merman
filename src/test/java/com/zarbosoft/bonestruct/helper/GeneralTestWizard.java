@@ -120,10 +120,7 @@ public class GeneralTestWizard {
 	}
 
 	public GeneralTestWizard act(final String name) {
-		for (final Action action : iterable(inner.context.actions
-				.entrySet()
-				.stream()
-				.flatMap(e -> e.getValue().stream()))) {
+		for (final Action action : iterable(inner.context.actions())) {
 			if (action.getName().equals(name)) {
 				action.run(inner.context);
 				assertThat(inner.context.selection, is(notNullValue()));
@@ -153,7 +150,7 @@ public class GeneralTestWizard {
 	}
 
 	public GeneralTestWizard checkTree(final Atom... atoms) {
-		zip(Stream.of(atoms), inner.context.document.top.data.stream()).forEach(pair -> {
+		zip(Stream.of(atoms), inner.context.document.rootArray.data.stream()).forEach(pair -> {
 			Helper.assertTreeEqual(pair.first, pair.second);
 		});
 		return this;

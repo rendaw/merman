@@ -1,7 +1,6 @@
 package com.zarbosoft.bonestruct.editor.display.javafx;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.display.*;
 import com.zarbosoft.bonestruct.editor.hid.HIDEvent;
@@ -254,7 +253,7 @@ public class JavaFXDisplay implements Display {
 	}
 
 	public HIDEvent buildHIDEvent(final Key key, final boolean press) {
-		final HIDEvent out = new HIDEvent(key, press, ImmutableSet.copyOf(modifiers));
+		final HIDEvent out = new HIDEvent(key, press, modifiers);
 		if (press)
 			modifiers.add(key);
 		else

@@ -92,6 +92,16 @@ public class ValueArray extends Value {
 		renumber(0);
 	}
 
+	public void sideload(final Atom value) {
+		if (!data.isEmpty())
+			throw new AssertionError();
+		if (parent.atom().parent != null)
+			throw new AssertionError();
+		data.add(value);
+		value.setParent(new ArrayParent());
+		renumber(0);
+	}
+
 	public void renumber(final int from) {
 		int sum;
 		if (from == 0) {

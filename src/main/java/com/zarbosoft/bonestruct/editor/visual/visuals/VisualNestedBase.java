@@ -353,7 +353,7 @@ public abstract class VisualNestedBase extends Visual implements VisualLeaf {
 
 	private class NestedSelection extends Selection {
 		public NestedSelection(final Context context) {
-			context.actions.put(this, VisualNestedBase.this.getActions(context).collect(Collectors.toList()));
+			context.addActions(this, VisualNestedBase.this.getActions(context).collect(Collectors.toList()));
 		}
 
 		@Override
@@ -361,7 +361,7 @@ public abstract class VisualNestedBase extends Visual implements VisualLeaf {
 			border.destroy(context);
 			border = null;
 			selection = null;
-			context.actions.remove(this);
+			context.removeActions(this);
 		}
 
 		@Override

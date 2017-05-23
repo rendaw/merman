@@ -87,35 +87,49 @@ public class Hotkeys extends Module {
 		}
 	}
 
+	private void update(final Context context) {
+		if (context.selection == null)
+			return;
+		final PSet<Tag> tags = context.globalTags.plusAll(context.selection.getTags(context));
+		clean(context);
+		hotkeys = new HashMap<>();
+		freeTyping = true;
+		for (final HotkeyRule rule : rules) {
+			if (!tags.containsAll(rule.with) || !Sets.intersection(tags, rule.without).isEmpty())
+				continue;
+			hotkeys.putAll(rule.hotkeys);
+			freeTyping = freeTyping && rule.freeTyping;
+		}
+		hotkeyGrammar = new Grammar();
+		final Union union = new Union();
+		for (final Action action : iterable(context.actions())) {
+			if (hotkeys.containsKey(action.getName())) {
+				for (final Node hotkey : hotkeys.get(action.getName())) {
+					union.add(new Operator(hotkey.build(), store -> store.pushStack(action)));
+				}
+			}
+		}
+		hotkeyGrammar.add("root", union);
+	}
+
 	@Override
 	public State initialize(final Context context) {
 		context.addKeyListener(this::handleEvent);
 		context.addSelectionTagsChangeListener(new Context.TagsListener() {
 			@Override
 			public void tagsChanged(final Context context) {
-				final PSet<Tag> tags = context.globalTags.plusAll(context.selection.getTags(context));
-				clean(context);
-				hotkeys = new HashMap<>();
-				freeTyping = true;
-				for (final HotkeyRule rule : rules) {
-					if (!tags.containsAll(rule.with) || !Sets.intersection(tags, rule.without).isEmpty())
-						continue;
-					hotkeys.putAll(rule.hotkeys);
-					freeTyping = freeTyping && rule.freeTyping;
-				}
-				hotkeyGrammar = new Grammar();
-				final Union union = new Union();
-				for (final Action action : iterable(context.actions
-						.entrySet()
-						.stream()
-						.flatMap(e -> e.getValue().stream()))) {
-					if (hotkeys.containsKey(action.getName())) {
-						for (final Node hotkey : hotkeys.get(action.getName())) {
-							union.add(new Operator(hotkey.build(), store -> store.pushStack(action)));
-						}
-					}
-				}
-				hotkeyGrammar.add("root", union);
+				update(context);
+			}
+		});
+		context.addActionChangeListener(new Context.ActionChangeListener() {
+			@Override
+			public void actionsAdded(final Context context) {
+				update(context);
+			}
+
+			@Override
+			public void actionsRemoved(final Context context) {
+				update(context);
 			}
 		});
 		return new State() {

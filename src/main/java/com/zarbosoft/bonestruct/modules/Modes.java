@@ -26,7 +26,7 @@ public class Modes extends Module {
 
 	@Override
 	public State initialize(final Context context) {
-		context.actions.put(this, enumerate(states.stream()).map(pair -> {
+		context.addActions(this, enumerate(states.stream()).map(pair -> {
 			return new Action() {
 				@Override
 				public void run(final Context context) {
@@ -47,7 +47,7 @@ public class Modes extends Module {
 			@Override
 			public void destroy(final Context context) {
 				context.changeGlobalTags(new TagsChange(ImmutableSet.of(), ImmutableSet.of(getTag(state))));
-				context.actions.remove(this);
+				context.removeActions(this);
 			}
 		};
 	}

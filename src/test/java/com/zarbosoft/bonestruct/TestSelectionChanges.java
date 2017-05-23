@@ -43,20 +43,20 @@ public class TestSelectionChanges {
 
 		// Transform
 		transform.accept(context, found);
-		assertThat(context.document.top.data.size(), equalTo(1));
-		assertTreeEqual(context.document.top.data.get(0), end);
+		assertThat(context.document.rootArray.data.size(), equalTo(1));
+		assertTreeEqual(context.document.rootArray.data.get(0), end);
 		assertThat(context.selection.getPath(), equalTo(selectEnd));
 
 		// Undo
 		context.history.undo(context);
-		assertThat(context.document.top.data.size(), equalTo(1));
-		assertTreeEqual(context.document.top.data.get(0), begin);
+		assertThat(context.document.rootArray.data.size(), equalTo(1));
+		assertTreeEqual(context.document.rootArray.data.get(0), begin);
 		assertThat(context.selection.getPath(), equalTo(selectBegin));
 
 		// Redo
 		context.history.redo(context);
-		assertThat(context.document.top.data.size(), equalTo(1));
-		assertTreeEqual(context.document.top.data.get(0), end);
+		assertThat(context.document.rootArray.data.size(), equalTo(1));
+		assertTreeEqual(context.document.rootArray.data.get(0), end);
 		assertThat(context.selection.getPath(), equalTo(selectEnd));
 	}
 
@@ -75,7 +75,7 @@ public class TestSelectionChanges {
 				new Helper.TreeBuilder(MiscSyntax.five).build()
 		).build());
 
-		final ValueArray value = (ValueArray) context.document.top.data.get(0).data.get("value");
+		final ValueArray value = (ValueArray) context.document.rootArray.data.get(0).data.get("value");
 		final VisualArray visual = (VisualArray) value.visual;
 		visual.select(context, true, beginSelectBegin, beginSelectEnd);
 		final VisualArray.ArraySelection selection = visual.selection;
@@ -102,7 +102,7 @@ public class TestSelectionChanges {
 				new Helper.TreeBuilder(MiscSyntax.infinity).build(),
 				new Path("0"),
 				(context, selected) -> context.history.apply(context,
-						new ChangeArray(context.document.top, 0, 1, ImmutableList.of())
+						new ChangeArray(context.document.rootArray, 0, 1, ImmutableList.of())
 				),
 				MiscSyntax.syntax.gap.create(),
 				new Path("0")

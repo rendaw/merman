@@ -9,7 +9,6 @@ import com.zarbosoft.bonestruct.editor.IdleTask;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.VisualParent;
-import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.tags.TagsChange;
 import com.zarbosoft.bonestruct.editor.wall.Brick;
 import com.zarbosoft.rendaw.common.Pair;
@@ -111,11 +110,10 @@ public class VisualGroup extends Visual {
 			throw new AssertionError("Inserting visual atom after group end.");
 		this.children.stream().skip(index).forEach(n -> ((Parent) n.parent()).index += 1);
 		this.children.add(index, node);
-		final Brick previousBrick = index == 0 ?
-				(parent == null ? null : parent.getPreviousBrick(context)) :
-				children.get(index - 1).getLastBrick(context);
+		final Brick previousBrick =
+				index == 0 ? parent.getPreviousBrick(context) : children.get(index - 1).getLastBrick(context);
 		final Brick nextBrick = index + 1 >= this.children.size() ?
-				(parent == null ? null : parent.getNextBrick(context)) :
+				parent.getNextBrick(context) :
 				children.get(index + 1).getFirstBrick(context);
 		if (previousBrick != null && nextBrick != null)
 			context.idleLayBricksAfterEnd(previousBrick);
@@ -227,8 +225,6 @@ public class VisualGroup extends Visual {
 		public Brick createNextBrick(final Context context) {
 			if (index + 1 < target.children.size())
 				return target.children.get(index + 1).createFirstBrick(context);
-			if (target.parent == null)
-				return null;
 			return target.parent.createNextBrick(context);
 		}
 
@@ -236,8 +232,6 @@ public class VisualGroup extends Visual {
 		public Brick createPreviousBrick(final Context context) {
 			if (index > 0)
 				return target.children.get(index - 1).createLastBrick(context);
-			if (target.parent == null)
-				return null;
 			return target.parent.createPreviousBrick(context);
 		}
 
@@ -248,8 +242,6 @@ public class VisualGroup extends Visual {
 
 		@Override
 		public VisualAtom atomVisual() {
-			if (target.parent == null)
-				return null;
 			return target.parent.atomVisual();
 		}
 
@@ -261,10 +253,7 @@ public class VisualGroup extends Visual {
 		@Override
 		public Brick getPreviousBrick(final Context context) {
 			if (index == 0)
-				if (target.parent == null)
-					return null;
-				else
-					return target.parent.getPreviousBrick(context);
+				return target.parent.getPreviousBrick(context);
 			else
 				return target.children.get(index - 1).getLastBrick(context);
 		}
@@ -272,10 +261,7 @@ public class VisualGroup extends Visual {
 		@Override
 		public Brick getNextBrick(final Context context) {
 			if (index + 1 >= target.children.size())
-				if (target.parent == null)
-					return null;
-				else
-					return target.parent.getNextBrick(context);
+				return target.parent.getNextBrick(context);
 			else
 				return target.children.get(index + 1).getFirstBrick(context);
 		}

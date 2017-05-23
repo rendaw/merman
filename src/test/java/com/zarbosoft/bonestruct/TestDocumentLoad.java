@@ -31,7 +31,7 @@ public class TestDocumentLoad {
 	public void primitive() {
 		final Document doc = syntax.load("#1");
 		{
-			final List<Atom> top = doc.top.data;
+			final List<Atom> top = doc.rootArray.data;
 			assertThat(top.size(), equalTo(1));
 			assertThat(top.get(0).type, equalTo(type1));
 			assertThat(top.get(0).parent.path(), equalTo(new Path("0")));
@@ -42,7 +42,7 @@ public class TestDocumentLoad {
 	public void rootArray() {
 		final Document doc = syntax.load("#1, #1");
 		{
-			final List<Atom> top = doc.top.data;
+			final List<Atom> top = doc.rootArray.data;
 			assertThat(top.size(), equalTo(2));
 			assertThat(top.get(0).type, equalTo(type1));
 			assertThat(top.get(1).type, equalTo(type1));

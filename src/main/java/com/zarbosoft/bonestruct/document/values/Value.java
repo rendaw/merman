@@ -27,9 +27,9 @@ public abstract class Value extends DocumentNode {
 	public abstract MiddlePart middle();
 
 	final public Path getPath() {
-		if (parent == null)
-			return new Path();
 		final Atom atom = parent.atom();
+		if (atom.parent == null)
+			return new Path();
 		final Pair<Integer, Path> subpath = atom.type.getBackPart(middle().id).getSubpath();
 		final Value parentValue = atom.parent.value();
 		final Path parentPath = parentValue.getPath();

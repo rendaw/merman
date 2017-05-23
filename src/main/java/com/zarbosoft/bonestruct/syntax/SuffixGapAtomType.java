@@ -122,9 +122,9 @@ public class SuffixGapAtomType extends AtomType {
 							allowed = true;
 						}
 
-						if (test.value().parent == null)
-							break;
 						testAtom = test.value().parent.atom();
+						if (testAtom.parent == null)
+							break;
 
 						if (!isPrecedent(type, test, allowed))
 							break;

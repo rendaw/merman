@@ -43,7 +43,7 @@ public class Editor {
 	) {
 		context = new Context(syntax, doc, display, addIdle, history);
 		context.history.clear();
-		context.actions.put(this, ImmutableList.of(new Action() {
+		context.addActions(this, ImmutableList.of(new Action() {
 			@Override
 			public void run(final Context context) {
 				context.history.undo(context);
@@ -88,8 +88,8 @@ public class Editor {
 		context.document.write(dest);
 	}
 
-	public void addActions(final Object object, final List<Action> actions) {
-		context.actions.put(object, actions);
+	public void addActions(final Object key, final List<Action> actions) {
+		context.addActions(key, actions);
 	}
 
 	public void focus() {

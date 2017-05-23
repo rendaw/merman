@@ -41,7 +41,7 @@ public class BrickSpace extends Brick implements AlignmentListener {
 	@Override
 	public Properties properties(final Context context, final Style.Baked style) {
 		return new Properties(
-				style.broken,
+				style.split,
 				style.spaceTransverseBefore,
 				style.spaceTransverseAfter,
 				alignment,

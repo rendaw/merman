@@ -34,20 +34,12 @@ public class Atom extends DocumentNode {
 
 				@Override
 				public void selectUp(final Context context) {
+					if (parent == null)
+						return;
 					Atom.this.parent.selectUp(context);
 				}
 			});
 		});
-	}
-
-	/**
-	 * Only for document root.
-	 *
-	 * @param data
-	 */
-	public Atom(final Map<String, Value> data) {
-		this.type = null;
-		this.data = data;
 	}
 
 	public Path getPath() {

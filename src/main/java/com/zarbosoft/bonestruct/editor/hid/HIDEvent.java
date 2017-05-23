@@ -1,27 +1,23 @@
 package com.zarbosoft.bonestruct.editor.hid;
 
+import com.google.common.collect.ImmutableSet;
 import com.zarbosoft.bonestruct.modules.hotkeys.Key;
 import com.zarbosoft.interface1.Walk;
-import com.zarbosoft.pidgoon.events.MatchingEvent;
-import com.zarbosoft.rendaw.common.DeadCode;
+import com.zarbosoft.pidgoon.events.Event;
 
-import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
-public class HIDEvent implements MatchingEvent {
+public class HIDEvent implements Event {
 	public HIDEvent(final Key key, final boolean press, final Set<Key> modifiers) {
 		this.key = key;
 		this.press = press;
+		this.modifiers = ImmutableSet.copyOf(modifiers);
 	}
 
 	public final Key key;
 	public final boolean press;
-	public Set<Key> modifiers = new HashSet<>();
-
-	@Override
-	public boolean matches(final MatchingEvent event) {
-		throw new DeadCode();
-	}
+	public final Set<Key> modifiers;
 
 	@Override
 	public String toString() {
@@ -29,6 +25,14 @@ public class HIDEvent implements MatchingEvent {
 		if (!press)
 			out.append("↑");
 		out.append(Walk.decideEnumName(key));
+		if (!modifiers.isEmpty())
+			out.append(String.format(
+					" [%s]",
+					modifiers
+							.stream()
+							.map(modifier -> "+" + Walk.decideEnumName(modifier))
+							.collect(Collectors.joining(" "))
+			));
 		return out.toString();
 	}
 }

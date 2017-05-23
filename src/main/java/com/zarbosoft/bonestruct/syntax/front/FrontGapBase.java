@@ -245,11 +245,11 @@ public abstract class FrontGapBase extends FrontPart {
 							}
 						});
 					}
-					context.actions.put(this, actions);
+					context.addActions(this, actions);
 				}
 
 				public void destroy(final Context context) {
-					context.actions.remove(this);
+					context.removeActions(this);
 					context.removeConverseEdgeListener(edgeListener);
 				}
 

@@ -3,22 +3,23 @@ package com.zarbosoft.bonestruct.syntax.front;
 import com.zarbosoft.bonestruct.document.Atom;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
-import com.zarbosoft.bonestruct.editor.visual.VisualParent;
 import com.zarbosoft.bonestruct.editor.visual.Visual;
+import com.zarbosoft.bonestruct.editor.visual.VisualParent;
 import com.zarbosoft.bonestruct.editor.visual.tags.FreeTag;
 import com.zarbosoft.bonestruct.editor.visual.tags.PartTag;
 import com.zarbosoft.bonestruct.editor.visual.tags.Tag;
 import com.zarbosoft.bonestruct.editor.visual.visuals.VisualArray;
-import com.zarbosoft.bonestruct.modules.hotkeys.grammar.Node;
 import com.zarbosoft.bonestruct.syntax.AtomType;
 import com.zarbosoft.bonestruct.syntax.middle.MiddleArrayBase;
 import com.zarbosoft.bonestruct.syntax.symbol.Symbol;
 import com.zarbosoft.bonestruct.syntax.symbol.SymbolText;
 import com.zarbosoft.interface1.Configuration;
-import org.pcollections.HashTreePSet;
 import org.pcollections.PSet;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public abstract class FrontDataArrayBase extends FrontPart {
@@ -29,8 +30,6 @@ public abstract class FrontDataArrayBase extends FrontPart {
 	public List<FrontSymbol> suffix = new ArrayList<>();
 	@Configuration(optional = true)
 	public List<FrontSymbol> separator = new ArrayList<>();
-	@Configuration(optional = true)
-	public Map<String, Node> hotkeys = new HashMap<>();
 	@Configuration(name = "tag_first", optional = true)
 	public boolean tagFirst = false;
 	@Configuration(name = "tag_last", optional = true)
@@ -68,8 +67,7 @@ public abstract class FrontDataArrayBase extends FrontPart {
 				context,
 				parent,
 				dataType.get(atom.data),
-				HashTreePSet
-						.from(tags)
+				tags
 						.plus(new PartTag("array"))
 						.plusAll(this.tags.stream().map(s -> new FreeTag(s)).collect(Collectors.toSet())),
 				alignments,

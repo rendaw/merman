@@ -69,7 +69,7 @@ public class Helper {
 	}
 
 	public static void act(final Context context, final String name) {
-		for (final Action action : iterable(context.actions.entrySet().stream().flatMap(e -> e.getValue().stream()))) {
+		for (final Action action : iterable(context.actions())) {
 			if (action.getName().equals(name)) {
 				action.run(context);
 				return;

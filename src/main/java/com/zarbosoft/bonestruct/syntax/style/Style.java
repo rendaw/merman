@@ -20,8 +20,8 @@ public class Style {
 	@Configuration(optional = true, description = "These tags must be absent.")
 	public Set<Tag> without = new HashSet<>();
 
-	@Configuration(name = "break", optional = true)
-	public Boolean broken = null;
+	@Configuration(name = "split", optional = true)
+	public Boolean split = null;
 
 	@Configuration(name = "align", optional = true)
 	public String alignment = null;
@@ -82,7 +82,7 @@ public class Style {
 
 	public static class Baked {
 		public Set<Tag> tags = new HashSet<>();
-		public boolean broken = false;
+		public boolean split = false;
 		public String alignment = null;
 		public int spaceBefore = 0;
 		public int spaceAfter = 0;

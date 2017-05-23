@@ -21,7 +21,6 @@ import com.zarbosoft.bonestruct.editor.history.History;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.VisualParent;
-import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.tags.FreeTag;
 import com.zarbosoft.bonestruct.editor.visual.tags.StateTag;
 import com.zarbosoft.bonestruct.editor.visual.tags.Tag;
@@ -51,6 +50,7 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.zarbosoft.rendaw.common.Common.last;
 
@@ -62,12 +62,13 @@ public class Context {
 	private final Set<SelectionListener> selectionListeners = new HashSet<>();
 	private final Set<HoverListener> hoverListeners = new HashSet<>();
 	private final Set<TagsListener> selectionTagsChangeListeners = new HashSet<>();
+	private final Set<ActionChangeListener> actionChangeListeners = new HashSet<>();
 	public List<Module.State> modules;
 	public PSet<Tag> globalTags = HashTreePSet.empty();
 	public List<KeyListener> keyListeners = new ArrayList<>();
 	List<ContextIntListener> converseEdgeListeners = new ArrayList<>();
 	List<ContextIntListener> transverseEdgeListeners = new ArrayList<>();
-	public Map<Object, List<Action>> actions = new HashMap<>();
+	private final Map<Object, List<Action>> actions = new HashMap<>();
 	public ClipboardEngine clipboardEngine;
 	/**
 	 * Contains the cursor and other marks.  Scrolls.
@@ -102,6 +103,34 @@ public class Context {
 
 	public static interface ContextIntListener {
 		void changed(Context context, int oldValue, int newValue);
+	}
+
+	public static interface ActionChangeListener {
+		void actionsAdded(Context context);
+
+		void actionsRemoved(Context context);
+	}
+
+	public void addActions(final Object key, final List<Action> actions) {
+		this.actions.put(key, actions);
+		ImmutableSet.copyOf(actionChangeListeners).forEach(listener -> listener.actionsAdded(this));
+	}
+
+	public void removeActions(final Object key) {
+		this.actions.remove(key);
+		ImmutableSet.copyOf(actionChangeListeners).forEach(listener -> listener.actionsRemoved(this));
+	}
+
+	public void addActionChangeListener(final ActionChangeListener listener) {
+		actionChangeListeners.add(listener);
+	}
+
+	public void removeActionChangeListener(final ActionChangeListener listener) {
+		actionChangeListeners.remove(listener);
+	}
+
+	public Stream<Action> actions() {
+		return actions.entrySet().stream().flatMap(e -> e.getValue().stream());
 	}
 
 	public void addConverseEdgeListener(final ContextIntListener listener) {
@@ -163,7 +192,7 @@ public class Context {
 	public void changeGlobalTags(final TagsChange change) {
 		globalTags = change.apply(globalTags);
 		if (windowAtom == null)
-			document.top.visual.globalTagsChanged(this);
+			document.root.visual.globalTagsChanged(this);
 		else
 			windowAtom.visual.globalTagsChanged(this);
 	}
@@ -197,7 +226,7 @@ public class Context {
 		int pathIndex = -1;
 		final List<String> segments = ImmutableList.copyOf(path.segments);
 		// Either (value) or (atom & part) are always set
-		Value value = document.top;
+		Value value = document.rootArray;
 		Atom atom = null;
 		BackPart part = null;
 		for (int cycle = 0; cycle < 10000; ++cycle) {
@@ -509,7 +538,7 @@ public class Context {
 	public IdleLayBricks idleLayBricks = null;
 
 	private boolean overlapsWindow(final Visual visual) {
-		final Visual stop = windowAtom == null ? document.top.visual : windowAtom.visual;
+		final Visual stop = windowAtom == null ? document.root.visual : windowAtom.visual;
 		Visual at = visual;
 		while (true) {
 			if (at == stop)
@@ -522,20 +551,21 @@ public class Context {
 	}
 
 	public void createWindowForSelection(final Value value, final int depthThreshold) {
-		final Visual oldWindow = windowAtom == null ? document.top.visual : windowAtom.visual;
+		final Visual oldWindow = windowAtom == null ? document.root.visual : windowAtom.visual;
 		Visual windowVisual = null;
 
 		// Try just going up
 		if (windowAtom != null) {
 			Value at = windowAtom.parent.value();
 			while (true) {
-				if (at.parent == null)
-					break;
 				if (at == value) {
 					windowAtom = at.parent.atom();
 					windowVisual = windowAtom.createVisual(this, null, ImmutableMap.of(), 0);
 				}
-				at = at.parent.atom().parent.value();
+				final Atom atom = at.parent.atom();
+				if (atom.parent == null)
+					break;
+				at = atom.parent.value();
 			}
 		}
 
@@ -547,16 +577,14 @@ public class Context {
 				depth += windowAtom.type.depthScore;
 				if (depth >= depthThreshold)
 					break;
-				if (windowAtom.parent.value().parent == null)
+				if (windowAtom.parent == null)
 					break;
 				windowAtom = windowAtom.parent.value().parent.atom();
 			}
 
 			if (depth < depthThreshold) {
 				windowAtom = null;
-				final Atom rootAtom = new Atom(ImmutableMap.of("value", document.top));
-				windowVisual =
-						syntax.rootFront.createVisual(this, null, rootAtom, HashTreePSet.empty(), ImmutableMap.of(), 0);
+				windowVisual = document.root.createVisual(this, null, ImmutableMap.of(), 0);
 			} else {
 				windowVisual = windowAtom.createVisual(this, null, ImmutableMap.of(), 0);
 			}
@@ -574,7 +602,7 @@ public class Context {
 		}
 		if (windowAtom == null)
 			tagsChange = tagsChange.remove(new StateTag("root_window"));
-		final Visual oldWindow = windowAtom == null ? document.top.visual : windowAtom.visual;
+		final Visual oldWindow = windowAtom == null ? document.root.visual : windowAtom.visual;
 		windowAtom = atom;
 		final Visual windowVisual = atom.createVisual(this, null, ImmutableMap.of(), 0);
 		if (!overlapsWindow(oldWindow))
@@ -626,7 +654,7 @@ public class Context {
 	}
 
 	public class HoverIdle extends IdleTask {
-		public com.zarbosoft.bonestruct.editor.visual.Vector point = null;
+		public Vector point = null;
 		Context context;
 		Brick at;
 
@@ -707,13 +735,7 @@ public class Context {
 	public void windowClearNoLayBricks() {
 		window = false;
 		windowAtom = null;
-		syntax.rootFront.createVisual(this,
-				null,
-				new Atom(ImmutableMap.of("value", document.top)),
-				HashTreePSet.empty(),
-				ImmutableMap.of(),
-				0
-		);
+		document.root.createVisual(this, null, ImmutableMap.of(), 0);
 		changeGlobalTags(new TagsChange(ImmutableSet.of(),
 				ImmutableSet.of(new StateTag("windowed"), new StateTag("root_window"))
 		));
@@ -746,16 +768,9 @@ public class Context {
 				final Atom atom = windowAtom;
 				final Visual oldWindowVisual = windowAtom.visual;
 				final Visual windowVisual;
-				if (atom.parent.value().parent == null) {
+				if (atom == document.root) {
 					windowAtom = null;
-					final Atom rootAtom = new Atom(ImmutableMap.of("value", document.top));
-					windowVisual = syntax.rootFront.createVisual(context,
-							null,
-							rootAtom,
-							HashTreePSet.empty(),
-							ImmutableMap.of(),
-							0
-					);
+					windowVisual = document.root.createVisual(context, null, ImmutableMap.of(), 0);
 				} else {
 					windowAtom = atom.parent.value().parent.atom();
 					windowVisual = windowAtom.createVisual(context, null, ImmutableMap.of(), 0);
@@ -920,19 +935,13 @@ public class Context {
 		else {
 			window = true;
 			windowAtom = null;
-			syntax.rootFront.createVisual(this,
-					null,
-					new Atom(ImmutableMap.of("value", document.top)),
-					HashTreePSet.empty(),
-					ImmutableMap.of(),
-					0
-			);
+			document.root.createVisual(this, null, ImmutableMap.of(), 0);
 			changeGlobalTags(new TagsChange(ImmutableSet.of(new StateTag("windowed"), new StateTag("root_window")),
 					ImmutableSet.of()
 			));
 		}
 		modules = document.syntax.modules.stream().map(p -> p.initialize(this)).collect(Collectors.toList());
-		document.top.selectDown(this);
+		document.rootArray.selectDown(this);
 		idleLayBricksOutward();
 	}
 

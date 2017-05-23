@@ -6,7 +6,6 @@ import com.zarbosoft.bonestruct.editor.Hoverable;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.VisualParent;
-import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.tags.TagsChange;
 import com.zarbosoft.bonestruct.editor.wall.Brick;
 import com.zarbosoft.bonestruct.syntax.AtomType;
@@ -160,6 +159,8 @@ public class VisualAtom extends Visual {
 
 		@Override
 		public Brick createNextBrick(final Context context) {
+			if (parent == null)
+				return null;
 			if (context.windowAtom == VisualAtom.this.atom)
 				return null;
 			return parent.createNextBrick(context);
@@ -167,6 +168,8 @@ public class VisualAtom extends Visual {
 
 		@Override
 		public Brick createPreviousBrick(final Context context) {
+			if (parent == null)
+				return null;
 			if (context.windowAtom == VisualAtom.this.atom)
 				return null;
 			return parent.createPreviousBrick(context);

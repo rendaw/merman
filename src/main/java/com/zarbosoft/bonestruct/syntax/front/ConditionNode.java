@@ -14,7 +14,7 @@ public class ConditionNode extends ConditionType {
 			final Context context, final Atom atom
 	) {
 		final boolean show;
-		if (atom.parent.value().parent == null) {
+		if (atom.parent == null) {
 			show = true;
 		} else if (!(atom.type instanceof FreeAtomType)) {
 			show = true;

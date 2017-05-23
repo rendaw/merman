@@ -19,7 +19,7 @@ public class BrickLine extends BrickText {
 	@Override
 	public Properties properties(final Context context, final Style.Baked style) {
 		if (line.index > 0)
-			style.broken = true;
+			style.split = true;
 		return super.properties(context, style);
 	}
 

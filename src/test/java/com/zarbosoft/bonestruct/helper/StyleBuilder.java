@@ -12,7 +12,7 @@ public class StyleBuilder {
 	}
 
 	public StyleBuilder broken(final boolean on) {
-		style.broken = on;
+		style.split = on;
 		return this;
 	}
 

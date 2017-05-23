@@ -5,6 +5,7 @@ import com.zarbosoft.bonestruct.document.Atom;
 import com.zarbosoft.bonestruct.document.Document;
 import com.zarbosoft.bonestruct.document.values.ValueArray;
 import com.zarbosoft.bonestruct.modules.Module;
+import com.zarbosoft.bonestruct.syntax.alignments.AlignmentDefinition;
 import com.zarbosoft.bonestruct.syntax.front.FrontDataRootArray;
 import com.zarbosoft.bonestruct.syntax.middle.MiddleArray;
 import com.zarbosoft.bonestruct.syntax.style.BoxStyle;
@@ -105,6 +106,9 @@ public class Syntax {
 	@Configuration(description = "The type of the root array in a document.  This is not used when " +
 			"pasting code; in that case the context is used to determine the paste's potential root type.")
 	public MiddleArray root;
+
+	@Configuration(name = "root_alignments")
+	public Map<String, AlignmentDefinition> rootAlignments = new HashMap<>();
 
 	@Configuration(name = "root_front", optional = true, description = "Root front-end configuration.")
 	public FrontDataRootArray rootFront = new FrontDataRootArray();

@@ -47,7 +47,7 @@ public class ChangeArray extends Change {
 
 	@Override
 	public Change apply(final Context context) {
-		if (add.isEmpty() && index == 0 && remove == value.data.size() && value.parent == null) {
+		if (add.isEmpty() && index == 0 && remove == value.data.size() && value.parent.atom().parent == null) {
 			add.add(context.syntax.gap.create());
 		}
 		final List<Atom> clearSublist = value.data.subList(index, index + remove);
