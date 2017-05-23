@@ -135,13 +135,13 @@ public class Main extends Application {
 		//separate lrtb padding
 		//box lrtb padding
 		//remove part tags (explicit only)
-		dialogs as detail pages not popups because popups are broken
 		//add prefix/suffix actions in atom/array vis
-		show details on gap select if nonempty
 		//banner and details padding
+		//primitive leadFirst
+		//store array/primitive leadFirst in sel saveState
+		dialogs as detail pages not popups because popups are broken
+		show details on gap select if nonempty
 		add actions for choice 1-9,0
-		primitive leadFirst
-		store array/primitive leadFirst in sel saveState
 		syntax documenter
 		action documenter
 		test merging changes; finishing history on actions

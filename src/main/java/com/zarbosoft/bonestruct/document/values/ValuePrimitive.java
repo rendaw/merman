@@ -35,7 +35,7 @@ public class ValuePrimitive extends com.zarbosoft.bonestruct.document.values.Val
 			}
 		}
 		final int length = data.length();
-		visual.select(context, length, length);
+		visual.select(context, true, length, length);
 		return true;
 	}
 

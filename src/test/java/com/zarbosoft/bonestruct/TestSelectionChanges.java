@@ -77,7 +77,7 @@ public class TestSelectionChanges {
 
 		final ValueArray value = (ValueArray) context.document.top.data.get(0).data.get("value");
 		final VisualArray visual = (VisualArray) value.visual;
-		visual.select(context, beginSelectBegin, beginSelectEnd);
+		visual.select(context, true, beginSelectBegin, beginSelectEnd);
 		final VisualArray.ArraySelection selection = visual.selection;
 
 		// Transform

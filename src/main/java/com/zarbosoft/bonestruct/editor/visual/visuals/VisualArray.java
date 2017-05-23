@@ -133,7 +133,7 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 				value.parent.selectUp(context);
 			else if (fixDeepSelectionIndex >= index && fixDeepSelectionIndex < index + remove) {
 				final int newIndex = Math.min(value.data.size() - 1, index + Math.max(0, add.size() - 1));
-				select(context, newIndex, newIndex);
+				select(context, true, newIndex, newIndex);
 			}
 		}
 	}
@@ -513,7 +513,7 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 
 		@Override
 		public void click(final Context context) {
-			select(context, index, index);
+			select(context, true, index, index);
 		}
 
 		@Override
@@ -550,9 +550,9 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 		BorderAttachment border;
 		public int beginIndex;
 		public int endIndex;
-		public boolean leadFirst = true;
+		public boolean leadFirst;
 
-		public ArraySelection(final Context context, final int start, final int end) {
+		public ArraySelection(final Context context, final boolean leadFirst, final int start, final int end) {
 			border = new BorderAttachment(context);
 			border.setStyle(context, getBorderStyle(context, tags).obbox);
 			adapter = new MultiVisualAttachmentAdapter(context);
@@ -567,6 +567,7 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 					border.setLast(context, brick);
 				}
 			});
+			this.leadFirst = leadFirst;
 			setRange(context, start, end);
 			context.actions.put(this, ImmutableList.of(new Action() {
 				@Override
@@ -596,7 +597,7 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 				@Override
 				public void run(final Context context) {
 					context.history.finishChange(context);
-					leadFirst = true;
+					ArraySelection.this.leadFirst = true;
 					setPosition(context, Math.min(value.data.size() - 1, endIndex + 1));
 				}
 
@@ -608,7 +609,7 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 				@Override
 				public void run(final Context context) {
 					context.history.finishChange(context);
-					leadFirst = true;
+					ArraySelection.this.leadFirst = true;
 					setPosition(context, Math.max(0, beginIndex - 1));
 				}
 
@@ -748,7 +749,7 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 					context.history.apply(context, new ChangeArray(value, index, atoms.size(), ImmutableList.of()));
 					setBegin(context, --index);
 					context.history.apply(context, new ChangeArray(value, index, 0, atoms));
-					leadFirst = true;
+					ArraySelection.this.leadFirst = true;
 					setRange(context, index, index + atoms.size() - 1);
 				}
 
@@ -766,7 +767,7 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 					context.history.apply(context, new ChangeArray(value, index, atoms.size(), ImmutableList.of()));
 					setPosition(context, ++index);
 					context.history.apply(context, new ChangeArray(value, index, 0, atoms));
-					leadFirst = false;
+					ArraySelection.this.leadFirst = false;
 					setRange(context, index, index + atoms.size() - 1);
 				}
 
@@ -880,7 +881,7 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 
 		@Override
 		public SelectionState saveState() {
-			return new ArraySelectionState(value, beginIndex, endIndex);
+			return new ArraySelectionState(value, leadFirst, beginIndex, endIndex);
 		}
 
 		@Override
@@ -906,25 +907,27 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 		private final ValueArray value;
 		private final int start;
 		private final int end;
+		private final boolean leadFirst;
 
-		private ArraySelectionState(final ValueArray value, final int start, final int end) {
+		private ArraySelectionState(final ValueArray value, final boolean leadFirst, final int start, final int end) {
 			this.value = value;
+			this.leadFirst = leadFirst;
 			this.start = start;
 			this.end = end;
 		}
 
 		@Override
 		public void select(final Context context) {
-			value.select(context, start, end);
+			value.select(context, leadFirst, start, end);
 		}
 	}
 
-	public void select(final Context context, final int start, final int end) {
+	public void select(final Context context, final boolean leadFirst, final int start, final int end) {
 		if (hoverable != null && hoverable.index >= start && hoverable.index <= end) {
 			context.clearHover();
 		}
 		if (selection == null) {
-			selection = new ArraySelection(context, start, end);
+			selection = new ArraySelection(context, leadFirst, start, end);
 			context.setSelection(selection);
 		} else {
 			selection.setRange(context, start, end);
@@ -933,7 +936,7 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 
 	@Override
 	public boolean selectDown(final Context context) {
-		value.select(context, 0, 0);
+		value.select(context, true, 0, 0);
 		return true;
 	}
 

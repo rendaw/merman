@@ -15,8 +15,8 @@ import com.zarbosoft.bonestruct.editor.display.derived.Box;
 import com.zarbosoft.bonestruct.editor.display.derived.ColumnarTableLayout;
 import com.zarbosoft.bonestruct.editor.display.derived.RowLayout;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
-import com.zarbosoft.bonestruct.editor.visual.VisualParent;
 import com.zarbosoft.bonestruct.editor.visual.Visual;
+import com.zarbosoft.bonestruct.editor.visual.VisualParent;
 import com.zarbosoft.bonestruct.editor.visual.tags.FreeTag;
 import com.zarbosoft.bonestruct.editor.visual.tags.PartTag;
 import com.zarbosoft.bonestruct.editor.visual.tags.Tag;
@@ -102,9 +102,9 @@ public abstract class FrontGapBase extends FrontPart {
 
 		@Override
 		public PrimitiveSelection createSelection(
-				final Context context, final int beginOffset, final int endOffset
+				final Context context, final boolean leadFirst, final int beginOffset, final int endOffset
 		) {
-			return new GapSelection(context, beginOffset, endOffset);
+			return new GapSelection(context, leadFirst, beginOffset, endOffset);
 		}
 
 		public class GapSelection extends PrimitiveSelection {
@@ -242,9 +242,9 @@ public abstract class FrontGapBase extends FrontPart {
 			}
 
 			public GapSelection(
-					final Context context, final int beginOffset, final int endOffset
+					final Context context, final boolean leadFirst, final int beginOffset, final int endOffset
 			) {
-				super(context, beginOffset, endOffset);
+				super(context, leadFirst, beginOffset, endOffset);
 				self = dataType.get(data);
 			}
 

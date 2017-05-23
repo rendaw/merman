@@ -71,7 +71,7 @@ public class ValueArray extends Value {
 
 		@Override
 		public void selectUp(final Context context) {
-			select(context, index, index);
+			select(context, true, index, index);
 		}
 	}
 
@@ -118,7 +118,7 @@ public class ValueArray extends Value {
 		return visual;
 	}
 
-	public void select(final Context context, final int start, final int end) {
+	public void select(final Context context, final boolean leadFirst, final int start, final int end) {
 		if (data.isEmpty()) {
 			final List<FreeAtomType> childTypes =
 					context.syntax.getLeafTypes(((MiddleArrayBase) middle()).type).collect(Collectors.toList());
@@ -137,7 +137,7 @@ public class ValueArray extends Value {
 			}
 		}
 		if (visual instanceof VisualArray)
-			((VisualArray) visual).select(context, start, end);
+			((VisualArray) visual).select(context, true, start, end);
 		else if (visual instanceof VisualNestedFromArray)
 			((VisualNestedFromArray) visual).select(context);
 		else
@@ -146,7 +146,7 @@ public class ValueArray extends Value {
 
 	@Override
 	public boolean selectDown(final Context context) {
-		select(context, 0, 0);
+		select(context, true, 0, 0);
 		return true;
 	}
 }

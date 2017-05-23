@@ -131,6 +131,7 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 	public PrimitiveSelection selection;
 
 	public class RangeAttachment {
+		boolean leadFirst;
 		TextBorderAttachment border;
 		CursorAttachment cursor;
 		Line beginLine;
@@ -201,21 +202,23 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 
 		private void setOffsets(final Context context, final int beginOffset, final int endOffset) {
 			setOffsetsInternal(context, beginOffset, endOffset);
-			context.foreground.setCornerstone(context, beginLine.createOrGetBrick(context));
+			context.foreground.setCornerstone(context, (leadFirst ? beginLine : endLine).createOrGetBrick(context));
 		}
 
 		private void setOffsets(final Context context, final int offset) {
 			setOffsetsInternal(context, offset, offset);
-			context.foreground.setCornerstone(context, beginLine.createOrGetBrick(context));
+			context.foreground.setCornerstone(context, (leadFirst ? beginLine : endLine).createOrGetBrick(context));
 		}
 
 		private void setBeginOffset(final Context context, final int offset) {
 			setOffsetsInternal(context, offset, endOffset);
+			leadFirst = true;
 			context.foreground.setCornerstone(context, beginLine.createOrGetBrick(context));
 		}
 
 		private void setEndOffset(final Context context, final int offset) {
 			setOffsetsInternal(context, beginOffset, offset);
+			leadFirst = false;
 			context.foreground.setCornerstone(context, endLine.createOrGetBrick(context));
 		}
 
@@ -228,7 +231,7 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 
 		public void nudge(final Context context) {
 			setOffsetsInternal(context, beginOffset, endOffset);
-			context.foreground.setCornerstone(context, beginLine.createOrGetBrick(context));
+			context.foreground.setCornerstone(context, (leadFirst ? beginLine : endLine).createOrGetBrick(context));
 		}
 
 		public void addListener(final Context context, final VisualAttachmentAdapter.BoundsListener listener) {
@@ -352,10 +355,11 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 		}
 
 		public PrimitiveSelection(
-				final Context context, final int beginOffset, final int endOffset
+				final Context context, final boolean leadFirst, final int beginOffset, final int endOffset
 		) {
 			range = new RangeAttachment();
 			range.setStyle(context, getBorderStyle(context, tags).obbox);
+			range.leadFirst = leadFirst;
 			range.setOffsets(context, beginOffset, endOffset);
 			clusterIterator.setText(value.get());
 			value.addListener(this.clusterListener);
@@ -528,7 +532,7 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 									value.changeRemove(lines.get(range.beginLine.index + 1).offset - 1, 1)
 							);
 							context.history.finishChange(context);
-							select(context, select, select);
+							select(context, true, select, select);
 						}
 					} else {
 						if (range.beginLine != range.endLine) {
@@ -547,7 +551,7 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 							);
 							context.history.apply(context, value.changeAdd(range.beginOffset, replace.toString()));
 							context.history.finishChange(context);
-							select(context, selectBegin, selectEnd);
+							select(context, true, selectBegin, selectEnd);
 						}
 					}
 				}
@@ -811,7 +815,7 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 
 		@Override
 		public SelectionState saveState() {
-			return new PrimitiveSelectionState(value, range.beginOffset, range.endOffset);
+			return new PrimitiveSelectionState(value, range.leadFirst, range.beginOffset, range.endOffset);
 		}
 
 		@Override
@@ -833,24 +837,29 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 		private final ValuePrimitive value;
 		private final int beginOffset;
 		private final int endOffset;
+		private final boolean leadFirst;
 
-		public PrimitiveSelectionState(final ValuePrimitive value, final int beginOffset, final int endOffset) {
+		public PrimitiveSelectionState(
+				final ValuePrimitive value, final boolean leadFirst, final int beginOffset, final int endOffset
+		) {
 			this.value = value;
+			this.leadFirst = leadFirst;
 			this.beginOffset = beginOffset;
 			this.endOffset = endOffset;
 		}
 
 		@Override
 		public void select(final Context context) {
-			((VisualPrimitive) value.visual).select(context, beginOffset, endOffset);
+			((VisualPrimitive) value.visual).select(context, leadFirst, beginOffset, endOffset);
 		}
 	}
 
-	public void select(final Context context, final int beginOffset, final int endOffset) {
+	public void select(final Context context, final boolean leadFirst, final int beginOffset, final int endOffset) {
 		if (selection != null) {
+			selection.range.leadFirst = leadFirst;
 			selection.range.setOffsets(context, beginOffset, endOffset);
 		} else {
-			selection = createSelection(context, beginOffset, endOffset);
+			selection = createSelection(context, leadFirst, beginOffset, endOffset);
 			context.setSelection(selection);
 		}
 	}
@@ -879,7 +888,7 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 
 		@Override
 		public void click(final Context context) {
-			select(context, range.beginOffset, range.endOffset);
+			select(context, true, range.beginOffset, range.endOffset);
 		}
 
 		@Override
@@ -903,9 +912,9 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 	}
 
 	public PrimitiveSelection createSelection(
-			final Context context, final int beginOffset, final int endOffset
+			final Context context, final boolean leadFirst, final int beginOffset, final int endOffset
 	) {
-		return new PrimitiveSelection(context, beginOffset, endOffset);
+		return new PrimitiveSelection(context, leadFirst, beginOffset, endOffset);
 	}
 
 	public class Line implements BrickInterface {
