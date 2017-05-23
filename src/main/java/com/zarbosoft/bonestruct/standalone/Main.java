@@ -139,8 +139,8 @@ public class Main extends Application {
 		//banner and details padding
 		//primitive leadFirst
 		//store array/primitive leadFirst in sel saveState
-		dialogs as detail pages not popups because popups are broken
 		show details on gap select if nonempty
+		dialogs as detail pages not popups because popups are broken
 		add actions for choice 1-9,0
 		syntax documenter
 		action documenter

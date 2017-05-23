@@ -246,20 +246,27 @@ public abstract class FrontGapBase extends FrontPart {
 			) {
 				super(context, leadFirst, beginOffset, endOffset);
 				self = dataType.get(data);
+				if (self.data.length() > 0) {
+					updateGap(context);
+				}
+			}
+
+			public void updateGap(final Context context) {
+				if (gapDetails != null) {
+					context.details.removePage(context, gapDetails);
+					gapDetails.destroy(context);
+				}
+				final List<? extends Choice> choices = process(context, self.parent.atom(), self.get(), userData);
+				if (!choices.isEmpty()) {
+					gapDetails = new GapDetails(context, choices);
+					context.details.addPage(context, gapDetails);
+				}
 			}
 
 			@Override
 			public void receiveText(final Context context, final String text) {
 				super.receiveText(context, text);
-				final List<? extends Choice> choices = process(context, self.parent.atom(), self.get(), userData);
-				if (!choices.isEmpty()) {
-					if (gapDetails != null) {
-						context.details.removePage(context, gapDetails);
-						gapDetails.destroy(context);
-					}
-					gapDetails = new GapDetails(context, choices);
-					context.details.addPage(context, gapDetails);
-				}
+				updateGap(context);
 			}
 
 			@Override
