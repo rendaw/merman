@@ -29,7 +29,8 @@ import java.util.function.Consumer;
 import static com.zarbosoft.bonestruct.modules.hotkeys.Key.*;
 
 public class JavaFXDisplay implements Display {
-	public Pane node = new Pane();
+	public final Pane node = new Pane();
+	private final javafx.scene.Group origin = new javafx.scene.Group();
 
 	Set<Key> modifiers = new HashSet<>();
 	List<Runnable> mouseExitListeners = new ArrayList<>();
@@ -41,6 +42,7 @@ public class JavaFXDisplay implements Display {
 
 	public JavaFXDisplay(final Syntax syntax) {
 		node.setFocusTraversable(true);
+		node.getChildren().add(origin);
 		node.setOnMouseExited(event -> {
 			ImmutableList.copyOf(mouseExitListeners).forEach(l -> l.run());
 		});
@@ -114,6 +116,26 @@ public class JavaFXDisplay implements Display {
 		};
 		node.heightProperty().addListener(clipListener);
 		node.widthProperty().addListener(clipListener);
+		if (syntax.converseDirection == Syntax.Direction.LEFT || syntax.transverseDirection == Syntax.Direction.LEFT) {
+			node.widthProperty().addListener(new ChangeListener<>() {
+				@Override
+				public void changed(
+						final ObservableValue<? extends Number> observable, final Number oldValue, final Number newValue
+				) {
+					origin.setLayoutX(newValue.doubleValue());
+				}
+			});
+		}
+		if (syntax.converseDirection == Syntax.Direction.UP || syntax.transverseDirection == Syntax.Direction.UP) {
+			node.heightProperty().addListener(new ChangeListener<>() {
+				@Override
+				public void changed(
+						final ObservableValue<? extends Number> observable, final Number oldValue, final Number newValue
+				) {
+					origin.setLayoutY(newValue.doubleValue());
+				}
+			});
+		}
 	}
 
 	public void addMouseExitListener(final Runnable listener) {
@@ -213,17 +235,17 @@ public class JavaFXDisplay implements Display {
 
 	@Override
 	public void add(final int index, final DisplayNode node) {
-		this.node.getChildren().add(index, ((JavaFXNode) node).node());
+		this.origin.getChildren().add(index, ((JavaFXNode) node).node());
 	}
 
 	@Override
 	public void remove(final DisplayNode node) {
-		this.node.getChildren().remove(((JavaFXNode) node).node());
+		this.origin.getChildren().remove(((JavaFXNode) node).node());
 	}
 
 	@Override
 	public int size() {
-		return node.getChildren().size();
+		return origin.getChildren().size();
 	}
 
 	@Override

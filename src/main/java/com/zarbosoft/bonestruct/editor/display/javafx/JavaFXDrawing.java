@@ -23,17 +23,17 @@ public class JavaFXDrawing extends JavaFXNode implements Drawing {
 		return node;
 	}
 
-	public Point2D toScreen(final Context context, final com.zarbosoft.bonestruct.editor.visual.Vector source) {
+	public Point2D toScreen(final Context context, final Vector source) {
 		double x = 0, y = 0;
 		switch (context.syntax.converseDirection) {
 			case UP:
-				y = context.display.edge(context) - source.converse;
+				y = -source.converse;
 				break;
 			case DOWN:
 				y = source.converse;
 				break;
 			case LEFT:
-				x = context.display.edge(context) - source.converse;
+				x = -source.converse;
 				break;
 			case RIGHT:
 				x = source.converse;
@@ -41,13 +41,13 @@ public class JavaFXDrawing extends JavaFXNode implements Drawing {
 		}
 		switch (context.syntax.transverseDirection) {
 			case UP:
-				y = context.display.transverseEdge(context) - source.transverse;
+				y = -source.transverse;
 				break;
 			case DOWN:
 				y = source.transverse;
 				break;
 			case LEFT:
-				x = context.display.transverseEdge(context) - source.transverse;
+				x = -source.transverse;
 				break;
 			case RIGHT:
 				x = source.transverse;
@@ -56,7 +56,7 @@ public class JavaFXDrawing extends JavaFXNode implements Drawing {
 		return new Point2D(x, y);
 	}
 
-	public Point2D toScreenSpan(final Context context, final com.zarbosoft.bonestruct.editor.visual.Vector source) {
+	public Point2D toScreenSpan(final Context context, final Vector source) {
 		double x = 0, y = 0;
 		switch (context.syntax.converseDirection) {
 			case UP:

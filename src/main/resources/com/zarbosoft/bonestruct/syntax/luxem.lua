@@ -173,9 +173,20 @@ _modeless_keys = function(config)
             {
                 hotkeys = {
                     exit = { key 'escape' },
-                    enter = { key 'enter', key 'space' },
+                    enter = { key 'enter' },
                     undo = { key { key = 'z', modifiers = { 'control' } } },
                     redo = { key { key = 'z', modifiers = { 'control', 'shift' } } },
+                    choose = { key 'space' },
+                    choose_0 = { key { key = '0', modifiers = { 'control' } } },
+                    choose_1 = { key { key = '1', modifiers = { 'control' } } },
+                    choose_2 = { key { key = '2', modifiers = { 'control' } } },
+                    choose_3 = { key { key = '3', modifiers = { 'control' } } },
+                    choose_4 = { key { key = '4', modifiers = { 'control' } } },
+                    choose_5 = { key { key = '5', modifiers = { 'control' } } },
+                    choose_6 = { key { key = '6', modifiers = { 'control' } } },
+                    choose_7 = { key { key = '7', modifiers = { 'control' } } },
+                    choose_8 = { key { key = '8', modifiers = { 'control' } } },
+                    choose_9 = { key { key = '9', modifiers = { 'control' } } },
                     delete_next = { key 'delete' },
                     delete_previous = { key 'backspace' },
                     next = { key 'right' },
@@ -199,6 +210,8 @@ _modeless_keys = function(config)
                     create_after = { key { key = 'a', modifiers = { 'control' } } },
                     prefix = { key { key = 'i', modifiers = { 'control' } } },
                     suffix = { key { key = 'a', modifiers = { 'control' } } },
+                    next_choice = { key { key = 'down', modifiers = { 'control' } } },
+                    previous_choice = { key { key = 'up', modifiers = { 'control' } } },
                 },
             }
         }
@@ -251,7 +264,7 @@ return _modeless_keys {
             },
         },
         {
-            with = { part 'select' },
+            with = { part 'selection' },
             obbox = {
                 line_color = rgb { r = 101 / 255, g = 82 / 255, b = 122 / 255 },
             },

@@ -19,12 +19,10 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -74,20 +72,33 @@ public class Main extends Application {
 			alert.initModality(Modality.APPLICATION_MODAL);
 			alert.initOwner(top);
 			alert.setResizable(true);
+			alert
+					.getDialogPane()
+					.getChildren()
+					.stream()
+					.filter(node -> node instanceof Label)
+					.forEach(node -> ((Label) node).setMinHeight(Region.USE_PREF_SIZE));
 			alert.showAndWait();
 		}
 	}
 
 	private boolean confirmOverwrite(final Window top) {
-		final Alert confirm =
-				new Alert(Alert.AlertType.CONFIRMATION, "File exists, overwrite?", ButtonType.YES, ButtonType.NO);
+		return confirmDialog(stage, "File exists, overwrite?");
+	}
+
+	public static boolean confirmDialog(final Stage stage, final String text) {
+		final Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, text, ButtonType.NO, ButtonType.YES);
+		confirm.initOwner(stage.getOwner());
 		confirm.initModality(Modality.APPLICATION_MODAL);
-		confirm.initOwner(top);
 		confirm.setResizable(true);
+		confirm
+				.getDialogPane()
+				.getChildren()
+				.stream()
+				.filter(node -> node instanceof Label)
+				.forEach(node -> ((Label) node).setMinHeight(Region.USE_PREF_SIZE));
 		confirm.showAndWait();
-		if (confirm.getResult() != ButtonType.YES)
-			return false;
-		return true;
+		return confirm.getResult() == ButtonType.YES;
 	}
 
 	@Override
@@ -141,13 +152,13 @@ public class Main extends Application {
 		//store array/primitive leadFirst in sel saveState
 		//show details on gap select if nonempty
 		//arbitrary key modifiers
-		dialogs as detail pages not popups because popups are broken
+		//fix dialogs
 		add actions for choice 1-9,0
+		//abstract xy origin for alternative converse/transverse directions, reduce window resize listeners
+		//test brick layout
+
 		syntax documenter
 		action documenter
-		test merging changes; finishing history on actions
-		abstract xy origin for alternative converse/transverse directions, reduce window resize listeners
-		//test brick layout
 
 		long range goals
 		_sed (led) substitution
@@ -324,17 +335,7 @@ public class Main extends Application {
 			@Override
 			public void handle(final WindowEvent t) {
 				if (history.isModified()) {
-					final Alert confirm = new Alert(
-							Alert.AlertType.CONFIRMATION,
-							"File has unsaved changes. Do you still want to quit?",
-							ButtonType.YES,
-							ButtonType.NO
-					);
-					confirm.initOwner(stage.getOwner());
-					confirm.initModality(Modality.APPLICATION_MODAL);
-					confirm.setResizable(true);
-					confirm.showAndWait();
-					if (confirm.getResult() != ButtonType.YES) {
+					if (!confirmDialog(stage, "File has unsaved changes. Do you still want to quit?")) {
 						t.consume();
 						return;
 					}

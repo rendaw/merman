@@ -41,13 +41,11 @@ public abstract class JavaFXNode implements DisplayNode {
 	public int converse(final Context context) {
 		switch (context.syntax.converseDirection) {
 			case UP:
-				return context.display.edge(context) - (int) node().getLayoutY() +
-						(int) node().getLayoutBounds().getWidth();
+				return -(int) node().getLayoutY() - (int) node().getLayoutBounds().getHeight();
 			case DOWN:
 				return (int) node().getLayoutY();
 			case LEFT:
-				return context.display.edge(context) - (int) node().getLayoutX() +
-						(int) node().getLayoutBounds().getWidth();
+				return -(int) node().getLayoutX() - (int) node().getLayoutBounds().getWidth();
 			case RIGHT:
 				return (int) node().getLayoutX();
 		}
@@ -58,13 +56,11 @@ public abstract class JavaFXNode implements DisplayNode {
 	public int transverse(final Context context) {
 		switch (context.syntax.transverseDirection) {
 			case UP:
-				return context.display.transverseEdge(context) - (int) node().getLayoutY() +
-						(int) node().getLayoutBounds().getWidth();
+				return -(int) node().getLayoutY() - (int) node().getLayoutBounds().getHeight();
 			case DOWN:
 				return (int) node().getLayoutY();
 			case LEFT:
-				return context.display.transverseEdge(context) - (int) node().getLayoutX() +
-						(int) node().getLayoutBounds().getWidth();
+				return -(int) node().getLayoutX() - (int) node().getLayoutBounds().getWidth();
 			case RIGHT:
 				return (int) node().getLayoutX();
 		}
@@ -77,13 +73,13 @@ public abstract class JavaFXNode implements DisplayNode {
 		int transverse = 0;
 		switch (context.syntax.converseDirection) {
 			case UP:
-				converse = context.display.edge(context) - (int) node().getLayoutY() + (int) bounds.getWidth();
+				converse = -(int) node().getLayoutY() - (int) node().getLayoutBounds().getHeight();
 				break;
 			case DOWN:
 				converse = (int) node().getLayoutY();
 				break;
 			case LEFT:
-				converse = context.display.edge(context) - (int) node().getLayoutX() + (int) bounds.getWidth();
+				converse = -(int) node().getLayoutX() - (int) node().getLayoutBounds().getWidth();
 				break;
 			case RIGHT:
 				converse = (int) node().getLayoutX();
@@ -91,15 +87,13 @@ public abstract class JavaFXNode implements DisplayNode {
 		}
 		switch (context.syntax.transverseDirection) {
 			case UP:
-				transverse =
-						context.display.transverseEdge(context) - (int) node().getLayoutY() + (int) bounds.getWidth();
+				transverse = -(int) node().getLayoutY() - (int) node().getLayoutBounds().getHeight();
 				break;
 			case DOWN:
 				transverse = (int) node().getLayoutY();
 				break;
 			case LEFT:
-				transverse =
-						context.display.transverseEdge(context) - (int) node().getLayoutX() + (int) bounds.getWidth();
+				transverse = -(int) node().getLayoutX() - (int) node().getLayoutBounds().getWidth();
 				break;
 			case RIGHT:
 				transverse = (int) node().getLayoutX();
@@ -108,7 +102,8 @@ public abstract class JavaFXNode implements DisplayNode {
 		return new com.zarbosoft.bonestruct.editor.visual.Vector(converse, transverse);
 	}
 
-	private class TransitionSmoothOut extends Transition {
+	public static class TransitionSmoothOut extends Transition {
+		private final Node node;
 		private final Double diffX;
 		private final Double diffY;
 
@@ -116,7 +111,8 @@ public abstract class JavaFXNode implements DisplayNode {
 			setCycleDuration(javafx.util.Duration.millis(200));
 		}
 
-		private TransitionSmoothOut(final Double diffX, final Double diffY) {
+		TransitionSmoothOut(final Node node, final Double diffX, final Double diffY) {
+			this.node = node;
 			this.diffX = diffX;
 			this.diffY = diffY;
 		}
@@ -125,9 +121,9 @@ public abstract class JavaFXNode implements DisplayNode {
 		protected void interpolate(final double frac) {
 			final double frac2 = Math.pow(1 - frac, 3);
 			if (diffX != null)
-				node().setTranslateX(-frac2 * diffX);
+				node.setTranslateX(-frac2 * diffX);
 			if (diffY != null)
-				node().setTranslateY(-frac2 * diffY);
+				node.setTranslateY(-frac2 * diffY);
 		}
 	}
 
@@ -137,13 +133,13 @@ public abstract class JavaFXNode implements DisplayNode {
 		Integer y = null;
 		switch (context.syntax.transverseDirection) {
 			case UP:
-				y = (int) node().getLayoutBounds().getHeight() + transverse;
+				y = -transverse - (int) node().getLayoutBounds().getHeight();
 				break;
 			case DOWN:
 				y = transverse;
 				break;
 			case LEFT:
-				x = (int) node().getLayoutBounds().getWidth() + transverse;
+				x = -transverse - (int) node().getLayoutBounds().getWidth();
 				break;
 			case RIGHT:
 				x = transverse;
@@ -151,11 +147,11 @@ public abstract class JavaFXNode implements DisplayNode {
 		}
 		if (x != null) {
 			if (animate)
-				new TransitionSmoothOut(x - node().getLayoutX(), null).play();
+				new TransitionSmoothOut(node(), x - node().getLayoutX(), null).play();
 			node().setLayoutX(x);
 		} else {
 			if (animate)
-				new TransitionSmoothOut(null, y - node().getLayoutY()).play();
+				new TransitionSmoothOut(node(), null, y - node().getLayoutY()).play();
 			node().setLayoutY(y);
 		}
 	}
@@ -166,13 +162,13 @@ public abstract class JavaFXNode implements DisplayNode {
 		Integer y = null;
 		switch (context.syntax.converseDirection) {
 			case UP:
-				y = (int) node().getLayoutBounds().getHeight() + converse;
+				y = -converse - (int) node().getLayoutBounds().getHeight();
 				break;
 			case DOWN:
 				y = converse;
 				break;
 			case LEFT:
-				x = (int) node().getLayoutBounds().getWidth() + converse;
+				x = -converse - (int) node().getLayoutBounds().getWidth();
 				break;
 			case RIGHT:
 				x = converse;
@@ -180,29 +176,30 @@ public abstract class JavaFXNode implements DisplayNode {
 		}
 		if (x != null) {
 			if (animate)
-				new TransitionSmoothOut(x - node().getLayoutX(), null).play();
+				new TransitionSmoothOut(node(), x - node().getLayoutX(), null).play();
 			node().setLayoutX(x);
 		} else {
 			if (animate)
-				new TransitionSmoothOut(null, y - node().getLayoutY()).play();
+				new TransitionSmoothOut(node(), null, y - node().getLayoutY()).play();
 			node().setLayoutY(y);
 		}
 	}
 
-	public void translate(
-			final Context context, final com.zarbosoft.bonestruct.editor.visual.Vector vector, final boolean animate
+	@Override
+	public void setPosition(
+			final Context context, final Vector vector, final boolean animate
 	) {
 		int x = 0;
 		int y = 0;
 		switch (context.syntax.converseDirection) {
 			case UP:
-				y = (int) node().getLayoutBounds().getHeight() + vector.converse;
+				y = -vector.converse - (int) node().getLayoutBounds().getHeight();
 				break;
 			case DOWN:
 				y = vector.converse;
 				break;
 			case LEFT:
-				x = (int) node().getLayoutBounds().getWidth() + vector.converse;
+				x = -vector.converse - (int) node().getLayoutBounds().getWidth();
 				break;
 			case RIGHT:
 				x = vector.converse;
@@ -210,20 +207,20 @@ public abstract class JavaFXNode implements DisplayNode {
 		}
 		switch (context.syntax.transverseDirection) {
 			case UP:
-				y = (int) node().getLayoutBounds().getHeight() + vector.transverse;
+				y = -vector.transverse - (int) node().getLayoutBounds().getHeight();
 				break;
 			case DOWN:
 				y = vector.transverse;
 				break;
 			case LEFT:
-				x = (int) node().getLayoutBounds().getWidth() + vector.transverse;
+				x = -vector.transverse - (int) node().getLayoutBounds().getWidth();
 				break;
 			case RIGHT:
 				x = vector.transverse;
 				break;
 		}
 		if (animate)
-			new TransitionSmoothOut(x - node().getLayoutX(), y - node().getLayoutY()).play();
+			new TransitionSmoothOut(node(), x - node().getLayoutX(), y - node().getLayoutY()).play();
 		node().setLayoutX(x);
 		node().setLayoutY(y);
 	}

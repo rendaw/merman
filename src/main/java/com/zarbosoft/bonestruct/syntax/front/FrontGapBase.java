@@ -197,7 +197,8 @@ public abstract class FrontGapBase extends FrontPart {
 					}
 					table.layout(context);
 					changeChoice(context, 0);
-					context.actions.put(this, ImmutableList.of(new Action() {
+					final List<Action> actions = new ArrayList<>();
+					actions.addAll(ImmutableList.of(new Action() {
 						@Override
 						public void run(final Context context) {
 							choices.get(index).choose(context, self.get());
@@ -228,6 +229,23 @@ public abstract class FrontGapBase extends FrontPart {
 							return "previous_choice";
 						}
 					}));
+					for (int i = 0; i < 10; ++i) {
+						final int i2 = i;
+						actions.add(new Action() {
+							@Override
+							public void run(final Context context) {
+								if (i2 < choices.size()) {
+									choices.get(i2).choose(context, self.get());
+								}
+							}
+
+							@Override
+							public String getName() {
+								return String.format("choose_%s", i2);
+							}
+						});
+					}
+					context.actions.put(this, actions);
 				}
 
 				public void destroy(final Context context) {
