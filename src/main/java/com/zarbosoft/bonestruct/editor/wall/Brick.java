@@ -111,18 +111,23 @@ public abstract class Brick {
 	}
 
 	public void addBefore(final Context context, final Brick brick) {
-		if (index == 0) {
-			if (brick.properties(context).broken || (parent.index == 0 && properties(context).broken)) {
+		if (properties(context).broken) {
+			if (parent.index == 0) {
 				parent.add(context, 0, ImmutableList.of(brick));
 				parent.breakCourse(context, 1);
-			} else if (parent.index == 0) {
-				parent.add(context, 0, ImmutableList.of(brick));
 			} else {
-				final Course previousCourse = parent.parent.children.get(parent.index - 1);
-				previousCourse.add(context, previousCourse.children.size(), ImmutableList.of(brick));
+				if (brick.properties(context).broken) {
+					final Course previousCourse = parent.parent.children.get(parent.index - 1);
+					final int insertIndex = previousCourse.children.size();
+					previousCourse.add(context, insertIndex, ImmutableList.of(brick));
+					previousCourse.breakCourse(context, insertIndex);
+				} else {
+					final Course previousCourse = parent.parent.children.get(parent.index - 1);
+					previousCourse.add(context, previousCourse.children.size(), ImmutableList.of(brick));
+				}
 			}
 		} else {
-			if (brick.properties(context).broken) {
+			if (index > 0 && brick.properties(context).broken) {
 				parent.breakCourse(context, index).add(context, 0, ImmutableList.of(brick));
 			} else
 				parent.add(context, index, ImmutableList.of(brick));

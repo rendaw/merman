@@ -10,6 +10,7 @@ public class VisualBorderAttachment extends MultiVisualAttachmentAdapter {
 	public VisualBorderAttachment(final Context context, final ObboxStyle.Baked style) {
 		super(context);
 		this.border = new BorderAttachment(context);
+		this.border.setStyle(context, style);
 		addListener(context, new VisualAttachmentAdapter.BoundsListener() {
 			@Override
 			public void firstChanged(final Context context, final Brick brick) {

@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterators;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.Hoverable;
+import com.zarbosoft.bonestruct.editor.visual.tags.StateTag;
 import com.zarbosoft.bonestruct.editor.visual.tags.TagsChange;
 import com.zarbosoft.bonestruct.editor.visual.visuals.VisualAtom;
 import com.zarbosoft.bonestruct.editor.wall.Brick;
@@ -84,4 +85,11 @@ public abstract class Visual {
 		return parent().visual().alignments();
 	}
 
+	public void changeTagsCompact(final Context context) {
+		changeTags(context, new TagsChange().add(new StateTag("compact")));
+	}
+
+	public void changeTagsExpand(final Context context) {
+		changeTags(context, new TagsChange().remove(new StateTag("compact")));
+	}
 }

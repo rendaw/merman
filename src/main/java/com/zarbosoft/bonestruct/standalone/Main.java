@@ -155,13 +155,15 @@ public class Main extends Application {
 		//add actions for choice 1-9,0
 		//abstract xy origin for alternative converse/transverse directions, reduce window resize listeners
 		//test brick layout
-		fix indent/breaking
-		rename break -> split
+		//rename break -> split
 		//fix hotkey modifiers
+		fix indent/breaking
 		fix hover
 		fix compact (root array)
 		cornerstone on wrong element (visual array selectup)
 		translation bounce on array element enter/exit
+		indicators in overlay
+		document extends atom?
 
 		syntax documenter
 		action documenter

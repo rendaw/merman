@@ -1,6 +1,8 @@
 package com.zarbosoft.bonestruct;
 
+import com.zarbosoft.bonestruct.document.Atom;
 import com.zarbosoft.bonestruct.editor.visual.visuals.VisualPrimitive;
+import com.zarbosoft.bonestruct.helper.GeneralTestWizard;
 import com.zarbosoft.bonestruct.helper.Helper;
 import com.zarbosoft.bonestruct.helper.PrimitiveSyntax;
 import com.zarbosoft.bonestruct.helper.TestWizard;
@@ -75,6 +77,22 @@ public class TestPrimitiveBreaking {
 	}
 
 	@Test
+	public void testUnbreakableDynamic() {
+		final Atom primitive = new Helper.TreeBuilder(PrimitiveSyntax.primitive).add("value", "123").build();
+		new GeneralTestWizard(PrimitiveSyntax.syntax, primitive)
+				.resize(40)
+				.run(context -> primitive.data.get("value").selectDown(context))
+				.run(context -> context.selection.receiveText(context, "4"))
+				.checkTextBrick(0, 1, "1234")
+				.run(context -> context.selection.receiveText(context, "5"))
+				.checkTextBrick(0, 1, "1234")
+				.checkTextBrick(1, 0, "5")
+				.run(context -> context.selection.receiveText(context, "6"))
+				.checkTextBrick(0, 1, "1234")
+				.checkTextBrick(1, 0, "56");
+	}
+
+	@Test
 	public void testUnbreakableRebreak() {
 		new PrimitiveTestWizard("123456789").resize(60).check("123456", "789").resize(40).check("1234", "5678", "9");
 	}
@@ -115,5 +133,20 @@ public class TestPrimitiveBreaking {
 			inner.resizeTransitive(size);
 			return this;
 		}
+	}
+
+	@Test
+	public void testMultipleAtoms() {
+		new GeneralTestWizard(
+				PrimitiveSyntax.syntax,
+				new Helper.TreeBuilder(PrimitiveSyntax.primitive).add("value", "oret").build(),
+				new Helper.TreeBuilder(PrimitiveSyntax.primitive).add("value", "nyibhye").build()
+		)
+				.checkTextBrick(0, 1, "oret")
+				.checkTextBrick(0, 3, "nyibhye")
+				.resize(50)
+				.checkTextBrick(0, 1, "oret")
+				.checkTextBrick(1, 1, "nyibh")
+				.checkTextBrick(2, 0, "ye");
 	}
 }

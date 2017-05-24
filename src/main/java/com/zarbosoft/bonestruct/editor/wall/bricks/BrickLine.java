@@ -2,6 +2,7 @@ package com.zarbosoft.bonestruct.editor.wall.bricks;
 
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.Hoverable;
+import com.zarbosoft.bonestruct.editor.display.Font;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.editor.visual.visuals.VisualPrimitive;
 import com.zarbosoft.bonestruct.syntax.style.Style;
@@ -18,9 +19,14 @@ public class BrickLine extends BrickText {
 
 	@Override
 	public Properties properties(final Context context, final Style.Baked style) {
-		if (line.index > 0)
-			style.split = true;
-		return super.properties(context, style);
+		final Font font = style.getFont(context);
+		return new Properties(
+				line.index == 0 ? style.split : true,
+				font.getAscent(),
+				font.getDescent(),
+				inter.getAlignment(style),
+				font.getWidth(text.text())
+		);
 	}
 
 	@Override

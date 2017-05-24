@@ -470,7 +470,7 @@ public class Context {
 			idleLayBricks = new IdleLayBricks();
 			addIdle(idleLayBricks);
 		}
-		idleLayBricks.ends.addLast(end);
+		idleLayBricks.ends.add(end);
 	}
 
 	public void idleLayBricksBeforeStart(final Brick start) {
@@ -478,7 +478,7 @@ public class Context {
 			idleLayBricks = new IdleLayBricks();
 			addIdle(idleLayBricks);
 		}
-		idleLayBricks.starts.addLast(start);
+		idleLayBricks.starts.add(start);
 	}
 
 	public void clearHover() {
@@ -492,8 +492,8 @@ public class Context {
 	}
 
 	public class IdleLayBricks extends IdleTask {
-		public Deque<Brick> ends = new ArrayDeque<>();
-		public Deque<Brick> starts = new ArrayDeque<>();
+		public Set<Brick> ends = new HashSet<>();
+		public Set<Brick> starts = new HashSet<>();
 
 		@Override
 		protected int priority() {
@@ -507,22 +507,24 @@ public class Context {
 				return false;
 			}
 			if (!ends.isEmpty()) {
-				final Brick next = ends.pollLast();
+				final Brick next = ends.iterator().next();
+				ends.remove(next);
 				if (next.parent != null) {
 					final Brick created = next.createNext(Context.this);
 					if (created != null) {
 						next.addAfter(Context.this, created);
-						ends.addLast(created);
+						ends.add(created);
 					}
 				}
 			}
 			if (!starts.isEmpty()) {
-				final Brick previous = starts.pollLast();
+				final Brick previous = starts.iterator().next();
+				starts.remove(previous);
 				if (previous.parent != null) {
 					final Brick created = previous.createPrevious(Context.this);
 					if (created != null) {
 						previous.addBefore(Context.this, created);
-						starts.addLast(created);
+						starts.add(created);
 					}
 				}
 			}
@@ -628,14 +630,6 @@ public class Context {
 
 		if (localToken != selectToken)
 			return;
-
-		final Visual visual = this.selection.getVisual();
-		Brick first = visual.getFirstBrick(this);
-		if (first == null)
-			first = visual.createFirstBrick(this);
-		foreground.setCornerstone(this, first);
-		idleLayBricksBeforeStart(first);
-		idleLayBricksAfterEnd(first);
 
 		ImmutableSet.copyOf(selectionListeners).forEach(l -> l.selectionChanged(this, selection));
 		selectionTagsChanged();

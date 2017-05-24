@@ -106,6 +106,7 @@ public class VisualAtom extends Visual {
 
 	@Override
 	public void compact(final Context context) {
+		System.out.format("!compact atom %s\n", atom.type.id);
 		body.compact(context);
 		compact = true;
 	}

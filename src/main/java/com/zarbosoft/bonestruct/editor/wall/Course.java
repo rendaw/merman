@@ -288,9 +288,17 @@ public class Course {
 				new ChainComparator<VisualAtom>().greaterFirst(VisualAtom::spacePriority).build()
 		);
 		int converse = 0;
+		System.out.format("compacting\n");
 		for (int index = 0; index < children.size(); ++index) {
 			final Brick brick = children.get(index);
 			final VisualLeaf visual = brick.getVisual();
+			final VisualAtom atomVisual = visual.parent().atomVisual();
+			System.out.format("\tbrick %s of %s (prio %s): can compact %s\n",
+					index,
+					atomVisual.atom.type.id,
+					atomVisual.spacePriority(),
+					visual.canCompact()
+			);
 			if (visual.canCompact())
 				priorities.add(visual.parent().atomVisual());
 			converse = brick.converseEdge(context);
@@ -304,6 +312,7 @@ public class Course {
 		if (priorities.isEmpty()) {
 			return false;
 		}
+		System.out.format("\tpriority: %s\n", priorities.peek().atom.type.id);
 		priorities.poll().compact(context);
 		return true;
 	}

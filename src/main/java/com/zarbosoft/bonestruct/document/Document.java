@@ -56,7 +56,7 @@ public class Document {
 
 			@Override
 			public int precedence() {
-				return Integer.MIN_VALUE;
+				return -Integer.MAX_VALUE;
 			}
 
 			@Override

@@ -9,6 +9,7 @@ import com.zarbosoft.bonestruct.editor.history.changes.ChangeArray;
 import com.zarbosoft.bonestruct.editor.visual.*;
 import com.zarbosoft.bonestruct.editor.visual.attachments.BorderAttachment;
 import com.zarbosoft.bonestruct.editor.visual.tags.PartTag;
+import com.zarbosoft.bonestruct.editor.visual.tags.StateTag;
 import com.zarbosoft.bonestruct.editor.visual.tags.Tag;
 import com.zarbosoft.bonestruct.editor.visual.tags.TagsChange;
 import com.zarbosoft.bonestruct.editor.wall.Brick;
@@ -26,6 +27,7 @@ import java.util.stream.Stream;
 
 public abstract class VisualNestedBase extends Visual implements VisualLeaf {
 	PSet<Tag> tags;
+	PSet<Tag> ellipsisTags;
 	protected VisualAtom body;
 	VisualParent parent;
 	private BorderAttachment border;
@@ -35,6 +37,7 @@ public abstract class VisualNestedBase extends Visual implements VisualLeaf {
 
 	public VisualNestedBase(final PSet<Tag> tags) {
 		this.tags = tags.plus(new PartTag("atom"));
+		ellipsisTags = this.tags.plus(new PartTag("ellipsis"));
 	}
 
 	protected abstract void nodeSet(Context context, Atom value);
@@ -104,8 +107,10 @@ public abstract class VisualNestedBase extends Visual implements VisualLeaf {
 			context.clearHover();
 		if (ellipsis != null)
 			ellipsis.destroy(context);
-		if (body != null)
+		if (body != null) {
 			body.uproot(context, root);
+			body = null;
+		}
 	}
 
 	@Override
@@ -113,10 +118,6 @@ public abstract class VisualNestedBase extends Visual implements VisualLeaf {
 			final Context context, final TagsChange change
 	) {
 		return body.getLeafPropertiesForTagsChange(context, change);
-	}
-
-	private PSet<Tag> ellipsisTags(final Context context) {
-		return tags.plus(new PartTag("ellipsis"));
 	}
 
 	private Brick createEllipsis(final Context context) {
@@ -150,17 +151,17 @@ public abstract class VisualNestedBase extends Visual implements VisualLeaf {
 
 			@Override
 			public PSet<Tag> getTags(final Context context) {
-				return ellipsisTags(context);
+				return ellipsisTags;
 			}
 		});
-		final Style.Baked style = context.getStyle(ellipsisTags(context));
+		final Style.Baked style = context.getStyle(ellipsisTags);
 		ellipsis.tagsChanged(context);
 		return ellipsis;
 	}
 
 	public void tagsChanged(final Context context) {
 		if (ellipsis != null) {
-			final Style.Baked style = context.getStyle(ellipsisTags(context));
+			final Style.Baked style = context.getStyle(ellipsisTags);
 			ellipsis.tagsChanged(context);
 		}
 		if (selection != null)
@@ -177,6 +178,7 @@ public abstract class VisualNestedBase extends Visual implements VisualLeaf {
 	@Override
 	public void changeTags(final Context context, final TagsChange change) {
 		tags = change.apply(tags);
+		ellipsisTags = tags.plus(new PartTag("ellipsis"));
 		tagsChanged(context);
 	}
 
@@ -474,36 +476,22 @@ public abstract class VisualNestedBase extends Visual implements VisualLeaf {
 
 		@Override
 		public Brick getPreviousBrick(final Context context) {
-			if (parent == null)
-				return null;
 			return parent.getPreviousBrick(context);
 		}
 
 		@Override
 		public Brick getNextBrick(final Context context) {
-			if (parent == null)
-				return null;
 			return parent.getNextBrick(context);
 		}
 
 		@Override
 		public Brick createNextBrick(final Context context) {
-			final Brick out;
-			if (parent == null)
-				out = null;
-			else
-				out = parent.createNextBrick(context);
-			return out;
+			return parent.createNextBrick(context);
 		}
 
 		@Override
 		public Brick createPreviousBrick(final Context context) {
-			final Brick out;
-			if (parent == null)
-				out = null;
-			else
-				out = parent.createPreviousBrick(context);
-			return out;
+			return parent.createPreviousBrick(context);
 		}
 
 		@Override
@@ -511,11 +499,7 @@ public abstract class VisualNestedBase extends Visual implements VisualLeaf {
 			if (selection != null)
 				return null;
 			{
-				final Hoverable parentHoverable;
-				if (parent == null)
-					parentHoverable = null;
-				else
-					parentHoverable = parent.hover(context, point);
+				final Hoverable parentHoverable = parent.hover(context, point);
 				if (parentHoverable != null)
 					return parentHoverable;
 			}
@@ -536,8 +520,6 @@ public abstract class VisualNestedBase extends Visual implements VisualLeaf {
 
 				@Override
 				public VisualAtom atom() {
-					if (VisualNestedBase.this.parent == null)
-						return null;
 					return VisualNestedBase.this.parent.atomVisual();
 				}
 
@@ -580,11 +562,15 @@ public abstract class VisualNestedBase extends Visual implements VisualLeaf {
 
 	@Override
 	public void compact(final Context context) {
-		changeTagsCompact(context);
+		ellipsisTags = ellipsisTags.plus(new StateTag("compact"));
+		if (ellipsis != null)
+			ellipsis.tagsChanged(context);
 	}
 
 	@Override
 	public void expand(final Context context) {
-		changeTagsExpand(context);
+		ellipsisTags = ellipsisTags.minus(new StateTag("compact"));
+		if (ellipsis != null)
+			ellipsis.tagsChanged(context);
 	}
 }

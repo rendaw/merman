@@ -893,8 +893,6 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 
 		@Override
 		public VisualAtom atom() {
-			if (VisualPrimitive.this.parent == null)
-				return null;
 			return VisualPrimitive.this.parent.atomVisual();
 		}
 
@@ -978,20 +976,14 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 
 		public Brick createNextBrick(final Context context) {
 			if (index == lines.size() - 1) {
-				if (parent == null)
-					return null;
-				else
-					return parent.createNextBrick(context);
+				return parent.createNextBrick(context);
 			}
 			return lines.get(index + 1).createBrick(context);
 		}
 
 		public Brick createPreviousBrick(final Context context) {
 			if (index == 0)
-				if (parent == null)
-					return null;
-				else
-					return parent.createPreviousBrick(context);
+				return parent.createPreviousBrick(context);
 			return lines.get(index - 1).createBrick(context);
 		}
 

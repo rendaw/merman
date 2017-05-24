@@ -11,6 +11,7 @@ import com.zarbosoft.bonestruct.editor.visual.attachments.MultiVisualAttachmentA
 import com.zarbosoft.bonestruct.editor.visual.attachments.VisualAttachmentAdapter;
 import com.zarbosoft.bonestruct.editor.visual.attachments.VisualBorderAttachment;
 import com.zarbosoft.bonestruct.editor.visual.tags.PartTag;
+import com.zarbosoft.bonestruct.editor.visual.tags.StateTag;
 import com.zarbosoft.bonestruct.editor.visual.tags.Tag;
 import com.zarbosoft.bonestruct.editor.visual.tags.TagsChange;
 import com.zarbosoft.bonestruct.editor.wall.Brick;
@@ -151,9 +152,9 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 		final boolean retagLast = tagLast() && visualIndex + visualRemove == children.size();
 		if (!children.isEmpty() && !add.isEmpty()) {
 			if (retagFirst)
-				((VisualLeaf) children.get(0)).changeTags(context, new TagsChange().remove(new PartTag("first")));
+				(children.get(0)).changeTags(context, new TagsChange().remove(new PartTag("first")));
 			if (retagLast)
-				((VisualLeaf) last(children)).changeTags(context, new TagsChange().remove(new PartTag("last")));
+				(last(children)).changeTags(context, new TagsChange().remove(new PartTag("last")));
 		}
 
 		// Remove
@@ -1005,11 +1006,17 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 
 	@Override
 	public void compact(final Context context) {
-		changeTagsCompact(context);
+		super.compact(context);
+		ellipsisTags = ellipsisTags.plus(new StateTag("compact"));
+		if (ellipsis != null)
+			ellipsis.tagsChanged(context);
 	}
 
 	@Override
 	public void expand(final Context context) {
-		changeTagsExpand(context);
+		super.expand(context);
+		ellipsisTags = ellipsisTags.minus(new StateTag("compact"));
+		if (ellipsis != null)
+			ellipsis.tagsChanged(context);
 	}
 }

@@ -32,18 +32,6 @@ public class Terminal implements Node {
 				final boolean b = press == event1.press;
 				final boolean c = event1.modifiers.containsAll(modifiers);
 				final boolean d = Sets.intersection(event1.modifiers, withoutModifiers).isEmpty();
-				System.out.format(
-						"%s %s mod %s wm %s VS %s => %s %s %s %s\n",
-						key,
-						press,
-						modifiers,
-						withoutModifiers,
-						event,
-						a,
-						b,
-						c,
-						d
-				);
 				return a && b && c && d;
 			}
 		};

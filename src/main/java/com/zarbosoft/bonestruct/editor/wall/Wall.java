@@ -175,6 +175,8 @@ public class Wall {
 		ImmutableList
 				.copyOf(cornerstoneListeners)
 				.forEach(listener -> listener.cornerstoneChanged(context, cornerstone));
+		context.idleLayBricksBeforeStart(cornerstone);
+		context.idleLayBricksAfterEnd(cornerstone);
 	}
 
 	class IdleCompactTask extends IdleTask {

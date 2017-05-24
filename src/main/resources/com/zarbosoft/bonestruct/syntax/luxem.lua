@@ -223,12 +223,12 @@ end
 
 return _lessmodal_keys {
     name = 'luxem',
-    pad = {
+    --[[pad = {
         converse_start = 15,
         converse_end = 5,
         transverse_start = 60,
         transverse_end = 60,
-    },
+    },]]
     banner_pad = {
         converse_start = 15,
     },
