@@ -24,7 +24,6 @@ import com.zarbosoft.rendaw.common.Common;
 import com.zarbosoft.rendaw.common.Pair;
 import org.pcollections.PSet;
 
-import java.lang.ref.WeakReference;
 import java.text.BreakIterator;
 import java.util.*;
 import java.util.function.Function;
@@ -42,6 +41,7 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 	public VisualParent parent;
 	private boolean canExpand = false;
 	private boolean canCompact = true;
+	private int hardLineCount = 0;
 
 	public class BrickStyle {
 		public Alignment softAlignment;
@@ -65,19 +65,16 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 		}
 	}
 
-	private WeakReference<BrickStyle> brickStyle = new WeakReference<>(null);
+	private final BrickStyle brickStyle;
 	public PSet<Tag> tags;
 	public int brickCount = 0;
 	public PrimitiveHoverable hoverable;
 
 	public void tagsChanged(final Context context) {
 		final boolean fetched = false;
-		final BrickStyle style = brickStyle.get();
-		if (style == null)
-			return;
-		style.update(context);
+		brickStyle.update(context);
 		for (final Line line : lines) {
-			line.styleChanged(context, style);
+			line.styleChanged(context, brickStyle);
 		}
 		if (selection != null)
 			context.selectionTagsChanged();
@@ -948,13 +945,8 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 		public Brick createBrick(final Context context) {
 			if (brick != null)
 				return null;
-			BrickStyle style = brickStyle.get();
-			if (style == null) {
-				style = new BrickStyle(context);
-				brickStyle = new WeakReference<>(style);
-			}
 			brick = new BrickLine(context, this);
-			styleChanged(context, style);
+			styleChanged(context, brickStyle);
 			brick.setText(context, text);
 			if (selection != null && (selection.range.beginLine == Line.this || selection.range.endLine == Line.this))
 				selection.range.nudge(context);
@@ -1059,6 +1051,7 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 	) {
 		this.tags = tags.plus(new PartTag("primitive"));
 		this.parent = parent;
+		brickStyle = new BrickStyle(context);
 		value.visual = this;
 		dataListener = new ValuePrimitive.Listener() {
 			@Override
@@ -1099,6 +1092,7 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 					if (segment == null)
 						break;
 					line = new Line(true);
+					hardLineCount += 1;
 					line.setText(context, segment);
 					line.setIndex(context, index);
 					movingOffset += 1;
@@ -1149,6 +1143,8 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 					final int exciseEnd = Math.min(remaining, line.text.length());
 					base.setText(context, base.text + line.text.substring(exciseEnd));
 					remaining -= exciseEnd;
+					if (line.hard)
+						hardLineCount -= 1;
 					line.destroy(context);
 					removeLines += 1;
 				}
@@ -1177,6 +1173,8 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 						newEnd = offset;
 					selection.range.setOffsets(context, newBegin, newEnd);
 				}
+				System.out.format("removed: hard lines %s, lines %s\n", hardLineCount, lines.size());
+				decompacted(context);
 			}
 		};
 		value.addListener(dataListener);
@@ -1187,8 +1185,10 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 	private void set(final Context context, final String text) {
 		clear(context);
 		final Common.Mutable<Integer> offset = new Common.Mutable<>(0);
+		hardLineCount = 0;
 		enumerate(Arrays.stream(text.split("\n", -1))).forEach(pair -> {
 			final Line line = new Line(true);
+			hardLineCount += 1;
 			line.setText(context, pair.second);
 			line.setIndex(context, pair.first);
 			line.offset = offset.value;
@@ -1236,9 +1236,13 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 	}
 
 	private void clear(final Context context) {
-		for (final Line line : lines)
+		for (final Line line : lines) {
 			line.destroy(context);
+		}
 		lines.clear();
+		hardLineCount = 0;
+		canExpand = false;
+		canCompact = true;
 	}
 
 	@Override
@@ -1278,12 +1282,9 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 	@Override
 	public void compact(final Context context) {
 		final RebreakResult result = new RebreakResult();
-		int hardlineCount = 0;
 		boolean rebreak = false;
 		for (int i = lines.size() - 1; i >= 0; --i) {
 			final Line line = lines.get(i);
-			if (line.hard)
-				hardlineCount += 1;
 			if (line.brick == null)
 				continue;
 			final int edge = line.brick.converseEdge(context);
@@ -1297,21 +1298,26 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 		}
 		canCompact = !result.compactLimit;
 		final boolean oldCanExpand = canExpand;
-		canExpand = hardlineCount < lines.size();
+		canExpand = hardLineCount < lines.size();
 		if (canExpand && !oldCanExpand) {
 			changeTagsCompact(context);
+		}
+	}
+
+	private void decompacted(final Context context) {
+		canExpand = hardLineCount < lines.size();
+		if (!canExpand) {
+			changeTagsExpand(context);
+			canCompact = true;
 		}
 	}
 
 	@Override
 	public void expand(final Context context) {
 		boolean expanded = false;
-		int hardlineCount = 0;
 		boolean rebreak = true;
 		for (int i = lines.size() - 1; i >= 0; --i) {
 			final Line line = lines.get(i);
-			if (line.hard)
-				hardlineCount += 1;
 			if (line.brick == null)
 				continue;
 			if (!rebreak && line.brick.converseEdge(context) * 1.25 > context.edge) {
@@ -1322,12 +1328,9 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 				rebreak = true;
 			}
 		}
-		canExpand = hardlineCount < lines.size();
-		if (!canExpand) {
-			changeTagsExpand(context);
-		}
 		if (expanded)
 			canCompact = true;
+		decompacted(context);
 	}
 
 	private static class RebreakResult {
@@ -1409,7 +1412,6 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 			modifiedLength = build.text.length();
 		}
 
-		final BrickStyle brickStyle = this.brickStyle.get();
 		int j = i;
 
 		// Wrap text into existing lines
@@ -1464,6 +1466,8 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 		if (j < endIndex) {
 			result.changed = true;
 			for (final Line line : iterable(lines.stream().skip(j))) {
+				if (line.hard)
+					hardLineCount -= 1;
 				line.destroy(context);
 			}
 			lines.subList(j, endIndex).clear();

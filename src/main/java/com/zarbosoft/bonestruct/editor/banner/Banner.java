@@ -69,7 +69,6 @@ public class Banner {
 		@Override
 		protected boolean runImplementation() {
 			setPosition(context);
-			idle = null;
 			return false;
 		}
 

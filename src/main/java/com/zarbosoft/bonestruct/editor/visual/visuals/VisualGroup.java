@@ -5,7 +5,6 @@ import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.Hoverable;
-import com.zarbosoft.bonestruct.editor.IdleTask;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.VisualParent;
@@ -94,9 +93,7 @@ public class VisualGroup extends Visual {
 	public VisualParent parent = null;
 
 	// State
-	IdleTask idle;
 	protected List<Visual> children = new ArrayList<>();
-	boolean compact = false;
 
 	@Override
 	public VisualParent parent() {

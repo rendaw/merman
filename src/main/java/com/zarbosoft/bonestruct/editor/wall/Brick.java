@@ -8,6 +8,7 @@ import com.zarbosoft.bonestruct.editor.display.DisplayNode;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.editor.visual.VisualLeaf;
+import com.zarbosoft.bonestruct.editor.visual.tags.Tag;
 import com.zarbosoft.bonestruct.editor.visual.tags.TagsChange;
 import com.zarbosoft.bonestruct.syntax.style.Style;
 
@@ -57,6 +58,10 @@ public abstract class Brick {
 
 	protected Style.Baked getStyle() {
 		return style;
+	}
+
+	public Set<Tag> getTags(Context context) {
+		return inter.getTags(context);
 	}
 
 	public Properties properties(final Context context) {

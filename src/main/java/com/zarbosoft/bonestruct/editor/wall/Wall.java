@@ -20,8 +20,8 @@ public class Wall {
 	private IdleAdjustTask idleAdjust;
 	private IdleCompactTask idleCompact;
 	private IdleExpandTask idleExpand;
-	private Brick cornerstone;
-	private Course cornerstoneCourse;
+	public Brick cornerstone;
+	public Course cornerstoneCourse;
 	Set<Bedding> bedding = new HashSet<>();
 	public int beddingBefore = 0;
 	int beddingAfter = 0;
@@ -195,7 +195,6 @@ public class Wall {
 		@Override
 		public boolean runImplementation() {
 			if (at >= children.size()) {
-				idleCompact = null;
 				return false;
 			}
 			if (children.get(at).compact(context)) {
@@ -228,7 +227,6 @@ public class Wall {
 		@Override
 		public boolean runImplementation() {
 			if (at >= children.size()) {
-				idleExpand = null;
 				return false;
 			}
 			if (expandTask == null) {
@@ -288,12 +286,7 @@ public class Wall {
 				forward += 1;
 				modified = true;
 			}
-			if (!modified) {
-				idleAdjust = null;
-			} else {
-				return true;
-			}
-			return false;
+			return modified;
 		}
 
 		@Override

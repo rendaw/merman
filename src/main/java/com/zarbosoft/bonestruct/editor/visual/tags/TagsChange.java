@@ -24,7 +24,7 @@ public class TagsChange {
 	}
 
 	public TagsChange remove(final Tag tag) {
-		return new TagsChange(remove.plus(tag), add.minus(tag));
+		return new TagsChange(add.minus(tag), remove.plus(tag));
 	}
 
 	public PSet<Tag> apply(final PSet<Tag> tags) {

@@ -25,6 +25,7 @@ public class VisualSymbol extends Visual implements VisualLeaf, ConditionAttachm
 	public VisualParent parent;
 	public Brick brick = null;
 	public ConditionAttachment condition = null;
+	private boolean compact;
 
 	public VisualSymbol(
 			final Context context,
@@ -136,22 +137,24 @@ public class VisualSymbol extends Visual implements VisualLeaf, ConditionAttachm
 
 	@Override
 	public boolean canCompact() {
-		return !parent.atomVisual().compact;
+		return !compact;
 	}
 
 	@Override
 	public void compact(final Context context) {
 		changeTagsCompact(context);
+		compact = true;
 	}
 
 	@Override
 	public boolean canExpand() {
-		return parent.atomVisual().compact;
+		return compact;
 	}
 
 	@Override
 	public void expand(final Context context) {
 		changeTagsExpand(context);
+		compact = false;
 	}
 
 	@Override

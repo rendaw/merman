@@ -36,6 +36,7 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 	private final ValueArray.Listener dataListener;
 	private final ValueArray value;
 	private Brick ellipsis = null;
+	boolean compact = false;
 
 	public VisualArray(
 			final Context context,
@@ -229,7 +230,6 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 
 				@Override
 				public void expand(final Context context) {
-
 				}
 
 				@Override
@@ -994,14 +994,14 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 	public boolean canExpand() {
 		if (ellipsis == null)
 			throw new AssertionError();
-		return parent.atomVisual().compact;
+		return compact;
 	}
 
 	@Override
 	public boolean canCompact() {
 		if (ellipsis == null)
 			throw new AssertionError();
-		return !parent.atomVisual().compact;
+		return !compact;
 	}
 
 	@Override
@@ -1010,6 +1010,7 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 		ellipsisTags = ellipsisTags.plus(new StateTag("compact"));
 		if (ellipsis != null)
 			ellipsis.tagsChanged(context);
+		compact = true;
 	}
 
 	@Override
@@ -1018,5 +1019,6 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 		ellipsisTags = ellipsisTags.minus(new StateTag("compact"));
 		if (ellipsis != null)
 			ellipsis.tagsChanged(context);
+		compact = false;
 	}
 }

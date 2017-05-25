@@ -1,6 +1,8 @@
 package com.zarbosoft.bonestruct;
 
 import com.zarbosoft.bonestruct.document.Atom;
+import com.zarbosoft.bonestruct.document.values.ValuePrimitive;
+import com.zarbosoft.bonestruct.editor.history.changes.ChangePrimitiveRemove;
 import com.zarbosoft.bonestruct.editor.visual.tags.FreeTag;
 import com.zarbosoft.bonestruct.helper.GeneralTestWizard;
 import com.zarbosoft.bonestruct.helper.Helper;
@@ -14,6 +16,7 @@ import static com.zarbosoft.bonestruct.helper.Helper.dump;
 public class TestLayoutGeneral {
 	final public static FreeAtomType one;
 	final public static FreeAtomType two;
+	final public static FreeAtomType text;
 	final public static FreeAtomType array;
 	final public static Syntax syntax;
 
@@ -25,6 +28,11 @@ public class TestLayoutGeneral {
 		two = new Helper.TypeBuilder("two")
 				.back(Helper.buildBackPrimitive("two"))
 				.front(new Helper.FrontMarkBuilder("two").build())
+				.build();
+		text = new Helper.TypeBuilder("text")
+				.middlePrimitive("value")
+				.back(Helper.buildBackDataPrimitive("value"))
+				.frontDataPrimitive("value")
 				.build();
 		array = new Helper.TypeBuilder("array")
 				.middleArray("value", "any")
@@ -39,8 +47,9 @@ public class TestLayoutGeneral {
 		syntax = new Helper.SyntaxBuilder("any")
 				.type(one)
 				.type(two)
+				.type(text)
 				.type(array)
-				.group("any", new Helper.GroupBuilder().type(one).type(two).type(array).build())
+				.group("any", new Helper.GroupBuilder().type(one).type(two).type(text).type(array).build())
 				.style(new StyleBuilder().broken(true).build())
 				.style(new StyleBuilder().tag(new FreeTag("separator")).broken(false).build())
 				.build();
@@ -108,6 +117,52 @@ public class TestLayoutGeneral {
 				.checkTextBrick(1, 1, ", ")
 				.checkTextBrick(2, 0, "two")
 				.checkTextBrick(3, 0, "]");
+	}
+
+	@Test
+	public void testDynamicWrapLayout() {
+		final Atom text = new Helper.TreeBuilder(this.text).add("value", "123").build();
+		new GeneralTestWizard(syntax, text)
+				.run(context -> text.data.get("value").selectDown(context))
+				.resize(40)
+				.run(context -> context.selection.receiveText(context, "4"))
+				.checkCourseCount(1)
+				.checkCourse(0, 0, 10)
+				.checkBrickNotCompact(0, 0)
+				.run(context -> context.selection.receiveText(context, "5"))
+				.checkCourseCount(2)
+				.checkCourse(0, -20, -10)
+				.checkCourse(1, 0, 10)
+				.checkBrickCompact(0, 0)
+				.run(context -> context.selection.receiveText(context, "6"))
+				.checkCourseCount(2)
+				.checkCourse(0, -20, -10)
+				.checkCourse(1, 0, 10);
+	}
+
+	@Test
+	public void testDynamicUnwrapLayout() {
+		final Atom text = new Helper.TreeBuilder(this.text).add("value", "123456").build();
+		final ValuePrimitive primitive = (ValuePrimitive) text.data.get("value");
+		new GeneralTestWizard(syntax, text)
+				.run(context -> text.data.get("value").selectDown(context))
+				.resize(40)
+				.run(context -> context.history.apply(context, new ChangePrimitiveRemove(primitive, 5, 1)))
+				.checkCourseCount(2)
+				.checkCourse(0, -20, -10)
+				.checkCourse(1, 0, 10)
+				.checkBrickCompact(0, 0)
+				.run(context -> context.history.apply(context, new ChangePrimitiveRemove(primitive, 4, 1)))
+				.checkCourseCount(1)
+				.checkCourse(0, -20, -10)
+				.checkBrickNotCompact(0, 0)
+				.run(context -> context.history.apply(context, new ChangePrimitiveRemove(primitive, 3, 1)))
+				.checkCourseCount(1)
+				.checkCourse(0, -20, -10)
+				.run(context -> context.history.apply(context, new ChangePrimitiveRemove(primitive, 2, 1)))
+				.checkCourseCount(1)
+				.checkCourse(0, -20, -10)
+				.checkBrickNotCompact(0, 0);
 	}
 
 	@Test

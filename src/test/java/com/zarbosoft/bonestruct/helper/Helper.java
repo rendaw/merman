@@ -367,6 +367,11 @@ public class Helper {
 		public FrontDataArray build() {
 			return front;
 		}
+
+		public FrontDataArrayBuilder addPrefix(final FrontSymbol part) {
+			front.prefix.add(part);
+			return this;
+		}
 	}
 
 	public static class TreeBuilder {

@@ -77,14 +77,18 @@ public class Course {
 
 	private void joinPreviousCourse(final Context context) {
 		visual.clear();
+		final boolean resetCornerstone = parent.cornerstoneCourse == this;
 		final Course previous = parent.children.get(this.index - 1);
 		previous.add(context, previous.children.size(), children);
 		destroyInner(context);
+		if (resetCornerstone)
+			parent.setCornerstone(context, parent.cornerstone);
 	}
 
 	Course breakCourse(final Context context, final int index) {
 		if (index == 0)
 			throw new AssertionError("Breaking course at 0.");
+		boolean resetCornerstone = false;
 		final Course next = new Course(context);
 		parent.add(context, this.index + 1, ImmutableList.of(next));
 		if (index < children.size()) {
@@ -94,11 +98,14 @@ public class Course {
 				idlePlace.removeMaxAscent = Math.max(idlePlace.removeMaxAscent, brick.properties(context).ascent);
 				idlePlace.removeMaxDescent = Math.max(idlePlace.removeMaxDescent, brick.properties(context).descent);
 				idlePlace.changed.remove(brick);
+				if (brick == parent.cornerstone)
+					resetCornerstone = true;
 			}
 			children.subList(index, children.size()).clear();
 			visual.remove(index, visual.size() - index);
 			next.add(context, 0, transplant);
 		}
+		parent.setCornerstone(context, parent.cornerstone);
 		return next;
 	}
 
@@ -267,8 +274,6 @@ public class Course {
 			if (newAscent || newDescent/* || fixtures[0] || fixtures[1]*/)
 				parent.adjust(context, index);
 
-			idlePlace = null;
-
 			return false;
 		}
 
@@ -331,12 +336,7 @@ public class Course {
 
 		@Override
 		public boolean runImplementation() {
-			if (compact(context)) {
-				return true;
-			} else {
-				idleCompact = null;
-				return false;
-			}
+			return compact(context);
 		}
 
 		@Override
@@ -360,12 +360,7 @@ public class Course {
 
 		@Override
 		public boolean runImplementation() {
-			if (expand(context)) {
-				return true;
-			} else {
-				idleExpand = null;
-				return false;
-			}
+			return expand(context);
 		}
 
 		private boolean expand(final Context context) {

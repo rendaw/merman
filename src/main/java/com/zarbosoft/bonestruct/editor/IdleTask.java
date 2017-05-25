@@ -7,7 +7,7 @@ import java.util.Comparator;
 public abstract class IdleTask implements Comparable<IdleTask> {
 	private static final Comparator<IdleTask> comparator =
 			new ChainComparator<IdleTask>().greaterFirst(t -> t.priority()).build();
-	private boolean destroyed = false;
+	public boolean destroyed = false;
 
 	protected int priority() {
 		return 0;
@@ -18,7 +18,10 @@ public abstract class IdleTask implements Comparable<IdleTask> {
 	public boolean run() {
 		if (destroyed)
 			return false;
-		return runImplementation();
+		final boolean out = runImplementation();
+		if (!out)
+			destroy();
+		return out;
 	}
 
 	@Override
@@ -27,6 +30,8 @@ public abstract class IdleTask implements Comparable<IdleTask> {
 	}
 
 	public void destroy() {
+		if (destroyed)
+			throw new AssertionError();
 		destroyed();
 		destroyed = true;
 	}

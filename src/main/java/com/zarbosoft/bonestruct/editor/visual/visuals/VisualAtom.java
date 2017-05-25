@@ -25,7 +25,6 @@ public class VisualAtom extends Visual {
 	public final Atom atom;
 	private VisualParent parent;
 	public int depth = 0;
-	public boolean compact = false;
 
 	public VisualAtom(
 			final Context context,
@@ -106,15 +105,12 @@ public class VisualAtom extends Visual {
 
 	@Override
 	public void compact(final Context context) {
-		System.out.format("!compact atom %s\n", atom.type.id);
 		body.compact(context);
-		compact = true;
 	}
 
 	@Override
 	public void expand(final Context context) {
 		body.expand(context);
-		compact = false;
 	}
 
 	@Override

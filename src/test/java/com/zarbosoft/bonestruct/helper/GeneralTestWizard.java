@@ -9,6 +9,8 @@ import com.zarbosoft.bonestruct.editor.display.DisplayNode;
 import com.zarbosoft.bonestruct.editor.display.Drawing;
 import com.zarbosoft.bonestruct.editor.hid.HIDEvent;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
+import com.zarbosoft.bonestruct.editor.visual.tags.StateTag;
+import com.zarbosoft.bonestruct.editor.visual.tags.Tag;
 import com.zarbosoft.bonestruct.editor.wall.Brick;
 import com.zarbosoft.bonestruct.editor.wall.Course;
 import com.zarbosoft.bonestruct.editor.wall.bricks.BrickSpace;
@@ -21,6 +23,8 @@ import java.util.stream.Stream;
 import static com.zarbosoft.rendaw.common.Common.iterable;
 import static com.zarbosoft.rendaw.common.Common.zip;
 import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.IsNull.notNullValue;
@@ -110,6 +114,32 @@ public class GeneralTestWizard {
 		final Brick brick = course.children.get(brickIndex);
 		assertThat(brick, instanceOf(BrickSpace.class));
 		return this;
+	}
+
+	public GeneralTestWizard checkBrickNotHasTag(final int courseIndex, final int brickIndex, final Tag tag) {
+		assertThat(inner.context.foreground.children.size(), greaterThan(courseIndex));
+		final Course course = inner.context.foreground.children.get(courseIndex);
+		assertThat(course.children.size(), greaterThan(brickIndex));
+		final Brick brick = course.children.get(brickIndex);
+		assertThat(brick.getTags(inner.context), not(hasItem(tag)));
+		return this;
+	}
+
+	public GeneralTestWizard checkBrickHasTag(final int courseIndex, final int brickIndex, final Tag tag) {
+		assertThat(inner.context.foreground.children.size(), greaterThan(courseIndex));
+		final Course course = inner.context.foreground.children.get(courseIndex);
+		assertThat(course.children.size(), greaterThan(brickIndex));
+		final Brick brick = course.children.get(brickIndex);
+		assertThat(brick.getTags(inner.context), hasItem(tag));
+		return this;
+	}
+
+	public GeneralTestWizard checkBrickNotCompact(final int courseIndex, final int brickIndex) {
+		return checkBrickNotHasTag(courseIndex, brickIndex, new StateTag("compact"));
+	}
+
+	public GeneralTestWizard checkBrickCompact(final int courseIndex, final int brickIndex) {
+		return checkBrickHasTag(courseIndex, brickIndex, new StateTag("compact"));
 	}
 
 	public GeneralTestWizard run(final Consumer<Context> r) {

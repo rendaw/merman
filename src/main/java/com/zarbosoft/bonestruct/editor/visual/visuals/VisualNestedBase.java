@@ -34,6 +34,7 @@ public abstract class VisualNestedBase extends Visual implements VisualLeaf {
 	Hoverable hoverable;
 	private NestedSelection selection;
 	private Brick ellipsis = null;
+	boolean compact = false;
 
 	public VisualNestedBase(final PSet<Tag> tags) {
 		this.tags = tags.plus(new PartTag("atom"));
@@ -550,14 +551,14 @@ public abstract class VisualNestedBase extends Visual implements VisualLeaf {
 	public boolean canExpand() {
 		if (ellipsis == null)
 			throw new AssertionError();
-		return parent.atomVisual().compact;
+		return compact;
 	}
 
 	@Override
 	public boolean canCompact() {
 		if (ellipsis == null)
 			throw new AssertionError();
-		return !parent.atomVisual().compact;
+		return !compact;
 	}
 
 	@Override
@@ -565,6 +566,7 @@ public abstract class VisualNestedBase extends Visual implements VisualLeaf {
 		ellipsisTags = ellipsisTags.plus(new StateTag("compact"));
 		if (ellipsis != null)
 			ellipsis.tagsChanged(context);
+		compact = true;
 	}
 
 	@Override
@@ -572,5 +574,6 @@ public abstract class VisualNestedBase extends Visual implements VisualLeaf {
 		ellipsisTags = ellipsisTags.minus(new StateTag("compact"));
 		if (ellipsis != null)
 			ellipsis.tagsChanged(context);
+		compact = false;
 	}
 }

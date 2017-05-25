@@ -503,7 +503,6 @@ public class Context {
 		@Override
 		public boolean runImplementation() {
 			if (ends.isEmpty() && starts.isEmpty()) {
-				idleLayBricks = null;
 				return false;
 			}
 			if (!ends.isEmpty()) {
@@ -669,7 +668,6 @@ public class Context {
 		@Override
 		public boolean runImplementation() {
 			if (at == null || at.parent == null) {
-				hoverIdle = null;
 				return false;
 			}
 			if (point == null) {
@@ -677,7 +675,6 @@ public class Context {
 					clearHover();
 				}
 				hoverBrick = null;
-				hoverIdle = null;
 				return false;
 			}
 			if (point.transverse < at.parent.transverseStart && at.parent.index > 0) {

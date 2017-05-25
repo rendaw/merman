@@ -71,7 +71,6 @@ public class Details {
 			if (current != null) {
 				setPosition(context);
 			}
-			idle = null;
 			return false;
 		}
 
