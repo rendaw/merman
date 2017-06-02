@@ -1,11 +1,11 @@
 package com.zarbosoft.bonestruct.syntax.alignments;
 
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
-import com.zarbosoft.bonestruct.editor.visual.alignment.RelativeAlignmentImplementation;
+import com.zarbosoft.bonestruct.editor.visual.alignment.RelativeAlignment;
 import com.zarbosoft.interface1.Configuration;
 
 @Configuration(name = "relative")
-public class RelativeAlignment implements AlignmentDefinition {
+public class RelativeAlignmentDefinition implements AlignmentDefinition {
 	@Configuration
 	public String base;
 
@@ -14,6 +14,6 @@ public class RelativeAlignment implements AlignmentDefinition {
 
 	@Override
 	public Alignment create() {
-		return new RelativeAlignmentImplementation(base, offset);
+		return new RelativeAlignment(base, offset);
 	}
 }

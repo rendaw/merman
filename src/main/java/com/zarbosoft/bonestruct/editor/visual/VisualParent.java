@@ -12,8 +12,6 @@ public abstract class VisualParent {
 
 	public abstract VisualAtom atomVisual();
 
-	public abstract Alignment getAlignment(String alignment);
-
 	public abstract Brick getPreviousBrick(Context context);
 
 	public abstract Brick getNextBrick(Context context);

@@ -8,12 +8,10 @@ import com.zarbosoft.bonestruct.document.values.ValueArray;
 import com.zarbosoft.bonestruct.document.values.ValueAtom;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.Path;
-import com.zarbosoft.bonestruct.helper.Helper;
-import com.zarbosoft.bonestruct.helper.MiscSyntax;
+import com.zarbosoft.bonestruct.helper.*;
 import com.zarbosoft.bonestruct.syntax.Syntax;
 import org.junit.Test;
 
-import static com.zarbosoft.bonestruct.helper.Helper.TreeBuilder;
 import static com.zarbosoft.bonestruct.helper.Helper.buildDoc;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
@@ -39,15 +37,15 @@ public class TestDocumentPaths {
 
 	@Test
 	public void testRecord() {
-		final Syntax syntax = new Helper.SyntaxBuilder("any")
-				.type(new Helper.TypeBuilder("base")
-						.back(new Helper.BackRecordBuilder().add("a", Helper.buildBackDataPrimitive("a")).build())
+		final Syntax syntax = new SyntaxBuilder("any")
+				.type(new TypeBuilder("base")
+						.back(new BackRecordBuilder().add("a", Helper.buildBackDataPrimitive("a")).build())
 						.middlePrimitive("a")
 						.frontDataPrimitive("a")
 						.build())
 				.group("any", ImmutableSet.of("base"))
 				.build();
-		final Context context = buildDoc(syntax, new Helper.TreeBuilder(syntax.types.get(0)).add("a", "").build());
+		final Context context = buildDoc(syntax, new TreeBuilder(syntax.types.get(0)).add("a", "").build());
 		final Value value1 = context.document.rootArray.data.get(0).data.get("a");
 		assertThat(value1.getPath().toList(), equalTo(ImmutableList.of("0", "a")));
 		assertThat(context.locateLong(value1.getPath()), equalTo(value1));
@@ -55,15 +53,15 @@ public class TestDocumentPaths {
 
 	@Test
 	public void testArray() {
-		final Syntax syntax = new Helper.SyntaxBuilder("any")
-				.type(new Helper.TypeBuilder("base")
-						.back(new Helper.BackArrayBuilder().add(Helper.buildBackDataPrimitive("a")).build())
+		final Syntax syntax = new SyntaxBuilder("any")
+				.type(new TypeBuilder("base")
+						.back(new BackArrayBuilder().add(Helper.buildBackDataPrimitive("a")).build())
 						.middlePrimitive("a")
 						.frontDataPrimitive("a")
 						.build())
 				.group("any", ImmutableSet.of("base"))
 				.build();
-		final Context context = buildDoc(syntax, new Helper.TreeBuilder(syntax.types.get(0)).add("a", "").build());
+		final Context context = buildDoc(syntax, new TreeBuilder(syntax.types.get(0)).add("a", "").build());
 		final Value value1 = context.document.rootArray.data.get(0).data.get("a");
 		assertThat(value1.getPath().toList(), equalTo(ImmutableList.of("0", "0")));
 		assertThat(context.locateLong(value1.getPath()), equalTo(value1));
@@ -71,13 +69,13 @@ public class TestDocumentPaths {
 
 	@Test
 	public void testDataNode() {
-		final Syntax syntax = new Helper.SyntaxBuilder("any")
-				.type(new Helper.TypeBuilder("base")
+		final Syntax syntax = new SyntaxBuilder("any")
+				.type(new TypeBuilder("base")
 						.back(Helper.buildBackDataNode("a"))
 						.middleNode("a", "child")
 						.frontDataNode("a")
 						.build())
-				.type(new Helper.TypeBuilder("child")
+				.type(new TypeBuilder("child")
 						.back(Helper.buildBackDataPrimitive("b"))
 						.middlePrimitive("b")
 						.frontDataPrimitive("b")
@@ -85,9 +83,7 @@ public class TestDocumentPaths {
 				.group("any", ImmutableSet.of("base"))
 				.build();
 		final Context context = buildDoc(syntax,
-				new Helper.TreeBuilder(syntax.types.get(0))
-						.add("a", new Helper.TreeBuilder(syntax.types.get(1)).add("b", ""))
-						.build()
+				new TreeBuilder(syntax.types.get(0)).add("a", new TreeBuilder(syntax.types.get(1)).add("b", "")).build()
 		);
 		final Value value1 = ((ValueAtom) context.document.rootArray.data.get(0).data.get("a")).data.data.get("b");
 		assertThat(value1.getPath().toList(), equalTo(ImmutableList.of("0")));
@@ -96,24 +92,24 @@ public class TestDocumentPaths {
 
 	@Test
 	public void testDataArray() {
-		final Syntax syntax = new Helper.SyntaxBuilder("any")
-				.type(new Helper.TypeBuilder("base")
+		final Syntax syntax = new SyntaxBuilder("any")
+				.type(new TypeBuilder("base")
 						.back(Helper.buildBackDataArray("a"))
 						.middleArray("a", "child")
 						.frontDataArray("a")
 						.build())
-				.type(new Helper.TypeBuilder("child")
+				.type(new TypeBuilder("child")
 						.back(Helper.buildBackDataPrimitive("b"))
 						.middlePrimitive("b")
 						.frontDataPrimitive("b")
 						.build())
 				.group("any", ImmutableSet.of("base"))
 				.build();
-		final Context context = buildDoc(syntax, new Helper.TreeBuilder(syntax.types.get(0))
-				.addArray("a",
-						ImmutableList.of(new Helper.TreeBuilder(syntax.types.get(1)).add("b", "").build())
-				)
-				.build());
+		final Context context = buildDoc(syntax,
+				new TreeBuilder(syntax.types.get(0))
+						.addArray("a", ImmutableList.of(new TreeBuilder(syntax.types.get(1)).add("b", "").build()))
+						.build()
+		);
 		final Value value1 =
 				((ValueArray) context.document.rootArray.data.get(0).data.get("a")).data.get(0).data.get("b");
 		assertThat(value1.getPath().toList(), equalTo(ImmutableList.of("0", "0")));
@@ -122,13 +118,13 @@ public class TestDocumentPaths {
 
 	@Test
 	public void testDataRecord() {
-		final Syntax syntax = new Helper.SyntaxBuilder("any")
-				.type(new Helper.TypeBuilder("base")
+		final Syntax syntax = new SyntaxBuilder("any")
+				.type(new TypeBuilder("base")
 						.back(Helper.buildBackDataRecord("a"))
 						.middleRecord("a", "element")
 						.frontDataArray("a")
 						.build())
-				.type(new Helper.TypeBuilder("element")
+				.type(new TypeBuilder("element")
 						.back(Helper.buildBackDataKey("k"))
 						.middleRecordKey("k")
 						.frontDataPrimitive("k")
@@ -139,8 +135,8 @@ public class TestDocumentPaths {
 				.group("any", ImmutableSet.of("base"))
 				.build();
 		final Context context = buildDoc(syntax,
-				new Helper.TreeBuilder(syntax.types.get(0))
-						.addRecord("a", new Helper.TreeBuilder(syntax.types.get(1)).add("k", "K").add("v", "V").build())
+				new TreeBuilder(syntax.types.get(0))
+						.addRecord("a", new TreeBuilder(syntax.types.get(1)).add("k", "K").add("v", "V").build())
 						.build()
 		);
 		final Value value1 =
@@ -216,9 +212,9 @@ public class TestDocumentPaths {
 	@Test
 	public void testLocateRecordNode() {
 		final Context context = buildDoc(MiscSyntax.syntax,
-				new Helper.TreeBuilder(MiscSyntax.plus)
-						.add("first", new Helper.TreeBuilder(MiscSyntax.one))
-						.add("second", new Helper.TreeBuilder(MiscSyntax.one))
+				new TreeBuilder(MiscSyntax.plus)
+						.add("first", new TreeBuilder(MiscSyntax.one))
+						.add("second", new TreeBuilder(MiscSyntax.one))
 						.build()
 		);
 		assertThat(context.locateLong(new Path("0")), equalTo(context.document.rootArray.data.get(0)));
@@ -233,7 +229,7 @@ public class TestDocumentPaths {
 	@Test
 	public void testLocateRecordPrimitive() {
 		final Context context = buildDoc(MiscSyntax.syntax,
-				new Helper.TreeBuilder(MiscSyntax.ratio).add("first", "").add("second", "").build()
+				new TreeBuilder(MiscSyntax.ratio).add("first", "").add("second", "").build()
 		);
 		assertThat(context.locateLong(new Path("0", "first")),
 				equalTo(context.document.rootArray.data.get(0).data.get("first"))
@@ -246,9 +242,9 @@ public class TestDocumentPaths {
 	@Test
 	public void testLocateArrayElement() {
 		final Context context = buildDoc(MiscSyntax.syntax,
-				new Helper.TreeBuilder(MiscSyntax.pair)
-						.add("first", new Helper.TreeBuilder(MiscSyntax.one))
-						.add("second", new Helper.TreeBuilder(MiscSyntax.one))
+				new TreeBuilder(MiscSyntax.pair)
+						.add("first", new TreeBuilder(MiscSyntax.one))
+						.add("second", new TreeBuilder(MiscSyntax.one))
 						.build()
 		);
 		assertThat(context.locateLong(new Path("0", "0")),
@@ -261,12 +257,12 @@ public class TestDocumentPaths {
 
 	@Test
 	public void testLocateDataRecordElement() {
-		final Context context = buildDoc(MiscSyntax.syntax, new Helper.TreeBuilder(MiscSyntax.record).addRecord("value",
-				new Helper.TreeBuilder(MiscSyntax.recordElement)
+		final Context context = buildDoc(MiscSyntax.syntax, new TreeBuilder(MiscSyntax.record).addRecord("value",
+				new TreeBuilder(MiscSyntax.recordElement)
 						.add("key", "first")
 						.add("value", new TreeBuilder(MiscSyntax.one))
 						.build(),
-				new Helper.TreeBuilder(MiscSyntax.recordElement)
+				new TreeBuilder(MiscSyntax.recordElement)
 						.add("key", "second")
 						.add("value", new TreeBuilder(MiscSyntax.one))
 						.build()
@@ -283,15 +279,12 @@ public class TestDocumentPaths {
 
 	@Test
 	public void testLocateDataArrayElement() {
-		final Context context = buildDoc(
-				MiscSyntax.syntax,
-				new Helper.TreeBuilder(MiscSyntax.array)
-						.addArray("value",
-								new TreeBuilder(MiscSyntax.one).build(),
-								new TreeBuilder(MiscSyntax.one).build()
-						)
-						.build()
-		);
+		final Context context = buildDoc(MiscSyntax.syntax, new TreeBuilder(MiscSyntax.array)
+				.addArray("value",
+						new TreeBuilder(MiscSyntax.one).build(),
+						new TreeBuilder(MiscSyntax.one).build()
+				)
+				.build());
 		assertThat(context.locateLong(new Path("0", "0")),
 				equalTo(((ValueArray) context.document.rootArray.data.get(0).data.get("value")).data.get(0))
 		);

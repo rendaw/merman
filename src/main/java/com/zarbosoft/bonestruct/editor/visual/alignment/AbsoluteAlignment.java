@@ -6,13 +6,13 @@ import com.zarbosoft.bonestruct.editor.visual.AlignmentListener;
 
 import java.util.Map;
 
-public class AbsoluteAlignmentImplementation extends Alignment implements AlignmentListener {
-	public AbsoluteAlignmentImplementation(final int offset) {
+public class AbsoluteAlignment extends Alignment implements AlignmentListener {
+	public AbsoluteAlignment(final int offset) {
 		converse = offset;
 	}
 
 	@Override
-	public void set(final Context context, final int position) {
+	public void feedback(final Context context, final int position) {
 
 	}
 

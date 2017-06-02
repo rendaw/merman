@@ -90,47 +90,47 @@ public class GeneralTestWizard {
 	}
 
 	public GeneralTestWizard checkCourse(final int index, final int t, final int te) {
-		assertThat(inner.context.foreground.children.size(), greaterThan(index));
-		final Course course = inner.context.foreground.children.get(index);
+		final Course course = getCourse(index);
 		assertThat(course.transverseStart, equalTo(t));
 		assertThat(course.transverseStart + course.ascent + course.descent, equalTo(te));
 		return this;
 	}
 
 	public GeneralTestWizard checkTextBrick(final int courseIndex, final int brickIndex, final String text) {
-		assertThat(inner.context.foreground.children.size(), greaterThan(courseIndex));
-		final Course course = inner.context.foreground.children.get(courseIndex);
-		assertThat(course.children.size(), greaterThan(brickIndex));
-		final Brick brick = course.children.get(brickIndex);
+		final Brick brick = getBrick(courseIndex, brickIndex);
 		assertThat(brick, instanceOf(BrickText.class));
 		assertThat(((BrickText) brick).text.text(), equalTo(text));
 		return this;
 	}
 
 	public GeneralTestWizard checkSpaceBrick(final int courseIndex, final int brickIndex) {
+		assertThat(getBrick(courseIndex, brickIndex), instanceOf(BrickSpace.class));
+		return this;
+	}
+
+	private Course getCourse(final int courseIndex) {
 		assertThat(inner.context.foreground.children.size(), greaterThan(courseIndex));
-		final Course course = inner.context.foreground.children.get(courseIndex);
+		return inner.context.foreground.children.get(courseIndex);
+	}
+
+	private Brick getBrick(final int courseIndex, final int brickIndex) {
+		final Course course = getCourse(courseIndex);
 		assertThat(course.children.size(), greaterThan(brickIndex));
-		final Brick brick = course.children.get(brickIndex);
-		assertThat(brick, instanceOf(BrickSpace.class));
+		return course.children.get(brickIndex);
+	}
+
+	public GeneralTestWizard checkBrick(final int courseIndex, final int brickIndex, final int converse) {
+		assertThat(getBrick(courseIndex, brickIndex).getConverse(inner.context), equalTo(converse));
 		return this;
 	}
 
 	public GeneralTestWizard checkBrickNotHasTag(final int courseIndex, final int brickIndex, final Tag tag) {
-		assertThat(inner.context.foreground.children.size(), greaterThan(courseIndex));
-		final Course course = inner.context.foreground.children.get(courseIndex);
-		assertThat(course.children.size(), greaterThan(brickIndex));
-		final Brick brick = course.children.get(brickIndex);
-		assertThat(brick.getTags(inner.context), not(hasItem(tag)));
+		assertThat(getBrick(courseIndex, brickIndex).getTags(inner.context), not(hasItem(tag)));
 		return this;
 	}
 
 	public GeneralTestWizard checkBrickHasTag(final int courseIndex, final int brickIndex, final Tag tag) {
-		assertThat(inner.context.foreground.children.size(), greaterThan(courseIndex));
-		final Course course = inner.context.foreground.children.get(courseIndex);
-		assertThat(course.children.size(), greaterThan(brickIndex));
-		final Brick brick = course.children.get(brickIndex);
-		assertThat(brick.getTags(inner.context), hasItem(tag));
+		assertThat(getBrick(courseIndex, brickIndex).getTags(inner.context), hasItem(tag));
 		return this;
 	}
 
@@ -185,4 +185,5 @@ public class GeneralTestWizard {
 		});
 		return this;
 	}
+
 }

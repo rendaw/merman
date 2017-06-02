@@ -27,6 +27,8 @@ public class VisualAtom extends Visual {
 	private VisualParent parent;
 	public int depth = 0;
 	public boolean compact = false;
+	private final Map<String, Alignment> alignments = new HashMap<>();
+	private final Map<String, Alignment> localAlignments = new HashMap<>();
 
 	public VisualAtom(
 			final Context context,
@@ -36,18 +38,18 @@ public class VisualAtom extends Visual {
 			final int depth
 	) {
 		this.atom = atom;
-		rootInner(context, parent, depth);
-		final Map<String, Alignment> bodyAlignments = new HashMap<>(alignments);
 		for (final Map.Entry<String, AlignmentDefinition> entry : atom.type.alignments().entrySet()) {
-			bodyAlignments.put(entry.getKey(), entry.getValue().create());
+			final Alignment alignment = entry.getValue().create();
+			localAlignments.put(entry.getKey(), alignment);
 		}
-		body = new VisualGroup(context, new BodyParent(), bodyAlignments, this.depth);
+		rootInner(context, parent, alignments, depth);
+		body = new VisualGroup(context, new BodyParent(), this.depth);
 		for (final Pair<Integer, FrontPart> pair : iterable(enumerate(Common.stream(atom.type.front())))) {
 			final Visual visual = pair.second.createVisual(context,
 					body.createParent(pair.first),
 					atom,
 					atom.tags,
-					bodyAlignments,
+					alignments,
 					this.depth
 			);
 			body.add(context, visual);
@@ -58,6 +60,14 @@ public class VisualAtom extends Visual {
 	@Override
 	public VisualParent parent() {
 		return parent;
+	}
+
+	public Map<String, Alignment> alignments() {
+		return alignments;
+	}
+
+	public Alignment getAlignment(final String alignment) {
+		return alignments.get(alignment);
 	}
 
 	@Override
@@ -129,21 +139,29 @@ public class VisualAtom extends Visual {
 		return body.getLeafPropertiesForTagsChange(context, change);
 	}
 
-	private void rootInner(final Context context, final VisualParent parent, final int depth) {
+	private void rootInner(
+			final Context context, final VisualParent parent, final Map<String, Alignment> alignments, final int depth
+	) {
 		compact = false;
 		this.parent = parent;
 		if (parent == null)
 			this.depth = 0;
 		else
 			this.depth = depth + atom.type.depthScore;
+		this.alignments.clear();
+		this.alignments.putAll(alignments);
+		for (final Map.Entry<String, Alignment> alignment : localAlignments.entrySet()) {
+			alignment.getValue().root(context, alignments);
+			this.alignments.put(alignment.getKey(), alignment.getValue());
+		}
 	}
 
 	@Override
 	public void root(
 			final Context context, final VisualParent parent, final Map<String, Alignment> alignments, final int depth
 	) {
-		rootInner(context, parent, depth);
-		body.root(context, body.parent, alignments, this.depth);
+		rootInner(context, parent, alignments, depth);
+		body.root(context, body.parent, this.alignments, this.depth);
 	}
 
 	@Override
@@ -190,11 +208,6 @@ public class VisualAtom extends Visual {
 		@Override
 		public VisualAtom atomVisual() {
 			return VisualAtom.this;
-		}
-
-		@Override
-		public Alignment getAlignment(final String alignment) {
-			return null;
 		}
 
 		@Override

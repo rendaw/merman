@@ -4,9 +4,7 @@ import com.zarbosoft.bonestruct.document.Atom;
 import com.zarbosoft.bonestruct.document.values.ValuePrimitive;
 import com.zarbosoft.bonestruct.editor.history.changes.ChangePrimitiveRemove;
 import com.zarbosoft.bonestruct.editor.visual.tags.FreeTag;
-import com.zarbosoft.bonestruct.helper.GeneralTestWizard;
-import com.zarbosoft.bonestruct.helper.Helper;
-import com.zarbosoft.bonestruct.helper.StyleBuilder;
+import com.zarbosoft.bonestruct.helper.*;
 import com.zarbosoft.bonestruct.syntax.FreeAtomType;
 import com.zarbosoft.bonestruct.syntax.Syntax;
 import org.junit.Test;
@@ -21,37 +19,37 @@ public class TestLayoutGeneral {
 	final public static Syntax syntax;
 
 	static {
-		one = new Helper.TypeBuilder("one")
+		one = new TypeBuilder("one")
 				.back(Helper.buildBackPrimitive("one"))
-				.front(new Helper.FrontMarkBuilder("one").build())
+				.front(new FrontMarkBuilder("one").build())
 				.build();
-		two = new Helper.TypeBuilder("two")
+		two = new TypeBuilder("two")
 				.back(Helper.buildBackPrimitive("two"))
-				.front(new Helper.FrontMarkBuilder("two").build())
+				.front(new FrontMarkBuilder("two").build())
 				.build();
-		text = new Helper.TypeBuilder("text")
+		text = new TypeBuilder("text")
 				.middlePrimitive("value")
 				.back(Helper.buildBackDataPrimitive("value"))
 				.frontDataPrimitive("value")
 				.build();
-		array = new Helper.TypeBuilder("array")
+		array = new TypeBuilder("array")
 				.middleArray("value", "any")
 				.back(Helper.buildBackDataArray("value"))
 				.frontMark("[")
-				.front(new Helper.FrontDataArrayBuilder("value")
-						.addSeparator(new Helper.FrontMarkBuilder(", ").tag("separator").build())
+				.front(new FrontDataArrayBuilder("value")
+						.addSeparator(new FrontMarkBuilder(", ").tag("separator").build())
 						.build())
 				.frontMark("]")
 				.autoComplete(99)
 				.build();
-		syntax = new Helper.SyntaxBuilder("any")
+		syntax = new SyntaxBuilder("any")
 				.type(one)
 				.type(two)
 				.type(text)
 				.type(array)
-				.group("any", new Helper.GroupBuilder().type(one).type(two).type(text).type(array).build())
-				.style(new StyleBuilder().broken(true).build())
-				.style(new StyleBuilder().tag(new FreeTag("separator")).broken(false).build())
+				.group("any", new GroupBuilder().type(one).type(two).type(text).type(array).build())
+				.style(new StyleBuilder().split(true).build())
+				.style(new StyleBuilder().tag(new FreeTag("separator")).split(false).build())
 				.build();
 	}
 
@@ -59,12 +57,12 @@ public class TestLayoutGeneral {
 	public void testInitialLayout() {
 		new GeneralTestWizard(
 				syntax,
-				new Helper.TreeBuilder(one).build(),
-				new Helper.TreeBuilder(one).build(),
-				new Helper.TreeBuilder(one).build(),
-				new Helper.TreeBuilder(two).build(),
-				new Helper.TreeBuilder(one).build(),
-				new Helper.TreeBuilder(one).build()
+				new TreeBuilder(one).build(),
+				new TreeBuilder(one).build(),
+				new TreeBuilder(one).build(),
+				new TreeBuilder(two).build(),
+				new TreeBuilder(one).build(),
+				new TreeBuilder(one).build()
 		).checkScroll(-10).checkCourse(0, 0, 10).checkCourse(1, 17, 27).checkBanner(8, 10).checkDetails(20, 27);
 	}
 
@@ -72,12 +70,12 @@ public class TestLayoutGeneral {
 	public void testClippedLayout() {
 		new GeneralTestWizard(
 				syntax,
-				new Helper.TreeBuilder(one).build(),
-				new Helper.TreeBuilder(one).build(),
-				new Helper.TreeBuilder(one).build(),
-				new Helper.TreeBuilder(two).build(),
-				new Helper.TreeBuilder(one).build(),
-				new Helper.TreeBuilder(one).build()
+				new TreeBuilder(one).build(),
+				new TreeBuilder(one).build(),
+				new TreeBuilder(one).build(),
+				new TreeBuilder(two).build(),
+				new TreeBuilder(one).build(),
+				new TreeBuilder(one).build()
 		).resizeTransitive(40).checkScroll(-10).checkBanner(8, 10).checkDetails(20, 27);
 	}
 
@@ -85,12 +83,12 @@ public class TestLayoutGeneral {
 	public void testScrollLayout() {
 		new GeneralTestWizard(
 				syntax,
-				new Helper.TreeBuilder(one).build(),
-				new Helper.TreeBuilder(one).build(),
-				new Helper.TreeBuilder(one).build(),
-				new Helper.TreeBuilder(two).build(),
-				new Helper.TreeBuilder(one).build(),
-				new Helper.TreeBuilder(one).build()
+				new TreeBuilder(one).build(),
+				new TreeBuilder(one).build(),
+				new TreeBuilder(one).build(),
+				new TreeBuilder(two).build(),
+				new TreeBuilder(one).build(),
+				new TreeBuilder(one).build()
 		)
 				.resizeTransitive(40)
 				.run(context -> {
@@ -108,8 +106,8 @@ public class TestLayoutGeneral {
 	public void testStaticArrayLayout() {
 		new GeneralTestWizard(
 				syntax,
-				new Helper.TreeBuilder(array)
-						.addArray("value", new Helper.TreeBuilder(one).build(), new Helper.TreeBuilder(two).build())
+				new TreeBuilder(array)
+						.addArray("value", new TreeBuilder(one).build(), new TreeBuilder(two).build())
 						.build()
 		)
 				.checkTextBrick(0, 0, "[")
@@ -121,7 +119,7 @@ public class TestLayoutGeneral {
 
 	@Test
 	public void testDynamicWrapLayout() {
-		final Atom text = new Helper.TreeBuilder(this.text).add("value", "123").build();
+		final Atom text = new TreeBuilder(this.text).add("value", "123").build();
 		new GeneralTestWizard(syntax, text)
 				.run(context -> text.data.get("value").selectDown(context))
 				.resize(40)
@@ -142,7 +140,7 @@ public class TestLayoutGeneral {
 
 	@Test
 	public void testDynamicUnwrapLayout() {
-		final Atom text = new Helper.TreeBuilder(this.text).add("value", "123456").build();
+		final Atom text = new TreeBuilder(this.text).add("value", "123456").build();
 		final ValuePrimitive primitive = (ValuePrimitive) text.data.get("value");
 		new GeneralTestWizard(syntax, text)
 				.run(context -> text.data.get("value").selectDown(context))

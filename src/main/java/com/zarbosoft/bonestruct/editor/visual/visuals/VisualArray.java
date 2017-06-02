@@ -141,6 +141,7 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 	}
 
 	private void coreChange(final Context context, final int index, final int remove, final List<Atom> add) {
+		final Map<String, Alignment> alignments = parent.atomVisual().alignments();
 		int visualIndex = index;
 		int visualRemove = remove;
 		int visualAdd = add.size();
@@ -164,7 +165,7 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 		// Add
 		int addIndex = visualIndex;
 		final Consumer<Integer> addSeparator = addAt -> {
-			final ChildGroup group = new ChildGroup(context, new ArrayVisualParent(addAt, false), alignments, depth());
+			final ChildGroup group = new ChildGroup(context, new ArrayVisualParent(addAt, false), depth());
 			for (int fixIndex = 0; fixIndex < getSeparator().size(); ++fixIndex) {
 				final FrontSymbol fix = getSeparator().get(fixIndex);
 				group.add(context, fix.createVisual(context, group.createParent(fixIndex), tags, alignments, depth()));
@@ -176,8 +177,7 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 		for (final Atom atom : add) {
 			if (!getSeparator().isEmpty() && addIndex > 0)
 				addSeparator.accept(addIndex++);
-			final ChildGroup group =
-					new ChildGroup(context, new ArrayVisualParent(addIndex, true), alignments, depth());
+			final ChildGroup group = new ChildGroup(context, new ArrayVisualParent(addIndex, true), depth());
 			int groupIndex = 0;
 			for (final FrontSymbol fix : getPrefix())
 				group.add(context,
@@ -303,12 +303,9 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 	private class ChildGroup extends VisualGroup {
 
 		public ChildGroup(
-				final Context context,
-				final VisualParent parent,
-				final Map<String, Alignment> alignments,
-				final int depth
+				final Context context, final VisualParent parent, final int depth
 		) {
-			super(context, parent, alignments, depth);
+			super(context, parent, depth);
 		}
 
 		@Override
@@ -380,7 +377,7 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 
 			@Override
 			public Alignment getAlignment(final Style.Baked style) {
-				return VisualArray.this.getAlignment(style.alignment);
+				return parent.atomVisual().getAlignment(style.alignment);
 			}
 
 			@Override
@@ -449,9 +446,6 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 			}
 			super.root(context, parent, alignments, depth);
 			context.idleLayBricks(parent, 0, 1, 1, null, null, i -> createEllipsis(context));
-			ellipsisTags = ellipsisTags.minus(new StateTag("compact"));
-			if (ellipsis != null)
-				ellipsis.tagsChanged(context);
 		} else {
 			if (ellipsis != null)
 				ellipsis.destroy(context);

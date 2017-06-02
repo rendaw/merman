@@ -11,12 +11,17 @@ public class StyleBuilder {
 		return this;
 	}
 
-	public StyleBuilder broken(final boolean on) {
+	public StyleBuilder split(final boolean on) {
 		style.split = on;
 		return this;
 	}
 
 	public Style build() {
 		return style;
+	}
+
+	public StyleBuilder alignment(final String name) {
+		style.alignment = name;
+		return this;
 	}
 }

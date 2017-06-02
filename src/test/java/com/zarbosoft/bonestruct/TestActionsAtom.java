@@ -8,6 +8,7 @@ import com.zarbosoft.bonestruct.editor.Path;
 import com.zarbosoft.bonestruct.helper.ExpressionSyntax;
 import com.zarbosoft.bonestruct.helper.Helper;
 import com.zarbosoft.bonestruct.helper.MiscSyntax;
+import com.zarbosoft.bonestruct.helper.TreeBuilder;
 import org.junit.Test;
 
 import static com.zarbosoft.bonestruct.helper.Helper.assertTreeEqual;
@@ -19,11 +20,9 @@ public class TestActionsAtom {
 
 	@Test
 	public void testEnter() {
-		final Context context = buildDoc(MiscSyntax.syntax, new Helper.TreeBuilder(MiscSyntax.snooze).add(
+		final Context context = buildDoc(MiscSyntax.syntax, new TreeBuilder(MiscSyntax.snooze).add(
 				"value",
-				new Helper.TreeBuilder(MiscSyntax.snooze)
-						.add("value", new Helper.TreeBuilder(MiscSyntax.infinity).build())
-						.build()
+				new TreeBuilder(MiscSyntax.snooze).add("value", new TreeBuilder(MiscSyntax.infinity).build()).build()
 		).build());
 		((Atom) context.locateLong(new Path("0", "value"))).parent.selectUp(context);
 		Helper.act(context, "enter");
@@ -32,11 +31,9 @@ public class TestActionsAtom {
 
 	@Test
 	public void testExit() {
-		final Context context = buildDoc(MiscSyntax.syntax, new Helper.TreeBuilder(MiscSyntax.snooze).add(
+		final Context context = buildDoc(MiscSyntax.syntax, new TreeBuilder(MiscSyntax.snooze).add(
 				"value",
-				new Helper.TreeBuilder(MiscSyntax.snooze)
-						.add("value", new Helper.TreeBuilder(MiscSyntax.infinity).build())
-						.build()
+				new TreeBuilder(MiscSyntax.snooze).add("value", new TreeBuilder(MiscSyntax.infinity).build()).build()
 		).build());
 		((Atom) context.locateLong(new Path("0", "value"))).parent.selectUp(context);
 		Helper.act(context, "exit");
@@ -45,17 +42,15 @@ public class TestActionsAtom {
 
 	@Test
 	public void testDelete() {
-		final Context context = buildDoc(MiscSyntax.syntax, new Helper.TreeBuilder(MiscSyntax.snooze).add(
+		final Context context = buildDoc(MiscSyntax.syntax, new TreeBuilder(MiscSyntax.snooze).add(
 				"value",
-				new Helper.TreeBuilder(MiscSyntax.snooze)
-						.add("value", new Helper.TreeBuilder(MiscSyntax.infinity).build())
-						.build()
+				new TreeBuilder(MiscSyntax.snooze).add("value", new TreeBuilder(MiscSyntax.infinity).build()).build()
 		).build());
 		((Atom) context.locateLong(new Path("0", "value"))).parent.selectUp(context);
 		Helper.act(context, "delete");
 		assertTreeEqual(
 				context,
-				new Helper.TreeBuilder(MiscSyntax.snooze).add("value", MiscSyntax.syntax.gap.create()).build(),
+				new TreeBuilder(MiscSyntax.snooze).add("value", MiscSyntax.syntax.gap.create()).build(),
 				context.document.rootArray
 		);
 	}
@@ -64,8 +59,8 @@ public class TestActionsAtom {
 	public void testCopyPaste() {
 		final Context context = buildDoc(
 				ExpressionSyntax.syntax,
-				new Helper.TreeBuilder(ExpressionSyntax.plus)
-						.add("first", new Helper.TreeBuilder(ExpressionSyntax.infinity).build())
+				new TreeBuilder(ExpressionSyntax.plus)
+						.add("first", new TreeBuilder(ExpressionSyntax.infinity).build())
 						.add("second", ExpressionSyntax.syntax.gap.create())
 						.build()
 		);
@@ -75,9 +70,9 @@ public class TestActionsAtom {
 		Helper.act(context, "paste");
 		assertTreeEqual(
 				context,
-				new Helper.TreeBuilder(ExpressionSyntax.plus)
-						.add("first", new Helper.TreeBuilder(ExpressionSyntax.infinity).build())
-						.add("second", new Helper.TreeBuilder(ExpressionSyntax.infinity).build())
+				new TreeBuilder(ExpressionSyntax.plus)
+						.add("first", new TreeBuilder(ExpressionSyntax.infinity).build())
+						.add("second", new TreeBuilder(ExpressionSyntax.infinity).build())
 						.build(),
 				context.document.rootArray
 		);
@@ -87,24 +82,22 @@ public class TestActionsAtom {
 	public void testCutPaste() {
 		final Context context = buildDoc(
 				ExpressionSyntax.syntax,
-				new Helper.TreeBuilder(ExpressionSyntax.factorial)
-						.add("value", new Helper.TreeBuilder(ExpressionSyntax.infinity).build())
+				new TreeBuilder(ExpressionSyntax.factorial)
+						.add("value", new TreeBuilder(ExpressionSyntax.infinity).build())
 						.build()
 		);
 		((ValueAtom) context.locateShort(new Path("0", "value"))).visual().select(context);
 		Helper.act(context, "cut");
 		assertTreeEqual(
 				context,
-				new Helper.TreeBuilder(ExpressionSyntax.factorial)
-						.add("value", ExpressionSyntax.syntax.gap.create())
-						.build(),
+				new TreeBuilder(ExpressionSyntax.factorial).add("value", ExpressionSyntax.syntax.gap.create()).build(),
 				context.document.rootArray
 		);
 		Helper.act(context, "paste");
 		assertTreeEqual(
 				context,
-				new Helper.TreeBuilder(ExpressionSyntax.factorial)
-						.add("value", new Helper.TreeBuilder(ExpressionSyntax.infinity).build())
+				new TreeBuilder(ExpressionSyntax.factorial)
+						.add("value", new TreeBuilder(ExpressionSyntax.infinity).build())
 						.build(),
 				context.document.rootArray
 		);
@@ -114,16 +107,17 @@ public class TestActionsAtom {
 	public void testPrefix() {
 		final Context context = buildDoc(
 				ExpressionSyntax.syntax,
-				new Helper.TreeBuilder(ExpressionSyntax.factorial)
-						.add("value", new Helper.TreeBuilder(ExpressionSyntax.infinity).build())
+				new TreeBuilder(ExpressionSyntax.factorial)
+						.add("value", new TreeBuilder(ExpressionSyntax.infinity).build())
 						.build()
 		);
 		((ValueAtom) context.locateShort(new Path("0", "value"))).visual().select(context);
 		Helper.act(context, "prefix");
-		assertTreeEqual(context, new Helper.TreeBuilder(ExpressionSyntax.factorial).add(
-				"value",
-				ExpressionSyntax.syntax.prefixGap.create(new Helper.TreeBuilder(ExpressionSyntax.infinity).build())
-		).build(), context.document.rootArray);
+		assertTreeEqual(context, new TreeBuilder(ExpressionSyntax.factorial)
+				.add("value",
+						ExpressionSyntax.syntax.prefixGap.create(new TreeBuilder(ExpressionSyntax.infinity).build())
+				)
+				.build(), context.document.rootArray);
 		assertThat(context.selection.getPath().toList(), equalTo(ImmutableList.of("0", "value", "gap", "0")));
 	}
 
@@ -131,18 +125,18 @@ public class TestActionsAtom {
 	public void testSuffix() {
 		final Context context = buildDoc(
 				ExpressionSyntax.syntax,
-				new Helper.TreeBuilder(ExpressionSyntax.factorial)
-						.add("value", new Helper.TreeBuilder(ExpressionSyntax.infinity).build())
+				new TreeBuilder(ExpressionSyntax.factorial)
+						.add("value", new TreeBuilder(ExpressionSyntax.infinity).build())
 						.build()
 		);
 		((ValueAtom) context.locateShort(new Path("0", "value"))).visual().select(context);
 		Helper.act(context, "suffix");
 		assertTreeEqual(
 				context,
-				new Helper.TreeBuilder(ExpressionSyntax.factorial)
+				new TreeBuilder(ExpressionSyntax.factorial)
 						.add("value",
 								ExpressionSyntax.syntax.suffixGap.create(false,
-										new Helper.TreeBuilder(ExpressionSyntax.infinity).build()
+										new TreeBuilder(ExpressionSyntax.infinity).build()
 								)
 						)
 						.build(),

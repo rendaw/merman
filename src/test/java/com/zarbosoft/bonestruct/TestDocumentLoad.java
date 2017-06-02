@@ -3,7 +3,9 @@ package com.zarbosoft.bonestruct;
 import com.zarbosoft.bonestruct.document.Atom;
 import com.zarbosoft.bonestruct.document.Document;
 import com.zarbosoft.bonestruct.editor.Path;
-import com.zarbosoft.bonestruct.helper.Helper;
+import com.zarbosoft.bonestruct.helper.GroupBuilder;
+import com.zarbosoft.bonestruct.helper.SyntaxBuilder;
+import com.zarbosoft.bonestruct.helper.TypeBuilder;
 import com.zarbosoft.bonestruct.syntax.FreeAtomType;
 import com.zarbosoft.bonestruct.syntax.Syntax;
 import org.junit.Test;
@@ -20,11 +22,8 @@ public class TestDocumentLoad {
 	static Syntax syntax;
 
 	static {
-		type1 = new Helper.TypeBuilder("1").back(buildBackPrimitive("#1")).build();
-		syntax = new Helper.SyntaxBuilder("any")
-				.type(type1)
-				.group("any", new Helper.GroupBuilder().type(type1).build())
-				.build();
+		type1 = new TypeBuilder("1").back(buildBackPrimitive("#1")).build();
+		syntax = new SyntaxBuilder("any").type(type1).group("any", new GroupBuilder().type(type1).build()).build();
 	}
 
 	@Test

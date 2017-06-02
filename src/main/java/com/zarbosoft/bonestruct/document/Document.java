@@ -69,6 +69,7 @@ public class Document {
 				return "root array";
 			}
 		}, ImmutableMap.of("value", rootArray));
+		root.type.id = "root";
 	}
 
 	public void write(final Path out) {

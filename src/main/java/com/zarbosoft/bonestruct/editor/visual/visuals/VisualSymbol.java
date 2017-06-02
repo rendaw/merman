@@ -177,7 +177,7 @@ public class VisualSymbol extends Visual implements VisualLeaf, ConditionAttachm
 
 	@Override
 	public Alignment getAlignment(final Style.Baked style) {
-		return getAlignment(style.alignment);
+		return parent.atomVisual().getAlignment(style.alignment);
 	}
 
 	@Override

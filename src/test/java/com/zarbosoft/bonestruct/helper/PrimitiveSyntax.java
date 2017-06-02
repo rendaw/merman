@@ -10,17 +10,17 @@ public class PrimitiveSyntax {
 	public final static Syntax syntax;
 
 	static {
-		primitive = new Helper.TypeBuilder("primitive")
+		primitive = new TypeBuilder("primitive")
 				.middlePrimitive("value")
 				.back(Helper.buildBackDataPrimitive("value"))
 				.frontDataPrimitive("value")
 				.autoComplete(99)
 				.build();
-		syntax = new Helper.SyntaxBuilder("any")
+		syntax = new SyntaxBuilder("any")
 				.type(primitive)
-				.group("any", new Helper.GroupBuilder().type(primitive).build())
-				.style(new StyleBuilder().tag(new StateTag("compact")).tag(new FreeTag("split")).broken(true).build())
+				.group("any", new GroupBuilder().type(primitive).build())
+				.style(new StyleBuilder().tag(new StateTag("compact")).tag(new FreeTag("split")).split(true).build())
 				.build();
-		syntax.rootFront.prefix.add(new Helper.FrontSpaceBuilder().tag("split").build());
+		syntax.rootFront.prefix.add(new FrontSpaceBuilder().tag("split").build());
 	}
 }

@@ -6,9 +6,9 @@ import com.zarbosoft.bonestruct.editor.visual.AlignmentListener;
 
 import java.util.Map;
 
-public class ConcensusAlignmentImplementation extends Alignment {
+public class ConcensusAlignment extends Alignment {
 	@Override
-	public void set(final Context context, final int gotConverse) {
+	public void feedback(final Context context, final int gotConverse) {
 		if (gotConverse == this.converse)
 			return;
 		if (gotConverse > this.converse) {

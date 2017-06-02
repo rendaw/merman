@@ -23,9 +23,9 @@ import static com.zarbosoft.rendaw.common.Common.last;
 public class VisualGroup extends Visual {
 
 	public VisualGroup(
-			final Context context, final VisualParent parent, final Map<String, Alignment> alignments, final int depth
+			final Context context, final VisualParent parent, final int depth
 	) {
-		root(context, parent, alignments, depth);
+		root(context, parent, parent.atomVisual().alignments(), depth);
 	}
 
 	protected VisualGroup() { // Should only be called by inheritors... temp private
@@ -44,11 +44,6 @@ public class VisualGroup extends Visual {
 	@Override
 	public Stream<Brick> streamBricks() {
 		return children.stream().flatMap(child -> child.streamBricks());
-	}
-
-	@Override
-	public Map<String, Alignment> alignments() {
-		return alignments;
 	}
 
 	@Override
@@ -95,7 +90,6 @@ public class VisualGroup extends Visual {
 		return last(children).createFirstBrick(context);
 	}
 
-	public Map<String, Alignment> alignments = new HashMap<>();
 	public VisualParent parent = null;
 
 	// State
@@ -180,27 +174,13 @@ public class VisualGroup extends Visual {
 	}
 
 	@Override
-	public Alignment getAlignment(final String alignment) {
-		final Alignment out = alignments.get(alignment);
-		if (out != null)
-			return out;
-		return super.getAlignment(alignment);
-	}
-
-	@Override
 	public void root(
 			final Context context, final VisualParent parent, final Map<String, Alignment> alignments, final int depth
 	) {
 		this.parent = parent;
-		PMap<String, Alignment> derived = HashTreePMap.from(alignments);
-		for (final Map.Entry<String, Alignment> e : this.alignments.entrySet()) {
-			final Alignment alignment = e.getValue();
-			alignment.root(context, alignments);
-			derived = derived.plus(e.getKey(), alignment);
-		}
 		for (int index = 0; index < children.size(); ++index) {
 			final Visual child = children.get(index);
-			child.root(context, child.parent(), derived, depth);
+			child.root(context, child.parent(), alignments, depth);
 		}
 	}
 
@@ -246,11 +226,6 @@ public class VisualGroup extends Visual {
 		@Override
 		public VisualAtom atomVisual() {
 			return target.parent.atomVisual();
-		}
-
-		@Override
-		public Alignment getAlignment(final String alignment) {
-			return target.getAlignment(alignment);
 		}
 
 		@Override

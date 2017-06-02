@@ -83,20 +83,20 @@ public abstract class Brick {
 	}
 
 	public static class Properties {
-		public final boolean broken;
+		public final boolean split;
 		public final int ascent;
 		public final int descent;
 		public final Alignment alignment;
 		public final int converseSpan;
 
 		public Properties(
-				final boolean broken,
+				final boolean split,
 				final int ascent,
 				final int descent,
 				final Alignment alignment,
 				final int converseSpan
 		) {
-			this.broken = broken;
+			this.split = split;
 			this.ascent = ascent;
 			this.descent = descent;
 			this.alignment = alignment;
@@ -108,7 +108,7 @@ public abstract class Brick {
 
 	public void addAfter(final Context context, final Brick brick) {
 		final Properties properties = brick.properties(context);
-		if (properties.broken) {
+		if (properties.split) {
 			parent.breakCourse(context, index + 1).add(context, 0, ImmutableList.of(brick));
 		} else
 			parent.add(context, index + 1, ImmutableList.of(brick));
@@ -116,12 +116,12 @@ public abstract class Brick {
 	}
 
 	public void addBefore(final Context context, final Brick brick) {
-		if (properties(context).broken) {
+		if (properties(context).split) {
 			if (parent.index == 0) {
 				parent.add(context, 0, ImmutableList.of(brick));
 				parent.breakCourse(context, 1);
 			} else {
-				if (brick.properties(context).broken) {
+				if (brick.properties(context).split) {
 					final Course previousCourse = parent.parent.children.get(parent.index - 1);
 					final int insertIndex = previousCourse.children.size();
 					previousCourse.add(context, insertIndex, ImmutableList.of(brick));
@@ -132,7 +132,7 @@ public abstract class Brick {
 				}
 			}
 		} else {
-			if (index > 0 && brick.properties(context).broken) {
+			if (index > 0 && brick.properties(context).split) {
 				parent.breakCourse(context, index).add(context, 0, ImmutableList.of(brick));
 			} else
 				parent.add(context, index, ImmutableList.of(brick));

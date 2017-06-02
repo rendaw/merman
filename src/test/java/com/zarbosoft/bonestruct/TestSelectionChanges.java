@@ -10,8 +10,8 @@ import com.zarbosoft.bonestruct.editor.Path;
 import com.zarbosoft.bonestruct.editor.history.changes.ChangeArray;
 import com.zarbosoft.bonestruct.editor.history.changes.ChangeNodeSet;
 import com.zarbosoft.bonestruct.editor.visual.visuals.VisualArray;
-import com.zarbosoft.bonestruct.helper.Helper;
 import com.zarbosoft.bonestruct.helper.MiscSyntax;
+import com.zarbosoft.bonestruct.helper.TreeBuilder;
 import com.zarbosoft.bonestruct.syntax.Syntax;
 import com.zarbosoft.rendaw.common.Pair;
 import org.junit.Test;
@@ -67,12 +67,12 @@ public class TestSelectionChanges {
 			final int endSelectBegin,
 			final int endSelectEnd
 	) {
-		final Context context = buildDoc(MiscSyntax.syntax, new Helper.TreeBuilder(MiscSyntax.array).addArray("value",
-				new Helper.TreeBuilder(MiscSyntax.one).build(),
-				new Helper.TreeBuilder(MiscSyntax.two).build(),
-				new Helper.TreeBuilder(MiscSyntax.three).build(),
-				new Helper.TreeBuilder(MiscSyntax.four).build(),
-				new Helper.TreeBuilder(MiscSyntax.five).build()
+		final Context context = buildDoc(MiscSyntax.syntax, new TreeBuilder(MiscSyntax.array).addArray("value",
+				new TreeBuilder(MiscSyntax.one).build(),
+				new TreeBuilder(MiscSyntax.two).build(),
+				new TreeBuilder(MiscSyntax.three).build(),
+				new TreeBuilder(MiscSyntax.four).build(),
+				new TreeBuilder(MiscSyntax.five).build()
 		).build());
 
 		final ValueArray value = (ValueArray) context.document.rootArray.data.get(0).data.get("value");
@@ -99,7 +99,7 @@ public class TestSelectionChanges {
 	@Test
 	public void removeRootOnly() {
 		innerTestTransform(MiscSyntax.syntax,
-				new Helper.TreeBuilder(MiscSyntax.infinity).build(),
+				new TreeBuilder(MiscSyntax.infinity).build(),
 				new Path("0"),
 				(context, selected) -> context.history.apply(context,
 						new ChangeArray(context.document.rootArray, 0, 1, ImmutableList.of())
@@ -112,8 +112,8 @@ public class TestSelectionChanges {
 	@Test
 	public void removeArrayOnly() {
 		innerTestTransform(MiscSyntax.syntax,
-				new Helper.TreeBuilder(MiscSyntax.array)
-						.addArray("value", new Helper.TreeBuilder(MiscSyntax.infinity).build())
+				new TreeBuilder(MiscSyntax.array)
+						.addArray("value", new TreeBuilder(MiscSyntax.infinity).build())
 						.build(),
 				new Path("0", "0"),
 				(context, selected) -> {
@@ -121,7 +121,7 @@ public class TestSelectionChanges {
 							new ChangeArray((ValueArray) selected.parent.value(), 0, 1, ImmutableList.of())
 					);
 				},
-				new Helper.TreeBuilder(MiscSyntax.array).addArray("value").build(),
+				new TreeBuilder(MiscSyntax.array).addArray("value").build(),
 				new Path("0")
 		);
 	}
@@ -129,16 +129,16 @@ public class TestSelectionChanges {
 	@Test
 	public void removeArraySelectBefore() {
 		innerTestTransform(MiscSyntax.syntax,
-				new Helper.TreeBuilder(MiscSyntax.array).addArray("value",
-						new Helper.TreeBuilder(MiscSyntax.infinity).build(),
-						new Helper.TreeBuilder(MiscSyntax.infinity).build()
+				new TreeBuilder(MiscSyntax.array).addArray("value",
+						new TreeBuilder(MiscSyntax.infinity).build(),
+						new TreeBuilder(MiscSyntax.infinity).build()
 				).build(),
 				new Path("0", "0"),
 				(context, selected) -> context.history.apply(context,
 						new ChangeArray((ValueArray) selected.parent.value(), 1, 1, ImmutableList.of())
 				),
-				new Helper.TreeBuilder(MiscSyntax.array)
-						.addArray("value", new Helper.TreeBuilder(MiscSyntax.infinity).build())
+				new TreeBuilder(MiscSyntax.array)
+						.addArray("value", new TreeBuilder(MiscSyntax.infinity).build())
 						.build(),
 				new Path("0", "0")
 		);
@@ -147,16 +147,16 @@ public class TestSelectionChanges {
 	@Test
 	public void removeArraySelectFollowing() {
 		innerTestTransform(MiscSyntax.syntax,
-				new Helper.TreeBuilder(MiscSyntax.array).addArray("value",
-						new Helper.TreeBuilder(MiscSyntax.infinity).build(),
-						new Helper.TreeBuilder(MiscSyntax.infinity).build()
+				new TreeBuilder(MiscSyntax.array).addArray("value",
+						new TreeBuilder(MiscSyntax.infinity).build(),
+						new TreeBuilder(MiscSyntax.infinity).build()
 				).build(),
 				new Path("0", "1"),
 				(context, selected) -> context.history.apply(context,
 						new ChangeArray((ValueArray) selected.parent.value(), 0, 1, ImmutableList.of())
 				),
-				new Helper.TreeBuilder(MiscSyntax.array)
-						.addArray("value", new Helper.TreeBuilder(MiscSyntax.infinity).build())
+				new TreeBuilder(MiscSyntax.array)
+						.addArray("value", new TreeBuilder(MiscSyntax.infinity).build())
 						.build(),
 				new Path("0", "0")
 		);
@@ -165,18 +165,18 @@ public class TestSelectionChanges {
 	@Test
 	public void removeArraySelectWithin() {
 		innerTestTransform(MiscSyntax.syntax,
-				new Helper.TreeBuilder(MiscSyntax.array).addArray("value",
-						new Helper.TreeBuilder(MiscSyntax.infinity).build(),
-						new Helper.TreeBuilder(MiscSyntax.infinity).build(),
-						new Helper.TreeBuilder(MiscSyntax.infinity).build()
+				new TreeBuilder(MiscSyntax.array).addArray("value",
+						new TreeBuilder(MiscSyntax.infinity).build(),
+						new TreeBuilder(MiscSyntax.infinity).build(),
+						new TreeBuilder(MiscSyntax.infinity).build()
 				).build(),
 				new Path("0", "1"),
 				(context, selected) -> context.history.apply(context,
 						new ChangeArray((ValueArray) selected.parent.value(), 1, 1, ImmutableList.of())
 				),
-				new Helper.TreeBuilder(MiscSyntax.array).addArray("value",
-						new Helper.TreeBuilder(MiscSyntax.infinity).build(),
-						new Helper.TreeBuilder(MiscSyntax.infinity).build()
+				new TreeBuilder(MiscSyntax.array).addArray("value",
+						new TreeBuilder(MiscSyntax.infinity).build(),
+						new TreeBuilder(MiscSyntax.infinity).build()
 				).build(),
 				new Path("0", "1")
 		);
@@ -185,16 +185,16 @@ public class TestSelectionChanges {
 	@Test
 	public void removeArraySelectWithinNoneAfter() {
 		innerTestTransform(MiscSyntax.syntax,
-				new Helper.TreeBuilder(MiscSyntax.array).addArray("value",
-						new Helper.TreeBuilder(MiscSyntax.infinity).build(),
-						new Helper.TreeBuilder(MiscSyntax.infinity).build()
+				new TreeBuilder(MiscSyntax.array).addArray("value",
+						new TreeBuilder(MiscSyntax.infinity).build(),
+						new TreeBuilder(MiscSyntax.infinity).build()
 				).build(),
 				new Path("0", "1"),
 				(context, selected) -> context.history.apply(context,
 						new ChangeArray((ValueArray) selected.parent.value(), 1, 1, ImmutableList.of())
 				),
-				new Helper.TreeBuilder(MiscSyntax.array)
-						.addArray("value", new Helper.TreeBuilder(MiscSyntax.infinity).build())
+				new TreeBuilder(MiscSyntax.array)
+						.addArray("value", new TreeBuilder(MiscSyntax.infinity).build())
 						.build(),
 				new Path("0", "0")
 		);
@@ -202,39 +202,41 @@ public class TestSelectionChanges {
 
 	@Test
 	public void removeArraySelectDeep() {
-		innerTestTransform(MiscSyntax.syntax, new Helper.TreeBuilder(MiscSyntax.array).addArray("value",
-				new Helper.TreeBuilder(MiscSyntax.infinity).build(),
-				new Helper.TreeBuilder(MiscSyntax.array)
-						.addArray("value", new Helper.TreeBuilder(MiscSyntax.infinity).build())
+		innerTestTransform(MiscSyntax.syntax, new TreeBuilder(MiscSyntax.array).addArray("value",
+				new TreeBuilder(MiscSyntax.infinity).build(),
+				new TreeBuilder(MiscSyntax.array)
+						.addArray("value", new TreeBuilder(MiscSyntax.infinity).build())
 						.build(),
-				new Helper.TreeBuilder(MiscSyntax.infinity).build()
+				new TreeBuilder(MiscSyntax.infinity).build()
 		).build(), new Path("0", "1", "0"), (context, selected) -> {
 			((Value) context.locateLong(new Path("0", "1"))).parent.atom().parent.delete(context);
-		}, new Helper.TreeBuilder(MiscSyntax.array).addArray("value",
-				new Helper.TreeBuilder(MiscSyntax.infinity).build(),
-				new Helper.TreeBuilder(MiscSyntax.infinity).build()
-		).build(), new Path("0", "1"));
+		}, new TreeBuilder(MiscSyntax.array)
+				.addArray("value",
+						new TreeBuilder(MiscSyntax.infinity).build(),
+						new TreeBuilder(MiscSyntax.infinity).build()
+				)
+				.build(), new Path("0", "1"));
 	}
 
 	@Test
 	public void addArrayAfter() {
 		innerTestTransform(MiscSyntax.syntax,
-				new Helper.TreeBuilder(MiscSyntax.array).addArray("value",
-						new Helper.TreeBuilder(MiscSyntax.infinity).build(),
-						new Helper.TreeBuilder(MiscSyntax.infinity).build()
+				new TreeBuilder(MiscSyntax.array).addArray("value",
+						new TreeBuilder(MiscSyntax.infinity).build(),
+						new TreeBuilder(MiscSyntax.infinity).build()
 				).build(),
 				new Path("0", "0"),
 				(context, selected) -> context.history.apply(context,
 						new ChangeArray((ValueArray) selected.parent.value(),
 								0,
 								0,
-								ImmutableList.of(new Helper.TreeBuilder(MiscSyntax.infinity).build())
+								ImmutableList.of(new TreeBuilder(MiscSyntax.infinity).build())
 						)
 				),
-				new Helper.TreeBuilder(MiscSyntax.array).addArray("value",
-						new Helper.TreeBuilder(MiscSyntax.infinity).build(),
-						new Helper.TreeBuilder(MiscSyntax.infinity).build(),
-						new Helper.TreeBuilder(MiscSyntax.infinity).build()
+				new TreeBuilder(MiscSyntax.array).addArray("value",
+						new TreeBuilder(MiscSyntax.infinity).build(),
+						new TreeBuilder(MiscSyntax.infinity).build(),
+						new TreeBuilder(MiscSyntax.infinity).build()
 				).build(),
 				new Path("0", "1")
 		);
@@ -243,22 +245,22 @@ public class TestSelectionChanges {
 	@Test
 	public void addArrayAfterEnd1() {
 		innerTestTransform(MiscSyntax.syntax,
-				new Helper.TreeBuilder(MiscSyntax.array).addArray("value",
-						new Helper.TreeBuilder(MiscSyntax.infinity).build(),
-						new Helper.TreeBuilder(MiscSyntax.infinity).build()
+				new TreeBuilder(MiscSyntax.array).addArray("value",
+						new TreeBuilder(MiscSyntax.infinity).build(),
+						new TreeBuilder(MiscSyntax.infinity).build()
 				).build(),
 				new Path("0", "1"),
 				(context, selected) -> context.history.apply(context,
 						new ChangeArray((ValueArray) selected.parent.value(),
 								1,
 								0,
-								ImmutableList.of(new Helper.TreeBuilder(MiscSyntax.infinity).build())
+								ImmutableList.of(new TreeBuilder(MiscSyntax.infinity).build())
 						)
 				),
-				new Helper.TreeBuilder(MiscSyntax.array).addArray("value",
-						new Helper.TreeBuilder(MiscSyntax.infinity).build(),
-						new Helper.TreeBuilder(MiscSyntax.infinity).build(),
-						new Helper.TreeBuilder(MiscSyntax.infinity).build()
+				new TreeBuilder(MiscSyntax.array).addArray("value",
+						new TreeBuilder(MiscSyntax.infinity).build(),
+						new TreeBuilder(MiscSyntax.infinity).build(),
+						new TreeBuilder(MiscSyntax.infinity).build()
 				).build(),
 				new Path("0", "2")
 		);
@@ -352,9 +354,13 @@ public class TestSelectionChanges {
 	public void arrayMidAtAddRemove() {
 		innerArrayTestTransform(3, 3, (context, value) -> {
 			context.history.apply(context,
-					new ChangeArray(value, 3, 1, ImmutableList.of(new Helper.TreeBuilder(MiscSyntax.one).build(),
-							new Helper.TreeBuilder(MiscSyntax.one).build()
-					))
+					new ChangeArray(value,
+							3,
+							1,
+							ImmutableList.of(new TreeBuilder(MiscSyntax.one).build(),
+									new TreeBuilder(MiscSyntax.one).build()
+							)
+					)
 			);
 		}, 4, 4);
 	}
@@ -363,9 +369,13 @@ public class TestSelectionChanges {
 	public void arrayEndAtAddRemove() {
 		innerArrayTestTransform(4, 4, (context, value) -> {
 			context.history.apply(context,
-					new ChangeArray(value, 4, 1, ImmutableList.of(new Helper.TreeBuilder(MiscSyntax.one).build(),
-							new Helper.TreeBuilder(MiscSyntax.one).build()
-					))
+					new ChangeArray(value,
+							4,
+							1,
+							ImmutableList.of(new TreeBuilder(MiscSyntax.one).build(),
+									new TreeBuilder(MiscSyntax.one).build()
+							)
+					)
 			);
 		}, 5, 5);
 	}
@@ -373,16 +383,14 @@ public class TestSelectionChanges {
 	@Test
 	public void removeNode() {
 		innerTestTransform(MiscSyntax.syntax,
-				new Helper.TreeBuilder(MiscSyntax.snooze)
-						.add("value", new Helper.TreeBuilder(MiscSyntax.infinity).build())
-						.build(),
+				new TreeBuilder(MiscSyntax.snooze).add("value", new TreeBuilder(MiscSyntax.infinity).build()).build(),
 				new Path("0", "value"),
 				(context, selected) -> {
 					context.history.apply(context,
 							new ChangeNodeSet((ValueAtom) selected.parent.value(), MiscSyntax.syntax.gap.create())
 					);
 				},
-				new Helper.TreeBuilder(MiscSyntax.snooze).add("value", MiscSyntax.syntax.gap.create()).build(),
+				new TreeBuilder(MiscSyntax.snooze).add("value", MiscSyntax.syntax.gap.create()).build(),
 				new Path("0", "value")
 		);
 	}
@@ -390,16 +398,16 @@ public class TestSelectionChanges {
 	@Test
 	public void removeNodeSelectDeep() {
 		innerTestTransform(MiscSyntax.syntax,
-				new Helper.TreeBuilder(MiscSyntax.snooze).add("value",
-						new Helper.TreeBuilder(MiscSyntax.array)
-								.addArray("value", new Helper.TreeBuilder(MiscSyntax.infinity).build())
+				new TreeBuilder(MiscSyntax.snooze).add("value",
+						new TreeBuilder(MiscSyntax.array)
+								.addArray("value", new TreeBuilder(MiscSyntax.infinity).build())
 								.build()
 				).build(),
 				new Path("0", "value", "0"),
 				(context, selected) -> {
 					((ValueArray) context.locateLong(new Path("0", "value"))).parent.atom().parent.delete(context);
 				},
-				new Helper.TreeBuilder(MiscSyntax.snooze).add("value", MiscSyntax.syntax.gap.create()).build(),
+				new TreeBuilder(MiscSyntax.snooze).add("value", MiscSyntax.syntax.gap.create()).build(),
 				new Path("0", "value")
 		);
 	}

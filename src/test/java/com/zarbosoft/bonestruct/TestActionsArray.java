@@ -8,6 +8,7 @@ import com.zarbosoft.bonestruct.editor.Path;
 import com.zarbosoft.bonestruct.editor.visual.visuals.VisualArray;
 import com.zarbosoft.bonestruct.helper.Helper;
 import com.zarbosoft.bonestruct.helper.MiscSyntax;
+import com.zarbosoft.bonestruct.helper.TreeBuilder;
 import org.junit.Test;
 
 import static com.zarbosoft.bonestruct.helper.Helper.assertTreeEqual;
@@ -19,17 +20,17 @@ public class TestActionsArray {
 
 	public Context build(final Atom... atoms) {
 		final Context context =
-				buildDoc(MiscSyntax.syntax, new Helper.TreeBuilder(MiscSyntax.array).addArray("value", atoms).build());
+				buildDoc(MiscSyntax.syntax, new TreeBuilder(MiscSyntax.array).addArray("value", atoms).build());
 		((ValueArray) context.document.rootArray.data.get(0).data.get("value")).selectDown(context);
 		return context;
 	}
 
 	public Context buildFive() {
-		return build(new Helper.TreeBuilder(MiscSyntax.one).build(),
-				new Helper.TreeBuilder(MiscSyntax.two).build(),
-				new Helper.TreeBuilder(MiscSyntax.three).build(),
-				new Helper.TreeBuilder(MiscSyntax.four).build(),
-				new Helper.TreeBuilder(MiscSyntax.five).build()
+		return build(new TreeBuilder(MiscSyntax.one).build(),
+				new TreeBuilder(MiscSyntax.two).build(),
+				new TreeBuilder(MiscSyntax.three).build(),
+				new TreeBuilder(MiscSyntax.four).build(),
+				new TreeBuilder(MiscSyntax.five).build()
 		);
 	}
 
@@ -45,8 +46,8 @@ public class TestActionsArray {
 
 	@Test
 	public void testEnter() {
-		final Context context = build(new Helper.TreeBuilder(MiscSyntax.snooze)
-				.add("value", new Helper.TreeBuilder(MiscSyntax.infinity).build())
+		final Context context = build(new TreeBuilder(MiscSyntax.snooze)
+				.add("value", new TreeBuilder(MiscSyntax.infinity).build())
 				.build());
 		visual(context).select(context, true, 0, 0);
 		Helper.act(context, "enter");
@@ -55,8 +56,8 @@ public class TestActionsArray {
 
 	@Test
 	public void testExit() {
-		final Context context = build(new Helper.TreeBuilder(MiscSyntax.snooze)
-				.add("value", new Helper.TreeBuilder(MiscSyntax.infinity).build())
+		final Context context = build(new TreeBuilder(MiscSyntax.snooze)
+				.add("value", new TreeBuilder(MiscSyntax.infinity).build())
 				.build());
 		visual(context).select(context, true, 0, 0);
 		Helper.act(context, "exit");
@@ -208,10 +209,10 @@ public class TestActionsArray {
 				2
 		);
 		Helper.act(context, "delete");
-		assertTreeEqual(context, new Helper.TreeBuilder(MiscSyntax.array).addArray("value",
-				new Helper.TreeBuilder(MiscSyntax.one).build(),
-				new Helper.TreeBuilder(MiscSyntax.four).build(),
-				new Helper.TreeBuilder(MiscSyntax.five).build()
+		assertTreeEqual(context, new TreeBuilder(MiscSyntax.array).addArray("value",
+				new TreeBuilder(MiscSyntax.one).build(),
+				new TreeBuilder(MiscSyntax.four).build(),
+				new TreeBuilder(MiscSyntax.five).build()
 		).build(), context.document.rootArray);
 		assertThat(context.selection.getPath().toList(), equalTo(ImmutableList.of("0", "1")));
 	}
@@ -225,12 +226,12 @@ public class TestActionsArray {
 				2
 		);
 		Helper.act(context, "move_before");
-		assertTreeEqual(context, new Helper.TreeBuilder(MiscSyntax.array).addArray("value",
-				new Helper.TreeBuilder(MiscSyntax.two).build(),
-				new Helper.TreeBuilder(MiscSyntax.three).build(),
-				new Helper.TreeBuilder(MiscSyntax.one).build(),
-				new Helper.TreeBuilder(MiscSyntax.four).build(),
-				new Helper.TreeBuilder(MiscSyntax.five).build()
+		assertTreeEqual(context, new TreeBuilder(MiscSyntax.array).addArray("value",
+				new TreeBuilder(MiscSyntax.two).build(),
+				new TreeBuilder(MiscSyntax.three).build(),
+				new TreeBuilder(MiscSyntax.one).build(),
+				new TreeBuilder(MiscSyntax.four).build(),
+				new TreeBuilder(MiscSyntax.five).build()
 		).build(), context.document.rootArray);
 		final VisualArray.ArraySelection selection = (VisualArray.ArraySelection) context.selection;
 		assertThat(selection.beginIndex, equalTo(0));
@@ -246,12 +247,12 @@ public class TestActionsArray {
 				1
 		);
 		Helper.act(context, "move_before");
-		assertTreeEqual(context, new Helper.TreeBuilder(MiscSyntax.array).addArray("value",
-				new Helper.TreeBuilder(MiscSyntax.one).build(),
-				new Helper.TreeBuilder(MiscSyntax.two).build(),
-				new Helper.TreeBuilder(MiscSyntax.three).build(),
-				new Helper.TreeBuilder(MiscSyntax.four).build(),
-				new Helper.TreeBuilder(MiscSyntax.five).build()
+		assertTreeEqual(context, new TreeBuilder(MiscSyntax.array).addArray("value",
+				new TreeBuilder(MiscSyntax.one).build(),
+				new TreeBuilder(MiscSyntax.two).build(),
+				new TreeBuilder(MiscSyntax.three).build(),
+				new TreeBuilder(MiscSyntax.four).build(),
+				new TreeBuilder(MiscSyntax.five).build()
 		).build(), context.document.rootArray);
 		final VisualArray.ArraySelection selection = (VisualArray.ArraySelection) context.selection;
 		assertThat(selection.beginIndex, equalTo(0));
@@ -267,12 +268,12 @@ public class TestActionsArray {
 				2
 		);
 		Helper.act(context, "move_after");
-		assertTreeEqual(context, new Helper.TreeBuilder(MiscSyntax.array).addArray("value",
-				new Helper.TreeBuilder(MiscSyntax.one).build(),
-				new Helper.TreeBuilder(MiscSyntax.four).build(),
-				new Helper.TreeBuilder(MiscSyntax.two).build(),
-				new Helper.TreeBuilder(MiscSyntax.three).build(),
-				new Helper.TreeBuilder(MiscSyntax.five).build()
+		assertTreeEqual(context, new TreeBuilder(MiscSyntax.array).addArray("value",
+				new TreeBuilder(MiscSyntax.one).build(),
+				new TreeBuilder(MiscSyntax.four).build(),
+				new TreeBuilder(MiscSyntax.two).build(),
+				new TreeBuilder(MiscSyntax.three).build(),
+				new TreeBuilder(MiscSyntax.five).build()
 		).build(), context.document.rootArray);
 		final VisualArray.ArraySelection selection = (VisualArray.ArraySelection) context.selection;
 		assertThat(selection.beginIndex, equalTo(2));
@@ -288,12 +289,12 @@ public class TestActionsArray {
 				4
 		);
 		Helper.act(context, "move_after");
-		assertTreeEqual(context, new Helper.TreeBuilder(MiscSyntax.array).addArray("value",
-				new Helper.TreeBuilder(MiscSyntax.one).build(),
-				new Helper.TreeBuilder(MiscSyntax.two).build(),
-				new Helper.TreeBuilder(MiscSyntax.three).build(),
-				new Helper.TreeBuilder(MiscSyntax.four).build(),
-				new Helper.TreeBuilder(MiscSyntax.five).build()
+		assertTreeEqual(context, new TreeBuilder(MiscSyntax.array).addArray("value",
+				new TreeBuilder(MiscSyntax.one).build(),
+				new TreeBuilder(MiscSyntax.two).build(),
+				new TreeBuilder(MiscSyntax.three).build(),
+				new TreeBuilder(MiscSyntax.four).build(),
+				new TreeBuilder(MiscSyntax.five).build()
 		).build(), context.document.rootArray);
 		final VisualArray.ArraySelection selection = (VisualArray.ArraySelection) context.selection;
 		assertThat(selection.beginIndex, equalTo(3));
@@ -308,13 +309,13 @@ public class TestActionsArray {
 		Helper.act(context, "copy");
 		visual.select(context, true, 4, 4);
 		Helper.act(context, "paste");
-		assertTreeEqual(context, new Helper.TreeBuilder(MiscSyntax.array).addArray("value",
-				new Helper.TreeBuilder(MiscSyntax.one).build(),
-				new Helper.TreeBuilder(MiscSyntax.two).build(),
-				new Helper.TreeBuilder(MiscSyntax.three).build(),
-				new Helper.TreeBuilder(MiscSyntax.four).build(),
-				new Helper.TreeBuilder(MiscSyntax.two).build(),
-				new Helper.TreeBuilder(MiscSyntax.three).build()
+		assertTreeEqual(context, new TreeBuilder(MiscSyntax.array).addArray("value",
+				new TreeBuilder(MiscSyntax.one).build(),
+				new TreeBuilder(MiscSyntax.two).build(),
+				new TreeBuilder(MiscSyntax.three).build(),
+				new TreeBuilder(MiscSyntax.four).build(),
+				new TreeBuilder(MiscSyntax.two).build(),
+				new TreeBuilder(MiscSyntax.three).build()
 		).build(), context.document.rootArray);
 		final VisualArray.ArraySelection selection = (VisualArray.ArraySelection) context.selection;
 		assertThat(selection.beginIndex, equalTo(5));
@@ -342,11 +343,11 @@ public class TestActionsArray {
 				2
 		);
 		Helper.act(context, "paste");
-		assertTreeEqual(context, new Helper.TreeBuilder(MiscSyntax.array).addArray("value",
-				new Helper.TreeBuilder(MiscSyntax.one).build(),
-				new Helper.TreeBuilder(MiscSyntax.four).build(),
-				new Helper.TreeBuilder(MiscSyntax.two).build(),
-				new Helper.TreeBuilder(MiscSyntax.three).build()
+		assertTreeEqual(context, new TreeBuilder(MiscSyntax.array).addArray("value",
+				new TreeBuilder(MiscSyntax.one).build(),
+				new TreeBuilder(MiscSyntax.four).build(),
+				new TreeBuilder(MiscSyntax.two).build(),
+				new TreeBuilder(MiscSyntax.three).build()
 		).build(), context.document.rootArray);
 		{
 			final VisualArray.ArraySelection selection = (VisualArray.ArraySelection) context.selection;
@@ -362,12 +363,12 @@ public class TestActionsArray {
 		final VisualArray visual = (VisualArray) ((Atom) context.locateShort(new Path("0"))).data.get("value").visual();
 		visual.select(context, true, 1, 1);
 		Helper.act(context, "prefix");
-		assertTreeEqual(context, new Helper.TreeBuilder(MiscSyntax.array).addArray("value",
-				new Helper.TreeBuilder(MiscSyntax.one).build(),
-				MiscSyntax.syntax.prefixGap.create(new Helper.TreeBuilder(MiscSyntax.two).build()),
-				new Helper.TreeBuilder(MiscSyntax.three).build(),
-				new Helper.TreeBuilder(MiscSyntax.four).build(),
-				new Helper.TreeBuilder(MiscSyntax.five).build()
+		assertTreeEqual(context, new TreeBuilder(MiscSyntax.array).addArray("value",
+				new TreeBuilder(MiscSyntax.one).build(),
+				MiscSyntax.syntax.prefixGap.create(new TreeBuilder(MiscSyntax.two).build()),
+				new TreeBuilder(MiscSyntax.three).build(),
+				new TreeBuilder(MiscSyntax.four).build(),
+				new TreeBuilder(MiscSyntax.five).build()
 		).build(), context.document.rootArray);
 		assertThat(context.selection.getPath().toList(), equalTo(ImmutableList.of("0", "1", "gap", "0")));
 	}
@@ -378,12 +379,12 @@ public class TestActionsArray {
 		final VisualArray visual = (VisualArray) ((Atom) context.locateShort(new Path("0"))).data.get("value").visual();
 		visual.select(context, true, 1, 1);
 		Helper.act(context, "suffix");
-		assertTreeEqual(context, new Helper.TreeBuilder(MiscSyntax.array).addArray("value",
-				new Helper.TreeBuilder(MiscSyntax.one).build(),
-				MiscSyntax.syntax.suffixGap.create(false, new Helper.TreeBuilder(MiscSyntax.two).build()),
-				new Helper.TreeBuilder(MiscSyntax.three).build(),
-				new Helper.TreeBuilder(MiscSyntax.four).build(),
-				new Helper.TreeBuilder(MiscSyntax.five).build()
+		assertTreeEqual(context, new TreeBuilder(MiscSyntax.array).addArray("value",
+				new TreeBuilder(MiscSyntax.one).build(),
+				MiscSyntax.syntax.suffixGap.create(false, new TreeBuilder(MiscSyntax.two).build()),
+				new TreeBuilder(MiscSyntax.three).build(),
+				new TreeBuilder(MiscSyntax.four).build(),
+				new TreeBuilder(MiscSyntax.five).build()
 		).build(), context.document.rootArray);
 		assertThat(context.selection.getPath().toList(), equalTo(ImmutableList.of("0", "1", "gap", "0")));
 	}

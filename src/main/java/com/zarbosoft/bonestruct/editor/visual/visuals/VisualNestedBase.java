@@ -146,7 +146,7 @@ public abstract class VisualNestedBase extends Visual implements VisualLeaf {
 
 			@Override
 			public Alignment getAlignment(final Style.Baked style) {
-				return VisualNestedBase.this.getAlignment(style.alignment);
+				return parent.atomVisual().getAlignment(style.alignment);
 			}
 
 			@Override
@@ -455,7 +455,8 @@ public abstract class VisualNestedBase extends Visual implements VisualLeaf {
 	private void coreSet(final Context context, final Atom data) {
 		if (body != null)
 			body.uproot(context, null);
-		this.body = (VisualAtom) data.createVisual(context, new NestedParent(), parent.visual().alignments(), depth());
+		this.body =
+				(VisualAtom) data.createVisual(context, new NestedParent(), parent.atomVisual().alignments(), depth());
 		if (selection != null)
 			context.foreground.setCornerstone(context, body.createOrGetFirstBrick(context));
 	}
@@ -474,11 +475,6 @@ public abstract class VisualNestedBase extends Visual implements VisualLeaf {
 		@Override
 		public VisualAtom atomVisual() {
 			throw new DeadCode();
-		}
-
-		@Override
-		public Alignment getAlignment(final String alignment) {
-			return parent.getAlignment(alignment);
 		}
 
 		@Override

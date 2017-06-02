@@ -3,9 +3,9 @@ package com.zarbosoft.bonestruct;
 import com.zarbosoft.bonestruct.document.Atom;
 import com.zarbosoft.bonestruct.editor.visual.visuals.VisualPrimitive;
 import com.zarbosoft.bonestruct.helper.GeneralTestWizard;
-import com.zarbosoft.bonestruct.helper.Helper;
 import com.zarbosoft.bonestruct.helper.PrimitiveSyntax;
 import com.zarbosoft.bonestruct.helper.TestWizard;
+import com.zarbosoft.bonestruct.helper.TreeBuilder;
 import org.junit.Test;
 
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -78,7 +78,7 @@ public class TestPrimitiveBreaking {
 
 	@Test
 	public void testUnbreakableDynamic() {
-		final Atom primitive = new Helper.TreeBuilder(PrimitiveSyntax.primitive).add("value", "123").build();
+		final Atom primitive = new TreeBuilder(PrimitiveSyntax.primitive).add("value", "123").build();
 		new GeneralTestWizard(PrimitiveSyntax.syntax, primitive)
 				.resize(40)
 				.run(context -> primitive.data.get("value").selectDown(context))
@@ -112,9 +112,8 @@ public class TestPrimitiveBreaking {
 		private final VisualPrimitive primitive;
 
 		public PrimitiveTestWizard(final String string) {
-			inner = new TestWizard(
-					PrimitiveSyntax.syntax,
-					new Helper.TreeBuilder(PrimitiveSyntax.primitive).add("value", string).build()
+			inner = new TestWizard(PrimitiveSyntax.syntax,
+					new TreeBuilder(PrimitiveSyntax.primitive).add("value", string).build()
 			);
 			this.primitive = (VisualPrimitive) inner.context.document.rootArray.data.get(0).data.get("value").visual();
 		}
@@ -137,10 +136,9 @@ public class TestPrimitiveBreaking {
 
 	@Test
 	public void testMultipleAtoms() {
-		new GeneralTestWizard(
-				PrimitiveSyntax.syntax,
-				new Helper.TreeBuilder(PrimitiveSyntax.primitive).add("value", "oret").build(),
-				new Helper.TreeBuilder(PrimitiveSyntax.primitive).add("value", "nyibhye").build()
+		new GeneralTestWizard(PrimitiveSyntax.syntax,
+				new TreeBuilder(PrimitiveSyntax.primitive).add("value", "oret").build(),
+				new TreeBuilder(PrimitiveSyntax.primitive).add("value", "nyibhye").build()
 		)
 				.checkTextBrick(0, 1, "oret")
 				.checkTextBrick(0, 3, "nyibhye")

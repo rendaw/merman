@@ -44,9 +44,6 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 	private int hardLineCount = 0;
 
 	public class BrickStyle {
-		public Alignment softAlignment;
-		public Alignment hardAlignment;
-		public Alignment firstAlignment;
 		public Style.Baked softStyle;
 		public Style.Baked hardStyle;
 		public Style.Baked firstStyle;
@@ -59,9 +56,6 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 			firstStyle = context.getStyle(context.globalTags.plusAll(firstTags()));
 			hardStyle = context.getStyle(context.globalTags.plusAll(hardTags()));
 			softStyle = context.getStyle(context.globalTags.plusAll(softTags()));
-			firstAlignment = getAlignment(firstStyle.alignment);
-			hardAlignment = getAlignment(hardStyle.alignment);
-			softAlignment = getAlignment(softStyle.alignment);
 		}
 	}
 
@@ -1006,7 +1000,7 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 
 		@Override
 		public Alignment getAlignment(final Style.Baked style) {
-			return VisualPrimitive.this.getAlignment(style.alignment);
+			return parent.atomVisual().getAlignment(style.alignment);
 		}
 
 		@Override
@@ -1018,7 +1012,6 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 			if (brick == null)
 				return;
 			brick.setStyle(context, index == 0 ? style.firstStyle : hard ? style.hardStyle : style.softStyle);
-			brick.changed(context);
 		}
 
 		public Brick createOrGetBrick(final Context context) {
@@ -1361,6 +1354,7 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 	}
 
 	private RebreakResult rebreak(final Context context, final int i) {
+		final VisualAtom atom = parent.atomVisual();
 		final RebreakResult result = new RebreakResult();
 		class Builder {
 			String text;
@@ -1442,7 +1436,7 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 				final Style.Baked style =
 						j == 0 ? brickStyle.firstStyle : j == i ? brickStyle.hardStyle : brickStyle.softStyle;
 				font = style.getFont(context);
-				final Alignment alignment = getAlignment(style.alignment);
+				final Alignment alignment = atom.getAlignment(style.alignment);
 				if (alignment == null)
 					converse = 0;
 				else
@@ -1466,7 +1460,7 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 				line.setIndex(context, j);
 				final Style.Baked style = brickStyle.softStyle;
 				final Font font = style.getFont(context);
-				final Alignment alignment = getAlignment(style.alignment);
+				final Alignment alignment = atom.getAlignment(style.alignment);
 				final int converse;
 				if (alignment == null)
 					converse = 0;

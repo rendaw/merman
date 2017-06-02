@@ -3,9 +3,7 @@ package com.zarbosoft.bonestruct;
 import com.zarbosoft.bonestruct.document.Atom;
 import com.zarbosoft.bonestruct.document.values.ValueAtom;
 import com.zarbosoft.bonestruct.editor.Path;
-import com.zarbosoft.bonestruct.helper.GeneralTestWizard;
-import com.zarbosoft.bonestruct.helper.Helper;
-import com.zarbosoft.bonestruct.helper.StyleBuilder;
+import com.zarbosoft.bonestruct.helper.*;
 import com.zarbosoft.bonestruct.syntax.FreeAtomType;
 import com.zarbosoft.bonestruct.syntax.Syntax;
 import org.junit.Test;
@@ -25,32 +23,32 @@ public class TestWindowing {
 	final public static FreeAtomType array;
 
 	static {
-		a0_0 = new Helper.TypeBuilder("a0_0").back(Helper.buildBackPrimitive("a0_0")).frontMark("0_0").build();
-		a1_0 = new Helper.TypeBuilder("a1_0").back(Helper.buildBackPrimitive("a1_0")).frontMark("1_0").build();
-		a2_0 = new Helper.TypeBuilder("a2_0").back(Helper.buildBackPrimitive("a2_0")).frontMark("2_0").build();
-		a3_0 = new Helper.TypeBuilder("a3_0").back(Helper.buildBackPrimitive("a3_0")).frontMark("3_0").build();
-		a4 = new Helper.TypeBuilder("a4").back(Helper.buildBackPrimitive("a4")).frontMark("4").build();
-		a5 = new Helper.TypeBuilder("a5").back(Helper.buildBackPrimitive("a5")).frontMark("5").build();
-		a0_1 = new Helper.TypeBuilder("a0_1").back(Helper.buildBackPrimitive("a0_1")).frontMark("0_1").build();
-		a1_1 = new Helper.TypeBuilder("a1_1").back(Helper.buildBackPrimitive("a1_1")).frontMark("1_1").build();
-		a2_1 = new Helper.TypeBuilder("a2_1").back(Helper.buildBackPrimitive("a2_1")).frontMark("2_1").build();
-		a3_1 = new Helper.TypeBuilder("a3_1").back(Helper.buildBackPrimitive("a3_1")).frontMark("3_1").build();
-		oneAtom = new Helper.TypeBuilder("oneAtom")
+		a0_0 = new TypeBuilder("a0_0").back(Helper.buildBackPrimitive("a0_0")).frontMark("0_0").build();
+		a1_0 = new TypeBuilder("a1_0").back(Helper.buildBackPrimitive("a1_0")).frontMark("1_0").build();
+		a2_0 = new TypeBuilder("a2_0").back(Helper.buildBackPrimitive("a2_0")).frontMark("2_0").build();
+		a3_0 = new TypeBuilder("a3_0").back(Helper.buildBackPrimitive("a3_0")).frontMark("3_0").build();
+		a4 = new TypeBuilder("a4").back(Helper.buildBackPrimitive("a4")).frontMark("4").build();
+		a5 = new TypeBuilder("a5").back(Helper.buildBackPrimitive("a5")).frontMark("5").build();
+		a0_1 = new TypeBuilder("a0_1").back(Helper.buildBackPrimitive("a0_1")).frontMark("0_1").build();
+		a1_1 = new TypeBuilder("a1_1").back(Helper.buildBackPrimitive("a1_1")).frontMark("1_1").build();
+		a2_1 = new TypeBuilder("a2_1").back(Helper.buildBackPrimitive("a2_1")).frontMark("2_1").build();
+		a3_1 = new TypeBuilder("a3_1").back(Helper.buildBackPrimitive("a3_1")).frontMark("3_1").build();
+		oneAtom = new TypeBuilder("oneAtom")
 				.middleNode("value", "any")
-				.back(new Helper.BackRecordBuilder().add("stop", Helper.buildBackDataNode("value")).build())
+				.back(new BackRecordBuilder().add("stop", Helper.buildBackDataNode("value")).build())
 				.frontDataNode("value")
 				.depthScore(1)
 				.build();
-		array = new Helper.TypeBuilder("array")
+		array = new TypeBuilder("array")
 				.middleArray("value", "any")
 				.back(Helper.buildBackDataArray("value"))
-				.front(new Helper.FrontDataArrayBuilder("value").build())
+				.front(new FrontDataArrayBuilder("value").build())
 				.depthScore(1)
 				.build();
 	}
 
 	public Syntax syntax(final boolean startWindowed) {
-		final Syntax out = new Helper.SyntaxBuilder("any")
+		final Syntax out = new SyntaxBuilder("any")
 				.type(a0_0)
 				.type(a1_0)
 				.type(a2_0)
@@ -65,7 +63,7 @@ public class TestWindowing {
 				.type(array)
 				.group(
 						"any",
-						new Helper.GroupBuilder()
+						new GroupBuilder()
 								.type(a0_0)
 								.type(a1_0)
 								.type(a2_0)
@@ -80,7 +78,7 @@ public class TestWindowing {
 								.type(array)
 								.build()
 				)
-				.style(new StyleBuilder().broken(true).build())
+				.style(new StyleBuilder().split(true).build())
 				.build();
 		out.startWindowed = startWindowed;
 		out.ellipsizeThreshold = 3;
@@ -89,32 +87,35 @@ public class TestWindowing {
 
 	public GeneralTestWizard start(final boolean startWindowed) {
 		final Syntax syntax = syntax(startWindowed);
-		return new GeneralTestWizard(syntax, new Helper.TreeBuilder(oneAtom)
-				.add("value",
-						new Helper.TreeBuilder(oneAtom).add("value", new Helper.TreeBuilder(a0_0).build()).build()
-				)
-				.build(), new Helper.TreeBuilder(array)
-				.addArray("value",
-						new Helper.TreeBuilder(a1_0).build(),
-						new Helper.TreeBuilder(array)
-								.addArray("value",
-										new Helper.TreeBuilder(a2_0).build(),
-										new Helper.TreeBuilder(array).addArray("value",
-												new Helper.TreeBuilder(a3_0).build(),
-												new Helper.TreeBuilder(array)
-														.addArray("value", new Helper.TreeBuilder(a4).build())
-														.build(),
-												new Helper.TreeBuilder(oneAtom)
-														.add("value", new Helper.TreeBuilder(a5).build())
-														.build(),
-												new Helper.TreeBuilder(a3_1).build()
-										).build(),
-										new Helper.TreeBuilder(a2_1).build()
-								)
-								.build(),
-						new Helper.TreeBuilder(a1_1).build()
-				)
-				.build(), new Helper.TreeBuilder(a0_1).build());
+		return new GeneralTestWizard(
+				syntax,
+				new TreeBuilder(oneAtom)
+						.add("value", new TreeBuilder(oneAtom).add("value", new TreeBuilder(a0_0).build()).build())
+						.build(),
+				new TreeBuilder(array)
+						.addArray("value",
+								new TreeBuilder(a1_0).build(),
+								new TreeBuilder(array)
+										.addArray("value",
+												new TreeBuilder(a2_0).build(),
+												new TreeBuilder(array).addArray("value",
+														new TreeBuilder(a3_0).build(),
+														new TreeBuilder(array)
+																.addArray("value", new TreeBuilder(a4).build())
+																.build(),
+														new TreeBuilder(oneAtom)
+																.add("value", new TreeBuilder(a5).build())
+																.build(),
+														new TreeBuilder(a3_1).build()
+												).build(),
+												new TreeBuilder(a2_1).build()
+										)
+										.build(),
+								new TreeBuilder(a1_1).build()
+						)
+						.build(),
+				new TreeBuilder(a0_1).build()
+		);
 	}
 
 	@Test

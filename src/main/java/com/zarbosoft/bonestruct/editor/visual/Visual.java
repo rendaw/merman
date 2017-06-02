@@ -45,12 +45,6 @@ public abstract class Visual {
 			Context context, TagsChange change
 	);
 
-	public Alignment getAlignment(final String alignment) {
-		if (parent() != null)
-			return parent().getAlignment(alignment);
-		return null;
-	}
-
 	public int depth() {
 		final VisualParent parent = parent();
 		if (parent == null)
@@ -78,12 +72,6 @@ public abstract class Visual {
 		final Brick nextBrick = parent() == null ? null : parent().getNextBrick(context);
 		if (previousBrick != null && nextBrick != null)
 			context.idleLayBricksAfterEnd(previousBrick);
-	}
-
-	public Map<String, Alignment> alignments() {
-		if (parent() == null)
-			return ImmutableMap.of();
-		return parent().visual().alignments();
 	}
 
 	public void changeTagsCompact(final Context context) {

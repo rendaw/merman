@@ -4,14 +4,16 @@ import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.display.DisplayNode;
 import com.zarbosoft.bonestruct.editor.display.Font;
 import com.zarbosoft.bonestruct.editor.display.Text;
+import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.AlignmentListener;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.editor.wall.Brick;
 import com.zarbosoft.bonestruct.editor.wall.BrickInterface;
 import com.zarbosoft.bonestruct.syntax.style.Style;
 
-public abstract class BrickText extends Brick implements AlignmentListener {
+public class BrickText extends Brick implements AlignmentListener {
 	public Text text;
+	private Alignment alignment;
 	private int minConverse;
 
 	public BrickText(final Context context, final BrickInterface inter) {
@@ -37,6 +39,13 @@ public abstract class BrickText extends Brick implements AlignmentListener {
 	}
 
 	@Override
+	protected void destroyed(final Context context) {
+		super.destroyed(context);
+		if (alignment != null)
+			alignment.removeListener(context, this);
+	}
+
+	@Override
 	public void tagsChanged(final Context context) {
 		setStyle(context, context.getStyle(context.globalTags.plusAll(inter.getTags(context))));
 	}
@@ -47,6 +56,12 @@ public abstract class BrickText extends Brick implements AlignmentListener {
 			text.setColor(context, style.color);
 			text.setFont(context, style.getFont(context));
 		}
+		if (alignment != null)
+			alignment.removeListener(context, this);
+		alignment = inter.getAlignment(style);
+		if (alignment != null)
+			alignment.addListener(context, this);
+		changed(context);
 	}
 
 	@Override

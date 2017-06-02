@@ -61,10 +61,10 @@ public class Course {
 	void changed(final Context context, final int at) {
 		final Brick brick = children.get(at);
 		final Brick.Properties properties = brick.properties(context);
-		if (at > 0 && properties.broken) {
+		if (at > 0 && properties.split) {
 			breakCourse(context, at);
 			return;
-		} else if (at == 0 && !properties.broken && this.index > 0) {
+		} else if (at == 0 && !properties.split && this.index > 0) {
 			joinPreviousCourse(context);
 			return;
 		}
@@ -260,7 +260,7 @@ public class Course {
 				if (properties.alignment != null && !seenAlignments.contains(properties.alignment)) {
 					seenAlignments.add(properties.alignment);
 					converse = Math.max(converse, properties.alignment.converse);
-					properties.alignment.set(context, converse);
+					properties.alignment.feedback(context, converse);
 				}
 				brick.setConverse(context, minConverse, converse);
 				for (final Attachment attachment : brick.getAttachments(context))

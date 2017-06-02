@@ -3,9 +3,7 @@ package com.zarbosoft.bonestruct;
 import com.zarbosoft.bonestruct.document.Atom;
 import com.zarbosoft.bonestruct.editor.visual.tags.FreeTag;
 import com.zarbosoft.bonestruct.editor.visual.tags.StateTag;
-import com.zarbosoft.bonestruct.helper.GeneralTestWizard;
-import com.zarbosoft.bonestruct.helper.Helper;
-import com.zarbosoft.bonestruct.helper.StyleBuilder;
+import com.zarbosoft.bonestruct.helper.*;
 import com.zarbosoft.bonestruct.syntax.FreeAtomType;
 import com.zarbosoft.bonestruct.syntax.Syntax;
 import org.junit.Test;
@@ -16,34 +14,32 @@ public class TestLayoutRootArray {
 	final public static Syntax syntax;
 
 	static {
-		one = new Helper.TypeBuilder("one")
+		one = new TypeBuilder("one")
 				.back(Helper.buildBackPrimitive("one"))
-				.front(new Helper.FrontMarkBuilder("one").build())
+				.front(new FrontMarkBuilder("one").build())
 				.build();
-		text = new Helper.TypeBuilder("text")
+		text = new TypeBuilder("text")
 				.back(Helper.buildBackDataPrimitive("value"))
 				.middlePrimitive("value")
 				.frontDataPrimitive("value")
 				.build();
-		syntax = new Helper.SyntaxBuilder("any")
+		syntax = new SyntaxBuilder("any")
 				.type(one)
 				.type(text)
-				.group("any", new Helper.GroupBuilder().type(one).type(text).build())
-				.style(new StyleBuilder().tag(new StateTag("compact")).tag(new FreeTag("split")).broken(true).build())
+				.group("any", new GroupBuilder().type(one).type(text).build())
+				.style(new StyleBuilder().tag(new StateTag("compact")).tag(new FreeTag("split")).split(true).build())
 				.build();
-		syntax.rootFront.prefix.add(new Helper.FrontSpaceBuilder().tag("split").build());
+		syntax.rootFront.prefix.add(new FrontSpaceBuilder().tag("split").build());
 	}
 
 	@Test
 	public void testLayoutInitial() {
-		new GeneralTestWizard(syntax, new Helper.TreeBuilder(one).build())
-				.checkSpaceBrick(0, 0)
-				.checkTextBrick(0, 1, "one");
+		new GeneralTestWizard(syntax, new TreeBuilder(one).build()).checkSpaceBrick(0, 0).checkTextBrick(0, 1, "one");
 	}
 
 	@Test
 	public void testCompact() {
-		new GeneralTestWizard(syntax, new Helper.TreeBuilder(one).build(), new Helper.TreeBuilder(one).build())
+		new GeneralTestWizard(syntax, new TreeBuilder(one).build(), new TreeBuilder(one).build())
 				.checkSpaceBrick(0, 0)
 				.checkTextBrick(0, 1, "one")
 				.checkSpaceBrick(0, 2)
@@ -57,8 +53,8 @@ public class TestLayoutRootArray {
 
 	@Test
 	public void testDynamicCompact() {
-		final Atom text = new Helper.TreeBuilder(this.text).add("value", "").build();
-		new GeneralTestWizard(syntax, new Helper.TreeBuilder(one).build(), text)
+		final Atom text = new TreeBuilder(this.text).add("value", "").build();
+		new GeneralTestWizard(syntax, new TreeBuilder(one).build(), text)
 				.run(context -> text.data.get("value").selectDown(context))
 				.resize(40)
 				.checkSpaceBrick(0, 0)
