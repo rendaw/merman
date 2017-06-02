@@ -33,7 +33,7 @@ public class FreeAtomType extends AtomType {
 	@Configuration(optional = true, description = "If this is an operator, the operator precedence.  This is " +
 			"used when filling in a suffix gap to raise the new atom to the appropriate level.  This is also used " +
 			"when wrapping lines - lower precedence nodes will be compacted first, expanded last.")
-	public int precedence = 0;
+	public int precedence = Integer.MAX_VALUE;
 
 	@Configuration(name = "associate_forward", optional = true, description =
 			"If this is an operator, the operator associativity.  This is used when filling in a " +

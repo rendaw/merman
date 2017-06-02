@@ -18,6 +18,7 @@ import org.pcollections.PSet;
 
 import java.util.Arrays;
 import java.util.Map;
+import java.util.stream.Stream;
 
 public class VisualSymbol extends Visual implements VisualLeaf, ConditionAttachment.Listener, BrickInterface {
 	private PSet<Tag> tags;
@@ -25,7 +26,6 @@ public class VisualSymbol extends Visual implements VisualLeaf, ConditionAttachm
 	public VisualParent parent;
 	public Brick brick = null;
 	public ConditionAttachment condition = null;
-	private boolean compact;
 
 	public VisualSymbol(
 			final Context context,
@@ -124,7 +124,7 @@ public class VisualSymbol extends Visual implements VisualLeaf, ConditionAttachm
 	public void root(
 			final Context context, final VisualParent parent, final Map<String, Alignment> alignments, final int depth
 	) {
-		// Nothing should be useful/change here
+		expand(context);
 	}
 
 	@Override
@@ -137,24 +137,22 @@ public class VisualSymbol extends Visual implements VisualLeaf, ConditionAttachm
 
 	@Override
 	public boolean canCompact() {
-		return !compact;
+		return !parent.atomVisual().compact;
 	}
 
 	@Override
 	public void compact(final Context context) {
 		changeTagsCompact(context);
-		compact = true;
 	}
 
 	@Override
 	public boolean canExpand() {
-		return compact;
+		return parent.atomVisual().compact;
 	}
 
 	@Override
 	public void expand(final Context context) {
 		changeTagsExpand(context);
-		compact = false;
 	}
 
 	@Override
@@ -185,5 +183,12 @@ public class VisualSymbol extends Visual implements VisualLeaf, ConditionAttachm
 	@Override
 	public PSet<Tag> getTags(final Context context) {
 		return tags;
+	}
+
+	@Override
+	public Stream<Brick> streamBricks() {
+		if (brick == null)
+			return Stream.empty();
+		return Stream.of(brick);
 	}
 }

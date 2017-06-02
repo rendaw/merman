@@ -12,6 +12,7 @@ import com.zarbosoft.rendaw.common.Pair;
 
 import java.util.Iterator;
 import java.util.Map;
+import java.util.stream.Stream;
 
 public abstract class Visual {
 	public abstract VisualParent parent();
@@ -92,4 +93,7 @@ public abstract class Visual {
 	public void changeTagsExpand(final Context context) {
 		changeTags(context, new TagsChange().remove(new StateTag("compact")));
 	}
+
+	public abstract Stream<Brick> streamBricks();
+
 }

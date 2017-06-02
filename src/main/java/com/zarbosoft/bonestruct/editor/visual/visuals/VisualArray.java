@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import static com.zarbosoft.rendaw.common.Common.last;
 
@@ -36,7 +37,6 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 	private final ValueArray.Listener dataListener;
 	private final ValueArray value;
 	private Brick ellipsis = null;
-	boolean compact = false;
 
 	public VisualArray(
 			final Context context,
@@ -169,6 +169,8 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 				final FrontSymbol fix = getSeparator().get(fixIndex);
 				group.add(context, fix.createVisual(context, group.createParent(fixIndex), tags, alignments, depth()));
 			}
+			if (parent.atomVisual().compact)
+				group.compact(context);
 			super.add(context, group, addAt);
 		};
 		for (final Atom atom : add) {
@@ -236,7 +238,7 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 				public Iterable<Pair<Brick, Brick.Properties>> getLeafPropertiesForTagsChange(
 						final Context context, final TagsChange change
 				) {
-					return nodeVisual.getLeafPropertiesForTagsChange(context, change);
+					return ImmutableList.of();
 				}
 
 				@Override
@@ -258,11 +260,18 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 				public boolean selectDown(final Context context) {
 					return nodeVisual.selectDown(context);
 				}
+
+				@Override
+				public Stream<Brick> streamBricks() {
+					return nodeVisual.streamBricks();
+				}
 			});
 			for (final FrontSymbol fix : getSuffix())
 				group.add(context,
 						fix.createVisual(context, group.createParent(groupIndex++), tags, alignments, depth())
 				);
+			if (parent.atomVisual().compact)
+				group.compact(context);
 			super.add(context, group, addIndex++);
 		}
 		if (!getSeparator().isEmpty() && addIndex < children.size()) {
@@ -283,6 +292,13 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 	protected abstract boolean tagFirst();
 
 	protected abstract Symbol ellipsis();
+
+	@Override
+	public Stream<Brick> streamBricks() {
+		if (ellipsis != null)
+			return Stream.of(ellipsis);
+		return super.streamBricks();
+	}
 
 	private class ChildGroup extends VisualGroup {
 
@@ -433,6 +449,9 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 			}
 			super.root(context, parent, alignments, depth);
 			context.idleLayBricks(parent, 0, 1, 1, null, null, i -> createEllipsis(context));
+			ellipsisTags = ellipsisTags.minus(new StateTag("compact"));
+			if (ellipsis != null)
+				ellipsis.tagsChanged(context);
 		} else {
 			if (ellipsis != null)
 				ellipsis.destroy(context);
@@ -994,14 +1013,14 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 	public boolean canExpand() {
 		if (ellipsis == null)
 			throw new AssertionError();
-		return compact;
+		return parent.atomVisual().compact;
 	}
 
 	@Override
 	public boolean canCompact() {
 		if (ellipsis == null)
 			throw new AssertionError();
-		return !compact;
+		return !parent.atomVisual().compact;
 	}
 
 	@Override
@@ -1010,7 +1029,6 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 		ellipsisTags = ellipsisTags.plus(new StateTag("compact"));
 		if (ellipsis != null)
 			ellipsis.tagsChanged(context);
-		compact = true;
 	}
 
 	@Override
@@ -1019,6 +1037,5 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 		ellipsisTags = ellipsisTags.minus(new StateTag("compact"));
 		if (ellipsis != null)
 			ellipsis.tagsChanged(context);
-		compact = false;
 	}
 }

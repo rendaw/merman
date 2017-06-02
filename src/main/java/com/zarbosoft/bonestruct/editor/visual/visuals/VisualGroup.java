@@ -16,6 +16,7 @@ import org.pcollections.PMap;
 
 import java.util.*;
 import java.util.function.IntFunction;
+import java.util.stream.Stream;
 
 import static com.zarbosoft.rendaw.common.Common.last;
 
@@ -38,6 +39,11 @@ public class VisualGroup extends Visual {
 	@Override
 	public void changeTags(final Context context, final TagsChange tagsChange) {
 		children.forEach(child -> child.changeTags(context, tagsChange));
+	}
+
+	@Override
+	public Stream<Brick> streamBricks() {
+		return children.stream().flatMap(child -> child.streamBricks());
 	}
 
 	@Override

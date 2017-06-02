@@ -1,15 +1,12 @@
 package com.zarbosoft.bonestruct.editor.wall;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.IdleTask;
 import com.zarbosoft.bonestruct.editor.display.Group;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.VisualLeaf;
-import com.zarbosoft.bonestruct.editor.visual.tags.StateTag;
-import com.zarbosoft.bonestruct.editor.visual.tags.TagsChange;
 import com.zarbosoft.bonestruct.editor.visual.visuals.VisualAtom;
 import com.zarbosoft.rendaw.common.ChainComparator;
 import com.zarbosoft.rendaw.common.Pair;
@@ -17,8 +14,8 @@ import com.zarbosoft.rendaw.common.Pair;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.zarbosoft.rendaw.common.Common.isOrdered;
 import static com.zarbosoft.rendaw.common.Common.last;
-import static com.zarbosoft.rendaw.common.Common.stream;
 
 public class Course {
 
@@ -47,7 +44,8 @@ public class Course {
 
 	void setTransverse(final Context context, final int transverse) {
 		transverseStart = transverse;
-		visual.setPosition(context,
+		visual.setPosition(
+				context,
 				new com.zarbosoft.bonestruct.editor.visual.Vector(0, transverseStart),
 				context.syntax.animateCoursePlacement
 		);
@@ -128,6 +126,10 @@ public class Course {
 		brick.parent = null;
 		children.remove(at);
 		if (children.isEmpty()) {
+			if (index - 1 >= 0)
+				parent.children.get(index - 1).getIdleExpand(context);
+			if (index + 1 < parent.children.size())
+				parent.children.get(index + 1).getIdleExpand(context);
 			destroyInner(context);
 		} else {
 			if (at == 0 && this.index > 0) {
@@ -288,28 +290,53 @@ public class Course {
 		}
 	}
 
-	boolean compact(final Context context) {
-		final PriorityQueue<VisualAtom> priorities = new PriorityQueue<>(11,
-				new ChainComparator<VisualAtom>().greaterFirst(VisualAtom::spacePriority).build()
-		);
+	private final static Comparator<VisualAtom> compactComparator =
+			new ChainComparator<VisualAtom>().greaterFirst(VisualAtom::spacePriority).lesserFirst(a -> a.depth).build();
+	private final static Comparator<VisualAtom> expandComparator = compactComparator.reversed();
+
+	private static Pair<Integer, PriorityQueue<VisualAtom>> buildCompactPriorityQueue(
+			final Context context, final Course course
+	) {
+		final PriorityQueue<VisualAtom> priorities = new PriorityQueue<>(11, compactComparator);
 		int converse = 0;
-		System.out.format("compacting\n");
-		for (int index = 0; index < children.size(); ++index) {
-			final Brick brick = children.get(index);
+		for (int index = 0; index < course.children.size(); ++index) {
+			final Brick brick = course.children.get(index);
 			final VisualLeaf visual = brick.getVisual();
 			final VisualAtom atomVisual = visual.parent().atomVisual();
-			System.out.format("\tbrick %s of %s (prio %s): can compact %s\n",
-					index,
-					atomVisual.atom.type.id,
-					atomVisual.spacePriority(),
-					visual.canCompact()
-			);
 			if (visual.canCompact())
 				priorities.add(visual.parent().atomVisual());
 			converse = brick.converseEdge(context);
 			if (!priorities.isEmpty() && converse > context.edge)
 				break;
 		}
+		return new Pair<>(converse, priorities);
+	}
+
+	private static Optional<VisualAtom> expandTopCandidate(
+			final Context context, final Course course
+	) {
+		final PriorityQueue<VisualAtom> priorities = new PriorityQueue<>(11, expandComparator);
+		for (int index = 0; index < course.children.size(); ++index) {
+			final Brick brick = course.children.get(index);
+			final VisualLeaf visual = brick.getVisual();
+			final VisualAtom atomVisual = visual.parent().atomVisual();
+			if (visual.canExpand())
+				priorities.add(visual.parent().atomVisual());
+		}
+		if (priorities.isEmpty())
+			return Optional.empty();
+		return Optional.of(priorities.poll());
+	}
+
+	boolean compact(final Context context) {
+		final Set<Course> maskedCourses = new HashSet<>();
+		final Set<Course> queuedCourses;
+		final List<VisualAtom> compact = new ArrayList<>();
+
+		// Find higest priority brick in this course
+		final Pair<Integer, PriorityQueue<VisualAtom>> temp = buildCompactPriorityQueue(context, this);
+		final PriorityQueue<VisualAtom> priorities = temp.second;
+		final int converse = temp.first;
 		if (converse <= context.edge) {
 			lastExpandCheckConverse = converse;
 			return false;
@@ -319,6 +346,7 @@ public class Course {
 		}
 		System.out.format("\tpriority: %s\n", priorities.peek().atom.type.id);
 		priorities.poll().compact(context);
+
 		return true;
 	}
 
@@ -364,9 +392,9 @@ public class Course {
 		}
 
 		private boolean expand(final Context context) {
-			final PriorityQueue<VisualAtom> priorities = new PriorityQueue<>(11,
-					new ChainComparator<VisualAtom>().lesserFirst(VisualAtom::spacePriority).build()
-			);
+			final PriorityQueue<VisualAtom> priorities = new PriorityQueue<>(11, expandComparator);
+
+			// Find next atom that can be expanded
 			for (int index = 0; index < children.size(); ++index) {
 				final Brick brick = children.get(index);
 				final VisualLeaf visual = brick.getVisual();
@@ -375,43 +403,42 @@ public class Course {
 			}
 			if (priorities.isEmpty())
 				return false;
-			final Visual top = priorities.poll();
+			final VisualAtom top = priorities.poll();
 			if (top == lastTarget)
 				return false;
 			lastTarget = top;
-			final Iterable<Pair<Brick, Brick.Properties>> brickProperties = top.getLeafPropertiesForTagsChange(context,
-					new TagsChange(ImmutableSet.of(), ImmutableSet.of(new StateTag("compact")))
-			);
-			final Map<Brick, Brick.Properties> lookup =
-					stream(brickProperties.iterator()).collect(Collectors.toMap(p -> p.first, p -> p.second));
-			final Set<Brick> seen = new HashSet<>();
-			int converse = 0;
-			Course course = null;
-			for (final Pair<Brick, Brick.Properties> pair : brickProperties) {
-				final Brick brick = pair.first;
-				if (seen.contains(brick))
-					continue;
-				if (course == null) {
-				} else if (brick.parent.index == course.index + 1 && !pair.second.broken && brick.index == 0) {
-				} else {
-					converse = 0;
-				}
-				course = brick.parent;
-				for (final Brick at : course.children) {
-					final Brick.Properties properties;
-					if (lookup.containsKey(at)) {
-						seen.add(at);
-						properties = lookup.get(at);
-					} else
-						properties = at.properties(context);
-					if (properties.alignment != null) {
-						converse = Math.max(converse, properties.alignment.converse);
-					}
-					converse += properties.converseSpan;
-					if (converse >= context.edge)
+
+			// Check that all parents are either expanded or have lower expand priority
+			{
+				VisualAtom parentAtom = top;
+				while (parentAtom.parent() != null) {
+					parentAtom = parentAtom.parent().atomVisual();
+					if (parentAtom.compact && isOrdered(expandComparator, parentAtom, top))
 						return false;
 				}
 			}
+
+			// Check that all children are either expanded or have lower expand priority
+			{
+				final Brick first = top.getFirstBrick(context);
+				final Brick last = top.getLastBrick(context);
+				if (parent
+						.streamRange(first.parent.index, first.index, last.parent.index, last.index)
+						.anyMatch(brick -> {
+							final VisualLeaf visual = brick.getVisual();
+							if (!visual.canExpand())
+								return false;
+							final VisualAtom atom = visual.parent().atomVisual();
+							if (atom == top)
+								return false;
+							if (isOrdered(expandComparator, top, atom))
+								return false;
+							return true;
+						}))
+					return false;
+			}
+
+			// Expand
 			top.expand(context);
 			return true;
 		}

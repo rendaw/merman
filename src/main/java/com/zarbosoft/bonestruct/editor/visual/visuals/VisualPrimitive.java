@@ -121,6 +121,11 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 		return null;
 	}
 
+	@Override
+	public Stream<Brick> streamBricks() {
+		return lines.stream().filter(line -> line.brick != null).map(line -> line.brick);
+	}
+
 	protected Stream<Action> getActions(final Context context) {
 		return Stream.of();
 	}
@@ -1249,7 +1254,19 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 	public void root(
 			final Context context, final VisualParent parent, final Map<String, Alignment> alignments, final int depth
 	) {
-		// Nothing should change meaningfully here
+		// Force expand
+		final StringBuilder aggregate = new StringBuilder();
+		for (int i = lines.size() - 1; i >= 0; --i) {
+			final Line line = lines.get(i);
+			aggregate.insert(0, line.text);
+			if (line.hard) {
+				line.setText(context, aggregate.toString());
+				aggregate.setLength(0);
+			}
+		}
+		canExpand = false;
+		canCompact = true;
+		decompacted(context);
 	}
 
 	@Override

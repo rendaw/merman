@@ -180,6 +180,9 @@ public class Main extends Application {
 		_persistent history ~ changes relative to back, watch syntax and autoreload
 		_better visibility into action bindings
 		_better syntax lua parse error messages
+		_limit bricks to widget boundaries +- 1 page or so
+			_when brick created and not split, if any atom with a brick in the new brick's course has lower space priority and is compact, compact this atom
+			_keep compact status in atom?  when creating a brick, make it start compacted
 
 		?
 		move scroll to wall with listener for banner/details?

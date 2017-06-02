@@ -16,6 +16,7 @@ import com.zarbosoft.rendaw.common.Pair;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import static com.zarbosoft.rendaw.common.Common.enumerate;
 import static com.zarbosoft.rendaw.common.Common.iterable;
@@ -25,6 +26,7 @@ public class VisualAtom extends Visual {
 	public final Atom atom;
 	private VisualParent parent;
 	public int depth = 0;
+	public boolean compact = false;
 
 	public VisualAtom(
 			final Context context,
@@ -75,6 +77,11 @@ public class VisualAtom extends Visual {
 	}
 
 	@Override
+	public Stream<Brick> streamBricks() {
+		return body.streamBricks();
+	}
+
+	@Override
 	public Brick createOrGetFirstBrick(final Context context) {
 		return body.createOrGetFirstBrick(context);
 	}
@@ -106,11 +113,13 @@ public class VisualAtom extends Visual {
 	@Override
 	public void compact(final Context context) {
 		body.compact(context);
+		compact = true;
 	}
 
 	@Override
 	public void expand(final Context context) {
 		body.expand(context);
+		compact = false;
 	}
 
 	@Override
@@ -121,6 +130,7 @@ public class VisualAtom extends Visual {
 	}
 
 	private void rootInner(final Context context, final VisualParent parent, final int depth) {
+		compact = false;
 		this.parent = parent;
 		if (parent == null)
 			this.depth = 0;

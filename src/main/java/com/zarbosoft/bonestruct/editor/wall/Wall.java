@@ -11,7 +11,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import static com.zarbosoft.rendaw.common.Common.flatStream;
 import static com.zarbosoft.rendaw.common.Common.last;
 
 public class Wall {
@@ -39,6 +41,20 @@ public class Wall {
 
 	public Wall(final Context context) {
 		visual = context.display.group();
+	}
+
+	public Stream<Brick> streamRange(
+			final int courseStart, final int brickStart, final int courseEnd, final int brickEnd
+	) {
+		final List<Brick> startBricks = children.get(courseStart).children;
+		if (courseStart == courseEnd)
+			return startBricks.subList(brickStart, brickEnd + 1).stream();
+		final List<Brick> endBricks = children.get(courseEnd).children;
+		return flatStream(
+				startBricks.subList(brickStart, startBricks.size()).stream(),
+				children.subList(courseStart + 1, courseEnd).stream().flatMap(course -> course.children.stream()),
+				endBricks.subList(0, brickEnd).stream()
+		);
 	}
 
 	public void clear(final Context context) {
