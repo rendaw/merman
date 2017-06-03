@@ -32,4 +32,20 @@ public class TestLiveExamples {
 				.act("delete")
 				.checkBrickCount(1);
 	}
+
+	@Test
+	public void testAddElementAfterArray() {
+		new GeneralTestWizard(MiscSyntax.syntax, MiscSyntax.syntax.gap.create())
+				.act("enter")
+				.sendText("[")
+				.checkTextBrick(0, 0, "[")
+				.checkTextBrick(0, 2, "]")
+				.act("exit")
+				.checkTextBrick(0, 0, "[")
+				.checkTextBrick(0, 1, "]")
+				.act("insert_after")
+				.checkTextBrick(0, 0, "[")
+				.checkTextBrick(0, 1, "]")
+				.checkTextBrick(0, 2, "");
+	}
 }

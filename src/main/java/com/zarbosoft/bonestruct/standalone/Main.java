@@ -157,14 +157,16 @@ public class Main extends Application {
 		//test brick layout
 		//rename break -> split
 		//fix hotkey modifiers
-		fix indent/breaking
+		//fix indent/breaking
 		fix hover
-		fix compact (root array)
+		//fix compact (root array)
 		cornerstone on wrong element (visual array selectup)
 		translation bounce on array element enter/exit
 		indicators in overlay
 		document extends atom?
 
+		readme
+		doc on tagging
 		syntax documenter
 		action documenter
 

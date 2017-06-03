@@ -174,108 +174,115 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 				group.compact(context);
 			super.add(context, group, addAt);
 		};
-		for (final Atom atom : add) {
-			if (!getSeparator().isEmpty() && addIndex > 0)
-				addSeparator.accept(addIndex++);
-			final ChildGroup group = new ChildGroup(context, new ArrayVisualParent(addIndex, true), depth());
-			int groupIndex = 0;
-			for (final FrontSymbol fix : getPrefix())
-				group.add(context,
-						fix.createVisual(context, group.createParent(groupIndex++), tags, alignments, depth())
-				);
-			final VisualAtom nodeVisual =
-					(VisualAtom) atom.createVisual(context, group.createParent(groupIndex++), alignments, depth());
-			final int addIndex2 = addIndex;
-			group.add(context, new Visual() {
-				@Override
-				public VisualParent parent() {
-					return nodeVisual.parent();
-				}
+		if (!add.isEmpty()) {
+			for (final Atom atom : add) {
+				if (!getSeparator().isEmpty() && addIndex > 0)
+					addSeparator.accept(addIndex++);
+				final ChildGroup group = new ChildGroup(context, new ArrayVisualParent(addIndex, true), depth());
+				int groupIndex = 0;
+				for (final FrontSymbol fix : getPrefix())
+					group.add(context,
+							fix.createVisual(context, group.createParent(groupIndex++), tags, alignments, depth())
+					);
+				final VisualAtom nodeVisual =
+						(VisualAtom) atom.createVisual(context, group.createParent(groupIndex++), alignments, depth());
+				final int addIndex2 = addIndex;
+				group.add(context, new Visual() {
+					@Override
+					public VisualParent parent() {
+						return nodeVisual.parent();
+					}
 
-				@Override
-				public void globalTagsChanged(final Context context) {
-					nodeVisual.globalTagsChanged(context);
-				}
+					@Override
+					public void globalTagsChanged(final Context context) {
+						nodeVisual.globalTagsChanged(context);
+					}
 
-				@Override
-				public void changeTags(final Context context, final TagsChange change) {
-				}
+					@Override
+					public void changeTags(final Context context, final TagsChange change) {
+					}
 
-				@Override
-				public Brick createOrGetFirstBrick(final Context context) {
-					return nodeVisual.createOrGetFirstBrick(context);
-				}
+					@Override
+					public boolean canCreateBricks(final Context context) {
+						return nodeVisual.canCreateBricks(context);
+					}
 
-				@Override
-				public Brick createFirstBrick(final Context context) {
-					return nodeVisual.createFirstBrick(context);
-				}
+					@Override
+					public Brick createOrGetFirstBrick(final Context context) {
+						return nodeVisual.createOrGetFirstBrick(context);
+					}
 
-				@Override
-				public Brick createLastBrick(final Context context) {
-					return nodeVisual.createLastBrick(context);
-				}
+					@Override
+					public Brick createFirstBrick(final Context context) {
+						return nodeVisual.createFirstBrick(context);
+					}
 
-				@Override
-				public Brick getFirstBrick(final Context context) {
-					return nodeVisual.getFirstBrick(context);
-				}
+					@Override
+					public Brick createLastBrick(final Context context) {
+						return nodeVisual.createLastBrick(context);
+					}
 
-				@Override
-				public Brick getLastBrick(final Context context) {
-					return nodeVisual.getLastBrick(context);
-				}
+					@Override
+					public Brick getFirstBrick(final Context context) {
+						return nodeVisual.getFirstBrick(context);
+					}
 
-				@Override
-				public void compact(final Context context) {
-				}
+					@Override
+					public Brick getLastBrick(final Context context) {
+						return nodeVisual.getLastBrick(context);
+					}
 
-				@Override
-				public void expand(final Context context) {
-				}
+					@Override
+					public void compact(final Context context) {
+					}
 
-				@Override
-				public Iterable<Pair<Brick, Brick.Properties>> getLeafPropertiesForTagsChange(
-						final Context context, final TagsChange change
-				) {
-					return ImmutableList.of();
-				}
+					@Override
+					public void expand(final Context context) {
+					}
 
-				@Override
-				public void uproot(final Context context, final Visual root) {
-					nodeVisual.uproot(context, root);
-				}
+					@Override
+					public Iterable<Pair<Brick, Brick.Properties>> getLeafPropertiesForTagsChange(
+							final Context context, final TagsChange change
+					) {
+						return ImmutableList.of();
+					}
 
-				@Override
-				public void root(
-						final Context context,
-						final VisualParent parent,
-						final Map<String, Alignment> alignments,
-						final int depth
-				) {
-					nodeVisual.root(context, parent, alignments, depth);
-				}
+					@Override
+					public void uproot(final Context context, final Visual root) {
+						nodeVisual.uproot(context, root);
+					}
 
-				@Override
-				public boolean selectDown(final Context context) {
-					return nodeVisual.selectDown(context);
-				}
+					@Override
+					public void root(
+							final Context context,
+							final VisualParent parent,
+							final Map<String, Alignment> alignments,
+							final int depth
+					) {
+						nodeVisual.root(context, parent, alignments, depth);
+					}
 
-				@Override
-				public Stream<Brick> streamBricks() {
-					return nodeVisual.streamBricks();
-				}
-			});
-			for (final FrontSymbol fix : getSuffix())
-				group.add(context,
-						fix.createVisual(context, group.createParent(groupIndex++), tags, alignments, depth())
-				);
-			if (parent.atomVisual().compact)
-				group.compact(context);
-			super.add(context, group, addIndex++);
-		}
-		if (!getSeparator().isEmpty() && addIndex < children.size()) {
-			addSeparator.accept(addIndex);
+					@Override
+					public boolean selectDown(final Context context) {
+						return nodeVisual.selectDown(context);
+					}
+
+					@Override
+					public Stream<Brick> streamBricks() {
+						return nodeVisual.streamBricks();
+					}
+				});
+				for (final FrontSymbol fix : getSuffix())
+					group.add(context,
+							fix.createVisual(context, group.createParent(groupIndex++), tags, alignments, depth())
+					);
+				if (parent.atomVisual().compact)
+					group.compact(context);
+				super.add(context, group, addIndex++);
+			}
+			if (!getSeparator().isEmpty() && addIndex < children.size()) {
+				addSeparator.accept(addIndex);
+			}
 		}
 
 		// Cleanup
@@ -392,6 +399,14 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 		if (!context.window)
 			return false;
 		return parent.atomVisual().depth >= context.syntax.ellipsizeThreshold;
+	}
+
+	@Override
+	public boolean canCreateBricks(final Context context) {
+		if (ellipsize(context))
+			return true;
+		else
+			return super.canCreateBricks(context);
 	}
 
 	@Override

@@ -33,7 +33,7 @@ public class Document {
 	public Document(final Syntax syntax, final ValueArray rootArray) {
 		this.syntax = syntax;
 		this.rootArray = rootArray;
-		root = new Atom(new AtomType() {
+		final AtomType rootType = new AtomType() {
 			@Override
 			public List<FrontPart> front() {
 				return ImmutableList.of(syntax.rootFront);
@@ -68,8 +68,9 @@ public class Document {
 			public String name() {
 				return "root array";
 			}
-		}, ImmutableMap.of("value", rootArray));
-		root.type.id = "root";
+		};
+		rootType.id = "root";
+		root = new Atom(rootType, ImmutableMap.of("value", rootArray));
 	}
 
 	public void write(final Path out) {

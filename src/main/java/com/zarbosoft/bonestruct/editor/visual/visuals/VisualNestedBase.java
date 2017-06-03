@@ -198,6 +198,14 @@ public abstract class VisualNestedBase extends Visual implements VisualLeaf {
 	}
 
 	@Override
+	public boolean canCreateBricks(final Context context) {
+		if (ellipsize(context))
+			return true;
+		else
+			return body.canCreateBricks(context);
+	}
+
+	@Override
 	public Brick createOrGetFirstBrick(final Context context) {
 		if (ellipsize(context)) {
 			if (ellipsis != null)

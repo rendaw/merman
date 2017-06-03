@@ -11,10 +11,11 @@ import com.zarbosoft.bonestruct.editor.visual.VisualParent;
 import com.zarbosoft.bonestruct.editor.visual.tags.TagsChange;
 import com.zarbosoft.bonestruct.editor.wall.Brick;
 import com.zarbosoft.rendaw.common.Pair;
-import org.pcollections.HashTreePMap;
-import org.pcollections.PMap;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.function.IntFunction;
 import java.util.stream.Stream;
 
@@ -39,6 +40,11 @@ public class VisualGroup extends Visual {
 	@Override
 	public void changeTags(final Context context, final TagsChange tagsChange) {
 		children.forEach(child -> child.changeTags(context, tagsChange));
+	}
+
+	@Override
+	public boolean canCreateBricks(final Context context) {
+		return !children.isEmpty();
 	}
 
 	@Override
@@ -87,7 +93,7 @@ public class VisualGroup extends Visual {
 	public Brick createLastBrick(final Context context) {
 		if (children.isEmpty())
 			return null;
-		return last(children).createFirstBrick(context);
+		return last(children).createLastBrick(context);
 	}
 
 	public VisualParent parent = null;
@@ -206,15 +212,23 @@ public class VisualGroup extends Visual {
 
 		@Override
 		public Brick createNextBrick(final Context context) {
-			if (index + 1 < target.children.size())
-				return target.children.get(index + 1).createFirstBrick(context);
+			for (int i = index + 1; i < target.children.size(); ++i) {
+				final Visual child = target.children.get(i);
+				if (!child.canCreateBricks(context))
+					continue;
+				return child.createFirstBrick(context);
+			}
 			return target.parent.createNextBrick(context);
 		}
 
 		@Override
 		public Brick createPreviousBrick(final Context context) {
-			if (index > 0)
-				return target.children.get(index - 1).createLastBrick(context);
+			for (int i = index - 1; i >= 0; --i) {
+				final Visual child = target.children.get(i);
+				if (!child.canCreateBricks(context))
+					continue;
+				return child.createLastBrick(context);
+			}
 			return target.parent.createPreviousBrick(context);
 		}
 

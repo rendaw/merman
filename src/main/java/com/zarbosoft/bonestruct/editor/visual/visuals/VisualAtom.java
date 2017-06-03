@@ -82,6 +82,11 @@ public class VisualAtom extends Visual {
 	}
 
 	@Override
+	public boolean canCreateBricks(final Context context) {
+		return body.canCreateBricks(context);
+	}
+
+	@Override
 	public boolean selectDown(final Context context) {
 		return body.selectDown(context);
 	}

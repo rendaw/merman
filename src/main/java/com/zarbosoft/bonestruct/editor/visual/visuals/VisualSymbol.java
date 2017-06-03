@@ -46,7 +46,7 @@ public class VisualSymbol extends Visual implements VisualLeaf, ConditionAttachm
 	@Override
 	public void conditionChanged(final Context context, final boolean show) {
 		if (show) {
-			suggestCreateBricks(context);
+			context.idleLayBricks(parent, 0, 1, 1, null, null, i -> createFirstBrick(context));
 		} else if (brick != null) {
 			brick.destroy(context);
 		}
@@ -71,6 +71,11 @@ public class VisualSymbol extends Visual implements VisualLeaf, ConditionAttachm
 	@Override
 	public boolean selectDown(final Context context) {
 		return false;
+	}
+
+	@Override
+	public boolean canCreateBricks(final Context context) {
+		return true;
 	}
 
 	@Override

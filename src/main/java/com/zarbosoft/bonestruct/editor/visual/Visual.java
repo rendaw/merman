@@ -1,6 +1,5 @@
 package com.zarbosoft.bonestruct.editor.visual;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterators;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.Hoverable;
@@ -22,6 +21,8 @@ public abstract class Visual {
 	);
 
 	public abstract void changeTags(final Context context, final TagsChange change);
+
+	public abstract boolean canCreateBricks(Context context);
 
 	public abstract Brick createOrGetFirstBrick(Context context);
 
@@ -67,13 +68,6 @@ public abstract class Visual {
 		return parent().hover(context, point);
 	}
 
-	public void suggestCreateBricks(final Context context) {
-		final Brick previousBrick = parent() == null ? null : parent().getPreviousBrick(context);
-		final Brick nextBrick = parent() == null ? null : parent().getNextBrick(context);
-		if (previousBrick != null && nextBrick != null)
-			context.idleLayBricksAfterEnd(previousBrick);
-	}
-
 	public void changeTagsCompact(final Context context) {
 		changeTags(context, new TagsChange().add(new StateTag("compact")));
 	}
@@ -83,5 +77,4 @@ public abstract class Visual {
 	}
 
 	public abstract Stream<Brick> streamBricks();
-
 }

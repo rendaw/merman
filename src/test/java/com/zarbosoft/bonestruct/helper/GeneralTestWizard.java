@@ -176,6 +176,7 @@ public class GeneralTestWizard {
 
 	public GeneralTestWizard sendHIDEvent(final HIDEvent event) {
 		inner.sendHIDEvent(event);
+		inner.runner.flush();
 		return this;
 	}
 
@@ -186,4 +187,9 @@ public class GeneralTestWizard {
 		return this;
 	}
 
+	public GeneralTestWizard sendText(final String text) {
+		inner.context.selection.receiveText(inner.context, text);
+		inner.runner.flush();
+		return this;
+	}
 }

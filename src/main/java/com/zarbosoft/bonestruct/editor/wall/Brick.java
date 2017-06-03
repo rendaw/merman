@@ -60,7 +60,7 @@ public abstract class Brick {
 		return style;
 	}
 
-	public Set<Tag> getTags(Context context) {
+	public Set<Tag> getTags(final Context context) {
 		return inter.getTags(context);
 	}
 

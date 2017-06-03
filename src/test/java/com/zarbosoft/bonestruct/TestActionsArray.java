@@ -218,6 +218,46 @@ public class TestActionsArray {
 	}
 
 	@Test
+	public void testInsertBefore() {
+		final Context context = buildFive();
+		((VisualArray) ((Atom) context.locateShort(new Path("0"))).data.get("value").visual()).select(context,
+				true,
+				1,
+				2
+		);
+		Helper.act(context, "insert_before");
+		assertTreeEqual(context, new TreeBuilder(MiscSyntax.array).addArray("value",
+				new TreeBuilder(MiscSyntax.one).build(),
+				MiscSyntax.syntax.gap.create(),
+				new TreeBuilder(MiscSyntax.two).build(),
+				new TreeBuilder(MiscSyntax.three).build(),
+				new TreeBuilder(MiscSyntax.four).build(),
+				new TreeBuilder(MiscSyntax.five).build()
+		).build(), context.document.rootArray);
+		assertThat(context.selection.getPath().toList(), equalTo(ImmutableList.of("0", "1", "0")));
+	}
+
+	@Test
+	public void testInsertAfter() {
+		final Context context = buildFive();
+		((VisualArray) ((Atom) context.locateShort(new Path("0"))).data.get("value").visual()).select(context,
+				true,
+				1,
+				2
+		);
+		Helper.act(context, "insert_after");
+		assertTreeEqual(context, new TreeBuilder(MiscSyntax.array).addArray("value",
+				new TreeBuilder(MiscSyntax.one).build(),
+				new TreeBuilder(MiscSyntax.two).build(),
+				new TreeBuilder(MiscSyntax.three).build(),
+				MiscSyntax.syntax.gap.create(),
+				new TreeBuilder(MiscSyntax.four).build(),
+				new TreeBuilder(MiscSyntax.five).build()
+		).build(), context.document.rootArray);
+		assertThat(context.selection.getPath().toList(), equalTo(ImmutableList.of("0", "3", "0")));
+	}
+
+	@Test
 	public void testMoveBefore() {
 		final Context context = buildFive();
 		((VisualArray) ((Atom) context.locateShort(new Path("0"))).data.get("value").visual()).select(context,
