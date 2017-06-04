@@ -7,7 +7,10 @@ import com.zarbosoft.bonestruct.syntax.Syntax;
 
 public class PrimitiveSyntax {
 	public final static FreeAtomType primitive;
+	public final static FreeAtomType low;
+	public final static FreeAtomType high;
 	public final static FreeAtomType quoted;
+	public final static FreeAtomType array;
 	public final static Syntax syntax;
 
 	static {
@@ -17,6 +20,18 @@ public class PrimitiveSyntax {
 				.frontDataPrimitive("value")
 				.autoComplete(99)
 				.build();
+		low = new TypeBuilder("low")
+				.middlePrimitive("value")
+				.back(Helper.buildBackDataPrimitive("value"))
+				.frontDataPrimitive("value")
+				.precedence(0)
+				.build();
+		high = new TypeBuilder("high")
+				.middlePrimitive("value")
+				.back(Helper.buildBackDataPrimitive("value"))
+				.frontDataPrimitive("value")
+				.precedence(100)
+				.build();
 		quoted = new TypeBuilder("quoted")
 				.middlePrimitive("value")
 				.back(Helper.buildBackDataPrimitive("value"))
@@ -25,10 +40,19 @@ public class PrimitiveSyntax {
 				.frontMark("\"")
 				.autoComplete(99)
 				.build();
+		array = new TypeBuilder("array")
+				.middleArray("value", "any")
+				.back(Helper.buildBackDataArray("value"))
+				.front(new FrontDataArrayBuilder("value").build())
+				.autoComplete(99)
+				.build();
 		syntax = new SyntaxBuilder("any")
 				.type(primitive)
+				.type(low)
+				.type(high)
 				.type(quoted)
-				.group("any", new GroupBuilder().type(primitive).type(quoted).build())
+				.type(array)
+				.group("any", new GroupBuilder().type(primitive).type(low).type(high).type(quoted).type(array).build())
 				.style(new StyleBuilder().tag(new StateTag("compact")).tag(new FreeTag("split")).split(true).build())
 				.build();
 		syntax.rootFront.prefix.add(new FrontSpaceBuilder().tag("split").build());

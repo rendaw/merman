@@ -121,6 +121,20 @@ public class TestPrimitiveBreaking {
 	}
 
 	@Test
+	public void testMultipleAtomsPriorities() {
+		new GeneralTestWizard(PrimitiveSyntax.syntax, new TreeBuilder(PrimitiveSyntax.array).addArray("value",
+				new TreeBuilder(PrimitiveSyntax.low).add("value", "oret").build(),
+				new TreeBuilder(PrimitiveSyntax.high).add("value", "nyibhye").build()
+		).build())
+				.checkTextBrick(0, 1, "oret")
+				.checkTextBrick(0, 2, "nyibhye")
+				.resize(90)
+				.checkTextBrick(0, 1, "oret")
+				.checkTextBrick(0, 2, "nyibh")
+				.checkTextBrick(1, 0, "ye");
+	}
+
+	@Test
 	public void testFiniteBreaking() {
 		new GeneralTestWizard(PrimitiveSyntax.syntax,
 				new TreeBuilder(PrimitiveSyntax.quoted).add("value", "123456").build()
@@ -140,12 +154,6 @@ public class TestPrimitiveBreaking {
 
 	@Test
 	public void testUnbreakCursor() {
-		// Delete causes join due to remaining brick on 2nd line; join resets deleted brick as cornerstone and thus clears
-		// or something
-		// set cornerstone called on first line brick
-		// the cursor is already attached to the first line brick but now it has no parent; set cornerstone clears wall
-		// which makes cursor attachment brick == null, but the cornerstone brick is the attachment which isn't actually deleted
-		// so the attachment lives on and fires during adjustment; npe
 		final Atom primitiveAtom = new TreeBuilder(PrimitiveSyntax.quoted).add("value", "12345").build();
 		final ValuePrimitive primitive = (ValuePrimitive) primitiveAtom.data.get("value");
 		new GeneralTestWizard(PrimitiveSyntax.syntax, primitiveAtom)

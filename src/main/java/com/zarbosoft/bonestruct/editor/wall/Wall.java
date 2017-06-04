@@ -197,6 +197,7 @@ public class Wall {
 
 	class IdleCompactTask extends IdleTask {
 		private final Context context;
+		Course.IdleCompactTask compactTask;
 		int at = 0;
 
 		IdleCompactTask(final Context context) {
@@ -213,9 +214,12 @@ public class Wall {
 			if (at >= children.size()) {
 				return false;
 			}
-			if (children.get(at).compact(context)) {
-			} else {
-				at += 1;
+			if (compactTask == null) {
+				compactTask = children.get(at).new IdleCompactTask(context);
+				at++;
+			}
+			if (!compactTask.run()) {
+				compactTask = null;
 			}
 			return true;
 		}

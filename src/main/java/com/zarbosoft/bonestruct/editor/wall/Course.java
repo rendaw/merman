@@ -9,7 +9,6 @@ import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.VisualLeaf;
 import com.zarbosoft.bonestruct.editor.visual.visuals.VisualAtom;
 import com.zarbosoft.rendaw.common.ChainComparator;
-import com.zarbosoft.rendaw.common.Pair;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -294,64 +293,9 @@ public class Course {
 			new ChainComparator<VisualAtom>().greaterFirst(VisualAtom::spacePriority).lesserFirst(a -> a.depth).build();
 	private final static Comparator<VisualAtom> expandComparator = compactComparator.reversed();
 
-	private static Pair<Integer, PriorityQueue<VisualAtom>> buildCompactPriorityQueue(
-			final Context context, final Course course
-	) {
-		final PriorityQueue<VisualAtom> priorities = new PriorityQueue<>(11, compactComparator);
-		int converse = 0;
-		for (int index = 0; index < course.children.size(); ++index) {
-			final Brick brick = course.children.get(index);
-			final VisualLeaf visual = brick.getVisual();
-			final VisualAtom atomVisual = visual.parent().atomVisual();
-			if (visual.canCompact())
-				priorities.add(visual.parent().atomVisual());
-			converse = brick.converseEdge(context);
-			if (!priorities.isEmpty() && converse > context.edge)
-				break;
-		}
-		return new Pair<>(converse, priorities);
-	}
-
-	private static Optional<VisualAtom> expandTopCandidate(
-			final Context context, final Course course
-	) {
-		final PriorityQueue<VisualAtom> priorities = new PriorityQueue<>(11, expandComparator);
-		for (int index = 0; index < course.children.size(); ++index) {
-			final Brick brick = course.children.get(index);
-			final VisualLeaf visual = brick.getVisual();
-			final VisualAtom atomVisual = visual.parent().atomVisual();
-			if (visual.canExpand())
-				priorities.add(visual.parent().atomVisual());
-		}
-		if (priorities.isEmpty())
-			return Optional.empty();
-		return Optional.of(priorities.poll());
-	}
-
-	boolean compact(final Context context) {
-		final Set<Course> maskedCourses = new HashSet<>();
-		final Set<Course> queuedCourses;
-		final List<VisualAtom> compact = new ArrayList<>();
-
-		// Find higest priority brick in this course
-		final Pair<Integer, PriorityQueue<VisualAtom>> temp = buildCompactPriorityQueue(context, this);
-		final PriorityQueue<VisualAtom> priorities = temp.second;
-		final int converse = temp.first;
-		if (converse <= context.edge) {
-			lastExpandCheckConverse = converse;
-			return false;
-		}
-		if (priorities.isEmpty()) {
-			return false;
-		}
-		System.out.format("\tpriority: %s\n", priorities.peek().atom.type.id);
-		priorities.poll().compact(context);
-
-		return true;
-	}
-
 	class IdleCompactTask extends IdleTask {
 		private final Context context;
+		private final Set<VisualAtom> skip = new HashSet<>();
 
 		IdleCompactTask(final Context context) {
 			this.context = context;
@@ -364,7 +308,38 @@ public class Course {
 
 		@Override
 		public boolean runImplementation() {
-			return compact(context);
+			final Set<Course> maskedCourses = new HashSet<>();
+			final Set<Course> queuedCourses;
+			final List<VisualAtom> compact = new ArrayList<>();
+
+			// Find higest priority brick in this course
+			final PriorityQueue<VisualAtom> priorities = new PriorityQueue<>(11, compactComparator);
+			int converse = 0;
+			{
+				for (int index = 0; index < children.size(); ++index) {
+					final Brick brick = children.get(index);
+					final VisualLeaf visual = brick.getVisual();
+					final VisualAtom atomVisual = visual.parent().atomVisual();
+					if (skip.contains(atomVisual))
+						continue;
+					if (visual.canCompact())
+						priorities.add(atomVisual);
+					converse = brick.converseEdge(context);
+					if (!priorities.isEmpty() && converse > context.edge)
+						break;
+				}
+			}
+			if (converse <= context.edge) {
+				lastExpandCheckConverse = converse;
+				return false;
+			}
+			if (priorities.isEmpty()) {
+				return false;
+			}
+			final VisualAtom top = priorities.poll();
+			top.compact(context);
+			skip.add(top);
+			return true;
 		}
 
 		@Override

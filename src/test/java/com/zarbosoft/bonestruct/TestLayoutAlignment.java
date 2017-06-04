@@ -108,11 +108,7 @@ public class TestLayoutAlignment {
 	public void testConcensusAlignmentSingle() {
 		new GeneralTestWizard(syntax,
 				new TreeBuilder(pair).add("first", "three").add("second", "lumbar").build()
-		).checkBrick(
-				0,
-				2,
-				50
-		);
+		).checkBrick(0, 2, 50);
 	}
 
 	@Test
