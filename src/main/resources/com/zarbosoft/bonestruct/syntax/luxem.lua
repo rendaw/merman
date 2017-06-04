@@ -290,19 +290,6 @@ return _lessmodal_keys {
             with = { free 'record_table', state 'compact' },
             align = 'record_table',
         },
-        {
-            with = { part 'primitive', state 'hard' },
-            without = { state 'first' },
-            split = true,
-        },
-        {
-            with = { part 'primitive', state 'first', state 'compact' },
-            split = true,
-        },
-        {
-            with = { part 'primitive', state 'soft' },
-            split = true,
-        }
     },
     groups = {
         value = {
@@ -343,6 +330,7 @@ return _lessmodal_keys {
                 symbol { type = text '}', tags = { 'split', 'base' }, },
             },
             auto_choose_ambiguity = 999,
+            precedence = 0,
         },
         {
             id = 'luxem_object_element',
@@ -355,7 +343,7 @@ return _lessmodal_keys {
             front = {
                 symbol { type = space {}, tags = { 'indent', 'split' } },
                 primitive 'key',
-                symbol { type = text ':' },
+                symbol { type = text ': ' },
                 symbol { type = space {}, tags = { 'record_table' } },
                 atom 'value',
             },
@@ -378,11 +366,12 @@ return _lessmodal_keys {
                 array {
                     middle = 'data',
                     prefix = { { type = space {}, tags = { 'indent', 'split' } } },
-                    separator = { { type = text ',' } },
+                    separator = { { type = text ', ' } },
                 },
                 symbol { type = text ']', tags = { 'split', 'base' }, }
             },
             auto_choose_ambiguity = 999,
+            precedence = 0,
         },
         {
             id = 'luxem_primitive',

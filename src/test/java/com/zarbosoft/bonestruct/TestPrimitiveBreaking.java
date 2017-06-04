@@ -76,6 +76,11 @@ public class TestPrimitiveBreaking {
 	}
 
 	@Test
+	public void testUnbreakableMid() {
+		new PrimitiveTestWizard("123456789").resize(43).check("1234", "5678", "9");
+	}
+
+	@Test
 	public void testUnbreakableDynamic() {
 		final Atom primitive = new TreeBuilder(PrimitiveSyntax.primitive).add("value", "123").build();
 		new GeneralTestWizard(PrimitiveSyntax.syntax, primitive)
