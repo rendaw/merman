@@ -497,7 +497,7 @@ public class Context {
 
 		@Override
 		protected int priority() {
-			return 100;
+			return 155;
 		}
 
 		@Override

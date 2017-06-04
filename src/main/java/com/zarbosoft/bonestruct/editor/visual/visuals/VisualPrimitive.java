@@ -946,12 +946,17 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 			this.index = index;
 		}
 
-		public Brick createBrick(final Context context) {
-			if (brick != null)
-				return null;
+		public Brick createBrickInternal(final Context context) {
 			brick = new BrickLine(context, this);
 			styleChanged(context, brickStyle);
 			brick.setText(context, text);
+			return brick;
+		}
+
+		public Brick createBrick(final Context context) {
+			if (brick != null)
+				return null;
+			createBrickInternal(context);
 			if (selection != null && (selection.range.beginLine == Line.this || selection.range.endLine == Line.this))
 				selection.range.nudge(context);
 			return brick;
@@ -1022,7 +1027,7 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 		public Brick createOrGetBrick(final Context context) {
 			if (brick != null)
 				return brick;
-			return createBrick(context);
+			return createBrickInternal(context);
 		}
 	}
 

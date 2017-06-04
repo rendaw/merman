@@ -1,15 +1,14 @@
 package com.zarbosoft.bonestruct;
 
 import com.zarbosoft.bonestruct.document.Atom;
+import com.zarbosoft.bonestruct.document.values.ValuePrimitive;
+import com.zarbosoft.bonestruct.editor.history.changes.ChangePrimitiveRemove;
 import com.zarbosoft.bonestruct.editor.visual.visuals.VisualPrimitive;
 import com.zarbosoft.bonestruct.helper.GeneralTestWizard;
 import com.zarbosoft.bonestruct.helper.PrimitiveSyntax;
-import com.zarbosoft.bonestruct.helper.TestWizard;
+import com.zarbosoft.bonestruct.helper.PrimitiveTestWizard;
 import com.zarbosoft.bonestruct.helper.TreeBuilder;
 import org.junit.Test;
-
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertThat;
 
 public class TestPrimitiveBreaking {
 
@@ -107,33 +106,6 @@ public class TestPrimitiveBreaking {
 		new PrimitiveTestWizard("123456789").resize(40).check("1234", "5678", "9").resize(50).check("12345", "6789");
 	}
 
-	public static class PrimitiveTestWizard {
-		TestWizard inner;
-		private final VisualPrimitive primitive;
-
-		public PrimitiveTestWizard(final String string) {
-			inner = new TestWizard(PrimitiveSyntax.syntax,
-					new TreeBuilder(PrimitiveSyntax.primitive).add("value", string).build()
-			);
-			this.primitive = (VisualPrimitive) inner.context.document.rootArray.data.get(0).data.get("value").visual();
-		}
-
-		public PrimitiveTestWizard check(final String... lines) {
-			assertThat(primitive.lines.stream().map(line -> line.text).toArray(), equalTo(lines));
-			return this;
-		}
-
-		public PrimitiveTestWizard resize(final int size) {
-			inner.resize(size);
-			return this;
-		}
-
-		public PrimitiveTestWizard resizeTransitive(final int size) {
-			inner.resizeTransitive(size);
-			return this;
-		}
-	}
-
 	@Test
 	public void testMultipleAtoms() {
 		new GeneralTestWizard(PrimitiveSyntax.syntax,
@@ -146,5 +118,41 @@ public class TestPrimitiveBreaking {
 				.checkTextBrick(0, 1, "oret")
 				.checkTextBrick(1, 1, "nyibh")
 				.checkTextBrick(2, 0, "ye");
+	}
+
+	@Test
+	public void testFiniteBreaking() {
+		new GeneralTestWizard(PrimitiveSyntax.syntax,
+				new TreeBuilder(PrimitiveSyntax.quoted).add("value", "123456").build()
+		)
+				.resize(50)
+				.checkCourseCount(2);
+	}
+
+	@Test
+	public void testFiniteBreakLimit() {
+		new GeneralTestWizard(PrimitiveSyntax.syntax,
+				new TreeBuilder(PrimitiveSyntax.primitive).add("value", "1234").build()
+		)
+				.resize(30)
+				.checkCourseCount(1);
+	}
+
+	@Test
+	public void testUnbreakCursor() {
+		// Delete causes join due to remaining brick on 2nd line; join resets deleted brick as cornerstone and thus clears
+		// or something
+		// set cornerstone called on first line brick
+		// the cursor is already attached to the first line brick but now it has no parent; set cornerstone clears wall
+		// which makes cursor attachment brick == null, but the cornerstone brick is the attachment which isn't actually deleted
+		// so the attachment lives on and fires during adjustment; npe
+		final Atom primitiveAtom = new TreeBuilder(PrimitiveSyntax.quoted).add("value", "12345").build();
+		final ValuePrimitive primitive = (ValuePrimitive) primitiveAtom.data.get("value");
+		new GeneralTestWizard(PrimitiveSyntax.syntax, primitiveAtom)
+				.resize(50)
+				.checkCourseCount(2)
+				.run(context -> ((VisualPrimitive) primitive.visual()).select(context, true, 5, 5))
+				.run(context -> context.history.apply(context, new ChangePrimitiveRemove(primitive, 3, 2)))
+				.checkCourseCount(1);
 	}
 }

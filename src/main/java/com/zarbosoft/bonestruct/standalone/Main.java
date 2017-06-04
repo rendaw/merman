@@ -160,10 +160,12 @@ public class Main extends Application {
 		//fix indent/breaking
 		fix hover
 		//fix compact (root array)
-		cornerstone on wrong element (visual array selectup)
-		translation bounce on array element enter/exit
+		//cornerstone on wrong element (visual array selectup)
+		//translation bounce on array element enter/exit
 		indicators in overlay
 		document extends atom?
+		no more visualpart?
+		new line in primitive
 
 		readme
 		doc on tagging

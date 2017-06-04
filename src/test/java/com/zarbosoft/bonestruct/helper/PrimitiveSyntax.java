@@ -7,6 +7,7 @@ import com.zarbosoft.bonestruct.syntax.Syntax;
 
 public class PrimitiveSyntax {
 	public final static FreeAtomType primitive;
+	public final static FreeAtomType quoted;
 	public final static Syntax syntax;
 
 	static {
@@ -16,9 +17,18 @@ public class PrimitiveSyntax {
 				.frontDataPrimitive("value")
 				.autoComplete(99)
 				.build();
+		quoted = new TypeBuilder("quoted")
+				.middlePrimitive("value")
+				.back(Helper.buildBackDataPrimitive("value"))
+				.frontMark("\"")
+				.frontDataPrimitive("value")
+				.frontMark("\"")
+				.autoComplete(99)
+				.build();
 		syntax = new SyntaxBuilder("any")
 				.type(primitive)
-				.group("any", new GroupBuilder().type(primitive).build())
+				.type(quoted)
+				.group("any", new GroupBuilder().type(primitive).type(quoted).build())
 				.style(new StyleBuilder().tag(new StateTag("compact")).tag(new FreeTag("split")).split(true).build())
 				.build();
 		syntax.rootFront.prefix.add(new FrontSpaceBuilder().tag("split").build());
