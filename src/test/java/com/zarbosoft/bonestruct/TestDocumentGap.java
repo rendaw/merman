@@ -158,7 +158,7 @@ public class TestDocumentGap {
 		innerTestTransform(MiscSyntax.syntax,
 				() -> MiscSyntax.syntax.suffixGap.create(true, new TreeBuilder(MiscSyntax.one).build()),
 				context -> {
-					context.document.rootArray.data.get(0).visual().selectDown(context);
+					context.document.rootArray.data.get(0).visual.selectDown(context);
 					context.selection.receiveText(context, "?");
 					context.selection.receiveText(context, "e");
 				},
@@ -379,7 +379,7 @@ public class TestDocumentGap {
 				context -> {
 					((ValuePrimitive) context.locateLong(new Path("0", "0"))).selectDown(context);
 					context.selection.receiveText(context, "urt");
-					((ValueArray) context.locateLong(new Path("0"))).visual().selectDown(context);
+					((ValueArray) context.locateLong(new Path("0"))).visual.selectDown(context);
 				},
 				new TreeBuilder(MiscSyntax.array)
 						.addArray("value", new TreeBuilder(MiscSyntax.syntax.gap).add("gap", "urt").build())
@@ -391,8 +391,8 @@ public class TestDocumentGap {
 	public void testDontDropOutOfTree() {
 		final Context context =
 				buildDoc(MiscSyntax.syntax, MiscSyntax.syntax.gap.create(), MiscSyntax.syntax.gap.create());
-		((Atom) context.locateShort(new Path("0"))).visual().selectDown(context);
-		((Atom) context.locateShort(new Path("1"))).visual().selectDown(context);
+		((Atom) context.locateShort(new Path("0"))).visual.selectDown(context);
+		((Atom) context.locateShort(new Path("1"))).visual.selectDown(context);
 		assertThat(context.document.rootArray.data.size(), equalTo(1));
 		assertTreeEqual(context, MiscSyntax.syntax.gap.create(), context.document.rootArray);
 		assertThat(context.selection.getPath().toList(), equalTo(ImmutableList.of("0", "0")));
@@ -438,7 +438,7 @@ public class TestDocumentGap {
 		innerTestTransform(MiscSyntax.syntax,
 				() -> new TreeBuilder(MiscSyntax.array).addArray("value").build(),
 				context -> {
-					((ValueArray) context.locateLong(new Path("0"))).visual().selectDown(context);
+					((ValueArray) context.locateLong(new Path("0"))).visual.selectDown(context);
 				},
 				new TreeBuilder(MiscSyntax.array).addArray("value", MiscSyntax.syntax.gap.create()).build()
 		);

@@ -274,6 +274,26 @@ public abstract class VisualNestedBase extends Visual implements VisualLeaf {
 		}, new Action() {
 			@Override
 			public void run(final Context context) {
+				parent.selectNext(context);
+			}
+
+			@Override
+			public String getName() {
+				return "next";
+			}
+		}, new Action() {
+			@Override
+			public void run(final Context context) {
+				parent.selectPrevious(context);
+			}
+
+			@Override
+			public String getName() {
+				return "previous";
+			}
+		}, new Action() {
+			@Override
+			public void run(final Context context) {
 				nodeSet(context, context.syntax.gap.create());
 			}
 
@@ -471,11 +491,6 @@ public abstract class VisualNestedBase extends Visual implements VisualLeaf {
 
 	private class NestedParent extends VisualParent {
 		@Override
-		public VisualParent parent() {
-			return parent;
-		}
-
-		@Override
 		public Visual visual() {
 			return VisualNestedBase.this;
 		}
@@ -549,6 +564,16 @@ public abstract class VisualNestedBase extends Visual implements VisualLeaf {
 			border = new BorderAttachment(context);
 			border.setStyle(context, hoverable.getBorderStyle(context, tags).obbox);
 			return hoverable;
+		}
+
+		@Override
+		public void selectNext(final Context context) {
+			throw new DeadCode();
+		}
+
+		@Override
+		public void selectPrevious(final Context context) {
+			throw new DeadCode();
 		}
 	}
 

@@ -3,7 +3,6 @@ package com.zarbosoft.bonestruct;
 import com.zarbosoft.bonestruct.document.Atom;
 import com.zarbosoft.bonestruct.document.values.ValuePrimitive;
 import com.zarbosoft.bonestruct.editor.history.changes.ChangePrimitiveRemove;
-import com.zarbosoft.bonestruct.editor.visual.visuals.VisualPrimitive;
 import com.zarbosoft.bonestruct.helper.GeneralTestWizard;
 import com.zarbosoft.bonestruct.helper.PrimitiveSyntax;
 import com.zarbosoft.bonestruct.helper.PrimitiveTestWizard;
@@ -164,7 +163,7 @@ public class TestPrimitiveBreaking {
 		new GeneralTestWizard(PrimitiveSyntax.syntax, primitiveAtom)
 				.resize(50)
 				.checkCourseCount(2)
-				.run(context -> ((VisualPrimitive) primitive.visual()).select(context, true, 5, 5))
+				.run(context -> ((ValuePrimitive) primitive).visual.select(context, true, 5, 5))
 				.run(context -> context.history.apply(context, new ChangePrimitiveRemove(primitive, 3, 2)))
 				.checkCourseCount(1);
 	}

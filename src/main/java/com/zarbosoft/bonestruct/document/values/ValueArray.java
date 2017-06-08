@@ -2,7 +2,6 @@ package com.zarbosoft.bonestruct.document.values;
 
 import com.google.common.collect.ImmutableList;
 import com.zarbosoft.bonestruct.document.Atom;
-import com.zarbosoft.bonestruct.document.DocumentNode;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.Path;
 import com.zarbosoft.bonestruct.editor.history.changes.ChangeArray;
@@ -65,11 +64,6 @@ public class ValueArray extends Value {
 		}
 
 		@Override
-		public DocumentNode atom() {
-			return ValueArray.this;
-		}
-
-		@Override
 		public void selectUp(final Context context) {
 			select(context, true, index, index);
 		}
@@ -121,11 +115,6 @@ public class ValueArray extends Value {
 
 	public ValueArray(final MiddleArrayBase middle) {
 		this.middle = middle;
-	}
-
-	@Override
-	public Visual visual() {
-		return visual;
 	}
 
 	public void select(final Context context, final boolean leadFirst, final int start, final int end) {

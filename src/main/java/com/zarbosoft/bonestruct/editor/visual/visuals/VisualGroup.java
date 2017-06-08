@@ -206,11 +206,6 @@ public class VisualGroup extends Visual {
 		}
 
 		@Override
-		public VisualParent parent() {
-			return target.parent;
-		}
-
-		@Override
 		public Brick createNextBrick(final Context context) {
 			for (int i = index + 1; i < target.children.size(); ++i) {
 				final Visual child = target.children.get(i);
@@ -263,6 +258,26 @@ public class VisualGroup extends Visual {
 				final Context context, final com.zarbosoft.bonestruct.editor.visual.Vector point
 		) {
 			return target.hover(context, point);
+		}
+
+		@Override
+		public void selectNext(final Context context) {
+			int test = index;
+			while (++test < target.children.size()) {
+				if (target.children.get(test).selectDown(context))
+					return;
+			}
+			target.parent.selectNext(context);
+		}
+
+		@Override
+		public void selectPrevious(final Context context) {
+			int test = index;
+			while (--test >= 0) {
+				if (target.children.get(test).selectDown(context))
+					return;
+			}
+			target.parent.selectPrevious(context);
 		}
 
 		public int getIndex() {

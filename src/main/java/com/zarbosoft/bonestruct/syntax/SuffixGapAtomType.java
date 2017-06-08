@@ -233,7 +233,7 @@ public class SuffixGapAtomType extends AtomType {
 								child2Placement.replace(context, child2);
 
 							// Select and dump remainder
-							selectNext.visual().selectDown(context);
+							selectNext.visual.selectDown(context);
 							if (!remainder.isEmpty())
 								context.selection.receiveText(context, remainder);
 						}
@@ -301,7 +301,7 @@ public class SuffixGapAtomType extends AtomType {
 				protected void deselect(
 						final Context context, final Atom self, final String string, final Common.UserData userData
 				) {
-					if (self.visual() != null && string.isEmpty()) {
+					if (self.visual != null && string.isEmpty()) {
 						self.parent.replace(context, ((ValueArray) self.data.get("value")).data.get(0));
 					}
 				}

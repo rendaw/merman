@@ -1,7 +1,6 @@
 package com.zarbosoft.bonestruct.document.values;
 
 import com.zarbosoft.bonestruct.document.Atom;
-import com.zarbosoft.bonestruct.document.DocumentNode;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.Path;
 import com.zarbosoft.bonestruct.editor.history.changes.ChangeNodeSet;
@@ -54,11 +53,6 @@ public class ValueAtom extends Value {
 		}
 
 		@Override
-		public DocumentNode atom() {
-			return ValueAtom.this;
-		}
-
-		@Override
 		public void selectUp(final Context context) {
 			select(context);
 		}
@@ -96,11 +90,6 @@ public class ValueAtom extends Value {
 
 	public Atom get() {
 		return data;
-	}
-
-	@Override
-	public VisualNested visual() {
-		return visual;
 	}
 
 	@Override

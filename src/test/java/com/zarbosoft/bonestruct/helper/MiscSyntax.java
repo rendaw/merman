@@ -12,6 +12,7 @@ public class MiscSyntax {
 	final public static FreeAtomType five;
 	final public static FreeAtomType multiback;
 	final public static FreeAtomType quoted;
+	final public static FreeAtomType doubleQuoted;
 	final public static FreeAtomType binaryBang;
 	final public static FreeAtomType plusEqual;
 	final public static FreeAtomType plus;
@@ -19,6 +20,7 @@ public class MiscSyntax {
 	final public static FreeAtomType snooze;
 	final public static FreeAtomType multiplier;
 	final public static FreeAtomType array;
+	final public static FreeAtomType doubleArray;
 	final public static FreeAtomType record;
 	final public static FreeAtomType recordElement;
 	final public static FreeAtomType pair;
@@ -67,6 +69,19 @@ public class MiscSyntax {
 				.frontDataPrimitive("value")
 				.front(new FrontMarkBuilder("\"").build())
 				.autoComplete(99)
+				.build();
+		doubleQuoted = new TypeBuilder("doubleuoted")
+				.middlePrimitive("first")
+				.middlePrimitive("second")
+				.back(new BackRecordBuilder()
+						.add("first", Helper.buildBackDataPrimitive("first"))
+						.add("second", Helper.buildBackDataPrimitive("second"))
+						.build())
+				.front(new FrontMarkBuilder("\"").build())
+				.frontDataPrimitive("first")
+				.front(new FrontMarkBuilder("\"").build())
+				.frontDataPrimitive("second")
+				.front(new FrontMarkBuilder("\"").build())
 				.build();
 		plus = new TypeBuilder("plus")
 				.middleNode("first", "any")
@@ -136,6 +151,19 @@ public class MiscSyntax {
 				.frontMark("]")
 				.autoComplete(99)
 				.build();
+		doubleArray = new TypeBuilder("doublearray")
+				.middleArray("first", "any")
+				.middleArray("second", "any")
+				.back(new BackRecordBuilder()
+						.add("first", Helper.buildBackDataArray("first"))
+						.add("second", Helper.buildBackDataArray("second"))
+						.build())
+				.frontMark("[")
+				.frontDataArray("first")
+				.frontMark("?")
+				.frontDataArray("second")
+				.frontMark("]")
+				.build();
 		record = new TypeBuilder("record")
 				.middleRecord("value", "record_element")
 				.back(Helper.buildBackDataRecord("value"))
@@ -190,6 +218,7 @@ public class MiscSyntax {
 				.type(five)
 				.type(multiback)
 				.type(quoted)
+				.type(doubleQuoted)
 				.type(plus)
 				.type(plusEqual)
 				.type(binaryBang)
@@ -197,6 +226,7 @@ public class MiscSyntax {
 				.type(snooze)
 				.type(multiplier)
 				.type(array)
+				.type(doubleArray)
 				.type(record)
 				.type(recordElement)
 				.type(pair)

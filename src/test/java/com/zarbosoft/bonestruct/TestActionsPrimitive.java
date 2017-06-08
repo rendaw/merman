@@ -1,8 +1,12 @@
 package com.zarbosoft.bonestruct;
 
+import com.google.common.collect.ImmutableList;
+import com.zarbosoft.bonestruct.document.Atom;
+import com.zarbosoft.bonestruct.document.values.ValuePrimitive;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.visual.visuals.VisualArray;
 import com.zarbosoft.bonestruct.editor.visual.visuals.VisualPrimitive;
+import com.zarbosoft.bonestruct.helper.GeneralTestWizard;
 import com.zarbosoft.bonestruct.helper.Helper;
 import com.zarbosoft.bonestruct.helper.MiscSyntax;
 import com.zarbosoft.bonestruct.helper.TreeBuilder;
@@ -47,9 +51,33 @@ public class TestActionsPrimitive {
 
 	@Test
 	public void testNext() {
+		final Atom target = new TreeBuilder(MiscSyntax.doubleQuoted).add("first", "").add("second", "").build();
+		final ValuePrimitive value = (ValuePrimitive) target.data.get("first");
+		new GeneralTestWizard(MiscSyntax.syntax, target)
+				.run(context -> value.selectDown(context))
+				.act("next")
+				.run(context -> assertThat(context.selection.getPath().toList(),
+						equalTo(ImmutableList.of("0", "second", "0"))
+				));
+	}
+
+	@Test
+	public void testPrevious() {
+		final Atom target = new TreeBuilder(MiscSyntax.doubleQuoted).add("first", "").add("second", "").build();
+		final ValuePrimitive value = (ValuePrimitive) target.data.get("second");
+		new GeneralTestWizard(MiscSyntax.syntax, target)
+				.run(context -> value.selectDown(context))
+				.act("previous")
+				.run(context -> assertThat(context.selection.getPath().toList(),
+						equalTo(ImmutableList.of("0", "first", "0"))
+				));
+	}
+
+	@Test
+	public void testNextElement() {
 		final Context context = buildFive();
 		visual(context).select(context, true, 2, 2);
-		Helper.act(context, "next");
+		Helper.act(context, "next_element");
 		assertSelection(context, 3, 3);
 	}
 
@@ -57,7 +85,7 @@ public class TestActionsPrimitive {
 	public void testNextEOL() {
 		final Context context = build("1\n2");
 		visual(context).select(context, true, 1, 1);
-		Helper.act(context, "next");
+		Helper.act(context, "next_element");
 		assertSelection(context, 2, 2);
 	}
 
@@ -65,7 +93,7 @@ public class TestActionsPrimitive {
 	public void testNextDeselect() {
 		final Context context = buildFive();
 		visual(context).select(context, true, 1, 2);
-		Helper.act(context, "next");
+		Helper.act(context, "next_element");
 		assertSelection(context, 3, 3);
 	}
 
@@ -73,7 +101,7 @@ public class TestActionsPrimitive {
 	public void testNextEnd() {
 		final Context context = buildFive();
 		visual(context).select(context, true, 5, 5);
-		Helper.act(context, "next");
+		Helper.act(context, "next_element");
 		assertSelection(context, 5, 5);
 	}
 
@@ -81,15 +109,15 @@ public class TestActionsPrimitive {
 	public void testNextDeselectEnd() {
 		final Context context = buildFive();
 		visual(context).select(context, true, 4, 5);
-		Helper.act(context, "next");
+		Helper.act(context, "next_element");
 		assertSelection(context, 5, 5);
 	}
 
 	@Test
-	public void testPrevious() {
+	public void testPreviousElement() {
 		final Context context = buildFive();
 		visual(context).select(context, true, 2, 2);
-		Helper.act(context, "previous");
+		Helper.act(context, "previous_element");
 		assertSelection(context, 1, 1);
 	}
 
@@ -97,7 +125,7 @@ public class TestActionsPrimitive {
 	public void testPreviousBOL() {
 		final Context context = build("a\n2");
 		visual(context).select(context, true, 2, 2);
-		Helper.act(context, "previous");
+		Helper.act(context, "previous_element");
 		assertSelection(context, 1, 1);
 	}
 
@@ -105,7 +133,7 @@ public class TestActionsPrimitive {
 	public void testPreviousDeselect() {
 		final Context context = buildFive();
 		visual(context).select(context, true, 2, 3);
-		Helper.act(context, "previous");
+		Helper.act(context, "previous_element");
 		assertSelection(context, 1, 1);
 	}
 
@@ -113,7 +141,7 @@ public class TestActionsPrimitive {
 	public void testPreviousStart() {
 		final Context context = buildFive();
 		visual(context).select(context, true, 0, 0);
-		Helper.act(context, "previous");
+		Helper.act(context, "previous_element");
 		assertSelection(context, 0, 0);
 	}
 
@@ -121,7 +149,7 @@ public class TestActionsPrimitive {
 	public void testPreviousDeselectStart() {
 		final Context context = buildFive();
 		visual(context).select(context, true, 0, 1);
-		Helper.act(context, "previous");
+		Helper.act(context, "previous_element");
 		assertSelection(context, 0, 0);
 	}
 

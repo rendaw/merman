@@ -1,8 +1,6 @@
 package com.zarbosoft.bonestruct.document.values;
 
 import com.zarbosoft.bonestruct.document.Atom;
-import com.zarbosoft.bonestruct.document.DocumentNode;
-import com.zarbosoft.bonestruct.document.DocumentNodeParent;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.Path;
 import com.zarbosoft.bonestruct.syntax.back.BackDataKey;
@@ -12,16 +10,11 @@ import com.zarbosoft.bonestruct.syntax.middle.MiddleRecord;
 import com.zarbosoft.rendaw.common.DeadCode;
 import com.zarbosoft.rendaw.common.Pair;
 
-public abstract class Value extends DocumentNode {
+public abstract class Value {
 	public Atom.Parent parent = null;
 
 	public void setParent(final Atom.Parent parent) {
 		this.parent = parent;
-	}
-
-	@Override
-	public DocumentNodeParent parent() {
-		return parent;
 	}
 
 	public abstract MiddlePart middle();
@@ -46,7 +39,7 @@ public abstract class Value extends DocumentNode {
 
 	public abstract boolean selectDown(Context context);
 
-	public abstract class Parent extends DocumentNodeParent {
+	public abstract class Parent {
 
 		/**
 		 * Replace the child with a new atom.  (Creates history)
@@ -76,5 +69,7 @@ public abstract class Value extends DocumentNode {
 		}
 
 		public abstract Path path();
+
+		public abstract void selectUp(final Context context);
 	}
 }

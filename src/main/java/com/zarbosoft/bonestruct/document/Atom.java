@@ -14,7 +14,7 @@ import org.pcollections.PSet;
 
 import java.util.Map;
 
-public class Atom extends DocumentNode {
+public class Atom {
 	public Value.Parent parent;
 	public AtomType type;
 	public final Map<String, Value> data;
@@ -64,18 +64,10 @@ public class Atom extends DocumentNode {
 		this.parent = parent;
 	}
 
-	@Override
-	public DocumentNodeParent parent() {
-		return parent;
-	}
-
-	@Override
-	public VisualAtom visual() {
-		return visual;
-	}
-
-	public static abstract class Parent extends DocumentNodeParent {
+	public static abstract class Parent {
 		public abstract Atom atom();
+
+		public abstract void selectUp(final Context context);
 	}
 
 }

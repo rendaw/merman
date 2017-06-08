@@ -6,27 +6,22 @@ import com.zarbosoft.bonestruct.editor.visual.visuals.VisualAtom;
 import com.zarbosoft.bonestruct.editor.wall.Brick;
 
 public abstract class VisualParent {
-	public abstract VisualParent parent();
-
-	public abstract Brick createNextBrick(Context context);
+	public abstract Visual visual();
 
 	public abstract VisualAtom atomVisual();
+
+	public abstract Brick createPreviousBrick(Context context);
+
+	public abstract Brick createNextBrick(Context context);
 
 	public abstract Brick getPreviousBrick(Context context);
 
 	public abstract Brick getNextBrick(Context context);
 
-	public boolean isPreviousWindowEdge(final Context context) {
-		return parent() == null;
-	}
-
-	public boolean isNextWindowEdge(final Context context) {
-		return parent() == null;
-	}
-
 	public abstract Hoverable hover(Context context, Vector point);
 
-	public abstract Brick createPreviousBrick(Context context);
+	public abstract void selectPrevious(Context context);
 
-	public abstract Visual visual();
+	public abstract void selectNext(Context context);
+
 }

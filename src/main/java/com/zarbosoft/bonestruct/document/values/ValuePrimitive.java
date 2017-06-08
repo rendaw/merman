@@ -11,7 +11,7 @@ import com.zarbosoft.bonestruct.syntax.middle.MiddlePrimitive;
 import java.util.HashSet;
 import java.util.Set;
 
-public class ValuePrimitive extends com.zarbosoft.bonestruct.document.values.Value {
+public class ValuePrimitive extends Value {
 	public VisualPrimitive visual;
 	public final MiddlePrimitive middle;
 	public StringBuilder data = new StringBuilder();
@@ -20,11 +20,6 @@ public class ValuePrimitive extends com.zarbosoft.bonestruct.document.values.Val
 	public ValuePrimitive(final MiddlePrimitive middle, final String data) {
 		this.middle = middle;
 		this.data = new StringBuilder(data);
-	}
-
-	@Override
-	public VisualPrimitive visual() {
-		return visual;
 	}
 
 	@Override

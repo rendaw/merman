@@ -1,5 +1,6 @@
 package com.zarbosoft.bonestruct.helper;
 
+import com.zarbosoft.bonestruct.document.values.ValuePrimitive;
 import com.zarbosoft.bonestruct.editor.visual.visuals.VisualPrimitive;
 
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -13,7 +14,7 @@ public class PrimitiveTestWizard {
 		inner = new TestWizard(PrimitiveSyntax.syntax,
 				new TreeBuilder(PrimitiveSyntax.primitive).add("value", string).build()
 		);
-		this.primitive = (VisualPrimitive) inner.context.document.rootArray.data.get(0).data.get("value").visual();
+		this.primitive = ((ValuePrimitive) inner.context.document.rootArray.data.get(0).data.get("value")).visual;
 	}
 
 	public PrimitiveTestWizard check(final String... lines) {

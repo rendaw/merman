@@ -619,6 +619,26 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 			}, new Action() {
 				@Override
 				public void run(final Context context) {
+					parent.selectNext(context);
+				}
+
+				@Override
+				public String getName() {
+					return "next";
+				}
+			}, new Action() {
+				@Override
+				public void run(final Context context) {
+					parent.selectPrevious(context);
+				}
+
+				@Override
+				public String getName() {
+					return "previous";
+				}
+			}, new Action() {
+				@Override
+				public void run(final Context context) {
 					context.history.finishChange(context);
 					ArraySelection.this.leadFirst = true;
 					setPosition(context, Math.min(value.data.size() - 1, endIndex + 1));
@@ -626,7 +646,7 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 
 				@Override
 				public String getName() {
-					return "next";
+					return "next_element";
 				}
 			}, new Action() {
 				@Override
@@ -638,7 +658,7 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 
 				@Override
 				public String getName() {
-					return "previous";
+					return "previous_element";
 				}
 			}, new Action() {
 				@Override
