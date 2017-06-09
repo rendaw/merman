@@ -25,6 +25,8 @@ public class MiscSyntax {
 	final public static FreeAtomType recordElement;
 	final public static FreeAtomType pair;
 	final public static FreeAtomType ratio;
+	final public static FreeAtomType restricted;
+	final public static FreeAtomType restrictedArray;
 	final public static Syntax syntax;
 
 	static {
@@ -209,6 +211,16 @@ public class MiscSyntax {
 				.frontDataPrimitive("second")
 				.frontMark(">")
 				.build();
+		restricted = new TypeBuilder("restricted")
+				.middleNode("value", "restricted_group")
+				.back(new BackRecordBuilder().add("value", Helper.buildBackDataNode("value")).build())
+				.frontDataNode("value")
+				.build();
+		restrictedArray = new TypeBuilder("restricted_array")
+				.middleArray("value", "restricted_array_group")
+				.back(Helper.buildBackDataArray("value"))
+				.front(new FrontDataArrayBuilder("value").build())
+				.build();
 		syntax = new SyntaxBuilder("any")
 				.type(infinity)
 				.type(one)
@@ -231,6 +243,8 @@ public class MiscSyntax {
 				.type(recordElement)
 				.type(pair)
 				.type(ratio)
+				.type(restricted)
+				.type(restrictedArray)
 				.group(
 						"test_group_1",
 						new GroupBuilder()
@@ -241,6 +255,8 @@ public class MiscSyntax {
 								.build()
 				)
 				.group("test_group_2", new GroupBuilder().type(quoted).build())
+				.group("restricted_group", new GroupBuilder().type(quoted).build())
+				.group("restricted_array_group", new GroupBuilder().type(one).build())
 				.group(
 						"any",
 						new GroupBuilder()

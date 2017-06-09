@@ -22,8 +22,6 @@ public abstract class Visual {
 
 	public abstract void changeTags(final Context context, final TagsChange change);
 
-	public abstract boolean canCreateBricks(Context context);
-
 	public abstract Brick createOrGetFirstBrick(Context context);
 
 	public abstract Brick createFirstBrick(Context context);

@@ -74,11 +74,6 @@ public class VisualSymbol extends Visual implements VisualLeaf, ConditionAttachm
 	}
 
 	@Override
-	public boolean canCreateBricks(final Context context) {
-		return true;
-	}
-
-	@Override
 	public Brick createOrGetFirstBrick(final Context context) {
 		if (brick != null)
 			return brick;

@@ -11,6 +11,7 @@ import com.zarbosoft.bonestruct.editor.Path;
 import com.zarbosoft.bonestruct.editor.display.MockeryDisplay;
 import com.zarbosoft.bonestruct.editor.history.History;
 import com.zarbosoft.bonestruct.helper.ExpressionSyntax;
+import com.zarbosoft.bonestruct.helper.GeneralTestWizard;
 import com.zarbosoft.bonestruct.helper.MiscSyntax;
 import com.zarbosoft.bonestruct.helper.TreeBuilder;
 import com.zarbosoft.bonestruct.syntax.Syntax;
@@ -59,6 +60,14 @@ public class TestDocumentGap {
 
 	// ========================================================================
 	// Decision making and replacement
+	@Test
+	public void choiceCount() {
+		final Atom gap = MiscSyntax.syntax.gap.create();
+		new GeneralTestWizard(MiscSyntax.syntax, new TreeBuilder(MiscSyntax.restricted).add("value", gap).build())
+				.run(context -> gap.data.get("gap").selectDown(context))
+				.sendText("q")
+				.checkChoices(1);
+	}
 
 	@Test
 	public void undecided() {
@@ -441,6 +450,19 @@ public class TestDocumentGap {
 					((ValueArray) context.locateLong(new Path("0"))).visual.selectDown(context);
 				},
 				new TreeBuilder(MiscSyntax.array).addArray("value", MiscSyntax.syntax.gap.create()).build()
+		);
+	}
+
+	@Test
+	public void testCreateArrayDefault() {
+		innerTestTransform(MiscSyntax.syntax,
+				() -> new TreeBuilder(MiscSyntax.restrictedArray).addArray("value").build(),
+				context -> {
+					((ValueArray) context.locateLong(new Path("0"))).visual.selectDown(context);
+				},
+				new TreeBuilder(MiscSyntax.restrictedArray)
+						.addArray("value", new TreeBuilder(MiscSyntax.one).build())
+						.build()
 		);
 	}
 }

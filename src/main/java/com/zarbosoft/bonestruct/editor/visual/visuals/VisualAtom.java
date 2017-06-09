@@ -94,11 +94,6 @@ public class VisualAtom extends Visual {
 	}
 
 	@Override
-	public boolean canCreateBricks(final Context context) {
-		return true;
-	}
-
-	@Override
 	public boolean selectDown(final Context context) {
 		if (selectable.isEmpty())
 			return false;
@@ -222,12 +217,8 @@ public class VisualAtom extends Visual {
 
 		@Override
 		public Brick createNextBrick(final Context context) {
-			for (int i = index + 1; i < children.size(); ++i) {
-				final Visual child = children.get(i);
-				if (!child.canCreateBricks(context))
-					continue;
-				return child.createFirstBrick(context);
-			}
+			if (index + 1 < children.size())
+				return children.get(index + 1).createFirstBrick(context);
 			if (parent == null)
 				return null;
 			if (context.windowAtom == VisualAtom.this.atom)
@@ -237,12 +228,8 @@ public class VisualAtom extends Visual {
 
 		@Override
 		public Brick createPreviousBrick(final Context context) {
-			for (int i = index - 1; i >= 0; --i) {
-				final Visual child = children.get(i);
-				if (!child.canCreateBricks(context))
-					continue;
-				return child.createLastBrick(context);
-			}
+			if (index - 1 >= 0)
+				return children.get(index - 1).createLastBrick(context);
 			if (parent == null)
 				return null;
 			if (context.windowAtom == VisualAtom.this.atom)

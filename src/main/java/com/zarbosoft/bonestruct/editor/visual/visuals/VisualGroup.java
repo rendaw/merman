@@ -43,11 +43,6 @@ public class VisualGroup extends Visual {
 	}
 
 	@Override
-	public boolean canCreateBricks(final Context context) {
-		return !children.isEmpty();
-	}
-
-	@Override
 	public Stream<Brick> streamBricks() {
 		return children.stream().flatMap(child -> child.streamBricks());
 	}
@@ -207,23 +202,15 @@ public class VisualGroup extends Visual {
 
 		@Override
 		public Brick createNextBrick(final Context context) {
-			for (int i = index + 1; i < target.children.size(); ++i) {
-				final Visual child = target.children.get(i);
-				if (!child.canCreateBricks(context))
-					continue;
-				return child.createFirstBrick(context);
-			}
+			if (index + 1 < target.children.size())
+				return target.children.get(index + 1).createFirstBrick(context);
 			return target.parent.createNextBrick(context);
 		}
 
 		@Override
 		public Brick createPreviousBrick(final Context context) {
-			for (int i = index - 1; i >= 0; --i) {
-				final Visual child = target.children.get(i);
-				if (!child.canCreateBricks(context))
-					continue;
-				return child.createLastBrick(context);
-			}
+			if (index - 1 >= 0)
+				return target.children.get(index - 1).createLastBrick(context);
 			return target.parent.createPreviousBrick(context);
 		}
 

@@ -38,6 +38,7 @@ public class TestLayoutArray {
 		)
 				.checkTextBrick(0, index++, "[")
 				.checkTextBrick(0, index++, "[")
+				.checkSpaceBrick(0, index++)
 				.checkTextBrick(0, index++, "]")
 				.checkTextBrick(0, index++, "]");
 	}
@@ -101,6 +102,7 @@ public class TestLayoutArray {
 				))
 				.checkTextBrick(0, index2++, "[")
 				.checkTextBrick(0, index2++, "[")
+				.checkSpaceBrick(0, index2++)
 				.checkTextBrick(0, index2++, "]")
 				.checkTextBrick(0, index2++, ", ")
 				.checkTextBrick(0, index2++, "one")
@@ -141,7 +143,8 @@ public class TestLayoutArray {
 		new GeneralTestWizard(MiscSyntax.syntax, arrayAtom)
 				.run(context -> context.history.apply(context, new ChangeArray(array, 0, 1, ImmutableList.of())))
 				.checkTextBrick(0, 0, "[")
-				.checkTextBrick(0, 1, "]");
+				.checkSpaceBrick(0, 1)
+				.checkTextBrick(0, 2, "]");
 	}
 
 	@Test
@@ -151,6 +154,7 @@ public class TestLayoutArray {
 				.act("enter")
 				.act("exit")
 				.checkTextBrick(0, 0, "[")
-				.checkTextBrick(0, 1, "]");
+				.checkSpaceBrick(0, 1)
+				.checkTextBrick(0, 2, "]");
 	}
 }

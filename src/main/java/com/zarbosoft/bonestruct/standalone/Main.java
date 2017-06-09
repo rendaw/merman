@@ -166,6 +166,7 @@ public class Main extends Application {
 		document extends atom?
 		no more visualpart?
 		new line in primitive
+		_lua actions
 
 		readme
 		doc on tagging
@@ -177,7 +178,6 @@ public class Main extends Application {
 		_modules from dir
 		_document distributing modules
 		_document distributions
-		_lua actions
 		_layout templates for complete details + banner styling
 		_vertical text
 		_toc plugin

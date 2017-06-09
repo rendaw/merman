@@ -16,7 +16,9 @@ import com.zarbosoft.bonestruct.editor.wall.Course;
 import com.zarbosoft.bonestruct.editor.wall.bricks.BrickSpace;
 import com.zarbosoft.bonestruct.editor.wall.bricks.BrickText;
 import com.zarbosoft.bonestruct.syntax.Syntax;
+import com.zarbosoft.bonestruct.syntax.front.FrontGapBase;
 
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -32,10 +34,12 @@ import static org.hamcrest.number.OrderingComparison.greaterThan;
 import static org.junit.Assert.assertThat;
 
 public class GeneralTestWizard {
+	private List<? extends FrontGapBase.Choice> choices;
 	TestWizard inner;
 
 	public GeneralTestWizard(final Syntax syntax, final Atom... atoms) {
 		inner = new TestWizard(syntax, atoms);
+		inner.context.addGapChoiceListener(((context, choices) -> this.choices = choices));
 		inner.context.banner.addMessage(inner.context, new BannerMessage() {
 
 		});
@@ -190,6 +194,11 @@ public class GeneralTestWizard {
 	public GeneralTestWizard sendText(final String text) {
 		inner.context.selection.receiveText(inner.context, text);
 		inner.runner.flush();
+		return this;
+	}
+
+	public GeneralTestWizard checkChoices(final int count) {
+		assertThat(choices.size(), equalTo(count));
 		return this;
 	}
 }

@@ -174,6 +174,8 @@ _lessmodal_keys = function(config)
                 hotkeys = {
                     exit = { key 'escape' },
                     enter = { key 'enter' },
+                    next = { key { key = 'right', modifiers = { 'control' } } },
+                    previous = { key { key = 'left', modifiers = { 'control' } } },
                     undo = { key { key = 'z', modifiers = { 'control' } } },
                     redo = { key { key = 'z', modifiers = { 'control', 'shift' } } },
                     choose = { key { key = 'space', modifiers = { 'control' } } },
@@ -190,8 +192,8 @@ _lessmodal_keys = function(config)
                     delete = { key 'x' },
                     delete_next = { key 'delete' },
                     delete_previous = { key 'backspace' },
-                    next = { key 'right' },
-                    previous = { key 'left' },
+                    next_element = { key 'right' },
+                    previous_element = { key 'left' },
                     next_word = { key { key = 'right', modifiers = { 'control' } }, },
                     previous_word = { key { key = 'left', modifiers = { 'control' } }, },
                     next_line = { key 'down' },
@@ -213,6 +215,13 @@ _lessmodal_keys = function(config)
                     suffix = { key { key = 'a', modifiers = { 'control' } } },
                     next_choice = { key { key = 'down', modifiers = { 'control' } } },
                     previous_choice = { key { key = 'up', modifiers = { 'control' } } },
+                },
+            },
+            {
+                with = { part 'atom' },
+                hotkeys = {
+                    next = { key 'right' },
+                    previous = { key 'left' },
                 },
             }
         }

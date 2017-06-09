@@ -85,11 +85,6 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 		tagsChanged(context);
 	}
 
-	@Override
-	public boolean canCreateBricks(final Context context) {
-		return true;
-	}
-
 	public PSet<Tag> softTags() {
 		return tags.plus(new StateTag("soft"));
 	}

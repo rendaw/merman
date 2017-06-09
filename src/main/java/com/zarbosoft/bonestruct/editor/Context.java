@@ -32,6 +32,7 @@ import com.zarbosoft.bonestruct.editor.wall.Wall;
 import com.zarbosoft.bonestruct.modules.Module;
 import com.zarbosoft.bonestruct.syntax.Syntax;
 import com.zarbosoft.bonestruct.syntax.back.*;
+import com.zarbosoft.bonestruct.syntax.front.FrontGapBase;
 import com.zarbosoft.bonestruct.syntax.middle.MiddleArray;
 import com.zarbosoft.bonestruct.syntax.middle.MiddleRecord;
 import com.zarbosoft.bonestruct.syntax.style.Style;
@@ -68,6 +69,7 @@ public class Context {
 	public List<KeyListener> keyListeners = new ArrayList<>();
 	List<ContextIntListener> converseEdgeListeners = new ArrayList<>();
 	List<ContextIntListener> transverseEdgeListeners = new ArrayList<>();
+	public List<GapChoiceListener> gapChoiceListeners = new ArrayList<>();
 	private final Map<Object, List<Action>> actions = new HashMap<>();
 	public ClipboardEngine clipboardEngine;
 	/**
@@ -99,6 +101,18 @@ public class Context {
 
 	public static PSet<Tag> asFreeTags(final Set<String> tags) {
 		return HashTreePSet.from(tags.stream().map(tag -> new FreeTag(tag)).collect(Collectors.toList()));
+	}
+
+	public static interface GapChoiceListener {
+		void changed(Context context, List<? extends FrontGapBase.Choice> choices);
+	}
+
+	public void addGapChoiceListener(final GapChoiceListener listener) {
+		gapChoiceListeners.add(listener);
+	}
+
+	public void removeGapChoiceListener(final GapChoiceListener listener) {
+		gapChoiceListeners.remove(listener);
 	}
 
 	public static interface ContextIntListener {

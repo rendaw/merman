@@ -42,10 +42,12 @@ public class TestLiveExamples {
 				.checkTextBrick(0, 2, "]")
 				.act("exit")
 				.checkTextBrick(0, 0, "[")
-				.checkTextBrick(0, 1, "]")
+				.checkSpaceBrick(0, 1)
+				.checkTextBrick(0, 2, "]")
 				.act("insert_after")
 				.checkTextBrick(0, 0, "[")
-				.checkTextBrick(0, 1, "]")
-				.checkTextBrick(0, 2, "");
+				.checkSpaceBrick(0, 1)
+				.checkTextBrick(0, 2, "]")
+				.checkTextBrick(0, 3, "");
 	}
 }

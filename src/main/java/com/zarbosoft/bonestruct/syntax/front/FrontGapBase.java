@@ -78,6 +78,12 @@ public abstract class FrontGapBase extends FrontPart {
 
 		public abstract String name();
 
+		/**
+		 * Lists front parts following (or preceding) the user provided data to preview what and from where
+		 * will be completed.
+		 *
+		 * @return
+		 */
 		public abstract Iterable<? extends FrontPart> parts();
 	}
 
@@ -275,6 +281,9 @@ public abstract class FrontGapBase extends FrontPart {
 					gapDetails.destroy(context);
 				}
 				final List<? extends Choice> choices = process(context, self.parent.atom(), self.get(), userData);
+				ImmutableList
+						.copyOf(context.gapChoiceListeners)
+						.forEach(listener -> listener.changed(context, choices));
 				if (!choices.isEmpty()) {
 					gapDetails = new GapDetails(context, choices);
 					context.details.addPage(context, gapDetails);
