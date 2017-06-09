@@ -745,9 +745,9 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 			}, new Action() {
 				@Override
 				public void run(final Context context) {
-					final Atom gap = context.syntax.gap.create();
-					context.history.apply(context, new ChangeArray(value, beginIndex, 0, ImmutableList.of(gap)));
-					gap.data.get("gap").selectDown(context);
+					final Atom created = value.createAndAddDefault(context, beginIndex);
+					if (!created.visual.selectDown(context))
+						setPosition(context, beginIndex);
 				}
 
 				@Override
@@ -757,9 +757,9 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 			}, new Action() {
 				@Override
 				public void run(final Context context) {
-					final Atom gap = context.syntax.gap.create();
-					context.history.apply(context, new ChangeArray(value, endIndex + 1, 0, ImmutableList.of(gap)));
-					gap.data.get("gap").selectDown(context);
+					final Atom created = value.createAndAddDefault(context, endIndex + 1);
+					if (!created.visual.selectDown(context))
+						setPosition(context, endIndex + 1);
 				}
 
 				@Override

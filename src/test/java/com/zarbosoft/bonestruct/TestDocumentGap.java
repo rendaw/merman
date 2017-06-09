@@ -461,8 +461,18 @@ public class TestDocumentGap {
 					((ValueArray) context.locateLong(new Path("0"))).visual.selectDown(context);
 				},
 				new TreeBuilder(MiscSyntax.restrictedArray)
-						.addArray("value", new TreeBuilder(MiscSyntax.one).build())
+						.addArray("value", new TreeBuilder(MiscSyntax.quoted).add("value", "").build())
 						.build()
 		);
+	}
+
+	@Test
+	public void testFillArrayFromGapDefault() {
+		new GeneralTestWizard(MiscSyntax.syntax, MiscSyntax.syntax.gap.create())
+				.act("enter")
+				.sendText("_")
+				.checkTree(new TreeBuilder(MiscSyntax.restrictedArray)
+						.addArray("value", new TreeBuilder(MiscSyntax.quoted).add("value", "").build())
+						.build());
 	}
 }

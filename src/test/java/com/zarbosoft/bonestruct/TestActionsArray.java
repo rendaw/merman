@@ -271,6 +271,24 @@ public class TestActionsArray {
 	}
 
 	@Test
+	public void testInsertBeforeDefault() {
+		final Atom atom = new TreeBuilder(MiscSyntax.restrictedArray)
+				.addArray("value", new TreeBuilder(MiscSyntax.quoted).add("value", "").build())
+				.build();
+		final ValueArray value = (ValueArray) atom.data.get("value");
+		new GeneralTestWizard(MiscSyntax.syntax, atom)
+				.run(context -> value.select(context, true, 0, 0))
+				.act("insert_before")
+				.checkTree(new TreeBuilder(MiscSyntax.restrictedArray).addArray("value",
+						new TreeBuilder(MiscSyntax.quoted).add("value", "").build(),
+						new TreeBuilder(MiscSyntax.quoted).add("value", "").build()
+				).build())
+				.run(context -> assertThat(context.selection.getPath().toList(),
+						equalTo(ImmutableList.of("0", "0", "0"))
+				));
+	}
+
+	@Test
 	public void testInsertAfter() {
 		final Context context = buildFive();
 		(((VisualArray) ((ValueArray) ((Atom) context.locateShort(new Path("0"))).data.get("value")).visual)).select(context,
@@ -288,6 +306,24 @@ public class TestActionsArray {
 				new TreeBuilder(MiscSyntax.five).build()
 		).build(), context.document.rootArray);
 		assertThat(context.selection.getPath().toList(), equalTo(ImmutableList.of("0", "3", "0")));
+	}
+
+	@Test
+	public void testInsertAfterDefault() {
+		final Atom atom = new TreeBuilder(MiscSyntax.restrictedArray)
+				.addArray("value", new TreeBuilder(MiscSyntax.quoted).add("value", "").build())
+				.build();
+		final ValueArray value = (ValueArray) atom.data.get("value");
+		new GeneralTestWizard(MiscSyntax.syntax, atom)
+				.run(context -> value.select(context, true, 0, 0))
+				.act("insert_after")
+				.checkTree(new TreeBuilder(MiscSyntax.restrictedArray).addArray("value",
+						new TreeBuilder(MiscSyntax.quoted).add("value", "").build(),
+						new TreeBuilder(MiscSyntax.quoted).add("value", "").build()
+				).build())
+				.run(context -> assertThat(context.selection.getPath().toList(),
+						equalTo(ImmutableList.of("0", "1", "0"))
+				));
 	}
 
 	@Test

@@ -117,18 +117,22 @@ public class ValueArray extends Value {
 		this.middle = middle;
 	}
 
-	public void select(final Context context, final boolean leadFirst, final int start, final int end) {
-		if (data.isEmpty()) {
-			final List<FreeAtomType> childTypes =
-					context.syntax.getLeafTypes(((MiddleArrayBase) middle()).type).collect(Collectors.toList());
-			final Atom element;
-			if (childTypes.size() == 1) {
-				element = childTypes.get(0).create(context.syntax);
-			} else {
-				element = context.syntax.gap.create();
-			}
-			context.history.apply(context, new ChangeArray(this, 0, 0, ImmutableList.of(element)));
+	public Atom createAndAddDefault(final Context context, final int index) {
+		final List<FreeAtomType> childTypes =
+				context.syntax.getLeafTypes(((MiddleArrayBase) middle()).type).collect(Collectors.toList());
+		final Atom element;
+		if (childTypes.size() == 1) {
+			element = childTypes.get(0).create(context.syntax);
+		} else {
+			element = context.syntax.gap.create();
 		}
+		context.history.apply(context, new ChangeArray(this, index, 0, ImmutableList.of(element)));
+		return element;
+	}
+
+	public void select(final Context context, final boolean leadFirst, final int start, final int end) {
+		if (data.isEmpty())
+			createAndAddDefault(context, 0);
 		if (context.window) {
 			final Atom firstChild = data.get(start);
 			if (visual == null || firstChild.visual == null) {

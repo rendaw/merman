@@ -9,7 +9,6 @@ import com.zarbosoft.bonestruct.document.values.ValueArray;
 import com.zarbosoft.bonestruct.document.values.ValueAtom;
 import com.zarbosoft.bonestruct.document.values.ValuePrimitive;
 import com.zarbosoft.bonestruct.editor.Context;
-import com.zarbosoft.bonestruct.editor.history.changes.ChangeArray;
 import com.zarbosoft.bonestruct.syntax.alignments.AlignmentDefinition;
 import com.zarbosoft.bonestruct.syntax.back.BackDataPrimitive;
 import com.zarbosoft.bonestruct.syntax.back.BackPart;
@@ -53,6 +52,10 @@ public class GapAtomType extends AtomType {
 	public Value findSelectNext(
 			final Context context, final Atom atom, boolean skipFirstNode
 	) {
+		if (atom.type == context.syntax.gap ||
+				atom.type == context.syntax.prefixGap ||
+				atom.type == context.syntax.suffixGap)
+			return atom.data.get("gap");
 		for (final FrontPart front : atom.type.front()) {
 			if (front instanceof FrontDataPrimitive) {
 				return atom.data.get(((FrontDataPrimitive) front).middle);
@@ -75,9 +78,12 @@ public class GapAtomType extends AtomType {
 					if (skipFirstNode) {
 						skipFirstNode = false;
 					} else {
-						final Atom newGap = context.syntax.gap.create();
-						context.history.apply(context, new ChangeArray(array, 0, 0, ImmutableList.of(newGap)));
-						return newGap.data.get("gap");
+						final Value found =
+								findSelectNext(context, array.createAndAddDefault(context, 0), skipFirstNode);
+						if (found != null)
+							return found;
+						else
+							return array;
 					}
 				} else
 					for (final Atom element : array.data) {

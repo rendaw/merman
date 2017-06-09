@@ -219,7 +219,9 @@ public class MiscSyntax {
 		restrictedArray = new TypeBuilder("restricted_array")
 				.middleArray("value", "restricted_array_group")
 				.back(Helper.buildBackDataArray("value"))
+				.frontMark("_")
 				.front(new FrontDataArrayBuilder("value").build())
+				.autoComplete(99)
 				.build();
 		syntax = new SyntaxBuilder("any")
 				.type(infinity)
@@ -256,7 +258,7 @@ public class MiscSyntax {
 				)
 				.group("test_group_2", new GroupBuilder().type(quoted).build())
 				.group("restricted_group", new GroupBuilder().type(quoted).build())
-				.group("restricted_array_group", new GroupBuilder().type(one).build())
+				.group("restricted_array_group", new GroupBuilder().type(quoted).build())
 				.group(
 						"any",
 						new GroupBuilder()
@@ -274,6 +276,7 @@ public class MiscSyntax {
 								.type(snooze)
 								.type(multiplier)
 								.type(array)
+								.type(restrictedArray)
 								.type(record)
 								.type(pair)
 								.type(ratio)
