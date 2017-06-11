@@ -167,6 +167,10 @@ public class Main extends Application {
 		no more visualpart?
 		new line in primitive
 		_lua actions
+		//fix concensus in record
+		//fix record value reduce doesn't trigger expand?
+		fix disappearing obboxes
+		fix wrong cursor pos on expand
 
 		readme
 		doc on tagging

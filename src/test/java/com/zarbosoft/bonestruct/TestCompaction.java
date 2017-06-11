@@ -3,7 +3,10 @@ package com.zarbosoft.bonestruct;
 import com.google.common.collect.ImmutableList;
 import com.zarbosoft.bonestruct.document.Atom;
 import com.zarbosoft.bonestruct.document.values.ValueArray;
+import com.zarbosoft.bonestruct.document.values.ValuePrimitive;
 import com.zarbosoft.bonestruct.editor.history.changes.ChangeArray;
+import com.zarbosoft.bonestruct.editor.history.changes.ChangePrimitiveAdd;
+import com.zarbosoft.bonestruct.editor.history.changes.ChangePrimitiveRemove;
 import com.zarbosoft.bonestruct.editor.visual.tags.FreeTag;
 import com.zarbosoft.bonestruct.editor.visual.tags.StateTag;
 import com.zarbosoft.bonestruct.helper.*;
@@ -13,6 +16,7 @@ import org.junit.Test;
 
 public class TestCompaction {
 	final public static FreeAtomType one;
+	final public static FreeAtomType text;
 	final public static FreeAtomType infinity;
 	final public static FreeAtomType low;
 	final public static FreeAtomType mid;
@@ -27,6 +31,11 @@ public class TestCompaction {
 		one = new TypeBuilder("one")
 				.back(Helper.buildBackPrimitive("one"))
 				.front(new FrontMarkBuilder("one").build())
+				.build();
+		text = new TypeBuilder("text")
+				.middlePrimitive("value")
+				.back(Helper.buildBackDataPrimitive("value"))
+				.frontDataPrimitive("value")
 				.build();
 		low = new TypeBuilder("low")
 				.middleArray("value", "any")
@@ -57,11 +66,14 @@ public class TestCompaction {
 				.build();
 		syntax = new SyntaxBuilder("any")
 				.type(one)
+				.type(text)
 				.type(infinity)
 				.type(low)
 				.type(mid)
 				.type(high)
-				.group("any", new GroupBuilder().type(infinity).type(one).type(low).type(mid).type(high).build())
+				.group("any",
+						new GroupBuilder().type(infinity).type(one).type(low).type(mid).type(high).type(text).build()
+				)
 				.style(new StyleBuilder().tag(new FreeTag("split")).tag(new StateTag("compact")).split(true).build())
 				.build();
 		syntax.ellipsizeThreshold = 2;
@@ -184,6 +196,7 @@ public class TestCompaction {
 				.checkTextBrick(0, 11, "one");
 	}
 
+	/*
 	@Test
 	public void testSplitDynamic() {
 		final Atom lowAtom = new TreeBuilder(low).addArray("value", new TreeBuilder(one).build()).build();
@@ -201,6 +214,52 @@ public class TestCompaction {
 				.run(context -> context.history.apply(context, new ChangeArray(array, 1, 1, ImmutableList.of())))
 				.checkCourseCount(1)
 				.checkTextBrick(0, 1, "one");
+	}
+	*/
+
+	@Test
+	public void testSplitDynamic() {
+		final Atom lowAtom = new TreeBuilder(low)
+				.addArray("value", new TreeBuilder(one).build(), new TreeBuilder(one).build())
+				.build();
+		final ValueArray array = (ValueArray) lowAtom.data.get("value");
+		new GeneralTestWizard(syntax, lowAtom)
+				.resize(70)
+				.checkCourseCount(1)
+				.checkTextBrick(0, 1, "one")
+				.checkTextBrick(0, 3, "one")
+				.run(context -> context.history.apply(context,
+						new ChangeArray(array, 2, 0, ImmutableList.of(new TreeBuilder(one).build()))
+				))
+				.checkCourseCount(3)
+				.checkTextBrick(0, 1, "one")
+				.checkTextBrick(1, 1, "one")
+				.checkTextBrick(2, 1, "one")
+				.run(context -> context.history.apply(context, new ChangeArray(array, 2, 1, ImmutableList.of())))
+				.checkCourseCount(1)
+				.checkTextBrick(0, 1, "one")
+				.checkTextBrick(0, 3, "one");
+	}
+
+	@Test
+	public void testSplitDynamicBrickChange() {
+		final Atom textAtom = new TreeBuilder(text).add("value", "oran").build();
+		final ValuePrimitive text = (ValuePrimitive) textAtom.data.get("value");
+		new GeneralTestWizard(syntax,
+				new TreeBuilder(low).addArray("value", new TreeBuilder(one).build(), textAtom).build()
+		)
+				.resize(80)
+				.checkCourseCount(1)
+				.checkTextBrick(0, 1, "one")
+				.checkTextBrick(0, 3, "oran")
+				.run(context -> context.history.apply(context, new ChangePrimitiveAdd(text, 4, "ge")))
+				.checkCourseCount(2)
+				.checkTextBrick(0, 1, "one")
+				.checkTextBrick(1, 1, "orange")
+				.run(context -> context.history.apply(context, new ChangePrimitiveRemove(text, 4, 2)))
+				.checkCourseCount(1)
+				.checkTextBrick(0, 1, "one")
+				.checkTextBrick(0, 3, "oran");
 	}
 
 	@Test

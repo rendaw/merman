@@ -296,7 +296,8 @@ return _lessmodal_keys {
             align = 'indent',
         },
         {
-            with = { free 'record_table', state 'compact' },
+            with = { free 'record_table' },
+            without = { state 'compact' },
             align = 'record_table',
         },
     },
@@ -312,7 +313,7 @@ return _lessmodal_keys {
         indent = absolute { offset = 16 },
     },
     root_front = {
-        prefix = { { type = space {}, tags = { 'indent', 'split' } } },
+        prefix = { { type = space {}, tags = { 'split' } } },
         separator = { { type = text ',' } },
     },
     types = {
@@ -333,8 +334,9 @@ return _lessmodal_keys {
             front = {
                 symbol { type = text '{' },
                 array {
+                    prefix = { { type = space {}, tags = { 'indent', 'split' } } },
                     middle = 'data',
-                    separator = { text ',' },
+                    separator = { text ', ' },
                 },
                 symbol { type = text '}', tags = { 'split', 'base' }, },
             },
@@ -350,12 +352,12 @@ return _lessmodal_keys {
                 value = atom 'value',
             },
             front = {
-                symbol { type = space {}, tags = { 'indent', 'split' } },
                 primitive 'key',
                 symbol { type = text ': ' },
-                symbol { type = space {}, tags = { 'record_table' } },
+                symbol { type = space {}, tags = { 'split', 'record_table' } },
                 atom 'value',
             },
+            precedence = 100,
         },
         {
             id = 'luxem_array',

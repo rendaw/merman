@@ -9,8 +9,6 @@ import com.zarbosoft.bonestruct.syntax.FreeAtomType;
 import com.zarbosoft.bonestruct.syntax.Syntax;
 import org.junit.Test;
 
-import static com.zarbosoft.bonestruct.helper.Helper.dump;
-
 public class TestLayoutGeneral {
 	final public static FreeAtomType one;
 	final public static FreeAtomType two;
@@ -169,7 +167,6 @@ public class TestLayoutGeneral {
 		new GeneralTestWizard(syntax, gap).run(context -> {
 			gap.data.get("gap").selectDown(context);
 			context.selection.receiveText(context, "[");
-			dump(context.document.rootArray);
 		}).checkTextBrick(0, 0, "[").checkTextBrick(1, 0, "").checkTextBrick(2, 0, "]");
 	}
 }

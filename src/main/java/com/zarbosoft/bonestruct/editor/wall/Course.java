@@ -210,6 +210,7 @@ public class Course {
 
 		@Override
 		public boolean runImplementation() {
+			idlePlace = null;
 			// Update transverse space
 			boolean newAscent = false, newDescent = false;
 			for (final Brick brick : changed) {
@@ -252,24 +253,35 @@ public class Course {
 			final int at = first;
 			int converse =
 					at == 0 ? 0 : (at >= children.size() ? last(children) : children.get(at - 1)).converseEdge(context);
+			for (int index = 0; index < at && index < children.size(); ++index) {
+				final Brick brick = children.get(index);
+				final Brick.Properties properties = brick.properties(context);
+				seenAlignments.add(properties.alignment);
+			}
 			for (int index = at; index < children.size(); ++index) {
 				final Brick brick = children.get(index);
 				final Brick.Properties properties = brick.properties(context);
-				final int minConverse = converse;
+				final int minConverse;
 				if (properties.alignment != null && !seenAlignments.contains(properties.alignment)) {
 					seenAlignments.add(properties.alignment);
+					minConverse = converse;
 					converse = Math.max(converse, properties.alignment.converse);
-					properties.alignment.feedback(context, converse);
-				}
+				} else
+					minConverse = 0;
 				brick.setConverse(context, minConverse, converse);
+				if (properties.alignment != null) {
+					properties.alignment.feedback(context, minConverse);
+				}
 				for (final Attachment attachment : brick.getAttachments(context))
 					attachment.setConverse(context, converse);
 				converse = brick.converseEdge(context);
 				if (converse > context.edge)
 					getIdleCompact(context);
 			}
-			if (converse < lastExpandCheckConverse)
+			if (converse < lastExpandCheckConverse) {
 				getIdleExpand(context);
+			}
+			lastExpandCheckConverse = converse;
 
 			// Propagate changes up
 			if (newAscent || newDescent/* || fixtures[0] || fixtures[1]*/)
@@ -280,7 +292,8 @@ public class Course {
 
 		@Override
 		protected void destroyed() {
-			idlePlace = null;
+			if (idlePlace == this)
+				idlePlace = null;
 		}
 
 		public void at(final int at) {
@@ -330,7 +343,6 @@ public class Course {
 				}
 			}
 			if (converse <= context.edge) {
-				lastExpandCheckConverse = converse;
 				return false;
 			}
 			if (priorities.isEmpty()) {
