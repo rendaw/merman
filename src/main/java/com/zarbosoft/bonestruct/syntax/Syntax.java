@@ -124,6 +124,14 @@ public class Syntax {
 	@Configuration(optional = true, name = "ellipsize_threshold", description = "Limit the window to this depth span.")
 	public int ellipsizeThreshold = Integer.MAX_VALUE;
 
+	@Configuration(optional = true, name = "lay_brick_batch_size",
+			description = "Generate bricks in this batch size when jumping, scrolling, and editing.")
+	public int layBrickBatchSize = 10;
+
+	@Configuration(optional = true, name = "retry_expand_factor",
+			description = "Retry course expansion when converse deficit has increased by this factor.")
+	public double retryExpandFactor = 1.25;
+
 	public String id; // Fake final - don't modify (set in loadSyntax)
 
 	@Configuration

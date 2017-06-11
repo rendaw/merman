@@ -516,28 +516,30 @@ public class Context {
 
 		@Override
 		public boolean runImplementation() {
-			if (ends.isEmpty() && starts.isEmpty()) {
-				return false;
-			}
-			if (!ends.isEmpty()) {
-				final Brick next = ends.iterator().next();
-				ends.remove(next);
-				if (next.parent != null) {
-					final Brick created = next.createNext(Context.this);
-					if (created != null) {
-						next.addAfter(Context.this, created);
-						ends.add(created);
+			for (int i = 0; i < syntax.layBrickBatchSize; ++i) {
+				if (ends.isEmpty() && starts.isEmpty()) {
+					return false;
+				}
+				if (!ends.isEmpty()) {
+					final Brick next = ends.iterator().next();
+					ends.remove(next);
+					if (next.parent != null) {
+						final Brick created = next.createNext(Context.this);
+						if (created != null) {
+							next.addAfter(Context.this, created);
+							ends.add(created);
+						}
 					}
 				}
-			}
-			if (!starts.isEmpty()) {
-				final Brick previous = starts.iterator().next();
-				starts.remove(previous);
-				if (previous.parent != null) {
-					final Brick created = previous.createPrevious(Context.this);
-					if (created != null) {
-						previous.addBefore(Context.this, created);
-						starts.add(created);
+				if (!starts.isEmpty()) {
+					final Brick previous = starts.iterator().next();
+					starts.remove(previous);
+					if (previous.parent != null) {
+						final Brick created = previous.createPrevious(Context.this);
+						if (created != null) {
+							previous.addBefore(Context.this, created);
+							starts.add(created);
+						}
 					}
 				}
 			}

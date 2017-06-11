@@ -153,13 +153,12 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 				}
 				final int index = findContaining(beginOffset);
 				beginLine = endLine = lines.get(index);
-				if (beginLine.brick != null) {
-					cursor.setPosition(context, beginLine.brick, beginOffset - beginLine.offset);
-					ImmutableSet.copyOf(listeners).forEach(l -> {
-						l.firstChanged(context, beginLine.brick);
-						l.lastChanged(context, beginLine.brick);
-					});
-				}
+				context.foreground.setCornerstone(context, beginLine.createOrGetBrick(context));
+				cursor.setPosition(context, beginLine.brick, beginOffset - beginLine.offset);
+				ImmutableSet.copyOf(listeners).forEach(l -> {
+					l.firstChanged(context, beginLine.brick);
+					l.lastChanged(context, beginLine.brick);
+				});
 			} else {
 				if (wasPoint) {
 					beginLine = null;
@@ -174,6 +173,8 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 				final int beginIndex = findContaining(beginOffset);
 				if (beginLine == null || beginLine.index != beginIndex) {
 					beginLine = lines.get(beginIndex);
+					if (leadFirst)
+						context.foreground.setCornerstone(context, beginLine.createOrGetBrick(context));
 					if (beginLine.brick != null) {
 						border.setFirst(context, beginLine.brick);
 						ImmutableSet.copyOf(listeners).forEach(l -> {
@@ -185,6 +186,8 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 				final int endIndex = findContaining(endOffset);
 				if (endLine == null || endLine.index != endIndex) {
 					endLine = lines.get(endIndex);
+					if (!leadFirst)
+						context.foreground.setCornerstone(context, endLine.createOrGetBrick(context));
 					if (endLine.brick != null) {
 						border.setLast(context, endLine.brick);
 						ImmutableSet.copyOf(listeners).forEach(l -> {
@@ -198,24 +201,20 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 
 		private void setOffsets(final Context context, final int beginOffset, final int endOffset) {
 			setOffsetsInternal(context, beginOffset, endOffset);
-			context.foreground.setCornerstone(context, (leadFirst ? beginLine : endLine).createOrGetBrick(context));
 		}
 
 		private void setOffsets(final Context context, final int offset) {
 			setOffsetsInternal(context, offset, offset);
-			context.foreground.setCornerstone(context, (leadFirst ? beginLine : endLine).createOrGetBrick(context));
 		}
 
 		private void setBeginOffset(final Context context, final int offset) {
-			setOffsetsInternal(context, offset, endOffset);
 			leadFirst = true;
-			context.foreground.setCornerstone(context, beginLine.createOrGetBrick(context));
+			setOffsetsInternal(context, offset, endOffset);
 		}
 
 		private void setEndOffset(final Context context, final int offset) {
-			setOffsetsInternal(context, beginOffset, offset);
 			leadFirst = false;
-			context.foreground.setCornerstone(context, endLine.createOrGetBrick(context));
+			setOffsetsInternal(context, beginOffset, offset);
 		}
 
 		public void destroy(final Context context) {
@@ -227,7 +226,6 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 
 		public void nudge(final Context context) {
 			setOffsetsInternal(context, beginOffset, endOffset);
-			context.foreground.setCornerstone(context, (leadFirst ? beginLine : endLine).createOrGetBrick(context));
 		}
 
 		public void addListener(final Context context, final VisualAttachmentAdapter.BoundsListener listener) {
@@ -1196,7 +1194,6 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 						newEnd = offset;
 					selection.range.setOffsets(context, newBegin, newEnd);
 				}
-				System.out.format("removed: hard lines %s, lines %s\n", hardLineCount, lines.size());
 				decompacted(context);
 			}
 		};
@@ -1355,7 +1352,7 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 			final Line line = lines.get(i);
 			if (line.brick == null)
 				continue;
-			if (!rebreak && line.brick.converseEdge(context) * 1.25 > context.edge) {
+			if (!rebreak && line.brick.converseEdge(context) * context.syntax.retryExpandFactor > context.edge) {
 				rebreak = false;
 			}
 			if (line.hard && rebreak) {

@@ -278,10 +278,12 @@ public class Course {
 				if (converse > context.edge)
 					getIdleCompact(context);
 			}
-			if (converse < lastExpandCheckConverse) {
+			if (converse * context.syntax.retryExpandFactor < lastExpandCheckConverse) {
 				getIdleExpand(context);
 			}
-			lastExpandCheckConverse = converse;
+			if (converse > lastExpandCheckConverse) {
+				lastExpandCheckConverse = converse;
+			}
 
 			// Propagate changes up
 			if (newAscent || newDescent/* || fixtures[0] || fixtures[1]*/)
@@ -427,6 +429,7 @@ public class Course {
 
 			// Expand
 			top.expand(context);
+			lastExpandCheckConverse = 0;
 			return true;
 		}
 

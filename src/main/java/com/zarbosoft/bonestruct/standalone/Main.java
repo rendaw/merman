@@ -162,9 +162,9 @@ public class Main extends Application {
 		//fix compact (root array)
 		//cornerstone on wrong element (visual array selectup)
 		//translation bounce on array element enter/exit
-		indicators in overlay
-		document extends atom?
-		no more visualpart?
+		// X indicators in overlay
+		// X document extends atom?
+		//no more visualpart?
 		new line in primitive
 		_lua actions
 		//fix concensus in record

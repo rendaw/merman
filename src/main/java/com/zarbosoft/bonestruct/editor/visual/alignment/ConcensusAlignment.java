@@ -36,9 +36,7 @@ public class ConcensusAlignment extends Alignment {
 
 	private void reduce(final Context context) {
 		converse = 0;
-		System.out.format("Reducing\n");
 		for (final AlignmentListener listener : listeners) {
-			System.out.format("\tl %s\n", listener.getMinConverse(context));
 			converse = Math.max(listener.getMinConverse(context), converse);
 		}
 	}
