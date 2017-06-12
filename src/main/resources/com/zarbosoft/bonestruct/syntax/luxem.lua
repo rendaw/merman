@@ -215,6 +215,7 @@ _lessmodal_keys = function(config)
                     suffix = { key { key = 'a', modifiers = { 'control' } } },
                     next_choice = { key { key = 'down', modifiers = { 'control' } } },
                     previous_choice = { key { key = 'up', modifiers = { 'control' } } },
+                    click_hovered = { key 'mouse1' },
                 },
             },
             {

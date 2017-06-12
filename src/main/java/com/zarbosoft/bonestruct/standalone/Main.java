@@ -158,14 +158,14 @@ public class Main extends Application {
 		//rename break -> split
 		//fix hotkey modifiers
 		//fix indent/breaking
-		fix hover
+		//fix hover
 		//fix compact (root array)
 		//cornerstone on wrong element (visual array selectup)
 		//translation bounce on array element enter/exit
 		// X indicators in overlay
 		// X document extends atom?
 		//no more visualpart?
-		new line in primitive
+		//new line in primitive
 		_lua actions
 		//fix concensus in record
 		//fix record value reduce doesn't trigger expand?
@@ -176,6 +176,8 @@ public class Main extends Application {
 		doc on tagging
 		syntax documenter
 		action documenter
+		clean up luxem syntax (colors, etc)
+		improve hover type info
 
 		long range goals
 		_sed (led) substitution

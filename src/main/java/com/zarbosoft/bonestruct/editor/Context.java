@@ -503,6 +503,7 @@ public class Context {
 		if (hoverIdle != null) {
 			hoverIdle.destroy();
 		}
+		hoverBrick = null;
 	}
 
 	public class IdleLayBricks extends IdleTask {
@@ -674,11 +675,7 @@ public class Context {
 
 		public HoverIdle(final Context context) {
 			this.context = context;
-			at = hoverBrick == null ? (
-					context.foreground.children.get(0).children.isEmpty() ?
-							null :
-							context.foreground.children.get(0).children.get(0)
-			) : hoverBrick;
+			at = hoverBrick == null ? context.foreground.children.get(0).children.get(0) : hoverBrick;
 		}
 
 		@Override
@@ -878,8 +875,6 @@ public class Context {
 				hoverIdle.point = null;
 			} else if (hover != null) {
 				clearHover();
-				hover = null;
-				hoverBrick = null;
 			}
 		});
 		display.addMouseMoveListener(vector -> {

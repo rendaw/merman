@@ -67,6 +67,9 @@ public class JavaFXDisplay implements Display {
 		node.setOnKeyPressed(e -> {
 			final HIDEvent event = buildHIDEvent(convertButton(e.getCode()), true);
 			ImmutableList.copyOf(hidEventListeners).forEach(l -> l.accept(event));
+			if (e.getCode() == KeyCode.ENTER) {
+				ImmutableList.copyOf(typingListeners).forEach(l -> l.accept("\n"));
+			}
 			e.consume();
 		});
 		node.setOnKeyReleased(e -> {
@@ -75,11 +78,7 @@ public class JavaFXDisplay implements Display {
 			e.consume();
 		});
 		node.setOnKeyTyped(e -> {
-			final String text;
-			if (e.getCode() == KeyCode.ENTER)
-				text = "\n";
-			else
-				text = e.getCharacter();
+			final String text = e.getCharacter();
 			ImmutableList.copyOf(typingListeners).forEach(l -> l.accept(text));
 			e.consume();
 		});

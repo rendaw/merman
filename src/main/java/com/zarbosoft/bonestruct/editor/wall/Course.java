@@ -122,6 +122,9 @@ public class Course {
 
 	void removeFromSystem(final Context context, final int at) {
 		final Brick brick = children.get(at);
+		if (context.hoverBrick == brick) {
+			context.clearHover();
+		}
 		brick.parent = null;
 		children.remove(at);
 		if (children.isEmpty()) {
