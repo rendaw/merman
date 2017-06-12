@@ -112,7 +112,6 @@ public abstract class Brick {
 			parent.breakCourse(context, index + 1).add(context, 0, ImmutableList.of(brick));
 		} else
 			parent.add(context, index + 1, ImmutableList.of(brick));
-		ImmutableList.copyOf(attachments).forEach(a -> a.addAfter(context, brick));
 	}
 
 	public void addBefore(final Context context, final Brick brick) {
@@ -137,7 +136,6 @@ public abstract class Brick {
 			} else
 				parent.add(context, index, ImmutableList.of(brick));
 		}
-		ImmutableList.copyOf(attachments).forEach(a -> a.addBefore(context, brick));
 	}
 
 	public Brick previous() {

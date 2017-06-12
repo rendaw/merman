@@ -8,6 +8,7 @@ import com.zarbosoft.bonestruct.editor.*;
 import com.zarbosoft.bonestruct.editor.history.changes.ChangeArray;
 import com.zarbosoft.bonestruct.editor.visual.*;
 import com.zarbosoft.bonestruct.editor.visual.attachments.BorderAttachment;
+import com.zarbosoft.bonestruct.editor.visual.attachments.VisualBorderAttachment;
 import com.zarbosoft.bonestruct.editor.visual.tags.PartTag;
 import com.zarbosoft.bonestruct.editor.visual.tags.StateTag;
 import com.zarbosoft.bonestruct.editor.visual.tags.Tag;
@@ -30,7 +31,6 @@ public abstract class VisualNestedBase extends Visual implements VisualLeaf {
 	PSet<Tag> ellipsisTags;
 	protected VisualAtom body;
 	VisualParent parent;
-	private BorderAttachment border;
 	Hoverable hoverable;
 	private NestedSelection selection;
 	private Brick ellipsis = null;
@@ -111,6 +111,105 @@ public abstract class VisualNestedBase extends Visual implements VisualLeaf {
 			body.uproot(context, root);
 			body = null;
 		}
+	}
+
+	private static abstract class NestedHoverable extends Hoverable {
+
+	}
+
+	private class BodyHoverable extends NestedHoverable {
+		private final VisualBorderAttachment border;
+
+		public BodyHoverable(final Context context) {
+			border = new VisualBorderAttachment(context, getBorderStyle(context, tags).obbox);
+			nudge(context);
+		}
+
+		@Override
+		public void clear(final Context context) {
+			border.destroy(context);
+			hoverable = null;
+		}
+
+		@Override
+		public void click(final Context context) {
+			body.selectDown(context);
+		}
+
+		@Override
+		public VisualAtom atom() {
+			return VisualNestedBase.this.parent.atomVisual();
+		}
+
+		@Override
+		public Visual visual() {
+			return VisualNestedBase.this;
+		}
+
+		@Override
+		public void tagsChanged(
+				final Context context
+		) {
+			border.setStyle(context, getBorderStyle(context, tags).obbox);
+		}
+
+		public void nudge(final Context context) {
+			border.setFirst(context, body);
+			border.setLast(context, body);
+		}
+	}
+
+	private class PlaceholderHoverable extends NestedHoverable {
+		final BorderAttachment border;
+
+		private PlaceholderHoverable(final Context context, final Brick brick) {
+			border = new BorderAttachment(context);
+			border.setFirst(context, brick);
+			border.setLast(context, brick);
+			border.setStyle(context, getBorderStyle(context, tags).obbox);
+		}
+
+		@Override
+		protected void clear(final Context context) {
+			border.destroy(context);
+			hoverable = null;
+		}
+
+		@Override
+		public void click(final Context context) {
+			selectDown(context);
+		}
+
+		@Override
+		public VisualAtom atom() {
+			return VisualNestedBase.this.parent.atomVisual();
+		}
+
+		@Override
+		public Visual visual() {
+			return VisualNestedBase.this;
+		}
+
+		@Override
+		public void tagsChanged(final Context context) {
+			border.setStyle(context, getBorderStyle(context, tags).obbox);
+		}
+	}
+
+	@Override
+	public Hoverable hover(final Context context, final Vector point) {
+		if (selection != null)
+			return null;
+		final Hoverable parentHoverable = parent.hover(context, point);
+		if (parentHoverable != null)
+			return parentHoverable;
+		if (hoverable != null) {
+		} else if (ellipsis != null) {
+			hoverable = new PlaceholderHoverable(context, ellipsis);
+		} else {
+			hoverable = new BodyHoverable(context);
+		}
+		return hoverable;
 	}
 
 	@Override
@@ -228,12 +327,10 @@ public abstract class VisualNestedBase extends Visual implements VisualLeaf {
 	public void select(final Context context) {
 		if (selection != null)
 			return;
-		else if (border != null) {
+		else if (hoverable != null) {
 			context.clearHover();
 		}
 		selection = new NestedSelection(context);
-		border = new BorderAttachment(context);
-		border.setStyle(context, selection.getBorderStyle(context, tags).obbox);
 		context.setSelection(selection);
 		context.foreground.setCornerstone(context, body.createOrGetFirstBrick(context));
 	}
@@ -381,7 +478,11 @@ public abstract class VisualNestedBase extends Visual implements VisualLeaf {
 	}
 
 	private class NestedSelection extends Selection {
+		private VisualBorderAttachment border;
+
 		public NestedSelection(final Context context) {
+			border = new VisualBorderAttachment(context, getBorderStyle(context, tags).obbox);
+			nudge(context);
 			context.addActions(this, VisualNestedBase.this.getActions(context).collect(Collectors.toList()));
 		}
 
@@ -419,6 +520,12 @@ public abstract class VisualNestedBase extends Visual implements VisualLeaf {
 		@Override
 		public PSet<Tag> getTags(final Context context) {
 			return tags;
+		}
+
+		public void nudge(final Context context) {
+			context.foreground.setCornerstone(context, body.createOrGetFirstBrick(context));
+			border.setFirst(context, body);
+			border.setLast(context, body);
 		}
 	}
 
@@ -478,7 +585,9 @@ public abstract class VisualNestedBase extends Visual implements VisualLeaf {
 		this.body =
 				(VisualAtom) data.createVisual(context, new NestedParent(), parent.atomVisual().alignments(), depth());
 		if (selection != null)
-			context.foreground.setCornerstone(context, body.createOrGetFirstBrick(context));
+			selection.nudge(context);
+		if (hoverable != null)
+			((BodyHoverable) hoverable).nudge(context);
 	}
 
 	private class NestedParent extends VisualParent {
@@ -504,58 +613,27 @@ public abstract class VisualNestedBase extends Visual implements VisualLeaf {
 
 		@Override
 		public Brick createNextBrick(final Context context) {
-			return parent.createNextBrick(context);
+			final Brick out = parent.createNextBrick(context);
+			if (selection != null)
+				selection.border.notifyNextBrickPastEdge(context);
+			else if (hoverable != null)
+				((BodyHoverable) hoverable).border.notifyNextBrickPastEdge(context);
+			return out;
 		}
 
 		@Override
 		public Brick createPreviousBrick(final Context context) {
-			return parent.createPreviousBrick(context);
+			final Brick out = parent.createPreviousBrick(context);
+			if (selection != null)
+				selection.border.notifyPreviousBrickPastEdge(context);
+			else if (hoverable != null)
+				((BodyHoverable) hoverable).border.notifyPreviousBrickPastEdge(context);
+			return out;
 		}
 
 		@Override
 		public Hoverable hover(final Context context, final Vector point) {
-			if (selection != null)
-				return null;
-			{
-				final Hoverable parentHoverable = parent.hover(context, point);
-				if (parentHoverable != null)
-					return parentHoverable;
-			}
-			if (hoverable != null)
-				return hoverable;
-			hoverable = new Hoverable() {
-				@Override
-				public void clear(final Context context) {
-					border.destroy(context);
-					border = null;
-					hoverable = null;
-				}
-
-				@Override
-				public void click(final Context context) {
-					body.selectDown(context);
-				}
-
-				@Override
-				public VisualAtom atom() {
-					return VisualNestedBase.this.parent.atomVisual();
-				}
-
-				@Override
-				public Visual visual() {
-					return VisualNestedBase.this;
-				}
-
-				@Override
-				public void tagsChanged(
-						final Context context
-				) {
-					border.setStyle(context, getBorderStyle(context, tags).obbox);
-				}
-			};
-			border = new BorderAttachment(context);
-			border.setStyle(context, hoverable.getBorderStyle(context, tags).obbox);
-			return hoverable;
+			return VisualNestedBase.this.hover(context, point);
 		}
 
 		@Override

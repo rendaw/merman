@@ -10,51 +10,31 @@ import java.util.Set;
 
 public class VisualAttachmentAdapter {
 	private Visual base;
-	Brick first;
+	private Brick first;
+	private Brick last;
 	private final Set<BoundsListener> boundsListeners = new HashSet<>();
 	private final Attachment firstAttachment = new Attachment() {
 		@Override
-		public void addBefore(final Context context, final Brick brick) {
-			if (brick == ignoreFirst)
-				return;
-			boundsListeners.forEach(l -> l.firstChanged(context, brick));
-			setFirst(context, brick);
-		}
-
-		@Override
 		public void destroy(final Context context) {
-			first = null;
 			setFirst(context, base.getFirstBrick(context));
 		}
 	};
 	private final Attachment lastAttachment = new Attachment() {
 		@Override
-		public void addAfter(final Context context, final Brick brick) {
-			if (brick == ignoreLast)
-				return;
-			boundsListeners.forEach(l -> l.lastChanged(context, brick));
-			setLast(context, brick);
-		}
-
-		@Override
 		public void destroy(final Context context) {
-			last = null;
 			setLast(context, base.getLastBrick(context));
 		}
 	};
-	private Brick ignoreFirst;
-	private Brick ignoreLast;
-	private Brick last;
 
 	/**
 	 * The next brick to be added is outside the visual subtree so should be ignored.
 	 * This will most likely be called from the target's VisualParent.
 	 *
-	 * @param context
 	 * @param next
+	 * @param context
 	 */
-	public void notifyPreviousBrickPastEdge(final Context context, final Brick previous) {
-		ignoreFirst = previous;
+	public void notifyPreviousBrickPastEdge(final Context context) {
+		setFirst(context, base.getFirstBrick(context));
 	}
 
 	/**
@@ -62,10 +42,9 @@ public class VisualAttachmentAdapter {
 	 * This will most likely be called from the target's VisualParent.
 	 *
 	 * @param context
-	 * @param next
 	 */
-	public void notifyNextBrickPastEdge(final Context context, final Brick next) {
-		ignoreLast = next;
+	public void notifyNextBrickPastEdge(final Context context) {
+		setLast(context, base.getLastBrick(context));
 	}
 
 	/**
@@ -116,22 +95,26 @@ public class VisualAttachmentAdapter {
 	}
 
 	public void setFirst(final Context context, final Brick firstBrick) {
+		if (first == firstBrick)
+			return;
 		if (first != null)
 			first.removeAttachment(context, firstAttachment);
 		first = firstBrick;
+		boundsListeners.forEach(l -> l.firstChanged(context, firstBrick));
 		if (first == null)
 			return;
-		boundsListeners.forEach(l -> l.firstChanged(context, firstBrick));
 		first.addAttachment(context, firstAttachment);
 	}
 
 	public void setLast(final Context context, final Brick lastBrick) {
+		if (last == lastBrick)
+			return;
 		if (last != null)
 			last.removeAttachment(context, lastAttachment);
 		last = lastBrick;
+		boundsListeners.forEach(l -> l.lastChanged(context, lastBrick));
 		if (last == null)
 			return;
-		boundsListeners.forEach(l -> l.lastChanged(context, lastBrick));
 		last.addAttachment(context, lastAttachment);
 	}
 }

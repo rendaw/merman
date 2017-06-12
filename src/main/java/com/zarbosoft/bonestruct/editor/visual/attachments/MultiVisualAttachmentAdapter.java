@@ -64,11 +64,11 @@ public class MultiVisualAttachmentAdapter {
 	 * The next brick to be added is outside the visual subtree so should be ignored.
 	 * This will most likely be called from the target's VisualParent.
 	 *
-	 * @param context
 	 * @param next
+	 * @param context
 	 */
-	public void notifyPreviousBrickPastEdge(final Context context, final Brick previous) {
-		firstAdapter.notifyPreviousBrickPastEdge(context, previous);
+	public void notifyPreviousBrickPastEdge(final Context context) {
+		firstAdapter.notifyPreviousBrickPastEdge(context);
 	}
 
 	/**
@@ -76,10 +76,9 @@ public class MultiVisualAttachmentAdapter {
 	 * This will most likely be called from the target's VisualParent.
 	 *
 	 * @param context
-	 * @param next
 	 */
-	public void notifyNextBrickPastEdge(final Context context, final Brick next) {
-		lastAdapter.notifyNextBrickPastEdge(context, next);
+	public void notifyNextBrickPastEdge(final Context context) {
+		lastAdapter.notifyNextBrickPastEdge(context);
 	}
 
 	/**

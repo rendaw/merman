@@ -169,7 +169,7 @@ public class Main extends Application {
 		_lua actions
 		//fix concensus in record
 		//fix record value reduce doesn't trigger expand?
-		fix disappearing obboxes
+		//fix disappearing obboxes
 		fix wrong cursor pos on expand
 
 		readme

@@ -12,11 +12,5 @@ public abstract class Attachment {
 	public void setTransverseSpan(final Context context, final int ascent, final int descent) {
 	}
 
-	public void addAfter(final Context context, final Brick brick) {
-	}
-
-	public void addBefore(final Context context, final Brick brick) {
-	}
-
 	public abstract void destroy(Context context);
 }
