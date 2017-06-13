@@ -754,8 +754,11 @@ public class Context {
 	) {
 		actions.put(this, ImmutableList.of(new Action() {
 			@Override
-			public void run(final Context context) {
+			public boolean run(final Context context) {
+				if (!window)
+					return false;
 				windowClear();
+				return true;
 			}
 
 			@Override
@@ -764,11 +767,11 @@ public class Context {
 			}
 		}, new Action() {
 			@Override
-			public void run(final Context context) {
+			public boolean run(final Context context) {
 				if (!window)
-					return;
+					return false;
 				if (windowAtom == null)
-					return;
+					return false;
 				final Atom atom = windowAtom;
 				final Visual oldWindowVisual = windowAtom.visual;
 				final Visual windowVisual;
@@ -780,6 +783,7 @@ public class Context {
 					windowVisual = windowAtom.createVisual(context, null, ImmutableMap.of(), 0);
 				}
 				idleLayBricksOutward();
+				return true;
 			}
 
 			@Override
@@ -788,13 +792,13 @@ public class Context {
 			}
 		}, new Action() {
 			@Override
-			public void run(final Context context) {
+			public boolean run(final Context context) {
 				if (!window)
-					return;
+					return false;
 				final List<VisualAtom> chain = new ArrayList<>();
 				final VisualAtom stop = windowAtom.visual;
 				if (selection.getVisual().parent() == null)
-					return;
+					return false;
 				VisualAtom at = selection.getVisual().parent().atomVisual();
 				while (at != null) {
 					if (at == stop)
@@ -805,13 +809,14 @@ public class Context {
 					at = at.parent().atomVisual();
 				}
 				if (chain.isEmpty())
-					return;
+					return false;
 				final Visual oldWindowVisual = windowAtom.visual;
 				final VisualAtom windowVisual = last(chain);
 				windowAtom = windowVisual.atom;
 				last(chain).root(context, null, ImmutableMap.of(), 0);
 				oldWindowVisual.uproot(context, windowVisual);
 				idleLayBricksOutward();
+				return true;
 			}
 
 			@Override

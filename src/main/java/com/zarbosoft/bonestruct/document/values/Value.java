@@ -70,6 +70,6 @@ public abstract class Value {
 
 		public abstract Path path();
 
-		public abstract void selectUp(final Context context);
+		public abstract boolean selectUp(final Context context);
 	}
 }

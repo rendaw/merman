@@ -269,12 +269,12 @@ public class VisualAtom extends Visual {
 		}
 
 		@Override
-		public void selectPrevious(final Context context) {
+		public boolean selectPrevious(final Context context) {
 			throw new DeadCode();
 		}
 
 		@Override
-		public void selectNext(final Context context) {
+		public boolean selectNext(final Context context) {
 			throw new DeadCode();
 		}
 
@@ -289,19 +289,21 @@ public class VisualAtom extends Visual {
 		}
 
 		@Override
-		public void selectNext(final Context context) {
+		public boolean selectNext(final Context context) {
 			int at = selectableIndex;
 			while (++at < selectable.size())
 				if (selectable.get(at).selectDown(context))
-					return;
+					return true;
+			return false;
 		}
 
 		@Override
-		public void selectPrevious(final Context context) {
+		public boolean selectPrevious(final Context context) {
 			int at = selectableIndex;
 			while (--at >= 0)
 				if (selectable.get(at).selectDown(context))
-					return;
+					return true;
+			return false;
 		}
 	}
 }

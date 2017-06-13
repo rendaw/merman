@@ -174,8 +174,6 @@ _lessmodal_keys = function(config)
                 hotkeys = {
                     exit = { key 'escape' },
                     enter = { key 'enter' },
-                    next = { key { key = 'right', modifiers = { 'control' } } },
-                    previous = { key { key = 'left', modifiers = { 'control' } } },
                     undo = { key { key = 'z', modifiers = { 'control' } } },
                     redo = { key { key = 'z', modifiers = { 'control', 'shift' } } },
                     choose = { key { key = 'space', modifiers = { 'control' } } },
@@ -192,13 +190,13 @@ _lessmodal_keys = function(config)
                     delete = { key 'x' },
                     delete_next = { key 'delete' },
                     delete_previous = { key 'backspace' },
-                    next_element = { key 'right' },
-                    previous_element = { key 'left' },
+                    super_next = { key 'right' },
+                    super_previous = { key 'left' },
                     next_word = { key { key = 'right', modifiers = { 'control' } }, },
                     previous_word = { key { key = 'left', modifiers = { 'control' } }, },
                     next_line = { key 'down' },
                     previous_line = { key 'up' },
-                    line_start = { key 'home' },
+                    line_begin = { key 'home' },
                     line_end = { key 'end' },
                     gather_next = { key { key = 'right', modifiers = { 'shift' } }, },
                     gather_previous = { key { key = 'left', modifiers = { 'shift' } }, },
@@ -398,5 +396,21 @@ return _lessmodal_keys {
     modules = {
         selection_type {},
         _indicators,
+        lua_actions {
+            super_next = function(context)
+                if context.act('next_element') then
+                    return true
+                else
+                    return context.act('next')
+                end
+            end,
+            super_previous = function(context)
+                if context.act('previous_element') then
+                    return true
+                else
+                    return context.act('previous')
+                end
+            end,
+        },
     },
 }

@@ -338,9 +338,9 @@ public abstract class VisualNestedBase extends Visual implements VisualLeaf {
 	protected Stream<Action> getActions(final Context context) {
 		return Stream.of(new Action() {
 			@Override
-			public void run(final Context context) {
+			public boolean run(final Context context) {
 				context.history.finishChange(context);
-				body.selectDown(context);
+				return body.selectDown(context);
 			}
 
 			@Override
@@ -349,11 +349,11 @@ public abstract class VisualNestedBase extends Visual implements VisualLeaf {
 			}
 		}, new Action() {
 			@Override
-			public void run(final Context context) {
+			public boolean run(final Context context) {
 				context.history.finishChange(context);
-				if (value().parent != null) {
-					value().parent.selectUp(context);
-				}
+				if (value().parent == null)
+					return false;
+				return value().parent.selectUp(context);
 			}
 
 			@Override
@@ -362,8 +362,8 @@ public abstract class VisualNestedBase extends Visual implements VisualLeaf {
 			}
 		}, new Action() {
 			@Override
-			public void run(final Context context) {
-				parent.selectNext(context);
+			public boolean run(final Context context) {
+				return parent.selectNext(context);
 			}
 
 			@Override
@@ -372,8 +372,8 @@ public abstract class VisualNestedBase extends Visual implements VisualLeaf {
 			}
 		}, new Action() {
 			@Override
-			public void run(final Context context) {
-				parent.selectPrevious(context);
+			public boolean run(final Context context) {
+				return parent.selectPrevious(context);
 			}
 
 			@Override
@@ -382,8 +382,9 @@ public abstract class VisualNestedBase extends Visual implements VisualLeaf {
 			}
 		}, new Action() {
 			@Override
-			public void run(final Context context) {
+			public boolean run(final Context context) {
 				nodeSet(context, context.syntax.gap.create());
+				return true;
 			}
 
 			@Override
@@ -392,9 +393,10 @@ public abstract class VisualNestedBase extends Visual implements VisualLeaf {
 			}
 		}, new Action() {
 			@Override
-			public void run(final Context context) {
+			public boolean run(final Context context) {
 				context.history.finishChange(context);
 				context.copy(ImmutableList.of(atomGet()));
+				return true;
 			}
 
 			@Override
@@ -403,10 +405,11 @@ public abstract class VisualNestedBase extends Visual implements VisualLeaf {
 			}
 		}, new Action() {
 			@Override
-			public void run(final Context context) {
+			public boolean run(final Context context) {
 				context.history.finishChange(context);
 				context.copy(ImmutableList.of(atomGet()));
 				nodeSet(context, context.syntax.gap.create());
+				return true;
 			}
 
 			@Override
@@ -415,13 +418,14 @@ public abstract class VisualNestedBase extends Visual implements VisualLeaf {
 			}
 		}, new Action() {
 			@Override
-			public void run(final Context context) {
+			public boolean run(final Context context) {
 				context.history.finishChange(context);
 				final List<Atom> atoms = context.uncopy(nodeType());
 				if (atoms.size() != 1)
-					return;
+					return false;
 				nodeSet(context, atoms.get(0));
 				context.history.finishChange(context);
+				return true;
 			}
 
 			@Override
@@ -430,10 +434,12 @@ public abstract class VisualNestedBase extends Visual implements VisualLeaf {
 			}
 		}, new Action() {
 			@Override
-			public void run(final Context context) {
+			public boolean run(final Context context) {
 				final Atom root = atomGet();
-				if (root.visual.selectDown(context))
-					context.setAtomWindow(root);
+				if (!root.visual.selectDown(context))
+					return false;
+				context.setAtomWindow(root);
+				return true;
 			}
 
 			@Override
@@ -442,7 +448,7 @@ public abstract class VisualNestedBase extends Visual implements VisualLeaf {
 			}
 		}, new Action() {
 			@Override
-			public void run(final Context context) {
+			public boolean run(final Context context) {
 				context.history.finishChange(context);
 				final Atom old = atomGet();
 				final Atom gap = context.syntax.prefixGap.create();
@@ -451,6 +457,7 @@ public abstract class VisualNestedBase extends Visual implements VisualLeaf {
 						new ChangeArray((ValueArray) gap.data.get("value"), 0, 0, ImmutableList.of(old))
 				);
 				gap.data.get("gap").selectDown(context);
+				return true;
 			}
 
 			@Override
@@ -459,7 +466,7 @@ public abstract class VisualNestedBase extends Visual implements VisualLeaf {
 			}
 		}, new Action() {
 			@Override
-			public void run(final Context context) {
+			public boolean run(final Context context) {
 				context.history.finishChange(context);
 				final Atom old = atomGet();
 				final Atom gap = context.syntax.suffixGap.create(false);
@@ -468,6 +475,7 @@ public abstract class VisualNestedBase extends Visual implements VisualLeaf {
 						new ChangeArray((ValueArray) gap.data.get("value"), 0, 0, ImmutableList.of(old))
 				);
 				gap.data.get("gap").selectDown(context);
+				return false;
 			}
 
 			@Override
@@ -637,12 +645,12 @@ public abstract class VisualNestedBase extends Visual implements VisualLeaf {
 		}
 
 		@Override
-		public void selectNext(final Context context) {
+		public boolean selectNext(final Context context) {
 			throw new DeadCode();
 		}
 
 		@Override
-		public void selectPrevious(final Context context) {
+		public boolean selectPrevious(final Context context) {
 			throw new DeadCode();
 		}
 	}

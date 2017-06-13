@@ -20,8 +20,8 @@ public abstract class VisualParent {
 
 	public abstract Hoverable hover(Context context, Vector point);
 
-	public abstract void selectPrevious(Context context);
+	public abstract boolean selectPrevious(Context context);
 
-	public abstract void selectNext(Context context);
+	public abstract boolean selectNext(Context context);
 
 }

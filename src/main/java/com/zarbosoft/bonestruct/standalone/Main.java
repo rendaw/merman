@@ -237,8 +237,9 @@ public class Main extends Application {
 		final Editor editor = new Editor(syntax, doc, display, this::addIdle, path, history);
 		editor.addActions(this, ImmutableList.of(new Action() {
 			@Override
-			public void run(final Context context) {
+			public boolean run(final Context context) {
 				Platform.exit();
+				return true;
 			}
 
 			@Override

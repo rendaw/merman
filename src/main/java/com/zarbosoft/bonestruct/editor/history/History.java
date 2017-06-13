@@ -80,27 +80,29 @@ public class History {
 		return out;
 	}
 
-	public void undo(final Context context) {
+	public boolean undo(final Context context) {
 		try (Closeable lock = lock()) {
 			if (past.isEmpty())
-				return;
+				return false;
 			future.addLast(applyLevel(context, past.pollLast()));
 		} catch (final IOException e) {
 		}
 		if (past.isEmpty())
 			modifiedStateListeners.forEach(l -> l.changed(false));
+		return true;
 	}
 
-	public void redo(final Context context) {
+	public boolean redo(final Context context) {
 		final boolean wasModified = isModified();
 		try (Closeable lock = lock()) {
 			if (future.isEmpty())
-				return;
+				return false;
 			past.addLast(applyLevel(context, future.pollLast()));
 		} catch (final IOException e) {
 		}
 		if (!wasModified)
 			modifiedStateListeners.forEach(l -> l.changed(true));
+		return true;
 	}
 
 	public void finishChange(final Context context) {

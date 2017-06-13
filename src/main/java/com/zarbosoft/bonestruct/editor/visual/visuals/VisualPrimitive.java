@@ -359,11 +359,12 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 			value.addListener(this.clusterListener);
 			context.addActions(this, Stream.concat(Stream.of(new Action() {
 				@Override
-				public void run(final Context context) {
+				public boolean run(final Context context) {
 					context.history.finishChange(context);
-					if (value.parent != null) {
-						value.parent.selectUp(context);
-					}
+					if (value.parent == null)
+						return false;
+					value.parent.selectUp(context);
+					return true;
 				}
 
 				@Override
@@ -372,8 +373,8 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 				}
 			}, new Action() {
 				@Override
-				public void run(final Context context) {
-					parent.selectNext(context);
+				public boolean run(final Context context) {
+					return parent.selectNext(context);
 				}
 
 				@Override
@@ -382,8 +383,8 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 				}
 			}, new Action() {
 				@Override
-				public void run(final Context context) {
-					parent.selectPrevious(context);
+				public boolean run(final Context context) {
+					return parent.selectPrevious(context);
 				}
 
 				@Override
@@ -392,9 +393,13 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 				}
 			}, new Action() {
 				@Override
-				public void run(final Context context) {
+				public boolean run(final Context context) {
 					context.history.finishChange(context);
-					range.setOffsets(context, following());
+					final int newIndex = following();
+					if (range.beginOffset == newIndex && range.endOffset == newIndex)
+						return false;
+					range.setOffsets(context, newIndex);
+					return true;
 				}
 
 				@Override
@@ -403,9 +408,13 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 				}
 			}, new Action() {
 				@Override
-				public void run(final Context context) {
+				public boolean run(final Context context) {
 					context.history.finishChange(context);
-					range.setOffsets(context, preceding());
+					final int newIndex = preceding();
+					if (range.beginOffset == newIndex && range.endOffset == newIndex)
+						return false;
+					range.setOffsets(context, newIndex);
+					return true;
 				}
 
 				@Override
@@ -414,9 +423,13 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 				}
 			}, new Action() {
 				@Override
-				public void run(final Context context) {
+				public boolean run(final Context context) {
 					context.history.finishChange(context);
-					range.setOffsets(context, nextWord(range.endOffset));
+					final int newIndex = nextWord(range.endOffset);
+					if (range.beginOffset == newIndex && range.endOffset == newIndex)
+						return false;
+					range.setOffsets(context, newIndex);
+					return true;
 				}
 
 				@Override
@@ -425,9 +438,13 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 				}
 			}, new Action() {
 				@Override
-				public void run(final Context context) {
+				public boolean run(final Context context) {
 					context.history.finishChange(context);
-					range.setOffsets(context, previousWord(range.beginOffset));
+					final int newIndex = previousWord(range.beginOffset);
+					if (range.beginOffset == newIndex && range.endOffset == newIndex)
+						return false;
+					range.setOffsets(context, newIndex);
+					return true;
 				}
 
 				@Override
@@ -436,9 +453,13 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 				}
 			}, new Action() {
 				@Override
-				public void run(final Context context) {
+				public boolean run(final Context context) {
 					context.history.finishChange(context);
-					range.setOffsets(context, startOfLine(range.beginLine));
+					final int newIndex = startOfLine(range.beginLine);
+					if (range.beginOffset == newIndex && range.endOffset == newIndex)
+						return false;
+					range.setOffsets(context, newIndex);
+					return true;
 				}
 
 				@Override
@@ -447,9 +468,13 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 				}
 			}, new Action() {
 				@Override
-				public void run(final Context context) {
+				public boolean run(final Context context) {
 					context.history.finishChange(context);
-					range.setOffsets(context, endOfLine(range.endLine));
+					final int newIndex = endOfLine(range.endLine);
+					if (range.beginOffset == newIndex && range.endOffset == newIndex)
+						return false;
+					range.setOffsets(context, newIndex);
+					return true;
 				}
 
 				@Override
@@ -458,9 +483,13 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 				}
 			}, new Action() {
 				@Override
-				public void run(final Context context) {
+				public boolean run(final Context context) {
 					context.history.finishChange(context);
-					range.setOffsets(context, nextLine(range.endLine, range.endOffset));
+					final int newIndex = nextLine(range.endLine, range.endOffset);
+					if (range.beginOffset == newIndex && range.endOffset == newIndex)
+						return false;
+					range.setOffsets(context, newIndex);
+					return true;
 				}
 
 				@Override
@@ -469,9 +498,13 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 				}
 			}, new Action() {
 				@Override
-				public void run(final Context context) {
+				public boolean run(final Context context) {
 					context.history.finishChange(context);
-					range.setOffsets(context, previousLine(range.beginLine, range.beginOffset));
+					final int newIndex = previousLine(range.beginLine, range.beginOffset);
+					if (range.beginOffset == newIndex && range.endOffset == newIndex)
+						return false;
+					range.setOffsets(context, newIndex);
+					return true;
 				}
 
 				@Override
@@ -480,18 +513,17 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 				}
 			}, new Action() {
 				@Override
-				public void run(final Context context) {
+				public boolean run(final Context context) {
 					if (range.beginOffset == range.endOffset) {
-						if (range.beginOffset > 0) {
-							final int preceding = preceding();
-							context.history.apply(context,
-									value.changeRemove(preceding, range.beginOffset - preceding)
-							);
-						}
+						if (range.beginOffset == 0)
+							return false;
+						final int preceding = preceding();
+						context.history.apply(context, value.changeRemove(preceding, range.beginOffset - preceding));
 					} else
 						context.history.apply(context,
 								value.changeRemove(range.beginOffset, range.endOffset - range.beginOffset)
 						);
+					return true;
 				}
 
 				@Override
@@ -500,19 +532,19 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 				}
 			}, new Action() {
 				@Override
-				public void run(final Context context) {
+				public boolean run(final Context context) {
 					if (range.beginOffset == range.endOffset) {
-						if (range.endOffset < value.length()) {
-							final int following = following();
-							context.history.apply(context,
-									value.changeRemove(range.beginOffset, following - range.beginOffset)
-							);
-						}
-
+						if (range.endOffset == value.length())
+							return false;
+						final int following = following();
+						context.history.apply(context,
+								value.changeRemove(range.beginOffset, following - range.beginOffset)
+						);
 					} else
 						context.history.apply(context,
 								value.changeRemove(range.beginOffset, range.endOffset - range.beginOffset)
 						);
+					return true;
 				}
 
 				@Override
@@ -521,7 +553,7 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 				}
 			}, new Action() {
 				@Override
-				public void run(final Context context) {
+				public boolean run(final Context context) {
 					context.history.finishChange(context);
 					if (range.beginOffset != range.endOffset)
 						context.history.apply(context,
@@ -529,6 +561,7 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 						);
 					context.history.apply(context, value.changeAdd(range.beginOffset, "\n"));
 					context.history.finishChange(context);
+					return true;
 				}
 
 				@Override
@@ -537,37 +570,38 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 				}
 			}, new Action() {
 				@Override
-				public void run(final Context context) {
+				public boolean run(final Context context) {
 					if (range.beginOffset == range.endOffset) {
-						if (range.beginLine.index + 1 < lines.size()) {
-							final int select = range.endLine.offset + range.endLine.text.length();
-							context.history.finishChange(context);
-							context.history.apply(context,
-									value.changeRemove(lines.get(range.beginLine.index + 1).offset - 1, 1)
-							);
-							context.history.finishChange(context);
-							select(context, true, select, select);
-						}
+						if (range.beginLine.index + 1 >= lines.size())
+							return false;
+						final int select = range.endLine.offset + range.endLine.text.length();
+						context.history.finishChange(context);
+						context.history.apply(context,
+								value.changeRemove(lines.get(range.beginLine.index + 1).offset - 1, 1)
+						);
+						context.history.finishChange(context);
+						select(context, true, select, select);
 					} else {
-						if (range.beginLine != range.endLine) {
-							context.history.finishChange(context);
-							final StringBuilder replace = new StringBuilder();
-							replace.append(range.beginLine.text.substring(range.beginOffset - range.beginLine.offset));
-							final int selectBegin = range.beginOffset;
-							int selectEnd = range.endOffset - 1;
-							for (int index = range.beginLine.index + 1; index <= range.endLine.index - 1; ++index) {
-								replace.append(lines.get(index).text);
-								selectEnd -= 1;
-							}
-							replace.append(range.endLine.text.substring(0, range.endOffset - range.endLine.offset));
-							context.history.apply(context,
-									value.changeRemove(range.beginOffset, range.endOffset - range.beginOffset)
-							);
-							context.history.apply(context, value.changeAdd(range.beginOffset, replace.toString()));
-							context.history.finishChange(context);
-							select(context, true, selectBegin, selectEnd);
+						if (range.beginLine == range.endLine)
+							return false;
+						context.history.finishChange(context);
+						final StringBuilder replace = new StringBuilder();
+						replace.append(range.beginLine.text.substring(range.beginOffset - range.beginLine.offset));
+						final int selectBegin = range.beginOffset;
+						int selectEnd = range.endOffset - 1;
+						for (int index = range.beginLine.index + 1; index <= range.endLine.index - 1; ++index) {
+							replace.append(lines.get(index).text);
+							selectEnd -= 1;
 						}
+						replace.append(range.endLine.text.substring(0, range.endOffset - range.endLine.offset));
+						context.history.apply(context,
+								value.changeRemove(range.beginOffset, range.endOffset - range.beginOffset)
+						);
+						context.history.apply(context, value.changeAdd(range.beginOffset, replace.toString()));
+						context.history.finishChange(context);
+						select(context, true, selectBegin, selectEnd);
 					}
+					return true;
 				}
 
 				@Override
@@ -576,9 +610,10 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 				}
 			}, new Action() {
 				@Override
-				public void run(final Context context) {
+				public boolean run(final Context context) {
 					context.history.finishChange(context);
 					context.copy(value.get().substring(range.beginOffset, range.endOffset));
+					return true;
 				}
 
 				@Override
@@ -587,7 +622,7 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 				}
 			}, new Action() {
 				@Override
-				public void run(final Context context) {
+				public boolean run(final Context context) {
 					context.history.finishChange(context);
 					context.copy(value.get().substring(range.beginOffset, range.endOffset));
 					context.history.finishChange(context);
@@ -595,6 +630,7 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 							value.changeRemove(range.beginOffset, range.endOffset - range.beginOffset)
 					);
 					context.history.finishChange(context);
+					return true;
 				}
 
 				@Override
@@ -603,18 +639,19 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 				}
 			}, new Action() {
 				@Override
-				public void run(final Context context) {
+				public boolean run(final Context context) {
 					context.history.finishChange(context);
 					final String text = context.uncopyString();
-					if (text != null) {
-						context.history.finishChange(context);
-						if (range.beginOffset != range.endOffset)
-							context.history.apply(context,
-									value.changeRemove(range.beginOffset, range.endOffset - range.beginOffset)
-							);
-						context.history.apply(context, value.changeAdd(range.beginOffset, text));
-					}
+					if (text == null)
+						return false;
 					context.history.finishChange(context);
+					if (range.beginOffset != range.endOffset)
+						context.history.apply(context,
+								value.changeRemove(range.beginOffset, range.endOffset - range.beginOffset)
+						);
+					context.history.apply(context, value.changeAdd(range.beginOffset, text));
+					context.history.finishChange(context);
+					return true;
 				}
 
 				@Override
@@ -623,9 +660,13 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 				}
 			}, new Action() {
 				@Override
-				public void run(final Context context) {
+				public boolean run(final Context context) {
 					context.history.finishChange(context);
-					range.setEndOffset(context, following());
+					final int newIndex = following();
+					if (range.endOffset == newIndex)
+						return false;
+					range.setEndOffset(context, newIndex);
+					return true;
 				}
 
 				@Override
@@ -634,9 +675,13 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 				}
 			}, new Action() {
 				@Override
-				public void run(final Context context) {
+				public boolean run(final Context context) {
 					context.history.finishChange(context);
-					range.setEndOffset(context, nextWord(range.endOffset));
+					final int newIndex = nextWord(range.endOffset);
+					if (range.endOffset == newIndex)
+						return false;
+					range.setEndOffset(context, newIndex);
+					return true;
 				}
 
 				@Override
@@ -645,9 +690,13 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 				}
 			}, new Action() {
 				@Override
-				public void run(final Context context) {
+				public boolean run(final Context context) {
 					context.history.finishChange(context);
-					range.setEndOffset(context, endOfLine(range.endLine));
+					final int newIndex = endOfLine(range.endLine);
+					if (range.endOffset == newIndex)
+						return false;
+					range.setEndOffset(context, newIndex);
+					return true;
 				}
 
 				@Override
@@ -656,9 +705,13 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 				}
 			}, new Action() {
 				@Override
-				public void run(final Context context) {
+				public boolean run(final Context context) {
 					context.history.finishChange(context);
-					range.setEndOffset(context, nextLine(range.endLine, range.endOffset));
+					final int newIndex = nextLine(range.endLine, range.endOffset);
+					if (range.endOffset == newIndex)
+						return false;
+					range.setEndOffset(context, newIndex);
+					return true;
 				}
 
 				@Override
@@ -667,9 +720,13 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 				}
 			}, new Action() {
 				@Override
-				public void run(final Context context) {
+				public boolean run(final Context context) {
 					context.history.finishChange(context);
-					range.setEndOffset(context, Math.max(range.beginOffset, preceding(range.endOffset)));
+					final int newIndex = Math.max(range.beginOffset, preceding(range.endOffset));
+					if (range.endOffset == newIndex)
+						return false;
+					range.setEndOffset(context, newIndex);
+					return true;
 				}
 
 				@Override
@@ -678,9 +735,13 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 				}
 			}, new Action() {
 				@Override
-				public void run(final Context context) {
+				public boolean run(final Context context) {
 					context.history.finishChange(context);
-					range.setEndOffset(context, Math.max(range.beginOffset, previousWord(range.endOffset)));
+					final int newIndex = Math.max(range.beginOffset, previousWord(range.endOffset));
+					if (range.endOffset == newIndex)
+						return false;
+					range.setEndOffset(context, newIndex);
+					return true;
 				}
 
 				@Override
@@ -689,9 +750,13 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 				}
 			}, new Action() {
 				@Override
-				public void run(final Context context) {
+				public boolean run(final Context context) {
 					context.history.finishChange(context);
-					range.setEndOffset(context, Math.max(range.beginOffset, startOfLine(range.endLine)));
+					final int newIndex = Math.max(range.beginOffset, startOfLine(range.endLine));
+					if (range.endOffset == newIndex)
+						return false;
+					range.setEndOffset(context, newIndex);
+					return true;
 				}
 
 				@Override
@@ -700,11 +765,13 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 				}
 			}, new Action() {
 				@Override
-				public void run(final Context context) {
+				public boolean run(final Context context) {
 					context.history.finishChange(context);
-					range.setEndOffset(context,
-							Math.max(range.beginOffset, previousLine(range.endLine, range.endOffset))
-					);
+					final int newIndex = Math.max(range.beginOffset, previousLine(range.endLine, range.endOffset));
+					if (range.endOffset == newIndex)
+						return false;
+					range.setEndOffset(context, newIndex);
+					return true;
 				}
 
 				@Override
@@ -713,9 +780,13 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 				}
 			}, new Action() {
 				@Override
-				public void run(final Context context) {
+				public boolean run(final Context context) {
 					context.history.finishChange(context);
-					range.setBeginOffset(context, preceding());
+					final int newIndex = preceding();
+					if (range.beginOffset == newIndex)
+						return false;
+					range.setBeginOffset(context, newIndex);
+					return true;
 				}
 
 				@Override
@@ -724,9 +795,13 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 				}
 			}, new Action() {
 				@Override
-				public void run(final Context context) {
+				public boolean run(final Context context) {
 					context.history.finishChange(context);
-					range.setBeginOffset(context, previousWord(range.beginOffset));
+					final int newIndex = previousWord(range.beginOffset);
+					if (range.beginOffset == newIndex)
+						return false;
+					range.setBeginOffset(context, newIndex);
+					return true;
 				}
 
 				@Override
@@ -735,9 +810,13 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 				}
 			}, new Action() {
 				@Override
-				public void run(final Context context) {
+				public boolean run(final Context context) {
 					context.history.finishChange(context);
-					range.setBeginOffset(context, startOfLine(range.beginLine));
+					final int newIndex = startOfLine(range.beginLine);
+					if (range.beginOffset == newIndex)
+						return false;
+					range.setBeginOffset(context, newIndex);
+					return true;
 				}
 
 				@Override
@@ -746,9 +825,13 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 				}
 			}, new Action() {
 				@Override
-				public void run(final Context context) {
+				public boolean run(final Context context) {
 					context.history.finishChange(context);
-					range.setBeginOffset(context, previousLine(range.beginLine, range.beginOffset));
+					final int newIndex = previousLine(range.beginLine, range.beginOffset);
+					if (range.beginOffset == newIndex)
+						return false;
+					range.setBeginOffset(context, newIndex);
+					return true;
 				}
 
 				@Override
@@ -757,9 +840,13 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 				}
 			}, new Action() {
 				@Override
-				public void run(final Context context) {
+				public boolean run(final Context context) {
 					context.history.finishChange(context);
-					range.setBeginOffset(context, Math.min(range.endOffset, following(range.beginOffset)));
+					final int newIndex = Math.min(range.endOffset, following(range.beginOffset));
+					if (range.beginOffset == newIndex)
+						return false;
+					range.setBeginOffset(context, newIndex);
+					return true;
 				}
 
 				@Override
@@ -768,9 +855,13 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 				}
 			}, new Action() {
 				@Override
-				public void run(final Context context) {
+				public boolean run(final Context context) {
 					context.history.finishChange(context);
-					range.setBeginOffset(context, Math.min(range.endOffset, nextWord(range.beginOffset)));
+					final int newIndex = Math.min(range.endOffset, nextWord(range.beginOffset));
+					if (range.beginOffset == newIndex)
+						return false;
+					range.setBeginOffset(context, newIndex);
+					return true;
 				}
 
 				@Override
@@ -779,9 +870,13 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 				}
 			}, new Action() {
 				@Override
-				public void run(final Context context) {
+				public boolean run(final Context context) {
 					context.history.finishChange(context);
-					range.setBeginOffset(context, Math.min(range.endOffset, endOfLine(range.beginLine)));
+					final int newIndex = Math.min(range.endOffset, endOfLine(range.beginLine));
+					if (range.beginOffset == newIndex)
+						return false;
+					range.setBeginOffset(context, newIndex);
+					return true;
 				}
 
 				@Override
@@ -790,11 +885,13 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 				}
 			}, new Action() {
 				@Override
-				public void run(final Context context) {
+				public boolean run(final Context context) {
 					context.history.finishChange(context);
-					range.setBeginOffset(context,
-							Math.min(range.endOffset, nextLine(range.beginLine, range.beginOffset))
-					);
+					final int newIndex = Math.min(range.endOffset, nextLine(range.beginLine, range.beginOffset));
+					if (newIndex == beginOffset)
+						return false;
+					range.setBeginOffset(context, newIndex);
+					return true;
 				}
 
 				@Override

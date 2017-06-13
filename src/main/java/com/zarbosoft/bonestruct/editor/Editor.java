@@ -45,8 +45,8 @@ public class Editor {
 		context.history.clear();
 		context.addActions(this, ImmutableList.of(new Action() {
 			@Override
-			public void run(final Context context) {
-				context.history.undo(context);
+			public boolean run(final Context context) {
+				return context.history.undo(context);
 			}
 
 			@Override
@@ -55,8 +55,8 @@ public class Editor {
 			}
 		}, new Action() {
 			@Override
-			public void run(final Context context) {
-				context.history.redo(context);
+			public boolean run(final Context context) {
+				return context.history.redo(context);
 			}
 
 			@Override
@@ -65,9 +65,11 @@ public class Editor {
 			}
 		}, new Action() {
 			@Override
-			public void run(final Context context) {
-				if (context.hover != null)
-					context.hover.click(context);
+			public boolean run(final Context context) {
+				if (context.hover == null)
+					return false;
+				context.hover.click(context);
+				return true;
 			}
 
 			@Override

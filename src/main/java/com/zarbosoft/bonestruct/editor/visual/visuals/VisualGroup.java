@@ -248,23 +248,23 @@ public class VisualGroup extends Visual {
 		}
 
 		@Override
-		public void selectNext(final Context context) {
+		public boolean selectNext(final Context context) {
 			int test = index;
 			while (++test < target.children.size()) {
 				if (target.children.get(test).selectDown(context))
-					return;
+					return true;
 			}
-			target.parent.selectNext(context);
+			return target.parent.selectNext(context);
 		}
 
 		@Override
-		public void selectPrevious(final Context context) {
+		public boolean selectPrevious(final Context context) {
 			int test = index;
 			while (--test >= 0) {
 				if (target.children.get(test).selectDown(context))
-					return;
+					return true;
 			}
-			target.parent.selectPrevious(context);
+			return target.parent.selectPrevious(context);
 		}
 
 		public int getIndex() {

@@ -29,11 +29,12 @@ public class Modes extends Module {
 		context.addActions(this, enumerate(states.stream()).map(pair -> {
 			return new Action() {
 				@Override
-				public void run(final Context context) {
+				public boolean run(final Context context) {
 					context.changeGlobalTags(new TagsChange(ImmutableSet.of(getTag(pair.first)),
 							ImmutableSet.of(getTag(state))
 					));
 					state = pair.first;
+					return true;
 				}
 
 				@Override

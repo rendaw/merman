@@ -206,8 +206,9 @@ public abstract class FrontGapBase extends FrontPart {
 					final List<Action> actions = new ArrayList<>();
 					actions.addAll(ImmutableList.of(new Action() {
 						@Override
-						public void run(final Context context) {
+						public boolean run(final Context context) {
 							choices.get(index).choose(context, self.get());
+							return true;
 						}
 
 						@Override
@@ -216,8 +217,9 @@ public abstract class FrontGapBase extends FrontPart {
 						}
 					}, new Action() {
 						@Override
-						public void run(final Context context) {
+						public boolean run(final Context context) {
 							changeChoice(context, (index + 1) % choices.size());
+							return true;
 						}
 
 						@Override
@@ -226,8 +228,9 @@ public abstract class FrontGapBase extends FrontPart {
 						}
 					}, new Action() {
 						@Override
-						public void run(final Context context) {
+						public boolean run(final Context context) {
 							changeChoice(context, (index + choices.size() - 1) % choices.size());
+							return true;
 						}
 
 						@Override
@@ -239,10 +242,11 @@ public abstract class FrontGapBase extends FrontPart {
 						final int i2 = i;
 						actions.add(new Action() {
 							@Override
-							public void run(final Context context) {
-								if (i2 < choices.size()) {
-									choices.get(i2).choose(context, self.get());
-								}
+							public boolean run(final Context context) {
+								if (i2 >= choices.size())
+									return false;
+								choices.get(i2).choose(context, self.get());
+								return true;
 							}
 
 							@Override

@@ -64,8 +64,9 @@ public class ValueArray extends Value {
 		}
 
 		@Override
-		public void selectUp(final Context context) {
+		public boolean selectUp(final Context context) {
 			select(context, true, index, index);
+			return true;
 		}
 	}
 

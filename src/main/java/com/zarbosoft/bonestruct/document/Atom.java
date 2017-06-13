@@ -33,10 +33,10 @@ public class Atom {
 				}
 
 				@Override
-				public void selectUp(final Context context) {
+				public boolean selectUp(final Context context) {
 					if (parent == null)
-						return;
-					Atom.this.parent.selectUp(context);
+						return false;
+					return Atom.this.parent.selectUp(context);
 				}
 			});
 		});
@@ -67,7 +67,7 @@ public class Atom {
 	public static abstract class Parent {
 		public abstract Atom atom();
 
-		public abstract void selectUp(final Context context);
+		public abstract boolean selectUp(final Context context);
 	}
 
 }
