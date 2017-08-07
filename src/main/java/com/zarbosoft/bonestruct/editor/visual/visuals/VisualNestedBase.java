@@ -336,153 +336,18 @@ public abstract class VisualNestedBase extends Visual implements VisualLeaf {
 	}
 
 	protected Stream<Action> getActions(final Context context) {
-		return Stream.of(new Action() {
-			@Override
-			public boolean run(final Context context) {
-				context.history.finishChange(context);
-				return body.selectDown(context);
-			}
-
-			@Override
-			public String getName() {
-				return "enter";
-			}
-		}, new Action() {
-			@Override
-			public boolean run(final Context context) {
-				context.history.finishChange(context);
-				if (value().parent == null)
-					return false;
-				return value().parent.selectUp(context);
-			}
-
-			@Override
-			public String getName() {
-				return "exit";
-			}
-		}, new Action() {
-			@Override
-			public boolean run(final Context context) {
-				return parent.selectNext(context);
-			}
-
-			@Override
-			public String getName() {
-				return "next";
-			}
-		}, new Action() {
-			@Override
-			public boolean run(final Context context) {
-				return parent.selectPrevious(context);
-			}
-
-			@Override
-			public String getName() {
-				return "previous";
-			}
-		}, new Action() {
-			@Override
-			public boolean run(final Context context) {
-				nodeSet(context, context.syntax.gap.create());
-				return true;
-			}
-
-			@Override
-			public String getName() {
-				return "delete";
-			}
-		}, new Action() {
-			@Override
-			public boolean run(final Context context) {
-				context.history.finishChange(context);
-				context.copy(ImmutableList.of(atomGet()));
-				return true;
-			}
-
-			@Override
-			public String getName() {
-				return "copy";
-			}
-		}, new Action() {
-			@Override
-			public boolean run(final Context context) {
-				context.history.finishChange(context);
-				context.copy(ImmutableList.of(atomGet()));
-				nodeSet(context, context.syntax.gap.create());
-				return true;
-			}
-
-			@Override
-			public String getName() {
-				return "cut";
-			}
-		}, new Action() {
-			@Override
-			public boolean run(final Context context) {
-				context.history.finishChange(context);
-				final List<Atom> atoms = context.uncopy(nodeType());
-				if (atoms.size() != 1)
-					return false;
-				nodeSet(context, atoms.get(0));
-				context.history.finishChange(context);
-				return true;
-			}
-
-			@Override
-			public String getName() {
-				return "paste";
-			}
-		}, new Action() {
-			@Override
-			public boolean run(final Context context) {
-				final Atom root = atomGet();
-				if (!root.visual.selectDown(context))
-					return false;
-				context.setAtomWindow(root);
-				return true;
-			}
-
-			@Override
-			public String getName() {
-				return "window";
-			}
-		}, new Action() {
-			@Override
-			public boolean run(final Context context) {
-				context.history.finishChange(context);
-				final Atom old = atomGet();
-				final Atom gap = context.syntax.prefixGap.create();
-				nodeSet(context, gap);
-				context.history.apply(context,
-						new ChangeArray((ValueArray) gap.data.get("value"), 0, 0, ImmutableList.of(old))
-				);
-				gap.data.get("gap").selectDown(context);
-				return true;
-			}
-
-			@Override
-			public String getName() {
-				return "prefix";
-			}
-		}, new Action() {
-			@Override
-			public boolean run(final Context context) {
-				context.history.finishChange(context);
-				final Atom old = atomGet();
-				final Atom gap = context.syntax.suffixGap.create(false);
-				nodeSet(context, gap);
-				context.history.apply(context,
-						new ChangeArray((ValueArray) gap.data.get("value"), 0, 0, ImmutableList.of(old))
-				);
-				gap.data.get("gap").selectDown(context);
-				return false;
-			}
-
-			@Override
-			public String getName() {
-				return "suffix";
-			}
-		});
+		return Stream.of(new ActionEnter(),
+				new ActionExit(),
+				new ActionNext(),
+				new ActionPrevious(),
+				new ActionDelete(),
+				new ActionCopy(),
+				new ActionCut(),
+				new ActionPaste(),
+				new ActionWindow(),
+				new ActionPrefix(),
+				new ActionSuffix()
+		);
 	}
 
 	private class NestedSelection extends Selection {
@@ -686,5 +551,145 @@ public abstract class VisualNestedBase extends Visual implements VisualLeaf {
 		ellipsisTags = ellipsisTags.minus(new StateTag("compact"));
 		if (ellipsis != null)
 			ellipsis.tagsChanged(context);
+	}
+
+	private abstract static class ActionBase extends Action {
+		public static String group() {
+			return "atom";
+		}
+	}
+
+	@Action.StaticID(id = "enter")
+	private class ActionEnter extends ActionBase {
+		@Override
+		public boolean run(final Context context) {
+			context.history.finishChange(context);
+			return body.selectDown(context);
+		}
+
+	}
+
+	@Action.StaticID(id = "exit")
+	private class ActionExit extends ActionBase {
+		@Override
+		public boolean run(final Context context) {
+			context.history.finishChange(context);
+			if (value().parent == null)
+				return false;
+			return value().parent.selectUp(context);
+		}
+
+	}
+
+	@Action.StaticID(id = "next")
+	private class ActionNext extends ActionBase {
+		@Override
+		public boolean run(final Context context) {
+			return parent.selectNext(context);
+		}
+
+	}
+
+	@Action.StaticID(id = "previous")
+	private class ActionPrevious extends ActionBase {
+		@Override
+		public boolean run(final Context context) {
+			return parent.selectPrevious(context);
+		}
+
+	}
+
+	@Action.StaticID(id = "delete")
+	private class ActionDelete extends ActionBase {
+		@Override
+		public boolean run(final Context context) {
+			nodeSet(context, context.syntax.gap.create());
+			return true;
+		}
+
+	}
+
+	@Action.StaticID(id = "copy")
+	private class ActionCopy extends ActionBase {
+		@Override
+		public boolean run(final Context context) {
+			context.history.finishChange(context);
+			context.copy(ImmutableList.of(atomGet()));
+			return true;
+		}
+
+	}
+
+	@Action.StaticID(id = "cut")
+	private class ActionCut extends ActionBase {
+		@Override
+		public boolean run(final Context context) {
+			context.history.finishChange(context);
+			context.copy(ImmutableList.of(atomGet()));
+			nodeSet(context, context.syntax.gap.create());
+			return true;
+		}
+
+	}
+
+	@Action.StaticID(id = "paste")
+	private class ActionPaste extends ActionBase {
+		@Override
+		public boolean run(final Context context) {
+			context.history.finishChange(context);
+			final List<Atom> atoms = context.uncopy(nodeType());
+			if (atoms.size() != 1)
+				return false;
+			nodeSet(context, atoms.get(0));
+			context.history.finishChange(context);
+			return true;
+		}
+
+	}
+
+	@Action.StaticID(id = "window")
+	private class ActionWindow extends ActionBase {
+		@Override
+		public boolean run(final Context context) {
+			final Atom root = atomGet();
+			if (!root.visual.selectDown(context))
+				return false;
+			context.setAtomWindow(root);
+			return true;
+		}
+
+	}
+
+	@Action.StaticID(id = "prefix")
+	private class ActionPrefix extends ActionBase {
+		@Override
+		public boolean run(final Context context) {
+			context.history.finishChange(context);
+			final Atom old = atomGet();
+			final Atom gap = context.syntax.prefixGap.create();
+			nodeSet(context, gap);
+			context.history.apply(context,
+					new ChangeArray((ValueArray) gap.data.get("value"), 0, 0, ImmutableList.of(old))
+			);
+			gap.data.get("gap").selectDown(context);
+			return true;
+		}
+
+	}
+
+	@Action.StaticID(id = "suffix")
+	private class ActionSuffix extends ActionBase {
+		@Override
+		public boolean run(final Context context) {
+			context.history.finishChange(context);
+			final Atom old = atomGet();
+			final Atom gap = context.syntax.suffixGap.create(false);
+			nodeSet(context, gap);
+			context.history.apply(context,
+					new ChangeArray((ValueArray) gap.data.get("value"), 0, 0, ImmutableList.of(old))
+			);
+			gap.data.get("gap").selectDown(context);
+			return false;
+		}
 	}
 }

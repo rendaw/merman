@@ -14,6 +14,7 @@ import com.zarbosoft.bonestruct.syntax.style.Style;
 import com.zarbosoft.bonestruct.syntax.symbol.Symbol;
 import com.zarbosoft.bonestruct.syntax.symbol.SymbolText;
 import com.zarbosoft.interface1.Configuration;
+import com.zarbosoft.interface1.Walk;
 import com.zarbosoft.interface1.events.InterfaceEvent;
 import com.zarbosoft.luaconf.LuaConf;
 import com.zarbosoft.luxem.read.LuxemEvent;
@@ -42,75 +43,59 @@ import static com.zarbosoft.rendaw.common.Common.stream;
 @Configuration
 public class Syntax {
 
-	@Configuration(description = "The name of the syntax.  This may be used in menus and dialogs.")
+	@Configuration()
 	public String name;
 
-	@Configuration(optional = true, description = "The background color of the document.")
+	@Configuration(optional = true)
 	public ModelColor background = ModelColor.RGB.white;
 
-	@Configuration(optional = true, name = "pad", description = "Pad the document.")
+	@Configuration(optional = true, name = "pad")
 	public Padding pad = new Padding();
 
-	@Configuration(optional = true, description =
-			"If the path to a writable document does not yet exist, a new document will be created " +
-					"with this contents.")
+	@Configuration(optional = true)
 	public List<InterfaceEvent> template = new ArrayList<>();
 
-	@Configuration(optional = true, description = "Character to substitute for non-printing characters in primitives.")
+	@Configuration(optional = true)
 	public String placeholder = "▢";
 
 	@Configuration(optional = true)
 	public List<Style> styles = new ArrayList<>();
 
-	@Configuration(optional = true, name = "banner_pad", description = "Pad the banner pane.")
+	@Configuration(optional = true, name = "banner_pad")
 	public Padding bannerPad = new Padding();
-	@Configuration(optional = true, name = "detail_pad", description = "Pad the detail pane.")
+	@Configuration(optional = true, name = "detail_pad")
 	public Padding detailPad = new Padding();
 
-	@Configuration(optional = true, name = "detail_span",
-			description = "The max transverse span for details panes, excluding padding.")
+	@Configuration(optional = true, name = "detail_span")
 	public int detailSpan = 300;
 
-	@Configuration(description = "The definitions of all distinct element types in a document.\n" +
-			"A type with the id '__gap' and a single middle primitive element named 'value' must exist.  This will " +
-			"be used as a placeholder when entering text before it is distinguishable as any other defined element.")
+	@Configuration()
 	public List<FreeAtomType> types = new ArrayList<>();
 
-	@Configuration(optional = true, description = "The gap type is used when editing the document, for " +
-			"new data whose type is not yet known.")
+	@Configuration(optional = true)
 	public GapAtomType gap = new GapAtomType();
-	@Configuration(name = "prefix_gap", optional = true, description =
-			"The prefix gap type is similar to the gap type, but is used when enclosing an " +
-					"existing atom in a new atom, where the new atom visually precedes the existing atom.")
+	@Configuration(name = "prefix_gap", optional = true)
 	public PrefixGapAtomType prefixGap = new PrefixGapAtomType();
-	@Configuration(name = "suffix_gap", optional = true, description =
-			"The suffix gap type is similar to the gap type, but is used when enclosing an " +
-					"existing atom in a new atom, where the new atom visually succeeds the existing atom.")
+	@Configuration(name = "suffix_gap", optional = true)
 	public SuffixGapAtomType suffixGap = new SuffixGapAtomType();
-	@Configuration(name = "gap_placeholder", optional = true,
-			description = "Placeholder for text in gap choice previews.")
+	@Configuration(name = "gap_placeholder", optional = true)
 	public Symbol gapPlaceholder = new SymbolText("•");
-	@Configuration(optional = true, name = "gap_choice_style", description = "Style of the gap choice selection box.")
+	@Configuration(optional = true, name = "gap_choice_style")
 	public BoxStyle gapChoiceStyle = new BoxStyle();
 
-	@Configuration(optional = true, description =
-			"Pseudo-types representing groups of types.  Group ids can be used anywhere a type id " +
-					"is required.")
+	@Configuration(optional = true)
 	public Map<String, java.util.Set<String>> groups = new HashMap<>();
 
-	@Configuration(optional = true, description =
-			"A list of modules to activate.  Listed are modules bundled with this distribution, but " +
-					"addional modules may be installed and used.")
+	@Configuration(optional = true)
 	public List<Module> modules = new ArrayList<>();
 
-	@Configuration(description = "The type of the root array in a document.  This is not used when " +
-			"pasting code; in that case the context is used to determine the paste's potential root type.")
+	@Configuration()
 	public MiddleArray root;
 
 	@Configuration(name = "root_alignments")
 	public Map<String, AlignmentDefinition> rootAlignments = new HashMap<>();
 
-	@Configuration(name = "root_front", optional = true, description = "Root front-end configuration.")
+	@Configuration(name = "root_front", optional = true)
 	public FrontDataRootArray rootFront = new FrontDataRootArray();
 
 	@Configuration(optional = true, name = "animate_course_placement")
@@ -121,15 +106,13 @@ public class Syntax {
 	@Configuration(optional = true, name = "start_windowed")
 	public boolean startWindowed = false;
 
-	@Configuration(optional = true, name = "ellipsize_threshold", description = "Limit the window to this depth span.")
+	@Configuration(optional = true, name = "ellipsize_threshold")
 	public int ellipsizeThreshold = Integer.MAX_VALUE;
 
-	@Configuration(optional = true, name = "lay_brick_batch_size",
-			description = "Generate bricks in this batch size when jumping, scrolling, and editing.")
+	@Configuration(optional = true, name = "lay_brick_batch_size")
 	public int layBrickBatchSize = 10;
 
-	@Configuration(optional = true, name = "retry_expand_factor",
-			description = "Retry course expansion when converse deficit has increased by this factor.")
+	@Configuration(optional = true, name = "retry_expand_factor")
 	public double retryExpandFactor = 1.25;
 
 	public String id; // Fake final - don't modify (set in loadSyntax)
@@ -147,12 +130,10 @@ public class Syntax {
 		// TODO boustrophedon
 	}
 
-	@Configuration(name = "converse_direction", optional = true,
-			description = "The direction of text flow in a line.  For English, this will be RIGHT.")
+	@Configuration(name = "converse_direction", optional = true)
 	public Direction converseDirection = Direction.RIGHT;
 
-	@Configuration(name = "transverse_direction", optional = true,
-			description = "The direction of successive lines.  For English, this will be DOWN.")
+	@Configuration(name = "transverse_direction", optional = true)
 	public Direction transverseDirection = Direction.DOWN;
 
 	Grammar grammar;
@@ -160,7 +141,7 @@ public class Syntax {
 	public static Reflections reflections = new Reflections("com.zarbosoft");
 
 	public static Syntax loadSyntax(final String id, final Path path) {
-		final Syntax out = LuaConf.parse(reflections, Syntax.class, path);
+		final Syntax out = LuaConf.parse(reflections, new Walk.TypeInfo(Syntax.class), path);
 		out.id = id;
 		out.finish();
 		return out;

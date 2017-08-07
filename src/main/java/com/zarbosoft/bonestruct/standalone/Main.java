@@ -166,18 +166,22 @@ public class Main extends Application {
 		// X document extends atom?
 		//no more visualpart?
 		//new line in primitive
-		_lua actions
+		//_lua actions
 		//fix concensus in record
 		//fix record value reduce doesn't trigger expand?
 		//fix disappearing obboxes
-		fix wrong cursor pos on expand
+		//fix wrong cursor pos on expand - can't reproduce
 
 		readme
 		doc on tagging
 		syntax documenter
 		action documenter
+			action name as a static method?
+			or java ast parser to extract actions? description as block comment?
 		clean up luxem syntax (colors, etc)
 		improve hover type info
+		publish all dependencies
+		hn/reddit
 
 		long range goals
 		_sed (led) substitution
@@ -193,6 +197,7 @@ public class Main extends Application {
 		_limit bricks to widget boundaries +- 1 page or so
 			_when brick created and not split, if any atom with a brick in the new brick's course has lower space priority and is compact, compact this atom
 			_keep compact status in atom?  when creating a brick, make it start compacted
+		_pidgoon references ("mold"?) for things like swap sugar
 
 		?
 		move scroll to wall with listener for banner/details?
@@ -235,18 +240,7 @@ public class Main extends Application {
 		}
 		this.display = new JavaFXDisplay(syntax);
 		final Editor editor = new Editor(syntax, doc, display, this::addIdle, path, history);
-		editor.addActions(this, ImmutableList.of(new Action() {
-			@Override
-			public boolean run(final Context context) {
-				Platform.exit();
-				return true;
-			}
-
-			@Override
-			public String getName() {
-				return "quit";
-			}
-		}));
+		editor.addActions(this, ImmutableList.of(new ActionQuit()));
 		final HBox filesystemLayout = new HBox();
 		filesystemLayout.setPadding(new Insets(3, 2, 3, 2));
 		filesystemLayout.setSpacing(5);
@@ -406,6 +400,21 @@ public class Main extends Application {
 			} catch (final RejectedExecutionException e) {
 				// Happens on unhover when window closes to shutdown
 			}
+		}
+	}
+
+	private abstract static class ActionBase extends Action {
+		public static String group() {
+			return "application";
+		}
+	}
+
+	@Action.StaticID(id = "quit")
+	private static class ActionQuit extends ActionBase {
+		@Override
+		public boolean run(final Context context) {
+			Platform.exit();
+			return true;
 		}
 	}
 }

@@ -43,40 +43,7 @@ public class Editor {
 	) {
 		context = new Context(syntax, doc, display, addIdle, history);
 		context.history.clear();
-		context.addActions(this, ImmutableList.of(new Action() {
-			@Override
-			public boolean run(final Context context) {
-				return context.history.undo(context);
-			}
-
-			@Override
-			public String getName() {
-				return "undo";
-			}
-		}, new Action() {
-			@Override
-			public boolean run(final Context context) {
-				return context.history.redo(context);
-			}
-
-			@Override
-			public String getName() {
-				return "redo";
-			}
-		}, new Action() {
-			@Override
-			public boolean run(final Context context) {
-				if (context.hover == null)
-					return false;
-				context.hover.click(context);
-				return true;
-			}
-
-			@Override
-			public String getName() {
-				return "click_hovered";
-			}
-		}));
+		context.addActions(this, ImmutableList.of(new ActionUndo(), new ActionRedo(), new ActionClickHovered()));
 		this.visual = display;
 	}
 
@@ -96,5 +63,40 @@ public class Editor {
 
 	public void focus() {
 		context.display.focus();
+	}
+
+	private abstract static class ActionBase extends Action {
+		public static String group() {
+			return "editor";
+		}
+	}
+
+	@Action.StaticID(id = "undo")
+	private static class ActionUndo extends ActionBase {
+		@Override
+		public boolean run(final Context context) {
+			return context.history.undo(context);
+		}
+
+	}
+
+	@Action.StaticID(id = "redo")
+	private static class ActionRedo extends ActionBase {
+		@Override
+		public boolean run(final Context context) {
+			return context.history.redo(context);
+		}
+
+	}
+
+	@Action.StaticID(id = "click_hovered")
+	private static class ActionClickHovered extends ActionBase {
+		@Override
+		public boolean run(final Context context) {
+			if (context.hover == null)
+				return false;
+			context.hover.click(context);
+			return true;
+		}
 	}
 }

@@ -14,7 +14,7 @@ import java.util.Set;
 @Configuration(name = "primitive")
 public class MiddlePrimitive extends MiddlePart {
 
-	@Configuration(optional = true, description = "An expression grammar describing valid primitive contents.")
+	@Configuration(optional = true)
 	public Node validation;
 
 	public Change changeAdd(final ValuePrimitive value, final int begin, final String text) {

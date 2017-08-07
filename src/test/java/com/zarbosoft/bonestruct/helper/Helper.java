@@ -64,7 +64,7 @@ public class Helper {
 
 	public static void act(final Context context, final String name) {
 		for (final Action action : iterable(context.actions())) {
-			if (action.getName().equals(name)) {
+			if (action.id().equals(name)) {
 				action.run(context);
 				return;
 			}

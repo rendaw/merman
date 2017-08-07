@@ -14,13 +14,12 @@ public class Terminal implements Node {
 	@Configuration
 	public Key key;
 
-	@Configuration(optional = true, description = "True if the input is pressed, false if the input is released.")
+	@Configuration(optional = true)
 	public boolean press = true;
 
-	@Configuration(optional = true, description = "Inputs that must be active for this rule to match.")
+	@Configuration(optional = true)
 	public Set<Key> modifiers = new HashSet<>();
-	@Configuration(name = "without_modifiers", optional = true,
-			description = "Inputs that must not be active for this rule to match.")
+	@Configuration(name = "without_modifiers", optional = true)
 	public Set<Key> withoutModifiers = new HashSet<>();
 
 	public com.zarbosoft.pidgoon.Node build() {

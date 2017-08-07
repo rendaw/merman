@@ -155,7 +155,7 @@ public class GeneralTestWizard {
 
 	public GeneralTestWizard act(final String name) {
 		for (final Action action : iterable(inner.context.actions())) {
-			if (action.getName().equals(name)) {
+			if (action.id().equals(name)) {
 				action.run(inner.context);
 				assertThat(inner.context.selection, is(notNullValue()));
 				inner.runner.flush();

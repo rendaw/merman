@@ -11,44 +11,15 @@ import org.luaj.vm2.lib.OneArgFunction;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@Configuration(name = "lua_actions", description = "Use Lua functions as bindable actions.")
+@Configuration(name = "lua_actions")
 public class LuaActions extends Module {
-	@Configuration(description = "Actions as functions mapped to names.  Each function takes a single `context` " +
-			"argument and returns a boolean, true if the action modified the application state.  `context` " +
-			"is an object with the following functions: `act`.  `act` takes a string, the name of another action, and " +
-			"runs it, and returns true if the action modified the application state.")
+	@Configuration()
 	public Map<String, LuaValue> actions;
 
 	@Override
 	public State initialize(final Context context) {
 		context.addActions(this, actions.entrySet().stream().map(entry -> {
-			return new Action() {
-				@Override
-				public boolean run(final Context context) {
-					final LuaTable luaContext = new LuaTable();
-					final Mutable<Context> context2 = new Mutable<>(context);
-					luaContext.set(LuaValue.valueOf("act"), new OneArgFunction() {
-						@Override
-						public LuaValue call(final LuaValue luaValue) {
-							final String name = luaValue.tojstring();
-							return LuaValue.valueOf(context2.value
-									.actions()
-									.filter(action -> name.equals(action.getName()))
-									.findAny()
-									.map(action -> action.run(context2.value))
-									.orElse(false));
-						}
-					});
-					final boolean out = entry.getValue().call(luaContext).toboolean();
-					context2.value = null;
-					return out;
-				}
-
-				@Override
-				public String getName() {
-					return entry.getKey();
-				}
-			};
+			return new ActionAct(entry);
 		}).collect(Collectors.toList()));
 		return new State() {
 			@Override
@@ -56,5 +27,46 @@ public class LuaActions extends Module {
 				context.removeActions(LuaActions.this);
 			}
 		};
+	}
+
+	private abstract static class ActionBase extends Action {
+		public static String group() {
+			return "lua actions module";
+		}
+	}
+
+	@Action.StaticID(id = "%s (%s = lua action id)")
+	private static class ActionAct extends ActionBase {
+		private final Map.Entry<String, LuaValue> entry;
+
+		public ActionAct(final Map.Entry<String, LuaValue> entry) {
+			this.entry = entry;
+		}
+
+		@Override
+		public boolean run(final Context context) {
+			final LuaTable luaContext = new LuaTable();
+			final Mutable<Context> context2 = new Mutable<>(context);
+			luaContext.set(LuaValue.valueOf("act"), new OneArgFunction() {
+				@Override
+				public LuaValue call(final LuaValue luaValue) {
+					final String name = luaValue.tojstring();
+					return LuaValue.valueOf(context2.value
+							.actions()
+							.filter(action -> name.equals(action.id()))
+							.findAny()
+							.map(action -> action.run(context2.value))
+							.orElse(false));
+				}
+			});
+			final boolean out = entry.getValue().call(luaContext).toboolean();
+			context2.value = null;
+			return out;
+		}
+
+		@Override
+		public String id() {
+			return entry.getKey();
+		}
 	}
 }

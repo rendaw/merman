@@ -30,19 +30,13 @@ public class FreeAtomType extends AtomType {
 	@Configuration
 	public Map<String, AlignmentDefinition> alignments = new HashMap<>();
 
-	@Configuration(optional = true, description = "If this is an operator, the operator precedence.  This is " +
-			"used when filling in a suffix gap to raise the new atom to the appropriate level.  This is also used " +
-			"when wrapping lines - lower precedence nodes will be compacted first, expanded last.")
+	@Configuration(optional = true)
 	public int precedence = Integer.MAX_VALUE;
 
-	@Configuration(name = "associate_forward", optional = true, description =
-			"If this is an operator, the operator associativity.  This is used when filling in a " +
-					"suffix gap to raise the new atom to the appropriate level.  If two operators have the same " +
-					"precedence, if the higher operator is back associative the lower operator will not be raised.")
+	@Configuration(name = "associate_forward", optional = true)
 	public boolean frontAssociative = false;
 
-	@Configuration(name = "auto_choose_ambiguity", optional = true,
-			description = "If this type is a suggestion and there are less than this many choices, auto-choose this type.")
+	@Configuration(name = "auto_choose_ambiguity", optional = true)
 	public int autoChooseAmbiguity = -1;
 
 	@Override

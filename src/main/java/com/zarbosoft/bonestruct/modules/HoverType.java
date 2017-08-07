@@ -10,11 +10,11 @@ import com.zarbosoft.bonestruct.editor.visual.visuals.VisualNestedBase;
 import com.zarbosoft.bonestruct.editor.visual.visuals.VisualPrimitive;
 import com.zarbosoft.interface1.Configuration;
 
-@Configuration(name = "hover_type", description = "Shows the type of the element being hovered in the banner.")
+@Configuration(name = "hover_type")
 public class HoverType extends Module {
-	@Configuration(optional = true, description = "Include the type of the atom.")
+	@Configuration(optional = true)
 	public boolean node = true;
-	@Configuration(optional = true, description = "Include the type of the atom part.")
+	@Configuration(optional = true)
 	public boolean part = true;
 
 	private BannerMessage message;

@@ -31,7 +31,7 @@ import java.util.Map;
 
 import static com.zarbosoft.rendaw.common.Common.iterable;
 
-@Configuration(name = "hotkeys", description = "Trigger actions with keys and key combinations.")
+@Configuration(name = "hotkeys")
 public class Hotkeys extends Module {
 	@Configuration(optional = true)
 	public List<HotkeyRule> rules = new ArrayList<>();
@@ -69,11 +69,11 @@ public class Hotkeys extends Module {
 				final Text rule = context.display.text();
 				rule.setColor(context, lineStyle.color);
 				rule.setFont(context, lineStyle.getFont(context));
-				rule.setText(context, hotkeyGrammar.getNode(action.getName()).toString());
+				rule.setText(context, hotkeyGrammar.getNode(action.id()).toString());
 				final Text name = context.display.text();
 				name.setColor(context, lineStyle.color);
 				name.setFont(context, lineStyle.getFont(context));
-				name.setText(context, action.getName());
+				name.setText(context, action.id());
 				table.add(ImmutableList.of(rule, name));
 			}
 			table.layout(context);
@@ -103,8 +103,8 @@ public class Hotkeys extends Module {
 		hotkeyGrammar = new Grammar();
 		final Union union = new Union();
 		for (final Action action : iterable(context.actions())) {
-			if (hotkeys.containsKey(action.getName())) {
-				for (final Node hotkey : hotkeys.get(action.getName())) {
+			if (hotkeys.containsKey(action.id())) {
+				for (final Node hotkey : hotkeys.get(action.id())) {
 					union.add(new Operator(hotkey.build(), store -> store.pushStack(action)));
 				}
 			}

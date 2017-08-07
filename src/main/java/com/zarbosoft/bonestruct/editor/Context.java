@@ -752,78 +752,9 @@ public class Context {
 			final Consumer<IdleTask> addIdle,
 			final History history
 	) {
-		actions.put(this, ImmutableList.of(new Action() {
-			@Override
-			public boolean run(final Context context) {
-				if (!window)
-					return false;
-				windowClear();
-				return true;
-			}
-
-			@Override
-			public String getName() {
-				return "window_clear";
-			}
-		}, new Action() {
-			@Override
-			public boolean run(final Context context) {
-				if (!window)
-					return false;
-				if (windowAtom == null)
-					return false;
-				final Atom atom = windowAtom;
-				final Visual oldWindowVisual = windowAtom.visual;
-				final Visual windowVisual;
-				if (atom == document.root) {
-					windowAtom = null;
-					windowVisual = document.root.createVisual(context, null, ImmutableMap.of(), 0);
-				} else {
-					windowAtom = atom.parent.value().parent.atom();
-					windowVisual = windowAtom.createVisual(context, null, ImmutableMap.of(), 0);
-				}
-				idleLayBricksOutward();
-				return true;
-			}
-
-			@Override
-			public String getName() {
-				return "window_up";
-			}
-		}, new Action() {
-			@Override
-			public boolean run(final Context context) {
-				if (!window)
-					return false;
-				final List<VisualAtom> chain = new ArrayList<>();
-				final VisualAtom stop = windowAtom.visual;
-				if (selection.getVisual().parent() == null)
-					return false;
-				VisualAtom at = selection.getVisual().parent().atomVisual();
-				while (at != null) {
-					if (at == stop)
-						break;
-					if (at.parent() == null)
-						break;
-					chain.add(at);
-					at = at.parent().atomVisual();
-				}
-				if (chain.isEmpty())
-					return false;
-				final Visual oldWindowVisual = windowAtom.visual;
-				final VisualAtom windowVisual = last(chain);
-				windowAtom = windowVisual.atom;
-				last(chain).root(context, null, ImmutableMap.of(), 0);
-				oldWindowVisual.uproot(context, windowVisual);
-				idleLayBricksOutward();
-				return true;
-			}
-
-			@Override
-			public String getName() {
-				return "window_down";
-			}
-		}));
+		actions.put(this,
+				ImmutableList.of(new ActionWindowClear(), new ActionWindowUp(document), new ActionWindowDown())
+		);
 		this.syntax = syntax;
 		this.document = document;
 		this.display = display;
@@ -997,4 +928,80 @@ public class Context {
 
 	public static TheInterpolator interpolator = new TheInterpolator();
 
+	private abstract static class ActionBase extends Action {
+		public static String group() {
+			return "editor";
+		}
+	}
+
+	@Action.StaticID(id = "window_clear")
+	private class ActionWindowClear extends ActionBase {
+		@Override
+		public boolean run(final Context context) {
+			if (!window)
+				return false;
+			windowClear();
+			return true;
+		}
+	}
+
+	@Action.StaticID(id = "window_up")
+	private class ActionWindowUp extends ActionBase {
+		private final Document document;
+
+		public ActionWindowUp(final Document document) {
+			this.document = document;
+		}
+
+		@Override
+		public boolean run(final Context context) {
+			if (!window)
+				return false;
+			if (windowAtom == null)
+				return false;
+			final Atom atom = windowAtom;
+			final Visual oldWindowVisual = windowAtom.visual;
+			final Visual windowVisual;
+			if (atom == document.root) {
+				windowAtom = null;
+				windowVisual = document.root.createVisual(context, null, ImmutableMap.of(), 0);
+			} else {
+				windowAtom = atom.parent.value().parent.atom();
+				windowVisual = windowAtom.createVisual(context, null, ImmutableMap.of(), 0);
+			}
+			idleLayBricksOutward();
+			return true;
+		}
+	}
+
+	@Action.StaticID(id = "window_down")
+	private class ActionWindowDown extends ActionBase {
+		@Override
+		public boolean run(final Context context) {
+			if (!window)
+				return false;
+			final List<VisualAtom> chain = new ArrayList<>();
+			final VisualAtom stop = windowAtom.visual;
+			if (selection.getVisual().parent() == null)
+				return false;
+			VisualAtom at = selection.getVisual().parent().atomVisual();
+			while (at != null) {
+				if (at == stop)
+					break;
+				if (at.parent() == null)
+					break;
+				chain.add(at);
+				at = at.parent().atomVisual();
+			}
+			if (chain.isEmpty())
+				return false;
+			final Visual oldWindowVisual = windowAtom.visual;
+			final VisualAtom windowVisual = last(chain);
+			windowAtom = windowVisual.atom;
+			last(chain).root(context, null, ImmutableMap.of(), 0);
+			oldWindowVisual.uproot(context, windowVisual);
+			idleLayBricksOutward();
+			return true;
+		}
+	}
 }

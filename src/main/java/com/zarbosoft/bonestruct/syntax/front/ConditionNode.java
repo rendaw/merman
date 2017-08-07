@@ -40,7 +40,7 @@ public class ConditionNode extends ConditionType {
 
 	@Configuration
 	public static enum Is {
-		@Configuration(name = "precedent", description = "Show if the atom is precedent relative to its parent.")
+		@Configuration(name = "precedent")
 		PRECEDENT,
 	}
 

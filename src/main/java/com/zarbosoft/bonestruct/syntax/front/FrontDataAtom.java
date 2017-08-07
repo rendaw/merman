@@ -37,7 +37,7 @@ public class FrontDataAtom extends FrontPart {
 	@Configuration(optional = true)
 	public Map<String, Node> hotkeys = new HashMap<>();
 
-	@Configuration(optional = true, description = "How to visualize the ellipsis.")
+	@Configuration(optional = true)
 	public Symbol ellipsis = new SymbolText("...");
 
 	@Override

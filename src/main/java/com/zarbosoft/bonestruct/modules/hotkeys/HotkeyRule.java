@@ -8,16 +8,15 @@ import java.util.*;
 
 @Configuration
 public class HotkeyRule {
-	@Configuration(description = "These tags must be present.")
+	@Configuration()
 	public Set<Tag> with = new HashSet<>();
-	@Configuration(optional = true, description = "These tags must be absent.")
+	@Configuration(optional = true)
 	public Set<Tag> without = new HashSet<>();
 
-	@Configuration(description = "Hotkeys to use when the tags match.")
+	@Configuration()
 	public Map<String, List<Node>> hotkeys = new HashMap<>();
 
-	@Configuration(name = "free_typing", optional = true,
-			description = "Text keys that don't match a hotkey are passed to the selected primitive.")
+	@Configuration(name = "free_typing", optional = true)
 	public boolean freeTyping = true;
 
 	public HotkeyRule() {

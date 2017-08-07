@@ -50,6 +50,12 @@ import static com.zarbosoft.rendaw.common.Common.iterable;
 public abstract class FrontGapBase extends FrontPart {
 	private MiddlePrimitive dataType;
 
+	private abstract static class ActionBase extends Action {
+		public static String group() {
+			return "gap";
+		}
+	}
+
 	@Override
 	public Visual createVisual(
 			final Context context,
@@ -204,56 +210,13 @@ public abstract class FrontGapBase extends FrontPart {
 					table.layout(context);
 					changeChoice(context, 0);
 					final List<Action> actions = new ArrayList<>();
-					actions.addAll(ImmutableList.of(new Action() {
-						@Override
-						public boolean run(final Context context) {
-							choices.get(index).choose(context, self.get());
-							return true;
-						}
-
-						@Override
-						public String getName() {
-							return "choose";
-						}
-					}, new Action() {
-						@Override
-						public boolean run(final Context context) {
-							changeChoice(context, (index + 1) % choices.size());
-							return true;
-						}
-
-						@Override
-						public String getName() {
-							return "next_choice";
-						}
-					}, new Action() {
-						@Override
-						public boolean run(final Context context) {
-							changeChoice(context, (index + choices.size() - 1) % choices.size());
-							return true;
-						}
-
-						@Override
-						public String getName() {
-							return "previous_choice";
-						}
-					}));
+					actions.addAll(ImmutableList.of(new ActionChoose(choices),
+							new ActionNextChoice(choices),
+							new ActionPreviousChoice(choices)
+					));
 					for (int i = 0; i < 10; ++i) {
 						final int i2 = i;
-						actions.add(new Action() {
-							@Override
-							public boolean run(final Context context) {
-								if (i2 >= choices.size())
-									return false;
-								choices.get(i2).choose(context, self.get());
-								return true;
-							}
-
-							@Override
-							public String getName() {
-								return String.format("choose_%s", i2);
-							}
-						});
+						actions.add(new ActionChooseIndex(i2, choices));
 					}
 					context.addActions(this, actions);
 				}
@@ -266,6 +229,75 @@ public abstract class FrontGapBase extends FrontPart {
 				@Override
 				public void tagsChanged(final Context context) {
 
+				}
+
+				@Action.StaticID(id = "choose")
+				private class ActionChoose extends ActionBase {
+					private final List<? extends Choice> choices;
+
+					public ActionChoose(final List<? extends Choice> choices) {
+						this.choices = choices;
+					}
+
+					@Override
+					public boolean run(final Context context) {
+						choices.get(index).choose(context, self.get());
+						return true;
+					}
+				}
+
+				@Action.StaticID(id = "next_choice")
+				private class ActionNextChoice extends ActionBase {
+					private final List<? extends Choice> choices;
+
+					public ActionNextChoice(final List<? extends Choice> choices) {
+						this.choices = choices;
+					}
+
+					@Override
+					public boolean run(final Context context) {
+						changeChoice(context, (index + 1) % choices.size());
+						return true;
+					}
+				}
+
+				@Action.StaticID(id = "previous_choice")
+				private class ActionPreviousChoice extends ActionBase {
+					private final List<? extends Choice> choices;
+
+					public ActionPreviousChoice(final List<? extends Choice> choices) {
+						this.choices = choices;
+					}
+
+					@Override
+					public boolean run(final Context context) {
+						changeChoice(context, (index + choices.size() - 1) % choices.size());
+						return true;
+					}
+				}
+
+				@Action.StaticID(id = "choose_%s (%s = index)")
+				private class ActionChooseIndex extends ActionBase {
+					private final int i2;
+					private final List<? extends Choice> choices;
+
+					public ActionChooseIndex(final int i2, final List<? extends Choice> choices) {
+						this.i2 = i2;
+						this.choices = choices;
+					}
+
+					@Override
+					public boolean run(final Context context) {
+						if (i2 >= choices.size())
+							return false;
+						choices.get(i2).choose(context, self.get());
+						return true;
+					}
+
+					@Override
+					public String id() {
+						return String.format("choose_%s", i2);
+					}
 				}
 			}
 

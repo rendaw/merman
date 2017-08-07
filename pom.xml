@@ -4,6 +4,9 @@
     <groupId>com.zarbosoft</groupId>
     <artifactId>bonestruct</artifactId>
     <version>0.0.1</version>
+    <modules>
+        <module>documenter</module>
+    </modules>
     <build>
         <plugins>
             <plugin>

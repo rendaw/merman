@@ -28,8 +28,7 @@ public abstract class AtomType {
 	@Configuration
 	public Set<String> tags = new HashSet<>();
 
-	@Configuration(name = "depth_score", optional = true,
-			description = "Children of this atom are deeper by this amount.")
+	@Configuration(name = "depth_score", optional = true)
 	public int depthScore = 0;
 
 	public abstract List<FrontPart> front();

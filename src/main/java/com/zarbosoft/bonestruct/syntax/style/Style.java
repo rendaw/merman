@@ -15,9 +15,9 @@ import static com.zarbosoft.rendaw.common.Common.uncheck;
 @Configuration
 public class Style {
 
-	@Configuration(description = "These tags must be present.")
+	@Configuration()
 	public Set<Tag> with = new HashSet<>();
-	@Configuration(optional = true, description = "These tags must be absent.")
+	@Configuration(optional = true)
 	public Set<Tag> without = new HashSet<>();
 
 	@Configuration(name = "split", optional = true)

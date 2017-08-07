@@ -165,6 +165,12 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 		root(context, parent, alignments, depth);
 	}
 
+	private abstract static class ActionBase extends Action {
+		public static String group() {
+			return "array";
+		}
+	}
+
 	private void coreChange(final Context context, final int index, final int remove, final List<Atom> add) {
 		final Map<String, Alignment> alignments = parent.atomVisual().alignments();
 		int visualIndex = index;
@@ -756,316 +762,28 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 			});
 			this.leadFirst = leadFirst;
 			setRange(context, start, end);
-			context.addActions(this, ImmutableList.of(new Action() {
-				@Override
-				public boolean run(final Context context) {
-					context.history.finishChange(context);
-					return value.data.get(beginIndex).visual.selectDown(context);
-				}
-
-				@Override
-				public String getName() {
-					return "enter";
-				}
-			}, new Action() {
-				@Override
-				public boolean run(final Context context) {
-					context.history.finishChange(context);
-					return value.parent.selectUp(context);
-				}
-
-				@Override
-				public String getName() {
-					return "exit";
-				}
-			}, new Action() {
-				@Override
-				public boolean run(final Context context) {
-					return parent.selectNext(context);
-				}
-
-				@Override
-				public String getName() {
-					return "next";
-				}
-			}, new Action() {
-				@Override
-				public boolean run(final Context context) {
-					return parent.selectPrevious(context);
-				}
-
-				@Override
-				public String getName() {
-					return "previous";
-				}
-			}, new Action() {
-				@Override
-				public boolean run(final Context context) {
-					context.history.finishChange(context);
-					ArraySelection.this.leadFirst = true;
-					final int newIndex = Math.min(value.data.size() - 1, endIndex + 1);
-					if (newIndex == beginIndex && newIndex == endIndex)
-						return false;
-					setPosition(context, newIndex);
-					return true;
-				}
-
-				@Override
-				public String getName() {
-					return "next_element";
-				}
-			}, new Action() {
-				@Override
-				public boolean run(final Context context) {
-					context.history.finishChange(context);
-					ArraySelection.this.leadFirst = true;
-					final int newIndex = Math.max(0, beginIndex - 1);
-					if (newIndex == beginIndex && newIndex == endIndex)
-						return false;
-					setPosition(context, newIndex);
-					return true;
-				}
-
-				@Override
-				public String getName() {
-					return "previous_element";
-				}
-			}, new Action() {
-				@Override
-				public boolean run(final Context context) {
-					context.history.apply(context,
-							new ChangeArray(value, beginIndex, endIndex - beginIndex + 1, ImmutableList.of())
-					);
-					return true;
-				}
-
-				@Override
-				public String getName() {
-					return "delete";
-				}
-			}, new Action() {
-				@Override
-				public boolean run(final Context context) {
-					final Atom created = value.createAndAddDefault(context, beginIndex);
-					if (!created.visual.selectDown(context))
-						setPosition(context, beginIndex);
-					return true;
-				}
-
-				@Override
-				public String getName() {
-					return "insert_before";
-				}
-			}, new Action() {
-				@Override
-				public boolean run(final Context context) {
-					final Atom created = value.createAndAddDefault(context, endIndex + 1);
-					if (!created.visual.selectDown(context))
-						setPosition(context, endIndex + 1);
-					return true;
-				}
-
-				@Override
-				public String getName() {
-					return "insert_after";
-				}
-			}, new Action() {
-				@Override
-				public boolean run(final Context context) {
-					context.copy(value.data.subList(beginIndex, endIndex + 1));
-					return true;
-				}
-
-				@Override
-				public String getName() {
-					return "copy";
-				}
-			}, new Action() {
-				@Override
-				public boolean run(final Context context) {
-					context.history.finishChange(context);
-					context.copy(value.data.subList(beginIndex, endIndex + 1));
-					context.history.apply(context,
-							new ChangeArray(value, beginIndex, endIndex - beginIndex + 1, ImmutableList.of())
-					);
-					context.history.finishChange(context);
-					return true;
-				}
-
-				@Override
-				public String getName() {
-					return "cut";
-				}
-			}, new Action() {
-				@Override
-				public boolean run(final Context context) {
-					context.history.finishChange(context);
-					final List<Atom> atoms = context.uncopy(((MiddleArray) value.middle()).type);
-					if (atoms.isEmpty())
-						return false;
-					context.history.apply(context,
-							new ChangeArray(value, beginIndex, endIndex - beginIndex + 1, atoms)
-					);
-					context.history.finishChange(context);
-					return true;
-				}
-
-				@Override
-				public String getName() {
-					return "paste";
-				}
-			}, new Action() {
-				@Override
-				public boolean run(final Context context) {
-					context.history.finishChange(context);
-					final int newIndex = Math.min(value.data.size() - 1, endIndex + 1);
-					if (endIndex == newIndex)
-						return false;
-					setEnd(context, newIndex);
-					return true;
-				}
-
-				@Override
-				public String getName() {
-					return "gather_next";
-				}
-			}, new Action() {
-				@Override
-				public boolean run(final Context context) {
-					context.history.finishChange(context);
-					final int newIndex = Math.max(beginIndex, endIndex - 1);
-					if (endIndex == newIndex)
-						return false;
-					setEnd(context, newIndex);
-					return true;
-				}
-
-				@Override
-				public String getName() {
-					return "release_next";
-				}
-			}, new Action() {
-				@Override
-				public boolean run(final Context context) {
-					context.history.finishChange(context);
-					final int newIndex = Math.max(0, beginIndex - 1);
-					if (beginIndex == newIndex)
-						return false;
-					setBegin(context, newIndex);
-					return true;
-				}
-
-				@Override
-				public String getName() {
-					return "gather_previous";
-				}
-			}, new Action() {
-				@Override
-				public boolean run(final Context context) {
-					context.history.finishChange(context);
-					final int newIndex = Math.min(endIndex, beginIndex + 1);
-					if (beginIndex == newIndex)
-						return false;
-					setBegin(context, newIndex);
-					return true;
-				}
-
-				@Override
-				public String getName() {
-					return "release_previous";
-				}
-			}, new Action() {
-				@Override
-				public boolean run(final Context context) {
-					if (beginIndex == 0)
-						return false;
-					int index = beginIndex;
-					final List<Atom> atoms = ImmutableList.copyOf(value.data.subList(index, endIndex + 1));
-					context.history.apply(context, new ChangeArray(value, index, atoms.size(), ImmutableList.of()));
-					setBegin(context, --index);
-					context.history.apply(context, new ChangeArray(value, index, 0, atoms));
-					ArraySelection.this.leadFirst = true;
-					setRange(context, index, index + atoms.size() - 1);
-					return true;
-				}
-
-				@Override
-				public String getName() {
-					return "move_before";
-				}
-			}, new Action() {
-				@Override
-				public boolean run(final Context context) {
-					if (endIndex == value.data.size() - 1)
-						return false;
-					int index = beginIndex;
-					final List<Atom> atoms = ImmutableList.copyOf(value.data.subList(index, endIndex + 1));
-					context.history.apply(context, new ChangeArray(value, index, atoms.size(), ImmutableList.of()));
-					setPosition(context, ++index);
-					context.history.apply(context, new ChangeArray(value, index, 0, atoms));
-					ArraySelection.this.leadFirst = false;
-					setRange(context, index, index + atoms.size() - 1);
-					return true;
-				}
-
-				@Override
-				public String getName() {
-					return "move_after";
-				}
-			}, new Action() {
-				@Override
-				public boolean run(final Context context) {
-					final Atom root = value.data.get(beginIndex);
-					if (root.visual.selectDown(context)) {
-						context.setAtomWindow(root);
-						return true;
-					}
-					return false;
-				}
-
-				@Override
-				public String getName() {
-					return "window";
-				}
-			}, new Action() {
-				@Override
-				public boolean run(final Context context) {
-					context.history.finishChange(context);
-					final int index = leadFirst ? beginIndex : endIndex;
-					final Atom old = value.data.get(index);
-					final Atom gap = context.syntax.prefixGap.create();
-					context.history.apply(context, new ChangeArray(value, index, 1, ImmutableList.of(gap)));
-					context.history.apply(context,
-							new ChangeArray((ValueArray) gap.data.get("value"), 0, 0, ImmutableList.of(old))
-					);
-					gap.data.get("gap").selectDown(context);
-					return true;
-				}
-
-				@Override
-				public String getName() {
-					return "prefix";
-				}
-			}, new Action() {
-				@Override
-				public boolean run(final Context context) {
-					context.history.finishChange(context);
-					final int index = leadFirst ? beginIndex : endIndex;
-					final Atom old = value.data.get(index);
-					final Atom gap = context.syntax.suffixGap.create(false);
-					context.history.apply(context, new ChangeArray(value, index, 1, ImmutableList.of(gap)));
-					context.history.apply(context,
-							new ChangeArray((ValueArray) gap.data.get("value"), 0, 0, ImmutableList.of(old))
-					);
-					gap.data.get("gap").selectDown(context);
-					return true;
-				}
-
-				@Override
-				public String getName() {
-					return "suffix";
-				}
-			}));
+			context.addActions(this, ImmutableList.of(new ActionEnter(),
+					new ActionExit(),
+					new ActionNext(),
+					new ActionPrevious(),
+					new ActionNextElement(),
+					new ActionPreviousElement(),
+					new ActionDelete(),
+					new ActionInsertBefore(),
+					new ActionInsertAfter(),
+					new ActionCopy(),
+					new ActionCut(),
+					new ActionPaste(),
+					new ActionGatherNext(),
+					new ActionReleaseNext(),
+					new ActionGatherPrevious(),
+					new ActionReleasePrevious(),
+					new ActionMoveBefore(),
+					new ActionMoveAfter(),
+					new ActionWindow(),
+					new ActionPrefix(leadFirst),
+					new ActionSuffix(leadFirst)
+			));
 		}
 
 		private void setBeginInternal(final Context context, final int index) {
@@ -1144,6 +862,288 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 		@Override
 		public PSet<Tag> getTags(final Context context) {
 			return tags;
+		}
+
+		@Action.StaticID(id = "enter")
+		private class ActionEnter extends ActionBase {
+			@Override
+			public boolean run(final Context context) {
+				context.history.finishChange(context);
+				return value.data.get(beginIndex).visual.selectDown(context);
+			}
+		}
+
+		@Action.StaticID(id = "exit")
+		private class ActionExit extends ActionBase {
+			@Override
+			public boolean run(final Context context) {
+				context.history.finishChange(context);
+				return value.parent.selectUp(context);
+			}
+		}
+
+		@Action.StaticID(id = "next")
+		private class ActionNext extends ActionBase {
+			@Override
+			public boolean run(final Context context) {
+				return parent.selectNext(context);
+			}
+
+		}
+
+		@Action.StaticID(id = "previous")
+		private class ActionPrevious extends ActionBase {
+			@Override
+			public boolean run(final Context context) {
+				return parent.selectPrevious(context);
+			}
+
+		}
+
+		@Action.StaticID(id = "next_element")
+		private class ActionNextElement extends ActionBase {
+			@Override
+			public boolean run(final Context context) {
+				context.history.finishChange(context);
+				ArraySelection.this.leadFirst = true;
+				final int newIndex = Math.min(value.data.size() - 1, endIndex + 1);
+				if (newIndex == beginIndex && newIndex == endIndex)
+					return false;
+				setPosition(context, newIndex);
+				return true;
+			}
+		}
+
+		@Action.StaticID(id = "previous_element")
+		private class ActionPreviousElement extends ActionBase {
+			@Override
+			public boolean run(final Context context) {
+				context.history.finishChange(context);
+				ArraySelection.this.leadFirst = true;
+				final int newIndex = Math.max(0, beginIndex - 1);
+				if (newIndex == beginIndex && newIndex == endIndex)
+					return false;
+				setPosition(context, newIndex);
+				return true;
+			}
+		}
+
+		@Action.StaticID(id = "delete")
+		private class ActionDelete extends ActionBase {
+			@Override
+			public boolean run(final Context context) {
+				context.history.apply(context,
+						new ChangeArray(value, beginIndex, endIndex - beginIndex + 1, ImmutableList.of())
+				);
+				return true;
+			}
+		}
+
+		@Action.StaticID(id = "insert_before")
+		private class ActionInsertBefore extends ActionBase {
+			@Override
+			public boolean run(final Context context) {
+				final Atom created = value.createAndAddDefault(context, beginIndex);
+				if (!created.visual.selectDown(context))
+					setPosition(context, beginIndex);
+				return true;
+			}
+		}
+
+		@Action.StaticID(id = "insert_after")
+		private class ActionInsertAfter extends ActionBase {
+			@Override
+			public boolean run(final Context context) {
+				final Atom created = value.createAndAddDefault(context, endIndex + 1);
+				if (!created.visual.selectDown(context))
+					setPosition(context, endIndex + 1);
+				return true;
+			}
+		}
+
+		@Action.StaticID(id = "copy")
+		private class ActionCopy extends ActionBase {
+			@Override
+			public boolean run(final Context context) {
+				context.copy(value.data.subList(beginIndex, endIndex + 1));
+				return true;
+			}
+
+		}
+
+		@Action.StaticID(id = "cut")
+		private class ActionCut extends ActionBase {
+			@Override
+			public boolean run(final Context context) {
+				context.history.finishChange(context);
+				context.copy(value.data.subList(beginIndex, endIndex + 1));
+				context.history.apply(context,
+						new ChangeArray(value, beginIndex, endIndex - beginIndex + 1, ImmutableList.of())
+				);
+				context.history.finishChange(context);
+				return true;
+			}
+
+		}
+
+		@Action.StaticID(id = "paste")
+		private class ActionPaste extends ActionBase {
+			@Override
+			public boolean run(final Context context) {
+				context.history.finishChange(context);
+				final List<Atom> atoms = context.uncopy(((MiddleArray) value.middle()).type);
+				if (atoms.isEmpty())
+					return false;
+				context.history.apply(context, new ChangeArray(value, beginIndex, endIndex - beginIndex + 1, atoms));
+				context.history.finishChange(context);
+				return true;
+			}
+		}
+
+		@Action.StaticID(id = "gather_next")
+		private class ActionGatherNext extends ActionBase {
+			@Override
+			public boolean run(final Context context) {
+				context.history.finishChange(context);
+				final int newIndex = Math.min(value.data.size() - 1, endIndex + 1);
+				if (endIndex == newIndex)
+					return false;
+				setEnd(context, newIndex);
+				return true;
+			}
+
+		}
+
+		@Action.StaticID(id = "release_next")
+		private class ActionReleaseNext extends ActionBase {
+			@Override
+			public boolean run(final Context context) {
+				context.history.finishChange(context);
+				final int newIndex = Math.max(beginIndex, endIndex - 1);
+				if (endIndex == newIndex)
+					return false;
+				setEnd(context, newIndex);
+				return true;
+			}
+		}
+
+		@Action.StaticID(id = "gather_previous")
+		private class ActionGatherPrevious extends ActionBase {
+			@Override
+			public boolean run(final Context context) {
+				context.history.finishChange(context);
+				final int newIndex = Math.max(0, beginIndex - 1);
+				if (beginIndex == newIndex)
+					return false;
+				setBegin(context, newIndex);
+				return true;
+			}
+		}
+
+		@Action.StaticID(id = "release_previous")
+		private class ActionReleasePrevious extends ActionBase {
+			@Override
+			public boolean run(final Context context) {
+				context.history.finishChange(context);
+				final int newIndex = Math.min(endIndex, beginIndex + 1);
+				if (beginIndex == newIndex)
+					return false;
+				setBegin(context, newIndex);
+				return true;
+			}
+		}
+
+		@Action.StaticID(id = "move_before")
+		private class ActionMoveBefore extends ActionBase {
+			@Override
+			public boolean run(final Context context) {
+				if (beginIndex == 0)
+					return false;
+				int index = beginIndex;
+				final List<Atom> atoms = ImmutableList.copyOf(value.data.subList(index, endIndex + 1));
+				context.history.apply(context, new ChangeArray(value, index, atoms.size(), ImmutableList.of()));
+				setBegin(context, --index);
+				context.history.apply(context, new ChangeArray(value, index, 0, atoms));
+				ArraySelection.this.leadFirst = true;
+				setRange(context, index, index + atoms.size() - 1);
+				return true;
+			}
+		}
+
+		@Action.StaticID(id = "move_after")
+		private class ActionMoveAfter extends ActionBase {
+			@Override
+			public boolean run(final Context context) {
+				if (endIndex == value.data.size() - 1)
+					return false;
+				int index = beginIndex;
+				final List<Atom> atoms = ImmutableList.copyOf(value.data.subList(index, endIndex + 1));
+				context.history.apply(context, new ChangeArray(value, index, atoms.size(), ImmutableList.of()));
+				setPosition(context, ++index);
+				context.history.apply(context, new ChangeArray(value, index, 0, atoms));
+				ArraySelection.this.leadFirst = false;
+				setRange(context, index, index + atoms.size() - 1);
+				return true;
+			}
+		}
+
+		@Action.StaticID(id = "window")
+		private class ActionWindow extends ActionBase {
+			@Override
+			public boolean run(final Context context) {
+				final Atom root = value.data.get(beginIndex);
+				if (root.visual.selectDown(context)) {
+					context.setAtomWindow(root);
+					return true;
+				}
+				return false;
+			}
+		}
+
+		@Action.StaticID(id = "prefix")
+		private class ActionPrefix extends ActionBase {
+			private final boolean leadFirst;
+
+			public ActionPrefix(final boolean leadFirst) {
+				this.leadFirst = leadFirst;
+			}
+
+			@Override
+			public boolean run(final Context context) {
+				context.history.finishChange(context);
+				final int index = leadFirst ? beginIndex : endIndex;
+				final Atom old = value.data.get(index);
+				final Atom gap = context.syntax.prefixGap.create();
+				context.history.apply(context, new ChangeArray(value, index, 1, ImmutableList.of(gap)));
+				context.history.apply(context,
+						new ChangeArray((ValueArray) gap.data.get("value"), 0, 0, ImmutableList.of(old))
+				);
+				gap.data.get("gap").selectDown(context);
+				return true;
+			}
+		}
+
+		@Action.StaticID(id = "suffix")
+		private class ActionSuffix extends ActionBase {
+			private final boolean leadFirst;
+
+			public ActionSuffix(final boolean leadFirst) {
+				this.leadFirst = leadFirst;
+			}
+
+			@Override
+			public boolean run(final Context context) {
+				context.history.finishChange(context);
+				final int index = leadFirst ? beginIndex : endIndex;
+				final Atom old = value.data.get(index);
+				final Atom gap = context.syntax.suffixGap.create(false);
+				context.history.apply(context, new ChangeArray(value, index, 1, ImmutableList.of(gap)));
+				context.history.apply(context,
+						new ChangeArray((ValueArray) gap.data.get("value"), 0, 0, ImmutableList.of(old))
+				);
+				gap.data.get("gap").selectDown(context);
+				return true;
+			}
 		}
 	}
 

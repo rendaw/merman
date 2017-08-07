@@ -85,7 +85,7 @@ public class ConditionValue extends ConditionType {
 
 	@Configuration
 	public static enum Is {
-		@Configuration(name = "empty", description = "Show if the value is empty.")
+		@Configuration(name = "empty")
 		EMPTY,
 	}
 

@@ -7,13 +7,14 @@ import com.zarbosoft.bonestruct.editor.visual.tags.GlobalTag;
 import com.zarbosoft.bonestruct.editor.visual.tags.Tag;
 import com.zarbosoft.bonestruct.editor.visual.tags.TagsChange;
 import com.zarbosoft.interface1.Configuration;
+import com.zarbosoft.rendaw.common.Pair;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.zarbosoft.rendaw.common.Common.enumerate;
 
-@Configuration(name = "modes", description = "Adds actions to change global tags.")
+@Configuration(name = "modes")
 public class Modes extends Module {
 	@Configuration
 	public List<String> states;
@@ -27,21 +28,7 @@ public class Modes extends Module {
 	@Override
 	public State initialize(final Context context) {
 		context.addActions(this, enumerate(states.stream()).map(pair -> {
-			return new Action() {
-				@Override
-				public boolean run(final Context context) {
-					context.changeGlobalTags(new TagsChange(ImmutableSet.of(getTag(pair.first)),
-							ImmutableSet.of(getTag(state))
-					));
-					state = pair.first;
-					return true;
-				}
-
-				@Override
-				public String getName() {
-					return String.format("mode_%s", pair.second);
-				}
-			};
+			return new ActionMode(pair);
 		}).collect(Collectors.toList()));
 		context.changeGlobalTags(new TagsChange(ImmutableSet.of(getTag(state)), ImmutableSet.of()));
 		return new State() {
@@ -51,5 +38,34 @@ public class Modes extends Module {
 				context.removeActions(this);
 			}
 		};
+	}
+
+	private abstract static class ActionBase extends Action {
+		public static String group() {
+			return "modes module";
+		}
+	}
+
+	@Action.StaticID(id = "mode_%s (%s = mode id)")
+	private class ActionMode extends ActionBase {
+		private final Pair<Integer, String> pair;
+
+		public ActionMode(final Pair<Integer, String> pair) {
+			this.pair = pair;
+		}
+
+		@Override
+		public boolean run(final Context context) {
+			context.changeGlobalTags(new TagsChange(ImmutableSet.of(getTag(pair.first)),
+					ImmutableSet.of(getTag(state))
+			));
+			state = pair.first;
+			return true;
+		}
+
+		@Override
+		public String id() {
+			return String.format("mode_%s", pair.second);
+		}
 	}
 }

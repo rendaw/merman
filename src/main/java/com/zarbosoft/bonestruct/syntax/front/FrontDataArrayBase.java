@@ -35,7 +35,7 @@ public abstract class FrontDataArrayBase extends FrontPart {
 	@Configuration(name = "tag_last", optional = true)
 	public boolean tagLast = false;
 
-	@Configuration(optional = true, description = "How to visualize the ellipsis.")
+	@Configuration(optional = true)
 	public Symbol ellipsis = new SymbolText("...");
 
 	protected MiddleArrayBase dataType;

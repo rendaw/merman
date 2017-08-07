@@ -59,6 +59,12 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 		}
 	}
 
+	private abstract static class ActionBase extends Action {
+		public static String group() {
+			return "primitive";
+		}
+	}
+
 	private final BrickStyle brickStyle;
 	public PSet<Tag> tags;
 	public int brickCount = 0;
@@ -357,548 +363,41 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 			range.setOffsets(context, beginOffset, endOffset);
 			clusterIterator.setText(value.get());
 			value.addListener(this.clusterListener);
-			context.addActions(this, Stream.concat(Stream.of(new Action() {
-				@Override
-				public boolean run(final Context context) {
-					context.history.finishChange(context);
-					if (value.parent == null)
-						return false;
-					value.parent.selectUp(context);
-					return true;
-				}
-
-				@Override
-				public String getName() {
-					return "exit";
-				}
-			}, new Action() {
-				@Override
-				public boolean run(final Context context) {
-					return parent.selectNext(context);
-				}
-
-				@Override
-				public String getName() {
-					return "next";
-				}
-			}, new Action() {
-				@Override
-				public boolean run(final Context context) {
-					return parent.selectPrevious(context);
-				}
-
-				@Override
-				public String getName() {
-					return "previous";
-				}
-			}, new Action() {
-				@Override
-				public boolean run(final Context context) {
-					context.history.finishChange(context);
-					final int newIndex = following();
-					if (range.beginOffset == newIndex && range.endOffset == newIndex)
-						return false;
-					range.setOffsets(context, newIndex);
-					return true;
-				}
-
-				@Override
-				public String getName() {
-					return "next_element";
-				}
-			}, new Action() {
-				@Override
-				public boolean run(final Context context) {
-					context.history.finishChange(context);
-					final int newIndex = preceding();
-					if (range.beginOffset == newIndex && range.endOffset == newIndex)
-						return false;
-					range.setOffsets(context, newIndex);
-					return true;
-				}
-
-				@Override
-				public String getName() {
-					return "previous_element";
-				}
-			}, new Action() {
-				@Override
-				public boolean run(final Context context) {
-					context.history.finishChange(context);
-					final int newIndex = nextWord(range.endOffset);
-					if (range.beginOffset == newIndex && range.endOffset == newIndex)
-						return false;
-					range.setOffsets(context, newIndex);
-					return true;
-				}
-
-				@Override
-				public String getName() {
-					return "next_word";
-				}
-			}, new Action() {
-				@Override
-				public boolean run(final Context context) {
-					context.history.finishChange(context);
-					final int newIndex = previousWord(range.beginOffset);
-					if (range.beginOffset == newIndex && range.endOffset == newIndex)
-						return false;
-					range.setOffsets(context, newIndex);
-					return true;
-				}
-
-				@Override
-				public String getName() {
-					return "previous_word";
-				}
-			}, new Action() {
-				@Override
-				public boolean run(final Context context) {
-					context.history.finishChange(context);
-					final int newIndex = startOfLine(range.beginLine);
-					if (range.beginOffset == newIndex && range.endOffset == newIndex)
-						return false;
-					range.setOffsets(context, newIndex);
-					return true;
-				}
-
-				@Override
-				public String getName() {
-					return "line_begin";
-				}
-			}, new Action() {
-				@Override
-				public boolean run(final Context context) {
-					context.history.finishChange(context);
-					final int newIndex = endOfLine(range.endLine);
-					if (range.beginOffset == newIndex && range.endOffset == newIndex)
-						return false;
-					range.setOffsets(context, newIndex);
-					return true;
-				}
-
-				@Override
-				public String getName() {
-					return "line_end";
-				}
-			}, new Action() {
-				@Override
-				public boolean run(final Context context) {
-					context.history.finishChange(context);
-					final int newIndex = nextLine(range.endLine, range.endOffset);
-					if (range.beginOffset == newIndex && range.endOffset == newIndex)
-						return false;
-					range.setOffsets(context, newIndex);
-					return true;
-				}
-
-				@Override
-				public String getName() {
-					return "next_line";
-				}
-			}, new Action() {
-				@Override
-				public boolean run(final Context context) {
-					context.history.finishChange(context);
-					final int newIndex = previousLine(range.beginLine, range.beginOffset);
-					if (range.beginOffset == newIndex && range.endOffset == newIndex)
-						return false;
-					range.setOffsets(context, newIndex);
-					return true;
-				}
-
-				@Override
-				public String getName() {
-					return "previous_line";
-				}
-			}, new Action() {
-				@Override
-				public boolean run(final Context context) {
-					if (range.beginOffset == range.endOffset) {
-						if (range.beginOffset == 0)
-							return false;
-						final int preceding = preceding();
-						context.history.apply(context, value.changeRemove(preceding, range.beginOffset - preceding));
-					} else
-						context.history.apply(context,
-								value.changeRemove(range.beginOffset, range.endOffset - range.beginOffset)
-						);
-					return true;
-				}
-
-				@Override
-				public String getName() {
-					return "delete_previous";
-				}
-			}, new Action() {
-				@Override
-				public boolean run(final Context context) {
-					if (range.beginOffset == range.endOffset) {
-						if (range.endOffset == value.length())
-							return false;
-						final int following = following();
-						context.history.apply(context,
-								value.changeRemove(range.beginOffset, following - range.beginOffset)
-						);
-					} else
-						context.history.apply(context,
-								value.changeRemove(range.beginOffset, range.endOffset - range.beginOffset)
-						);
-					return true;
-				}
-
-				@Override
-				public String getName() {
-					return "delete_next";
-				}
-			}, new Action() {
-				@Override
-				public boolean run(final Context context) {
-					context.history.finishChange(context);
-					if (range.beginOffset != range.endOffset)
-						context.history.apply(context,
-								value.changeRemove(range.beginOffset, range.endOffset - range.beginOffset)
-						);
-					context.history.apply(context, value.changeAdd(range.beginOffset, "\n"));
-					context.history.finishChange(context);
-					return true;
-				}
-
-				@Override
-				public String getName() {
-					return "split";
-				}
-			}, new Action() {
-				@Override
-				public boolean run(final Context context) {
-					if (range.beginOffset == range.endOffset) {
-						if (range.beginLine.index + 1 >= lines.size())
-							return false;
-						final int select = range.endLine.offset + range.endLine.text.length();
-						context.history.finishChange(context);
-						context.history.apply(context,
-								value.changeRemove(lines.get(range.beginLine.index + 1).offset - 1, 1)
-						);
-						context.history.finishChange(context);
-						select(context, true, select, select);
-					} else {
-						if (range.beginLine == range.endLine)
-							return false;
-						context.history.finishChange(context);
-						final StringBuilder replace = new StringBuilder();
-						replace.append(range.beginLine.text.substring(range.beginOffset - range.beginLine.offset));
-						final int selectBegin = range.beginOffset;
-						int selectEnd = range.endOffset - 1;
-						for (int index = range.beginLine.index + 1; index <= range.endLine.index - 1; ++index) {
-							replace.append(lines.get(index).text);
-							selectEnd -= 1;
-						}
-						replace.append(range.endLine.text.substring(0, range.endOffset - range.endLine.offset));
-						context.history.apply(context,
-								value.changeRemove(range.beginOffset, range.endOffset - range.beginOffset)
-						);
-						context.history.apply(context, value.changeAdd(range.beginOffset, replace.toString()));
-						context.history.finishChange(context);
-						select(context, true, selectBegin, selectEnd);
-					}
-					return true;
-				}
-
-				@Override
-				public String getName() {
-					return "join";
-				}
-			}, new Action() {
-				@Override
-				public boolean run(final Context context) {
-					context.history.finishChange(context);
-					context.copy(value.get().substring(range.beginOffset, range.endOffset));
-					return true;
-				}
-
-				@Override
-				public String getName() {
-					return "copy";
-				}
-			}, new Action() {
-				@Override
-				public boolean run(final Context context) {
-					context.history.finishChange(context);
-					context.copy(value.get().substring(range.beginOffset, range.endOffset));
-					context.history.finishChange(context);
-					context.history.apply(context,
-							value.changeRemove(range.beginOffset, range.endOffset - range.beginOffset)
-					);
-					context.history.finishChange(context);
-					return true;
-				}
-
-				@Override
-				public String getName() {
-					return "cut";
-				}
-			}, new Action() {
-				@Override
-				public boolean run(final Context context) {
-					context.history.finishChange(context);
-					final String text = context.uncopyString();
-					if (text == null)
-						return false;
-					context.history.finishChange(context);
-					if (range.beginOffset != range.endOffset)
-						context.history.apply(context,
-								value.changeRemove(range.beginOffset, range.endOffset - range.beginOffset)
-						);
-					context.history.apply(context, value.changeAdd(range.beginOffset, text));
-					context.history.finishChange(context);
-					return true;
-				}
-
-				@Override
-				public String getName() {
-					return "paste";
-				}
-			}, new Action() {
-				@Override
-				public boolean run(final Context context) {
-					context.history.finishChange(context);
-					final int newIndex = following();
-					if (range.endOffset == newIndex)
-						return false;
-					range.setEndOffset(context, newIndex);
-					return true;
-				}
-
-				@Override
-				public String getName() {
-					return "gather_next";
-				}
-			}, new Action() {
-				@Override
-				public boolean run(final Context context) {
-					context.history.finishChange(context);
-					final int newIndex = nextWord(range.endOffset);
-					if (range.endOffset == newIndex)
-						return false;
-					range.setEndOffset(context, newIndex);
-					return true;
-				}
-
-				@Override
-				public String getName() {
-					return "gather_next_word";
-				}
-			}, new Action() {
-				@Override
-				public boolean run(final Context context) {
-					context.history.finishChange(context);
-					final int newIndex = endOfLine(range.endLine);
-					if (range.endOffset == newIndex)
-						return false;
-					range.setEndOffset(context, newIndex);
-					return true;
-				}
-
-				@Override
-				public String getName() {
-					return "gather_next_line_end";
-				}
-			}, new Action() {
-				@Override
-				public boolean run(final Context context) {
-					context.history.finishChange(context);
-					final int newIndex = nextLine(range.endLine, range.endOffset);
-					if (range.endOffset == newIndex)
-						return false;
-					range.setEndOffset(context, newIndex);
-					return true;
-				}
-
-				@Override
-				public String getName() {
-					return "gather_next_line";
-				}
-			}, new Action() {
-				@Override
-				public boolean run(final Context context) {
-					context.history.finishChange(context);
-					final int newIndex = Math.max(range.beginOffset, preceding(range.endOffset));
-					if (range.endOffset == newIndex)
-						return false;
-					range.setEndOffset(context, newIndex);
-					return true;
-				}
-
-				@Override
-				public String getName() {
-					return "release_next";
-				}
-			}, new Action() {
-				@Override
-				public boolean run(final Context context) {
-					context.history.finishChange(context);
-					final int newIndex = Math.max(range.beginOffset, previousWord(range.endOffset));
-					if (range.endOffset == newIndex)
-						return false;
-					range.setEndOffset(context, newIndex);
-					return true;
-				}
-
-				@Override
-				public String getName() {
-					return "release_next_word";
-				}
-			}, new Action() {
-				@Override
-				public boolean run(final Context context) {
-					context.history.finishChange(context);
-					final int newIndex = Math.max(range.beginOffset, startOfLine(range.endLine));
-					if (range.endOffset == newIndex)
-						return false;
-					range.setEndOffset(context, newIndex);
-					return true;
-				}
-
-				@Override
-				public String getName() {
-					return "release_next_line_end";
-				}
-			}, new Action() {
-				@Override
-				public boolean run(final Context context) {
-					context.history.finishChange(context);
-					final int newIndex = Math.max(range.beginOffset, previousLine(range.endLine, range.endOffset));
-					if (range.endOffset == newIndex)
-						return false;
-					range.setEndOffset(context, newIndex);
-					return true;
-				}
-
-				@Override
-				public String getName() {
-					return "release_next_line";
-				}
-			}, new Action() {
-				@Override
-				public boolean run(final Context context) {
-					context.history.finishChange(context);
-					final int newIndex = preceding();
-					if (range.beginOffset == newIndex)
-						return false;
-					range.setBeginOffset(context, newIndex);
-					return true;
-				}
-
-				@Override
-				public String getName() {
-					return "gather_previous";
-				}
-			}, new Action() {
-				@Override
-				public boolean run(final Context context) {
-					context.history.finishChange(context);
-					final int newIndex = previousWord(range.beginOffset);
-					if (range.beginOffset == newIndex)
-						return false;
-					range.setBeginOffset(context, newIndex);
-					return true;
-				}
-
-				@Override
-				public String getName() {
-					return "gather_previous_word";
-				}
-			}, new Action() {
-				@Override
-				public boolean run(final Context context) {
-					context.history.finishChange(context);
-					final int newIndex = startOfLine(range.beginLine);
-					if (range.beginOffset == newIndex)
-						return false;
-					range.setBeginOffset(context, newIndex);
-					return true;
-				}
-
-				@Override
-				public String getName() {
-					return "gather_previous_line_start";
-				}
-			}, new Action() {
-				@Override
-				public boolean run(final Context context) {
-					context.history.finishChange(context);
-					final int newIndex = previousLine(range.beginLine, range.beginOffset);
-					if (range.beginOffset == newIndex)
-						return false;
-					range.setBeginOffset(context, newIndex);
-					return true;
-				}
-
-				@Override
-				public String getName() {
-					return "gather_previous_line";
-				}
-			}, new Action() {
-				@Override
-				public boolean run(final Context context) {
-					context.history.finishChange(context);
-					final int newIndex = Math.min(range.endOffset, following(range.beginOffset));
-					if (range.beginOffset == newIndex)
-						return false;
-					range.setBeginOffset(context, newIndex);
-					return true;
-				}
-
-				@Override
-				public String getName() {
-					return "release_previous";
-				}
-			}, new Action() {
-				@Override
-				public boolean run(final Context context) {
-					context.history.finishChange(context);
-					final int newIndex = Math.min(range.endOffset, nextWord(range.beginOffset));
-					if (range.beginOffset == newIndex)
-						return false;
-					range.setBeginOffset(context, newIndex);
-					return true;
-				}
-
-				@Override
-				public String getName() {
-					return "release_previous_word";
-				}
-			}, new Action() {
-				@Override
-				public boolean run(final Context context) {
-					context.history.finishChange(context);
-					final int newIndex = Math.min(range.endOffset, endOfLine(range.beginLine));
-					if (range.beginOffset == newIndex)
-						return false;
-					range.setBeginOffset(context, newIndex);
-					return true;
-				}
-
-				@Override
-				public String getName() {
-					return "release_previous_line_start";
-				}
-			}, new Action() {
-				@Override
-				public boolean run(final Context context) {
-					context.history.finishChange(context);
-					final int newIndex = Math.min(range.endOffset, nextLine(range.beginLine, range.beginOffset));
-					if (newIndex == beginOffset)
-						return false;
-					range.setBeginOffset(context, newIndex);
-					return true;
-				}
-
-				@Override
-				public String getName() {
-					return "release_previous_line";
-				}
-			}), VisualPrimitive.this.getActions(context)).collect(Collectors.toList()));
+			context.addActions(this, Stream.concat(Stream.of(new ActionExit(),
+					new ActionNext(),
+					new ActionPrevious(),
+					new ActionNextElement(),
+					new ActionPreviousElement(),
+					new ActionNextWord(),
+					new ActionPreviousWord(),
+					new ActionLineBegin(),
+					new ActionLineEnd(),
+					new ActionNextLine(),
+					new ActionPreviousLine(),
+					new ActionDeletePrevious(),
+					new ActionDeleteNext(),
+					new ActionSplit(),
+					new ActionJoin(),
+					new ActionCopy(),
+					new ActionCut(),
+					new ActionPaste(),
+					new ActionGatherNext(),
+					new ActionGatherNextWord(),
+					new ActionGatherNextLineEnd(),
+					new ActionGatherNextLine(),
+					new ActionReleaseNext(),
+					new ActionReleaseNextWord(),
+					new ActionReleaseNextLineEnd(),
+					new ActionReleaseNextLine(),
+					new ActionGatherPrevious(),
+					new ActionGatherPreviousWord(),
+					new ActionGatherPreviousLineStart(),
+					new ActionGatherPreviousLine(),
+					new ActionReleasePrevious(),
+					new ActionReleasePreviousWord(),
+					new ActionReleasePreviousLineStart(),
+					new ActionReleasePreviousLine(beginOffset)
+			), VisualPrimitive.this.getActions(context)).collect(Collectors.toList()));
 		}
 
 		@Override
@@ -940,6 +439,497 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 		) {
 			range.setStyle(context, getBorderStyle(context, tags).obbox);
 			super.tagsChanged(context);
+		}
+
+		@Action.StaticID(id = "exit")
+		private class ActionExit extends ActionBase {
+			@Override
+			public boolean run(final Context context) {
+				context.history.finishChange(context);
+				if (value.parent == null)
+					return false;
+				value.parent.selectUp(context);
+				return true;
+			}
+
+		}
+
+		@Action.StaticID(id = "next")
+		private class ActionNext extends ActionBase {
+			@Override
+			public boolean run(final Context context) {
+				return parent.selectNext(context);
+			}
+
+		}
+
+		@Action.StaticID(id = "previous")
+		private class ActionPrevious extends ActionBase {
+			@Override
+			public boolean run(final Context context) {
+				return parent.selectPrevious(context);
+			}
+
+		}
+
+		@Action.StaticID(id = "next_element")
+		private class ActionNextElement extends ActionBase {
+			@Override
+			public boolean run(final Context context) {
+				context.history.finishChange(context);
+				final int newIndex = following();
+				if (range.beginOffset == newIndex && range.endOffset == newIndex)
+					return false;
+				range.setOffsets(context, newIndex);
+				return true;
+			}
+		}
+
+		@Action.StaticID(id = "previous_element")
+		private class ActionPreviousElement extends ActionBase {
+			@Override
+			public boolean run(final Context context) {
+				context.history.finishChange(context);
+				final int newIndex = preceding();
+				if (range.beginOffset == newIndex && range.endOffset == newIndex)
+					return false;
+				range.setOffsets(context, newIndex);
+				return true;
+			}
+
+		}
+
+		@Action.StaticID(id = "next_word")
+		private class ActionNextWord extends ActionBase {
+			@Override
+			public boolean run(final Context context) {
+				context.history.finishChange(context);
+				final int newIndex = nextWord(range.endOffset);
+				if (range.beginOffset == newIndex && range.endOffset == newIndex)
+					return false;
+				range.setOffsets(context, newIndex);
+				return true;
+			}
+
+		}
+
+		@Action.StaticID(id = "previous_word")
+		private class ActionPreviousWord extends ActionBase {
+			@Override
+			public boolean run(final Context context) {
+				context.history.finishChange(context);
+				final int newIndex = previousWord(range.beginOffset);
+				if (range.beginOffset == newIndex && range.endOffset == newIndex)
+					return false;
+				range.setOffsets(context, newIndex);
+				return true;
+			}
+		}
+
+		@Action.StaticID(id = "line_begin")
+		private class ActionLineBegin extends ActionBase {
+			@Override
+			public boolean run(final Context context) {
+				context.history.finishChange(context);
+				final int newIndex = startOfLine(range.beginLine);
+				if (range.beginOffset == newIndex && range.endOffset == newIndex)
+					return false;
+				range.setOffsets(context, newIndex);
+				return true;
+			}
+
+		}
+
+		@Action.StaticID(id = "line_end")
+		private class ActionLineEnd extends ActionBase {
+			@Override
+			public boolean run(final Context context) {
+				context.history.finishChange(context);
+				final int newIndex = endOfLine(range.endLine);
+				if (range.beginOffset == newIndex && range.endOffset == newIndex)
+					return false;
+				range.setOffsets(context, newIndex);
+				return true;
+			}
+		}
+
+		@Action.StaticID(id = "next_line")
+		private class ActionNextLine extends ActionBase {
+			@Override
+			public boolean run(final Context context) {
+				context.history.finishChange(context);
+				final int newIndex = nextLine(range.endLine, range.endOffset);
+				if (range.beginOffset == newIndex && range.endOffset == newIndex)
+					return false;
+				range.setOffsets(context, newIndex);
+				return true;
+			}
+
+		}
+
+		@Action.StaticID(id = "previous_line")
+		private class ActionPreviousLine extends ActionBase {
+			@Override
+			public boolean run(final Context context) {
+				context.history.finishChange(context);
+				final int newIndex = previousLine(range.beginLine, range.beginOffset);
+				if (range.beginOffset == newIndex && range.endOffset == newIndex)
+					return false;
+				range.setOffsets(context, newIndex);
+				return true;
+			}
+
+		}
+
+		@Action.StaticID(id = "delete_previous")
+		private class ActionDeletePrevious extends ActionBase {
+			@Override
+			public boolean run(final Context context) {
+				if (range.beginOffset == range.endOffset) {
+					if (range.beginOffset == 0)
+						return false;
+					final int preceding = preceding();
+					context.history.apply(context, value.changeRemove(preceding, range.beginOffset - preceding));
+				} else
+					context.history.apply(context,
+							value.changeRemove(range.beginOffset, range.endOffset - range.beginOffset)
+					);
+				return true;
+			}
+
+		}
+
+		@Action.StaticID(id = "delete_next")
+		private class ActionDeleteNext extends ActionBase {
+			@Override
+			public boolean run(final Context context) {
+				if (range.beginOffset == range.endOffset) {
+					if (range.endOffset == value.length())
+						return false;
+					final int following = following();
+					context.history.apply(context,
+							value.changeRemove(range.beginOffset, following - range.beginOffset)
+					);
+				} else
+					context.history.apply(context,
+							value.changeRemove(range.beginOffset, range.endOffset - range.beginOffset)
+					);
+				return true;
+			}
+
+		}
+
+		@Action.StaticID(id = "split")
+		private class ActionSplit extends ActionBase {
+			@Override
+			public boolean run(final Context context) {
+				context.history.finishChange(context);
+				if (range.beginOffset != range.endOffset)
+					context.history.apply(context,
+							value.changeRemove(range.beginOffset, range.endOffset - range.beginOffset)
+					);
+				context.history.apply(context, value.changeAdd(range.beginOffset, "\n"));
+				context.history.finishChange(context);
+				return true;
+			}
+
+		}
+
+		@Action.StaticID(id = "join")
+		private class ActionJoin extends ActionBase {
+			@Override
+			public boolean run(final Context context) {
+				if (range.beginOffset == range.endOffset) {
+					if (range.beginLine.index + 1 >= lines.size())
+						return false;
+					final int select = range.endLine.offset + range.endLine.text.length();
+					context.history.finishChange(context);
+					context.history.apply(context,
+							value.changeRemove(lines.get(range.beginLine.index + 1).offset - 1, 1)
+					);
+					context.history.finishChange(context);
+					select(context, true, select, select);
+				} else {
+					if (range.beginLine == range.endLine)
+						return false;
+					context.history.finishChange(context);
+					final StringBuilder replace = new StringBuilder();
+					replace.append(range.beginLine.text.substring(range.beginOffset - range.beginLine.offset));
+					final int selectBegin = range.beginOffset;
+					int selectEnd = range.endOffset - 1;
+					for (int index = range.beginLine.index + 1; index <= range.endLine.index - 1; ++index) {
+						replace.append(lines.get(index).text);
+						selectEnd -= 1;
+					}
+					replace.append(range.endLine.text.substring(0, range.endOffset - range.endLine.offset));
+					context.history.apply(context,
+							value.changeRemove(range.beginOffset, range.endOffset - range.beginOffset)
+					);
+					context.history.apply(context, value.changeAdd(range.beginOffset, replace.toString()));
+					context.history.finishChange(context);
+					select(context, true, selectBegin, selectEnd);
+				}
+				return true;
+			}
+		}
+
+		@Action.StaticID(id = "copy")
+		private class ActionCopy extends ActionBase {
+			@Override
+			public boolean run(final Context context) {
+				context.history.finishChange(context);
+				context.copy(value.get().substring(range.beginOffset, range.endOffset));
+				return true;
+			}
+		}
+
+		@Action.StaticID(id = "cut")
+		private class ActionCut extends ActionBase {
+			@Override
+			public boolean run(final Context context) {
+				context.history.finishChange(context);
+				context.copy(value.get().substring(range.beginOffset, range.endOffset));
+				context.history.finishChange(context);
+				context.history.apply(context,
+						value.changeRemove(range.beginOffset, range.endOffset - range.beginOffset)
+				);
+				context.history.finishChange(context);
+				return true;
+			}
+		}
+
+		@Action.StaticID(id = "paste")
+		private class ActionPaste extends ActionBase {
+			@Override
+			public boolean run(final Context context) {
+				context.history.finishChange(context);
+				final String text = context.uncopyString();
+				if (text == null)
+					return false;
+				context.history.finishChange(context);
+				if (range.beginOffset != range.endOffset)
+					context.history.apply(context,
+							value.changeRemove(range.beginOffset, range.endOffset - range.beginOffset)
+					);
+				context.history.apply(context, value.changeAdd(range.beginOffset, text));
+				context.history.finishChange(context);
+				return true;
+			}
+
+		}
+
+		@Action.StaticID(id = "gather_next")
+		private class ActionGatherNext extends ActionBase {
+			@Override
+			public boolean run(final Context context) {
+				context.history.finishChange(context);
+				final int newIndex = following();
+				if (range.endOffset == newIndex)
+					return false;
+				range.setEndOffset(context, newIndex);
+				return true;
+			}
+		}
+
+		@Action.StaticID(id = "gather_next_word")
+		private class ActionGatherNextWord extends ActionBase {
+			@Override
+			public boolean run(final Context context) {
+				context.history.finishChange(context);
+				final int newIndex = nextWord(range.endOffset);
+				if (range.endOffset == newIndex)
+					return false;
+				range.setEndOffset(context, newIndex);
+				return true;
+			}
+		}
+
+		@Action.StaticID(id = "gather_next_line_end")
+		private class ActionGatherNextLineEnd extends ActionBase {
+			@Override
+			public boolean run(final Context context) {
+				context.history.finishChange(context);
+				final int newIndex = endOfLine(range.endLine);
+				if (range.endOffset == newIndex)
+					return false;
+				range.setEndOffset(context, newIndex);
+				return true;
+			}
+		}
+
+		@Action.StaticID(id = "gather_next_line")
+		private class ActionGatherNextLine extends ActionBase {
+			@Override
+			public boolean run(final Context context) {
+				context.history.finishChange(context);
+				final int newIndex = nextLine(range.endLine, range.endOffset);
+				if (range.endOffset == newIndex)
+					return false;
+				range.setEndOffset(context, newIndex);
+				return true;
+			}
+		}
+
+		@Action.StaticID(id = "release_next")
+		private class ActionReleaseNext extends ActionBase {
+			@Override
+			public boolean run(final Context context) {
+				context.history.finishChange(context);
+				final int newIndex = Math.max(range.beginOffset, preceding(range.endOffset));
+				if (range.endOffset == newIndex)
+					return false;
+				range.setEndOffset(context, newIndex);
+				return true;
+			}
+		}
+
+		@Action.StaticID(id = "release_next_word")
+		private class ActionReleaseNextWord extends ActionBase {
+			@Override
+			public boolean run(final Context context) {
+				context.history.finishChange(context);
+				final int newIndex = Math.max(range.beginOffset, previousWord(range.endOffset));
+				if (range.endOffset == newIndex)
+					return false;
+				range.setEndOffset(context, newIndex);
+				return true;
+			}
+		}
+
+		@Action.StaticID(id = "release_next_line_end")
+		private class ActionReleaseNextLineEnd extends ActionBase {
+			@Override
+			public boolean run(final Context context) {
+				context.history.finishChange(context);
+				final int newIndex = Math.max(range.beginOffset, startOfLine(range.endLine));
+				if (range.endOffset == newIndex)
+					return false;
+				range.setEndOffset(context, newIndex);
+				return true;
+			}
+		}
+
+		@Action.StaticID(id = "release_next_line")
+		private class ActionReleaseNextLine extends ActionBase {
+			@Override
+			public boolean run(final Context context) {
+				context.history.finishChange(context);
+				final int newIndex = Math.max(range.beginOffset, previousLine(range.endLine, range.endOffset));
+				if (range.endOffset == newIndex)
+					return false;
+				range.setEndOffset(context, newIndex);
+				return true;
+			}
+		}
+
+		@Action.StaticID(id = "gather_previous")
+		private class ActionGatherPrevious extends ActionBase {
+			@Override
+			public boolean run(final Context context) {
+				context.history.finishChange(context);
+				final int newIndex = preceding();
+				if (range.beginOffset == newIndex)
+					return false;
+				range.setBeginOffset(context, newIndex);
+				return true;
+			}
+		}
+
+		@Action.StaticID(id = "gather_previous_word")
+		private class ActionGatherPreviousWord extends ActionBase {
+			@Override
+			public boolean run(final Context context) {
+				context.history.finishChange(context);
+				final int newIndex = previousWord(range.beginOffset);
+				if (range.beginOffset == newIndex)
+					return false;
+				range.setBeginOffset(context, newIndex);
+				return true;
+			}
+		}
+
+		@Action.StaticID(id = "gather_previous_line_start")
+		private class ActionGatherPreviousLineStart extends ActionBase {
+			@Override
+			public boolean run(final Context context) {
+				context.history.finishChange(context);
+				final int newIndex = startOfLine(range.beginLine);
+				if (range.beginOffset == newIndex)
+					return false;
+				range.setBeginOffset(context, newIndex);
+				return true;
+			}
+		}
+
+		@Action.StaticID(id = "gather_previous_line")
+		private class ActionGatherPreviousLine extends ActionBase {
+			@Override
+			public boolean run(final Context context) {
+				context.history.finishChange(context);
+				final int newIndex = previousLine(range.beginLine, range.beginOffset);
+				if (range.beginOffset == newIndex)
+					return false;
+				range.setBeginOffset(context, newIndex);
+				return true;
+			}
+		}
+
+		@Action.StaticID(id = "release_previous")
+		private class ActionReleasePrevious extends ActionBase {
+			@Override
+			public boolean run(final Context context) {
+				context.history.finishChange(context);
+				final int newIndex = Math.min(range.endOffset, following(range.beginOffset));
+				if (range.beginOffset == newIndex)
+					return false;
+				range.setBeginOffset(context, newIndex);
+				return true;
+			}
+		}
+
+		@Action.StaticID(id = "release_previous_word")
+		private class ActionReleasePreviousWord extends ActionBase {
+			@Override
+			public boolean run(final Context context) {
+				context.history.finishChange(context);
+				final int newIndex = Math.min(range.endOffset, nextWord(range.beginOffset));
+				if (range.beginOffset == newIndex)
+					return false;
+				range.setBeginOffset(context, newIndex);
+				return true;
+			}
+		}
+
+		@Action.StaticID(id = "release_previous_line_start")
+		private class ActionReleasePreviousLineStart extends ActionBase {
+			@Override
+			public boolean run(final Context context) {
+				context.history.finishChange(context);
+				final int newIndex = Math.min(range.endOffset, endOfLine(range.beginLine));
+				if (range.beginOffset == newIndex)
+					return false;
+				range.setBeginOffset(context, newIndex);
+				return true;
+			}
+		}
+
+		@Action.StaticID(id = "release_previous_line")
+		private class ActionReleasePreviousLine extends ActionBase {
+			private final int beginOffset;
+
+			public ActionReleasePreviousLine(final int beginOffset) {
+				this.beginOffset = beginOffset;
+			}
+
+			@Override
+			public boolean run(final Context context) {
+				context.history.finishChange(context);
+				final int newIndex = Math.min(range.endOffset, nextLine(range.beginLine, range.beginOffset));
+				if (newIndex == beginOffset)
+					return false;
+				range.setBeginOffset(context, newIndex);
+				return true;
+			}
 		}
 	}
 

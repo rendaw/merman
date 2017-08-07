@@ -18,11 +18,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-@Configuration(name = "indicators", description = "Displays a row of symbols in either gutter based on tags.")
+@Configuration(name = "indicators")
 public class Indicators extends Module {
 	@Configuration
 	public static class Indicator {
-		@Configuration(description = "Used as type tag for styling this element.")
+		@Configuration()
 		public String id;
 
 		@Configuration
@@ -37,15 +37,13 @@ public class Indicators extends Module {
 	@Configuration
 	public List<Indicator> indicators = new ArrayList<>();
 
-	@Configuration(name = "converse_start", optional = true,
-			description = "If true, show the symbols in the near gutter.  Otherwise, the far.")
+	@Configuration(name = "converse_start", optional = true)
 	public boolean converseStart = true;
 
 	@Configuration(name = "converse_padding", optional = true)
 	public int conversePadding = 0;
 
-	@Configuration(name = "transverse_start", optional = true,
-			description = "If true, show the symbols at the start of the gutter.  Otherwise, the end.")
+	@Configuration(name = "transverse_start", optional = true)
 	public boolean transverseStart = true;
 	@Configuration(name = "transverse_padding", optional = true)
 	public int transversePadding = 0;
