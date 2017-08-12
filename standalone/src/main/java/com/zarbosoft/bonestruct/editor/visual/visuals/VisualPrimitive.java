@@ -34,6 +34,7 @@ import static com.zarbosoft.rendaw.common.Common.*;
 
 public class VisualPrimitive extends Visual implements VisualLeaf {
 	// INVARIANT: Leaf nodes must always create at least one brick
+	// INVARIANT: Always at least one line
 	// TODO index line offsets for faster insert/remove
 	private final ValuePrimitive.Listener dataListener;
 	private final Obbox border = null;
@@ -1257,6 +1258,8 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 					removeLines += 1;
 				}
 				lines.subList(base.index + 1, base.index + 1 + removeLines).clear();
+				if (lines.isEmpty())
+					throw new AssertionError("DEBUG");
 				enumerate(lines.stream().skip(base.index + 1)).forEach(pair -> {
 					pair.second.index = base.index + 1 + pair.first;
 					pair.second.offset -= count;
@@ -1591,6 +1594,8 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 				line.destroy(context);
 			}
 			lines.subList(j, endIndex).clear();
+			if (lines.isEmpty())
+				throw new AssertionError("DEBUG");
 		}
 
 		// Cleanup

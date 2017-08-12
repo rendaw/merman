@@ -3,7 +3,6 @@ package com.zarbosoft.bonestruct.editor.wall.bricks;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.display.DisplayNode;
 import com.zarbosoft.bonestruct.editor.display.Image;
-import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.AlignmentListener;
 import com.zarbosoft.bonestruct.editor.wall.Brick;
 import com.zarbosoft.bonestruct.editor.wall.BrickInterface;
@@ -14,8 +13,6 @@ import java.nio.file.Paths;
 public class BrickImage extends Brick implements AlignmentListener {
 	private final Image image;
 	private Style.Baked style;
-	private Alignment alignment;
-	private int minConverse;
 
 	public BrickImage(final Context context, final BrickInterface inter) {
 		super(inter);
@@ -69,11 +66,6 @@ public class BrickImage extends Brick implements AlignmentListener {
 	}
 
 	@Override
-	public int getMinConverse(final Context context) {
-		return minConverse;
-	}
-
-	@Override
 	public DisplayNode getDisplayNode() {
 		return image;
 	}
@@ -82,10 +74,5 @@ public class BrickImage extends Brick implements AlignmentListener {
 	public void setConverse(final Context context, final int minConverse, final int converse) {
 		this.minConverse = minConverse;
 		image.setConverse(context, converse, false);
-	}
-
-	@Override
-	public void align(final Context context) {
-		changed(context);
 	}
 }

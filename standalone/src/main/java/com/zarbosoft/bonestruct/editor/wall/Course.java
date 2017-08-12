@@ -1,20 +1,23 @@
 package com.zarbosoft.bonestruct.editor.wall;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.IdleTask;
 import com.zarbosoft.bonestruct.editor.display.Group;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.VisualLeaf;
+import com.zarbosoft.bonestruct.editor.visual.tags.StateTag;
+import com.zarbosoft.bonestruct.editor.visual.tags.TagsChange;
 import com.zarbosoft.bonestruct.editor.visual.visuals.VisualAtom;
 import com.zarbosoft.rendaw.common.ChainComparator;
+import com.zarbosoft.rendaw.common.Pair;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.zarbosoft.rendaw.common.Common.isOrdered;
-import static com.zarbosoft.rendaw.common.Common.last;
+import static com.zarbosoft.rendaw.common.Common.*;
 
 public class Course {
 
@@ -43,8 +46,7 @@ public class Course {
 
 	void setTransverse(final Context context, final int transverse) {
 		transverseStart = transverse;
-		visual.setPosition(
-				context,
+		visual.setPosition(context,
 				new com.zarbosoft.bonestruct.editor.visual.Vector(0, transverseStart),
 				context.syntax.animateCoursePlacement
 		);
@@ -110,9 +112,8 @@ public class Course {
 		if (bricks.size() == 0)
 			throw new AssertionError("Adding no bricks");
 		children.addAll(at, bricks);
-		for (final Brick brick : bricks) {
-			brick.parent = this;
-		}
+		for (final Brick brick : bricks)
+			brick.setParent(context, this);
 		renumber(at);
 		visual.addAll(at, bricks.stream().map(c -> c.getDisplayNode()).collect(Collectors.toList()));
 		bricks.stream().forEach(c -> {
@@ -132,7 +133,7 @@ public class Course {
 		if (context.hoverBrick == brick) {
 			context.clearHover();
 		}
-		brick.parent = null;
+		brick.setParent(context, null);
 		children.remove(at);
 		if (children.isEmpty()) {
 			if (index - 1 >= 0)
@@ -201,6 +202,34 @@ public class Course {
 		return ascent + descent;
 	}
 
+	private static class PlaceData {
+		final int converse;
+		final int minConverse;
+		final int nextConverse;
+
+		private PlaceData(final int converse, final int minConverse, final int nextConverse) {
+			this.converse = converse;
+			this.minConverse = minConverse;
+			this.nextConverse = nextConverse;
+		}
+	}
+
+	private PlaceData brickAdvanceLogic(
+			final Context context,
+			int converse,
+			final Brick brick,
+			final Brick.Properties properties,
+			final Set<Alignment> seenAlignments
+	) {
+		final int minConverse;
+		if (properties.alignment != null && properties.alignment.enabledForCourse(this)) {
+			minConverse = converse;
+			converse = Math.max(converse, properties.alignment.converse);
+		} else
+			minConverse = 0;
+		return new PlaceData(converse, minConverse, converse + properties.converseSpan);
+	}
+
 	class IdlePlaceTask extends IdleTask {
 
 		private final Context context;
@@ -220,7 +249,6 @@ public class Course {
 
 		@Override
 		public boolean runImplementation() {
-			idlePlace = null;
 			// Update transverse space
 			boolean newAscent = false, newDescent = false;
 			for (final Brick brick : changed) {
@@ -271,29 +299,21 @@ public class Course {
 			for (int index = at; index < children.size(); ++index) {
 				final Brick brick = children.get(index);
 				final Brick.Properties properties = brick.properties(context);
-				final int minConverse;
-				if (properties.alignment != null && !seenAlignments.contains(properties.alignment)) {
-					seenAlignments.add(properties.alignment);
-					minConverse = converse;
-					converse = Math.max(converse, properties.alignment.converse);
-				} else
-					minConverse = 0;
-				brick.setConverse(context, minConverse, converse);
-				if (properties.alignment != null) {
-					properties.alignment.feedback(context, minConverse);
+				final PlaceData result = brickAdvanceLogic(context, converse, brick, properties, seenAlignments);
+				brick.setConverse(context, result.minConverse, result.converse);
+				if (properties.alignment != null && properties.alignment.enabledForCourse(Course.this)) {
+					properties.alignment.feedback(context, result.minConverse);
 				}
 				for (final Attachment attachment : brick.getAttachments(context))
-					attachment.setConverse(context, converse);
-				converse = brick.converseEdge(context);
-				if (converse > context.edge)
-					getIdleCompact(context);
+					attachment.setConverse(context, result.converse);
+				converse = result.nextConverse;
 			}
-			if (converse * context.syntax.retryExpandFactor < lastExpandCheckConverse) {
+			if (converse > context.edge)
+				getIdleCompact(context);
+			if (converse * context.syntax.retryExpandFactor < lastExpandCheckConverse)
 				getIdleExpand(context);
-			}
-			if (converse > lastExpandCheckConverse) {
+			if (converse > lastExpandCheckConverse)
 				lastExpandCheckConverse = converse;
-			}
 
 			// Propagate changes up
 			if (newAscent || newDescent/* || fixtures[0] || fixtures[1]*/)
@@ -435,6 +455,42 @@ public class Course {
 							return true;
 						}))
 					return false;
+			}
+
+			// Check if we actually can expand
+			{
+				final Iterable<Pair<Brick, Brick.Properties>> brickProperties = top.getLeafPropertiesForTagsChange(
+						context,
+						new TagsChange(ImmutableSet.of(), ImmutableSet.of(new StateTag("compact")))
+				);
+				final Map<Brick, Brick.Properties> lookup =
+						stream(brickProperties.iterator()).collect(Collectors.toMap(p -> p.first, p -> p.second));
+				final Set<Brick> seen = new HashSet<>();
+				final Set<Alignment> seenAlignments = new HashSet<>();
+				int converse = 0;
+				Course course = null;
+				for (final Pair<Brick, Brick.Properties> pair : brickProperties) {
+					final Brick brick = pair.first;
+					if (seen.contains(brick))
+						continue;
+					if (course == null) {
+					} else if (brick.parent.index == course.index + 1 && !pair.second.split && brick.index == 0) {
+					} else {
+						converse = 0;
+					}
+					course = brick.parent;
+					for (final Brick at : course.children) {
+						final Brick.Properties properties;
+						if (lookup.containsKey(at)) {
+							seen.add(at);
+							properties = lookup.get(at);
+						} else
+							properties = at.properties(context);
+						converse = brickAdvanceLogic(context, converse, brick, properties, seenAlignments).nextConverse;
+						if (converse > context.edge)
+							return false;
+					}
+				}
 			}
 
 			// Expand

@@ -16,6 +16,7 @@ import com.zarbosoft.bonestruct.syntax.Syntax;
 import org.junit.Test;
 
 public class TestLayoutAlignment {
+	final public static FreeAtomType primitive;
 	final public static FreeAtomType relative;
 	final public static FreeAtomType absolute;
 	final public static FreeAtomType array;
@@ -26,6 +27,11 @@ public class TestLayoutAlignment {
 	final public static Syntax syntax;
 
 	static {
+		primitive = new TypeBuilder("primitive")
+				.middlePrimitive("value")
+				.back(Helper.buildBackDataPrimitive("value"))
+				.frontDataPrimitive("value")
+				.build();
 		relative = new TypeBuilder("relative")
 				.middlePrimitive("value")
 				.back(Helper.buildBackDataPrimitive("value"))
@@ -81,6 +87,7 @@ public class TestLayoutAlignment {
 				.front(new FrontDataPrimitiveBuilder("third").tag("concensus2").build())
 				.build();
 		syntax = new SyntaxBuilder("any")
+				.type(primitive)
 				.type(absolute)
 				.type(relative)
 				.type(array)
@@ -90,6 +97,7 @@ public class TestLayoutAlignment {
 				.type(triple)
 				.group("any",
 						new GroupBuilder()
+								.type(primitive)
 								.type(absolute)
 								.type(relative)
 								.type(array)
@@ -277,5 +285,22 @@ public class TestLayoutAlignment {
 				new TreeBuilder(pair).add("first", "a").add("second", "b").build(),
 				new TreeBuilder(pair).add("first", "cccc").add("second", "d").build()
 		).build()).resize(60).checkTextBrick(1, 1, "a").checkTextBrick(2, 1, "cccc").resize(70).checkCourseCount(1);
+	}
+
+	@Test
+	public void testConcensusBreak() {
+		// The concensus value lingers after breaking, so an element that goes offscreen will stay offscreen at first placement
+		// Then the concensus resets greatly reducing the line length, triggers expand -> endless loop
+		new GeneralTestWizard(syntax, new TreeBuilder(compactArray).addArray("value",
+				new TreeBuilder(primitive).add("value", "one").build(),
+				new TreeBuilder(pair).add("first", "two").add("second", "three").build()
+		).build())
+				.checkCourseCount(1)
+				.resize(80)
+				.checkCourseCount(3)
+				.checkTextBrick(1, 1, "one")
+				.checkTextBrick(2, 1, "two")
+				.resize(10000)
+				.checkCourseCount(1);
 	}
 }

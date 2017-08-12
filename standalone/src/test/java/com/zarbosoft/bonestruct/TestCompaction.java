@@ -103,6 +103,8 @@ public class TestCompaction {
 						.addArray("value", new TreeBuilder(one).build(), new TreeBuilder(one).build())
 						.build()
 		)
+				.checkTextBrick(0, 1, "one")
+				.checkTextBrick(0, 3, "one")
 				.resize(40)
 				.checkTextBrick(0, 1, "one")
 				.checkTextBrick(1, 1, "one")
@@ -119,6 +121,9 @@ public class TestCompaction {
 						.build(),
 				new TreeBuilder(one).build()
 		).build())
+				.checkTextBrick(0, 2, "one")
+				.checkTextBrick(0, 4, "one")
+				.checkTextBrick(0, 6, "one")
 				.resize(70)
 				.checkTextBrick(0, 2, "one")
 				.checkTextBrick(0, 4, "one")

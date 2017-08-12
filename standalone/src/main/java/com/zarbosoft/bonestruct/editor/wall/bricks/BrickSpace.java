@@ -3,7 +3,6 @@ package com.zarbosoft.bonestruct.editor.wall.bricks;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.display.Blank;
 import com.zarbosoft.bonestruct.editor.display.DisplayNode;
-import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.AlignmentListener;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.editor.wall.Brick;
@@ -12,9 +11,7 @@ import com.zarbosoft.bonestruct.syntax.style.Style;
 
 public class BrickSpace extends Brick implements AlignmentListener {
 	private int converse = 0;
-	private Alignment alignment;
 	private final Blank visual;
-	private int minConverse;
 
 	public BrickSpace(final Context context, final BrickInterface inter) {
 		super(inter);
@@ -74,17 +71,7 @@ public class BrickSpace extends Brick implements AlignmentListener {
 	}
 
 	@Override
-	public void align(final Context context) {
-		changed(context);
-	}
-
-	@Override
 	public int getConverse(final Context context) {
 		return converse;
-	}
-
-	@Override
-	public int getMinConverse(final Context context) {
-		return minConverse;
 	}
 }

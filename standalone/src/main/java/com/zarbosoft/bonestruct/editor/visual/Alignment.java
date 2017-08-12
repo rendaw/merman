@@ -1,6 +1,8 @@
 package com.zarbosoft.bonestruct.editor.visual;
 
 import com.zarbosoft.bonestruct.editor.Context;
+import com.zarbosoft.bonestruct.editor.wall.Brick;
+import com.zarbosoft.bonestruct.editor.wall.Course;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,4 +29,11 @@ public abstract class Alignment {
 	}
 
 	public abstract void root(Context context, Map<String, Alignment> parents);
+
+	public void courseChanged(final Context context, final Brick brick, final Course parent, final Course newParent) {
+	}
+
+	public boolean enabledForCourse(final Course parent) {
+		return true;
+	}
 }

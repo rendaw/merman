@@ -6,6 +6,7 @@ import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.Hoverable;
 import com.zarbosoft.bonestruct.editor.display.DisplayNode;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
+import com.zarbosoft.bonestruct.editor.visual.AlignmentListener;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.editor.visual.VisualLeaf;
 import com.zarbosoft.bonestruct.editor.visual.tags.Tag;
@@ -17,11 +18,13 @@ import java.util.Set;
 
 import static com.zarbosoft.rendaw.common.Common.last;
 
-public abstract class Brick {
+public abstract class Brick implements AlignmentListener {
 	public Course parent;
 	public int index;
 	Set<Attachment> attachments = new HashSet<>();
 	public Style.Baked style;
+	public Alignment alignment;
+	public int minConverse;
 	public final BrickInterface inter;
 
 	protected Brick(final BrickInterface inter) {
@@ -39,6 +42,16 @@ public abstract class Brick {
 	public abstract void tagsChanged(Context context);
 
 	public abstract Properties properties(final Context context, final Style.Baked style);
+
+	@Override
+	public final void align(final Context context) {
+		changed(context);
+	}
+
+	@Override
+	public final int getMinConverse(final Context context) {
+		return minConverse;
+	}
 
 	/**
 	 * @param context
@@ -80,6 +93,13 @@ public abstract class Brick {
 
 	public VisualLeaf getVisual() {
 		return inter.getVisual();
+	}
+
+	public void setParent(final Context context, final Course parent) {
+		final Course oldParent = this.parent;
+		this.parent = parent;
+		if (alignment != null)
+			alignment.courseChanged(context, this, oldParent, parent);
 	}
 
 	public static class Properties {
@@ -187,6 +207,8 @@ public abstract class Brick {
 
 	protected void destroyed(final Context context) {
 		inter.brickDestroyed(context);
+		if (alignment != null)
+			alignment.removeListener(context, this);
 	}
 
 	public void destroy(final Context context) {
