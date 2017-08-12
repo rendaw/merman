@@ -5,7 +5,6 @@ import com.google.common.collect.ImmutableSet;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.IdleTask;
 import com.zarbosoft.bonestruct.editor.display.Group;
-import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.VisualLeaf;
 import com.zarbosoft.bonestruct.editor.visual.tags.StateTag;
@@ -215,11 +214,7 @@ public class Course {
 	}
 
 	private PlaceData brickAdvanceLogic(
-			final Context context,
-			int converse,
-			final Brick brick,
-			final Brick.Properties properties,
-			final Set<Alignment> seenAlignments
+			final Context context, int converse, final Brick brick, final Brick.Properties properties
 	) {
 		final int minConverse;
 		if (properties.alignment != null && properties.alignment.enabledForCourse(this)) {
@@ -287,19 +282,13 @@ public class Course {
 				});
 
 			// Do converse placement
-			final Set<Alignment> seenAlignments = new HashSet<>();
 			final int at = first;
 			int converse =
 					at == 0 ? 0 : (at >= children.size() ? last(children) : children.get(at - 1)).converseEdge(context);
-			for (int index = 0; index < at && index < children.size(); ++index) {
-				final Brick brick = children.get(index);
-				final Brick.Properties properties = brick.properties(context);
-				seenAlignments.add(properties.alignment);
-			}
 			for (int index = at; index < children.size(); ++index) {
 				final Brick brick = children.get(index);
 				final Brick.Properties properties = brick.properties(context);
-				final PlaceData result = brickAdvanceLogic(context, converse, brick, properties, seenAlignments);
+				final PlaceData result = brickAdvanceLogic(context, converse, brick, properties);
 				brick.setConverse(context, result.minConverse, result.converse);
 				if (properties.alignment != null && properties.alignment.enabledForCourse(Course.this)) {
 					properties.alignment.feedback(context, result.minConverse);
@@ -466,7 +455,6 @@ public class Course {
 				final Map<Brick, Brick.Properties> lookup =
 						stream(brickProperties.iterator()).collect(Collectors.toMap(p -> p.first, p -> p.second));
 				final Set<Brick> seen = new HashSet<>();
-				final Set<Alignment> seenAlignments = new HashSet<>();
 				int converse = 0;
 				Course course = null;
 				for (final Pair<Brick, Brick.Properties> pair : brickProperties) {
@@ -486,7 +474,7 @@ public class Course {
 							properties = lookup.get(at);
 						} else
 							properties = at.properties(context);
-						converse = brickAdvanceLogic(context, converse, brick, properties, seenAlignments).nextConverse;
+						converse = brickAdvanceLogic(context, converse, brick, properties).nextConverse;
 						if (converse > context.edge)
 							return false;
 					}
