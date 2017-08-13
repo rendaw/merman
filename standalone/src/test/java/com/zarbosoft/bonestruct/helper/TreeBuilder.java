@@ -1,10 +1,7 @@
 package com.zarbosoft.bonestruct.helper;
 
 import com.zarbosoft.bonestruct.document.Atom;
-import com.zarbosoft.bonestruct.document.values.Value;
-import com.zarbosoft.bonestruct.document.values.ValueArray;
-import com.zarbosoft.bonestruct.document.values.ValueAtom;
-import com.zarbosoft.bonestruct.document.values.ValuePrimitive;
+import com.zarbosoft.bonestruct.document.values.*;
 import com.zarbosoft.bonestruct.syntax.AtomType;
 import com.zarbosoft.bonestruct.syntax.middle.MiddleAtom;
 import com.zarbosoft.bonestruct.syntax.middle.MiddlePrimitive;
@@ -39,7 +36,7 @@ public class TreeBuilder {
 	}
 
 	public TreeBuilder addKey(final String key, final String text) {
-		data.put(key, new ValuePrimitive((MiddleRecordKey) type.middle().get(key), text));
+		data.put(key, new ValueRecordKey((MiddleRecordKey) type.middle().get(key), text));
 		return this;
 	}
 

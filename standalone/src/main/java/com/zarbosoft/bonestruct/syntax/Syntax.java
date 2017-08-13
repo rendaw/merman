@@ -118,6 +118,18 @@ public class Syntax {
 	@Configuration(optional = true, name = "mouse_peek")
 	public boolean mousePeek = false;
 
+	@Configuration(optional = true, name = "mouse_peek_factor")
+	public double mousePeekFactor = 1.0;
+
+	@Configuration(optional = true, name = "scroll_factor")
+	public double scrollFactor = 0.1;
+
+	@Configuration(optional = true, name = "scroll_alot_factor")
+	public double scrollAlotFactor = 0.8;
+
+	@Configuration(optional = true, name = "pretty_save")
+	public boolean prettySave = false;
+
 	public String id; // Fake final - don't modify (set in loadSyntax)
 
 	@Configuration

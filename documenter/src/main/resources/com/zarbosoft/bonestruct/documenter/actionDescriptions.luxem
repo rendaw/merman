@@ -1,0 +1,3 @@
+
+application: 
+    quit: "Quits the application. Shows confirmation if the document has unsaved changes.",

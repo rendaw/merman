@@ -310,7 +310,7 @@ return _lessmodal_keys {
     },
     root = 'value',
     root_alignments = {
-        indent = absolute { offset = 16 },
+        indent = absolute { offset = 0 },
     },
     root_front = {
         prefix = { { type = space {}, tags = { 'split' } } },

@@ -1020,4 +1020,58 @@ public class Context {
 			return true;
 		}
 	}
+
+	@Action.StaticID(id = "scroll_up")
+	private class ActionScrollUp extends ActionBase {
+
+		@Override
+		public boolean run(final Context context) {
+			scroll -= syntax.scrollFactor * transverseEdge;
+			applyScroll();
+			return false;
+		}
+	}
+
+	@Action.StaticID(id = "scroll_up_alot")
+	private class ActionScrollUpAlot extends ActionBase {
+
+		@Override
+		public boolean run(final Context context) {
+			scroll -= syntax.scrollAlotFactor * transverseEdge;
+			applyScroll();
+			return false;
+		}
+	}
+
+	@Action.StaticID(id = "scroll_down")
+	private class ActionScrollDown extends ActionBase {
+
+		@Override
+		public boolean run(final Context context) {
+			scroll += syntax.scrollFactor * transverseEdge;
+			applyScroll();
+			return false;
+		}
+	}
+
+	@Action.StaticID(id = "scroll_down_alot")
+	private class ActionScrollDownAlot extends ActionBase {
+
+		@Override
+		public boolean run(final Context context) {
+			scroll += syntax.scrollAlotFactor * transverseEdge;
+			applyScroll();
+			return false;
+		}
+	}
+
+	@Action.StaticID(id = "scroll_reset")
+	private class ActionScrollReset extends ActionBase {
+
+		@Override
+		public boolean run(final Context context) {
+			scrollVisible();
+			return false;
+		}
+	}
 }

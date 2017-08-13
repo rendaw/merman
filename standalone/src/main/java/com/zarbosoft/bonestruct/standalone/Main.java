@@ -172,8 +172,8 @@ public class Main extends Application {
 		//fix disappearing obboxes
 		//fix wrong cursor pos on expand - can't reproduce
 
-		mouse peek
-		scroll up/down; scroll large up/down; reset scroll
+		//mouse peek
+		//scroll up/down; scroll large up/down; reset scroll
 		readme
 		doc on tagging
 		//syntax documenter
@@ -229,6 +229,11 @@ public class Main extends Application {
 		if (getParameters().getUnnamed().isEmpty())
 			throw new IllegalArgumentException("Must specify a filename as first argument.");
 		filename = Paths.get(getParameters().getUnnamed().get(0));
+		if (!Files.exists(filename.getParent()))
+			throw new IllegalArgumentException(String.format(
+					"Directory of specified file must exist.\nAbsolute path: %s",
+					filename.toAbsolutePath().normalize()
+			));
 		stage.setTitle(filename.getFileName().toString());
 		final History history = new History();
 		final Path path = Paths.get(getParameters().getUnnamed().get(0));

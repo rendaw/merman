@@ -164,7 +164,7 @@ public abstract class AtomType {
 		return getData(MiddleArrayBase.class, key);
 	}
 
-	public MiddleRecordKey getDataRecordKey(final String key) {
+	public MiddleRecordKey getDataKey(final String key) {
 		return getData(MiddleRecordKey.class, key);
 	}
 }

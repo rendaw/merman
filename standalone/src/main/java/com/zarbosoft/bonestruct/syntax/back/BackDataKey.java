@@ -23,9 +23,8 @@ public class BackDataKey extends BackPart {
 	@Override
 	public Node buildBackRule(final Syntax syntax, final AtomType atomType) {
 		return new Operator(new MatchingEventTerminal(new LKeyEvent(null)), store -> {
-			store = (Store) store.pushStack(new Pair<>(
-					middle,
-					new ValueRecordKey(atomType.getDataRecordKey(middle), ((LPrimitiveEvent) store.top()).value)
+			store = (Store) store.pushStack(new Pair<>(middle,
+					new ValueRecordKey(atomType.getDataKey(middle), ((LPrimitiveEvent) store.top()).value)
 			));
 			return Helper.stackSingleElement(store);
 		});
@@ -33,6 +32,6 @@ public class BackDataKey extends BackPart {
 
 	public void finish(final Syntax syntax, final AtomType atomType, final Set<String> middleUsed) {
 		middleUsed.add(middle);
-		atomType.getDataRecordKey(middle);
+		atomType.getDataKey(middle);
 	}
 }
