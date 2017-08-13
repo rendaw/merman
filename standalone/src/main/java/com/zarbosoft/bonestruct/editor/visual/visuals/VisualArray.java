@@ -1207,8 +1207,8 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 			}
 			if (selection != null && selection.beginIndex == valueIndex() && selection.endIndex == valueIndex()) {
 				if (hoverable != null)
-					context.clearHover();
-				return null;
+					throw new AssertionError();
+				return hoverable;
 			}
 			if (hoverable == null) {
 				hoverable = new ElementHoverable(context);

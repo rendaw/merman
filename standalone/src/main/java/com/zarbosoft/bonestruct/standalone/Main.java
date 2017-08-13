@@ -172,6 +172,8 @@ public class Main extends Application {
 		//fix disappearing obboxes
 		//fix wrong cursor pos on expand - can't reproduce
 
+		mouse peek
+		scroll up/down; scroll large up/down; reset scroll
 		readme
 		doc on tagging
 		//syntax documenter

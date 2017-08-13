@@ -95,9 +95,11 @@ public class Context {
 	int scrollEnd;
 	int scrollStartBeddingBefore;
 	int scrollStartBeddingAfter;
-	public int scroll;
+	public int scroll = 0;
+	public int peek = 0;
 	int selectToken = 0;
 	boolean keyIgnore = false;
+	boolean debugInHover = false;
 
 	public static PSet<Tag> asFreeTags(final Set<String> tags) {
 		return HashTreePSet.from(tags.stream().map(tag -> new FreeTag(tag)).collect(Collectors.toList()));
@@ -496,6 +498,8 @@ public class Context {
 	}
 
 	public void clearHover() {
+		if (debugInHover)
+			throw new AssertionError();
 		if (hover != null) {
 			hover.clear(this);
 			hover = null;
@@ -680,11 +684,14 @@ public class Context {
 
 		@Override
 		public boolean runImplementation() {
+			debugInHover = true;
 			if (at == null || at.parent == null) {
+				debugInHover = false;
 				return false;
 			}
 			if (point == null) {
 				hoverBrick = null;
+				debugInHover = false;
 				return false;
 			}
 			if (point.transverse < at.parent.transverseStart && at.parent.index > 0) {
@@ -708,8 +715,10 @@ public class Context {
 				}
 				hoverBrick = at;
 				hoverIdle = null;
+				debugInHover = false;
 				return false;
 			}
+			debugInHover = false;
 			return true;
 		}
 
@@ -804,6 +813,10 @@ public class Context {
 			selection.receiveText(this, text);
 		});
 		display.addMouseExitListener(() -> {
+			if (syntax.mousePeek) {
+				peek = 0;
+				applyScroll();
+			}
 			if (hoverIdle != null) {
 				hoverIdle.point = null;
 			} else if (hover != null) {
@@ -811,11 +824,15 @@ public class Context {
 			}
 		});
 		display.addMouseMoveListener(vector -> {
+			if (syntax.mousePeek) {
+				peek = vector.transverse - transverseEdge / 2;
+				applyScroll();
+			}
 			if (hoverIdle == null) {
 				hoverIdle = new HoverIdle(this);
 				addIdle.accept(hoverIdle);
 			}
-			hoverIdle.point = vector.add(new Vector(-syntax.pad.converseStart, scroll));
+			hoverIdle.point = vector.add(new Vector(-syntax.pad.converseStart, scroll + peek));
 		});
 		history.addListener(new History.Listener() {
 			@Override
@@ -880,6 +897,18 @@ public class Context {
 		idleLayBricksOutward();
 	}
 
+	public void applyScroll() {
+		final int newScroll = scroll + peek;
+		foreground.visual.setPosition(this,
+				new Vector(syntax.pad.converseStart, -newScroll),
+				syntax.animateCoursePlacement
+		);
+		background.setPosition(this, new Vector(syntax.pad.converseStart, -newScroll), syntax.animateCoursePlacement);
+		overlay.setPosition(this, new Vector(syntax.pad.converseStart, -newScroll), syntax.animateCoursePlacement);
+		banner.setScroll(this, newScroll);
+		details.setScroll(this, newScroll);
+	}
+
 	private void scrollVisible() {
 		final int minimum = scrollStart - scrollStartBeddingBefore - syntax.pad.transverseStart;
 		final int maximum = scrollEnd + scrollStartBeddingAfter + syntax.pad.transverseEnd;
@@ -891,18 +920,8 @@ public class Context {
 			newScroll = scroll + maxDiff;
 		}
 		if (newScroll != null) {
-			foreground.visual.setPosition(this,
-					new Vector(syntax.pad.converseStart, -newScroll),
-					syntax.animateCoursePlacement
-			);
-			background.setPosition(this,
-					new Vector(syntax.pad.converseStart, -newScroll),
-					syntax.animateCoursePlacement
-			);
-			overlay.setPosition(this, new Vector(syntax.pad.converseStart, -newScroll), syntax.animateCoursePlacement);
 			scroll = newScroll;
-			banner.setScroll(this, newScroll);
-			details.setScroll(this, newScroll);
+			applyScroll();
 		}
 	}
 

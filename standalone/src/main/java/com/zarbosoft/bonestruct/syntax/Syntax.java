@@ -115,6 +115,9 @@ public class Syntax {
 	@Configuration(optional = true, name = "retry_expand_factor")
 	public double retryExpandFactor = 1.25;
 
+	@Configuration(optional = true, name = "mouse_peek")
+	public boolean mousePeek = false;
+
 	public String id; // Fake final - don't modify (set in loadSyntax)
 
 	@Configuration
