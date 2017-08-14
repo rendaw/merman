@@ -12,7 +12,6 @@ import com.zarbosoft.pidgoon.Node;
 import com.zarbosoft.pidgoon.events.Operator;
 import com.zarbosoft.pidgoon.events.Store;
 import com.zarbosoft.pidgoon.internal.Helper;
-import com.zarbosoft.pidgoon.nodes.Reference;
 import com.zarbosoft.rendaw.common.Pair;
 
 import java.util.Set;
@@ -25,7 +24,7 @@ public class BackDataAtom extends BackPart {
 	public String middle;
 
 	public Node buildBackRule(final Syntax syntax, final AtomType atomType) {
-		return new Operator(new Reference(atomType.getDataNode(middle).type), (store) -> {
+		return new Operator(syntax.backRuleRef(atomType.getDataNode(middle).type), (store) -> {
 			final Atom value = store.stackTop();
 			store = (Store) store.popStack();
 			store = (Store) store.pushStack(new Pair<>(middle, new ValueAtom(atomType.getDataNode(middle), value)));

@@ -15,6 +15,7 @@ import com.zarbosoft.interface1.events.InterfaceEvent;
 import com.zarbosoft.luaconf.LuaConf;
 import com.zarbosoft.luxem.read.LuxemEvent;
 import com.zarbosoft.luxem.read.Parse;
+import com.zarbosoft.pidgoon.Node;
 import com.zarbosoft.pidgoon.events.Grammar;
 import com.zarbosoft.pidgoon.nodes.Reference;
 import com.zarbosoft.pidgoon.nodes.Union;
@@ -250,6 +251,15 @@ public class Syntax {
 		gap.finish(this, allTypes, scalarTypes);
 		prefixGap.finish(this, allTypes, scalarTypes);
 		suffixGap.finish(this, allTypes, scalarTypes);
+	}
+
+	public Node backRuleRef(final String type) {
+		final Union out = new Union();
+		out.add(new Reference(type));
+		out.add(new Reference("__gap"));
+		out.add(new Reference("__prefix_gap"));
+		out.add(new Reference("__suffix_gap"));
+		return out;
 	}
 
 	public Grammar getGrammar() {

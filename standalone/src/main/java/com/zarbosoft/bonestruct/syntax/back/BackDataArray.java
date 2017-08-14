@@ -8,11 +8,10 @@ import com.zarbosoft.interface1.Configuration;
 import com.zarbosoft.luxem.read.source.LArrayCloseEvent;
 import com.zarbosoft.luxem.read.source.LArrayOpenEvent;
 import com.zarbosoft.pidgoon.Node;
+import com.zarbosoft.pidgoon.events.MatchingEventTerminal;
 import com.zarbosoft.pidgoon.events.Operator;
 import com.zarbosoft.pidgoon.events.Store;
-import com.zarbosoft.pidgoon.events.MatchingEventTerminal;
 import com.zarbosoft.pidgoon.internal.Helper;
-import com.zarbosoft.pidgoon.nodes.Reference;
 import com.zarbosoft.pidgoon.nodes.Repeat;
 import com.zarbosoft.pidgoon.nodes.Sequence;
 import com.zarbosoft.rendaw.common.Pair;
@@ -33,7 +32,7 @@ public class BackDataArray extends BackPart {
 		sequence = new Sequence();
 		sequence.add(new Operator(new MatchingEventTerminal(new LArrayOpenEvent()), (store) -> store.pushStack(0)));
 		sequence.add(new Repeat(new Operator(
-				new Reference(atomType.getDataArray(middle).type),
+				syntax.backRuleRef(atomType.getDataArray(middle).type),
 				(store) -> com.zarbosoft.pidgoon.internal.Helper.stackSingleElement(store)
 		)));
 		sequence.add(new MatchingEventTerminal(new LArrayCloseEvent()));

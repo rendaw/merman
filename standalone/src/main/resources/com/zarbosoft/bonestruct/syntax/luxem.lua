@@ -281,10 +281,6 @@ return _lessmodal_keys {
             },
         },
         {
-            with = { state 'compact' },
-            color = rgb { r = 255 / 255, g = 0 / 255, b = 0 / 255 },
-        },
-        {
             with = { free 'split', state 'compact' },
             split = true,
         },

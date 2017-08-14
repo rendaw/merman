@@ -174,8 +174,8 @@ public class Main extends Application {
 
 		//mouse peek
 		//scroll up/down; scroll large up/down; reset scroll
-		I don't think gaps are allowed everywhere - direct references should be substituted with groups containing 1 type + gap types
-			+ gaps should be added to all user groups
+		//I don't think gaps are allowed everywhere - direct references should be substituted with groups containing 1 type + gap types
+		//	+ gaps should be added to all user groups
 		//Disallow referring to the root type somehow
 		readme
 		doc on tagging
