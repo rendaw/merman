@@ -76,7 +76,7 @@ public class TestActionsNested {
 		Helper.act(context, "delete");
 		assertTreeEqual(context,
 				new TreeBuilder(MiscSyntax.snooze).add("value", MiscSyntax.syntax.gap.create()).build(),
-				context.document.rootArray
+				Helper.rootArray(context.document)
 		);
 	}
 
@@ -97,7 +97,7 @@ public class TestActionsNested {
 						.add("first", new TreeBuilder(ExpressionSyntax.infinity).build())
 						.add("second", new TreeBuilder(ExpressionSyntax.infinity).build())
 						.build(),
-				context.document.rootArray
+				Helper.rootArray(context.document)
 		);
 	}
 
@@ -112,14 +112,14 @@ public class TestActionsNested {
 		Helper.act(context, "cut");
 		assertTreeEqual(context,
 				new TreeBuilder(ExpressionSyntax.factorial).add("value", ExpressionSyntax.syntax.gap.create()).build(),
-				context.document.rootArray
+				Helper.rootArray(context.document)
 		);
 		Helper.act(context, "paste");
 		assertTreeEqual(context,
 				new TreeBuilder(ExpressionSyntax.factorial)
 						.add("value", new TreeBuilder(ExpressionSyntax.infinity).build())
 						.build(),
-				context.document.rootArray
+				Helper.rootArray(context.document)
 		);
 	}
 
@@ -136,7 +136,7 @@ public class TestActionsNested {
 				.add("value",
 						ExpressionSyntax.syntax.prefixGap.create(new TreeBuilder(ExpressionSyntax.infinity).build())
 				)
-				.build(), context.document.rootArray);
+				.build(), Helper.rootArray(context.document));
 		assertThat(context.selection.getPath().toList(), equalTo(ImmutableList.of("0", "value", "gap", "0")));
 	}
 
@@ -157,7 +157,7 @@ public class TestActionsNested {
 								)
 						)
 						.build(),
-				context.document.rootArray
+				Helper.rootArray(context.document)
 		);
 		assertThat(context.selection.getPath().toList(), equalTo(ImmutableList.of("0", "value", "gap", "0")));
 	}

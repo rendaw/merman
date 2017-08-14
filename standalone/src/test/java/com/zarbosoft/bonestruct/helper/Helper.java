@@ -1,6 +1,7 @@
 package com.zarbosoft.bonestruct.helper;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import com.zarbosoft.bonestruct.document.Atom;
 import com.zarbosoft.bonestruct.document.Document;
@@ -16,6 +17,7 @@ import com.zarbosoft.bonestruct.editor.display.MockeryDisplay;
 import com.zarbosoft.bonestruct.editor.history.History;
 import com.zarbosoft.bonestruct.syntax.Syntax;
 import com.zarbosoft.bonestruct.syntax.back.*;
+import com.zarbosoft.bonestruct.syntax.middle.MiddleArrayBase;
 import com.zarbosoft.luxem.write.RawWriter;
 import com.zarbosoft.rendaw.common.DeadCode;
 import org.junit.ComparisonFailure;
@@ -72,6 +74,13 @@ public class Helper {
 		throw new AssertionError(String.format("No action named [%s]", name));
 	}
 
+	public static BackPart buildBackType(final String type, final BackPart child) {
+		final BackType back = new BackType();
+		back.value = type;
+		back.child = child;
+		return back;
+	}
+
 	public static BackPart buildBackPrimitive(final String value) {
 		final BackPrimitive back = new BackPrimitive();
 		back.value = value;
@@ -104,6 +113,12 @@ public class Helper {
 
 	public static BackPart buildBackDataArray(final String middle) {
 		final BackDataArray back = new BackDataArray();
+		back.middle = middle;
+		return back;
+	}
+
+	public static BackPart buildBackDataRootArray(final String middle) {
+		final BackDataRootArray back = new BackDataRootArray();
 		back.middle = middle;
 		return back;
 	}
@@ -170,7 +185,13 @@ public class Helper {
 	public static void assertTreeEqual(
 			final Context context, final Atom expected, final Value got
 	) {
-		assertTreeEqual(new ValueArray(context.syntax.root, ImmutableList.of(expected)), got);
+		assertTreeEqual(new ValueArray((MiddleArrayBase) context.syntax.root.middle.get("value"),
+				ImmutableList.of(expected)
+		), got);
+	}
+
+	public static ValueArray rootArray(final Document doc) {
+		return (ValueArray) doc.root.data.get("value");
 	}
 
 	public static Context buildDoc(final Syntax syntax, final Atom... root) {
@@ -179,7 +200,13 @@ public class Helper {
 	}
 
 	public static Context buildDoc(final Consumer<IdleTask> idleAdd, final Syntax syntax, final Atom... root) {
-		final Document doc = new Document(syntax, new ValueArray(syntax.root, Arrays.asList(root)));
+		final Document doc = new Document(syntax,
+				new Atom(syntax.root,
+						ImmutableMap.of("value",
+								new ValueArray((MiddleArrayBase) syntax.root.middle.get("value"), Arrays.asList(root))
+						)
+				)
+		);
 		final Context context = new Context(syntax, doc, new MockeryDisplay(), idleAdd, new History());
 		context.clipboardEngine = new ClipboardEngine() {
 			byte[] data = null;
@@ -207,5 +234,4 @@ public class Helper {
 		};
 		return context;
 	}
-
 }

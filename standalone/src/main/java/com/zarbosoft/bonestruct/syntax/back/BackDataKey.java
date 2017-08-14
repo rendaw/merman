@@ -5,7 +5,6 @@ import com.zarbosoft.bonestruct.syntax.AtomType;
 import com.zarbosoft.bonestruct.syntax.Syntax;
 import com.zarbosoft.interface1.Configuration;
 import com.zarbosoft.luxem.read.source.LKeyEvent;
-import com.zarbosoft.luxem.read.source.LPrimitiveEvent;
 import com.zarbosoft.pidgoon.Node;
 import com.zarbosoft.pidgoon.events.MatchingEventTerminal;
 import com.zarbosoft.pidgoon.events.Operator;
@@ -24,7 +23,7 @@ public class BackDataKey extends BackPart {
 	public Node buildBackRule(final Syntax syntax, final AtomType atomType) {
 		return new Operator(new MatchingEventTerminal(new LKeyEvent(null)), store -> {
 			store = (Store) store.pushStack(new Pair<>(middle,
-					new ValueRecordKey(atomType.getDataKey(middle), ((LPrimitiveEvent) store.top()).value)
+					new ValueRecordKey(atomType.getDataKey(middle), ((LKeyEvent) store.top()).value)
 			));
 			return Helper.stackSingleElement(store);
 		});

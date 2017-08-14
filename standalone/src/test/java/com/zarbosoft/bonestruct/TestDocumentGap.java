@@ -3,21 +3,14 @@ package com.zarbosoft.bonestruct;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.zarbosoft.bonestruct.document.Atom;
-import com.zarbosoft.bonestruct.document.Document;
 import com.zarbosoft.bonestruct.document.values.ValueArray;
 import com.zarbosoft.bonestruct.document.values.ValuePrimitive;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.Path;
-import com.zarbosoft.bonestruct.editor.display.MockeryDisplay;
-import com.zarbosoft.bonestruct.editor.history.History;
-import com.zarbosoft.bonestruct.helper.ExpressionSyntax;
-import com.zarbosoft.bonestruct.helper.GeneralTestWizard;
-import com.zarbosoft.bonestruct.helper.MiscSyntax;
-import com.zarbosoft.bonestruct.helper.TreeBuilder;
+import com.zarbosoft.bonestruct.helper.*;
 import com.zarbosoft.bonestruct.syntax.Syntax;
 import org.junit.Test;
 
-import java.util.Arrays;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -30,10 +23,7 @@ public class TestDocumentGap {
 
 	private Context blank() {
 		final Atom gap = MiscSyntax.syntax.gap.create();
-		final Document doc =
-				new Document(MiscSyntax.syntax, new ValueArray(MiscSyntax.syntax.root, Arrays.asList(gap)));
-		final Context context = new Context(MiscSyntax.syntax, doc, new MockeryDisplay(), idleTask -> {
-		}, new History());
+		final Context context = buildDoc(MiscSyntax.syntax, gap);
 		gap.visual.selectDown(context);
 		return context;
 	}
@@ -43,11 +33,11 @@ public class TestDocumentGap {
 	) {
 		final Context context = buildDoc(syntax, start.get());
 		transform.accept(context);
-		assertTreeEqual(context, end, context.document.rootArray);
+		assertTreeEqual(context, end, Helper.rootArray(context.document));
 		context.history.undo(context);
-		assertTreeEqual(context, start.get(), context.document.rootArray);
+		assertTreeEqual(context, start.get(), Helper.rootArray(context.document));
 		context.history.redo(context);
-		assertTreeEqual(context, end, context.document.rootArray);
+		assertTreeEqual(context, end, Helper.rootArray(context.document));
 	}
 
 	@Test
@@ -75,7 +65,7 @@ public class TestDocumentGap {
 		context.selection.receiveText(context, "o");
 		assertTreeEqual(context,
 				new TreeBuilder(MiscSyntax.syntax.gap).add("gap", "o").build(),
-				context.document.rootArray
+				Helper.rootArray(context.document)
 		);
 	}
 
@@ -87,7 +77,7 @@ public class TestDocumentGap {
 		context.selection.receiveText(context, "e");
 		assertTreeEqual(context,
 				new TreeBuilder(MiscSyntax.syntax.gap).add("gap", "one").build(),
-				context.document.rootArray
+				Helper.rootArray(context.document)
 		);
 	}
 
@@ -100,7 +90,7 @@ public class TestDocumentGap {
 						.addArray("value", ImmutableList.of(new TreeBuilder(MiscSyntax.infinity).build()))
 						.add("gap", "")
 						.build(),
-				context.document.rootArray
+				Helper.rootArray(context.document)
 		);
 	}
 
@@ -114,7 +104,7 @@ public class TestDocumentGap {
 						.add("first", new TreeBuilder(MiscSyntax.one))
 						.add("second", new TreeBuilder(MiscSyntax.syntax.gap).add("gap", ""))
 						.build(),
-				context.document.rootArray
+				Helper.rootArray(context.document)
 		);
 	}
 
@@ -128,7 +118,7 @@ public class TestDocumentGap {
 						.addArray("value", ImmutableList.of(new TreeBuilder(MiscSyntax.one).build()))
 						.add("gap", "+")
 						.build(),
-				context.document.rootArray
+				Helper.rootArray(context.document)
 		);
 	}
 
@@ -141,7 +131,7 @@ public class TestDocumentGap {
 		context.selection.receiveText(context, "e");
 		assertTreeEqual(context,
 				new TreeBuilder(MiscSyntax.quoted).add("value", "e").build(),
-				context.document.rootArray
+				Helper.rootArray(context.document)
 		);
 	}
 
@@ -150,12 +140,12 @@ public class TestDocumentGap {
 		final Context context = blank();
 		context.selection.receiveText(context, "[");
 		context.selection.receiveText(context, "e");
-		dump(context.document.rootArray);
+		dump(Helper.rootArray(context.document));
 		assertTreeEqual(context,
 				new TreeBuilder(MiscSyntax.array)
 						.addArray("value", new TreeBuilder(MiscSyntax.syntax.gap).add("gap", "e").build())
 						.build(),
-				context.document.rootArray
+				Helper.rootArray(context.document)
 		);
 	}
 
@@ -167,7 +157,7 @@ public class TestDocumentGap {
 		innerTestTransform(MiscSyntax.syntax,
 				() -> MiscSyntax.syntax.suffixGap.create(true, new TreeBuilder(MiscSyntax.one).build()),
 				context -> {
-					context.document.rootArray.data.get(0).visual.selectDown(context);
+					Helper.rootArray(context.document).data.get(0).visual.selectDown(context);
 					context.selection.receiveText(context, "?");
 					context.selection.receiveText(context, "e");
 				},
@@ -402,16 +392,16 @@ public class TestDocumentGap {
 				buildDoc(MiscSyntax.syntax, MiscSyntax.syntax.gap.create(), MiscSyntax.syntax.gap.create());
 		((Atom) context.locateShort(new Path("0"))).visual.selectDown(context);
 		((Atom) context.locateShort(new Path("1"))).visual.selectDown(context);
-		assertThat(context.document.rootArray.data.size(), equalTo(1));
-		assertTreeEqual(context, MiscSyntax.syntax.gap.create(), context.document.rootArray);
+		assertThat(Helper.rootArray(context.document).data.size(), equalTo(1));
+		assertTreeEqual(context, MiscSyntax.syntax.gap.create(), Helper.rootArray(context.document));
 		assertThat(context.selection.getPath().toList(), equalTo(ImmutableList.of("0", "0")));
 		context.history.undo(context);
-		assertThat(context.document.rootArray.data.size(), equalTo(2));
-		assertTreeEqual(MiscSyntax.syntax.gap.create(), context.document.rootArray.data.get(0));
+		assertThat(Helper.rootArray(context.document).data.size(), equalTo(2));
+		assertTreeEqual(MiscSyntax.syntax.gap.create(), Helper.rootArray(context.document).data.get(0));
 		assertThat(context.selection.getPath().toList(), equalTo(ImmutableList.of("1", "0")));
 		context.history.redo(context);
-		assertThat(context.document.rootArray.data.size(), equalTo(1));
-		assertTreeEqual(MiscSyntax.syntax.gap.create(), context.document.rootArray.data.get(0));
+		assertThat(Helper.rootArray(context.document).data.size(), equalTo(1));
+		assertTreeEqual(MiscSyntax.syntax.gap.create(), Helper.rootArray(context.document).data.get(0));
 		assertThat(context.selection.getPath().toList(), equalTo(ImmutableList.of("0", "0")));
 	}
 
@@ -471,7 +461,7 @@ public class TestDocumentGap {
 		new GeneralTestWizard(MiscSyntax.syntax, MiscSyntax.syntax.gap.create())
 				.act("enter")
 				.sendText("_")
-				.checkTree(new TreeBuilder(MiscSyntax.restrictedArray)
+				.checkArrayTree(new TreeBuilder(MiscSyntax.restrictedArray)
 						.addArray("value", new TreeBuilder(MiscSyntax.quoted).add("value", "").build())
 						.build());
 	}

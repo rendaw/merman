@@ -14,7 +14,7 @@ public class TestLiveExamples {
 				.run(context -> context.selection.receiveText(context, "["))
 				.checkBrickCount(3)
 				.run(context -> context.selection.receiveText(context, "e"))
-				.checkTree(new TreeBuilder(MiscSyntax.array)
+				.checkArrayTree(new TreeBuilder(MiscSyntax.array)
 						.addArray("value", new TreeBuilder(MiscSyntax.syntax.gap).add("gap", "e").build())
 						.build())
 				.act("exit")
@@ -28,7 +28,7 @@ public class TestLiveExamples {
 				.run(context -> context.selection.receiveText(context, "["))
 				.act("exit")
 				.act("exit")
-				.checkTree(new TreeBuilder(MiscSyntax.array).addArray("value").build())
+				.checkArrayTree(new TreeBuilder(MiscSyntax.array).addArray("value").build())
 				.act("delete")
 				.checkBrickCount(1);
 	}

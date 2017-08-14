@@ -1,73 +1,33 @@
 package com.zarbosoft.bonestruct.document;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.zarbosoft.bonestruct.document.values.ValueArray;
+import com.zarbosoft.bonestruct.document.values.ValueAtom;
 import com.zarbosoft.bonestruct.document.values.ValuePrimitive;
 import com.zarbosoft.bonestruct.document.values.ValueRecordKey;
-import com.zarbosoft.bonestruct.syntax.AtomType;
 import com.zarbosoft.bonestruct.syntax.Syntax;
-import com.zarbosoft.bonestruct.syntax.alignments.AlignmentDefinition;
 import com.zarbosoft.bonestruct.syntax.back.*;
-import com.zarbosoft.bonestruct.syntax.front.FrontPart;
-import com.zarbosoft.bonestruct.syntax.middle.MiddlePart;
 import com.zarbosoft.luxem.write.RawWriter;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.Iterator;
+import java.util.Map;
 
 import static com.zarbosoft.rendaw.common.Common.uncheck;
 
 public class Document {
 
 	final public Syntax syntax;
-	public ValueArray rootArray;
-	public Atom root;
+	final public Atom root;
 
-	public Document(final Syntax syntax, final ValueArray rootArray) {
+	public Document(final Syntax syntax, final Atom root) {
 		this.syntax = syntax;
-		this.rootArray = rootArray;
-		final AtomType rootType = new AtomType() {
-			@Override
-			public List<FrontPart> front() {
-				return ImmutableList.of(syntax.rootFront);
-			}
-
-			@Override
-			public Map<String, MiddlePart> middle() {
-				return ImmutableMap.of("value", syntax.root);
-			}
-
-			@Override
-			public List<BackPart> back() {
-				return null;
-			}
-
-			@Override
-			public Map<String, AlignmentDefinition> alignments() {
-				return syntax.rootAlignments;
-			}
-
-			@Override
-			public int precedence() {
-				return -Integer.MAX_VALUE;
-			}
-
-			@Override
-			public boolean frontAssociative() {
-				return false;
-			}
-
-			@Override
-			public String name() {
-				return "root array";
-			}
-		};
-		rootType.id = "root";
-		root = new Atom(rootType, ImmutableMap.of("value", rootArray));
+		this.root = root;
 	}
 
 	public void write(final Path out) {
@@ -81,7 +41,7 @@ public class Document {
 	public void write(final OutputStream stream) {
 		uncheck(() -> {
 			final RawWriter writer = syntax.prettySave ? new RawWriter(stream, (byte) ' ', 4) : new RawWriter(stream);
-			rootArray.data.forEach(node -> write(node, writer));
+			write(root, writer);
 			if (syntax.prettySave)
 				stream.write('\n');
 			stream.flush();
@@ -112,7 +72,9 @@ public class Document {
 		if (part instanceof BackPrimitive) {
 			writer.primitive(((BackPrimitive) part).value);
 		} else if (part instanceof BackType) {
-			writer.type(((BackType) part).value);
+			final BackType typePart = (BackType) part;
+			writer.type(typePart.value);
+			stack.addLast(new WriteStateBack(base, ImmutableList.of(typePart.child).iterator()));
 		} else if (part instanceof BackArray) {
 			writer.arrayBegin();
 			stack.addLast(new WriteStateArrayEnd());
@@ -123,17 +85,25 @@ public class Document {
 			stack.addLast(new WriteStateRecord(base, ((BackRecord) part).pairs));
 		} else if (part instanceof BackDataPrimitive) {
 			writer.primitive(((ValuePrimitive) base.data.get(((BackDataPrimitive) part).middle)).get());
+		} else if (part instanceof BackDataAtom) {
+			final Atom child = ((ValueAtom) base.data.get(((BackDataAtom) part).middle)).data;
+			stack.addLast(new WriteStateBack(child, child.type.back().iterator()));
 		} else if (part instanceof BackDataArray) {
 			writer.arrayBegin();
 			stack.addLast(new WriteStateArrayEnd());
 			stack.addLast(new WriteStateDataArray(((ValueArray) base.data.get(((BackDataArray) part).middle))));
+		} else if (part instanceof BackDataRootArray) {
+			stack.addLast(new WriteStateDataArray(((ValueArray) base.data.get(((BackDataRootArray) part).middle))));
 		} else if (part instanceof BackDataRecord) {
 			writer.recordBegin();
 			stack.addLast(new WriteStateRecordEnd());
 			stack.addLast(new WriteStateDataArray(((ValueArray) base.data.get(((BackDataRecord) part).middle))));
 		} else if (part instanceof BackDataKey) {
 			writer.key(((ValueRecordKey) base.data.get(((BackDataKey) part).middle)).get());
-		}
+		} else
+			throw new AssertionError(String.format("Unimplemented back part type [%s].\n",
+					part.getClass().getCanonicalName()
+			));
 	}
 
 	private static class WriteStateBack extends WriteState {

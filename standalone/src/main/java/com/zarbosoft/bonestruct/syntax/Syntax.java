@@ -3,11 +3,7 @@ package com.zarbosoft.bonestruct.syntax;
 import com.google.common.collect.ImmutableSet;
 import com.zarbosoft.bonestruct.document.Atom;
 import com.zarbosoft.bonestruct.document.Document;
-import com.zarbosoft.bonestruct.document.values.ValueArray;
 import com.zarbosoft.bonestruct.modules.Module;
-import com.zarbosoft.bonestruct.syntax.alignments.AlignmentDefinition;
-import com.zarbosoft.bonestruct.syntax.front.FrontDataRootArray;
-import com.zarbosoft.bonestruct.syntax.middle.MiddleArray;
 import com.zarbosoft.bonestruct.syntax.style.BoxStyle;
 import com.zarbosoft.bonestruct.syntax.style.ModelColor;
 import com.zarbosoft.bonestruct.syntax.style.Style;
@@ -35,7 +31,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.zarbosoft.rendaw.common.Common.stream;
@@ -69,8 +64,14 @@ public class Syntax {
 	@Configuration(optional = true, name = "detail_span")
 	public int detailSpan = 300;
 
-	@Configuration()
+	@Configuration
 	public List<FreeAtomType> types = new ArrayList<>();
+
+	@Configuration(optional = true)
+	public Map<String, java.util.Set<String>> groups = new HashMap<>();
+
+	@Configuration
+	public RootAtomType root;
 
 	@Configuration(optional = true)
 	public GapAtomType gap = new GapAtomType();
@@ -84,19 +85,7 @@ public class Syntax {
 	public BoxStyle gapChoiceStyle = new BoxStyle();
 
 	@Configuration(optional = true)
-	public Map<String, java.util.Set<String>> groups = new HashMap<>();
-
-	@Configuration(optional = true)
 	public List<Module> modules = new ArrayList<>();
-
-	@Configuration()
-	public MiddleArray root;
-
-	@Configuration(name = "root_alignments")
-	public Map<String, AlignmentDefinition> rootAlignments = new HashMap<>();
-
-	@Configuration(name = "root_front", optional = true)
-	public FrontDataRootArray rootFront = new FrontDataRootArray();
 
 	@Configuration(optional = true, name = "animate_course_placement")
 	public boolean animateCoursePlacement = false;
@@ -206,7 +195,6 @@ public class Syntax {
 			}
 		}
 
-		boolean foundRoot = false;
 		final Set<String> scalarTypes = new HashSet<>(); // Types that only have one back element
 		final Set<String> allTypes = new HashSet<>();
 		for (final FreeAtomType t : types) {
@@ -217,9 +205,6 @@ public class Syntax {
 			allTypes.add(t.id);
 			if (t.back.size() == 1)
 				scalarTypes.add(t.id);
-			if (t.id.equals(root.type)) {
-				foundRoot = true;
-			}
 		}
 		final Map<String, Set<String>> groupsThatContainType = new HashMap<>();
 		final Set<String> potentiallyScalarGroups = new HashSet<>();
@@ -237,12 +222,8 @@ public class Syntax {
 			if (allTypes.contains(group))
 				throw new InvalidSyntax(String.format("Group id [%s] already used.", group));
 			allTypes.add(group);
-			if (group.equals(root.type))
-				foundRoot = true;
 			potentiallyScalarGroups.add(group);
 		}
-		if (!foundRoot)
-			throw new InvalidSyntax(String.format("No type or tag id matches root id [%s]", root.type));
 		for (final FreeAtomType t : types) {
 			if (t.back.size() == 1)
 				continue;
@@ -264,8 +245,8 @@ public class Syntax {
 		for (final FreeAtomType t : types) {
 			t.finish(this, allTypes, scalarTypes);
 		}
-		root.finish(allTypes, scalarTypes);
-		rootFront.finish(root);
+		root.id = "root";
+		root.finish(this, allTypes, scalarTypes);
 		gap.finish(this, allTypes, scalarTypes);
 		prefixGap.finish(this, allTypes, scalarTypes);
 		suffixGap.finish(this, allTypes, scalarTypes);
@@ -283,18 +264,15 @@ public class Syntax {
 				v.forEach(n -> group.add(new Reference(n)));
 				grammar.add(k, group);
 			});
-			grammar.add("root", new Reference(root.type));
+			grammar.add("root", root.buildBackRule(this));
 		}
 		return grammar;
 	}
 
 	public Document create() {
-		return new Document(this, new ValueArray(root,
-				new Parse<Atom>()
-						.grammar(getGrammar())
-						.parse(template.stream().map(e -> (LuxemEvent) e))
-						.collect(Collectors.toList())
-		));
+		return new Document(this,
+				new Parse<Atom>().grammar(getGrammar()).parse(template.stream().map(e -> (LuxemEvent) e))
+		);
 	}
 
 	public Document load(final Path path) throws FileNotFoundException, IOException {
@@ -310,9 +288,7 @@ public class Syntax {
 	}
 
 	public Document load(final InputStream data) {
-		return new Document(this,
-				new ValueArray(root, new Parse<Atom>().grammar(getGrammar()).parse(data).collect(Collectors.toList()))
-		);
+		return new Document(this, new Parse<Atom>().grammar(getGrammar()).eventUncertainty(1000).parse(data));
 	}
 
 	public FreeAtomType getType(final String type) {

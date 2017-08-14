@@ -159,9 +159,7 @@ public class GapAtomType extends AtomType {
 					final Grammar grammar = store.get(() -> {
 						final Union union = new Union();
 						for (final FreeAtomType type : (
-								self.parent == null ?
-										iterable(context.syntax.getLeafTypes(context.syntax.root.type)) :
-										iterable(context.syntax.getLeafTypes(self.parent.childType()))
+								iterable(context.syntax.getLeafTypes(self.parent.childType()))
 						)) {
 							final List<GapKey> gapKeys = gapKeys(type);
 							for (final GapKey key : gapKeys(type)) {

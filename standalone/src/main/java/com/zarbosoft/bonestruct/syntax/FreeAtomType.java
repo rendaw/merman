@@ -3,15 +3,14 @@ package com.zarbosoft.bonestruct.syntax;
 import com.zarbosoft.bonestruct.document.Atom;
 import com.zarbosoft.bonestruct.document.values.Value;
 import com.zarbosoft.bonestruct.syntax.alignments.AlignmentDefinition;
+import com.zarbosoft.bonestruct.syntax.back.BackDataRootArray;
 import com.zarbosoft.bonestruct.syntax.back.BackPart;
 import com.zarbosoft.bonestruct.syntax.front.FrontPart;
 import com.zarbosoft.bonestruct.syntax.middle.MiddlePart;
 import com.zarbosoft.interface1.Configuration;
+import com.zarbosoft.interface1.Walk;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Configuration
 public class FreeAtomType extends AtomType {
@@ -78,5 +77,20 @@ public class FreeAtomType extends AtomType {
 		final Map<String, Value> data = new HashMap<>();
 		middle.entrySet().stream().forEach(e -> data.put(e.getKey(), e.getValue().create(syntax)));
 		return new Atom(this, data);
+	}
+
+	@Override
+	public void finish(
+			final Syntax syntax, final Set<String> allTypes, final Set<String> scalarTypes
+	) {
+		super.finish(syntax, allTypes, scalarTypes);
+		back.forEach(backPart -> {
+			if (backPart instanceof BackDataRootArray) {
+				throw new InvalidSyntax(String.format(
+						"[%s] has back parts of type [%s] which may only be used in the root atom type.",
+						Walk.decideName(BackDataRootArray.class)
+				));
+			}
+		});
 	}
 }

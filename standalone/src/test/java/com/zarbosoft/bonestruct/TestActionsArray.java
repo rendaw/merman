@@ -22,7 +22,7 @@ public class TestActionsArray {
 	public Context build(final Atom... atoms) {
 		final Context context =
 				buildDoc(MiscSyntax.syntax, new TreeBuilder(MiscSyntax.array).addArray("value", atoms).build());
-		((ValueArray) context.document.rootArray.data.get(0).data.get("value")).selectDown(context);
+		((ValueArray) Helper.rootArray(context.document).data.get(0).data.get("value")).selectDown(context);
 		return context;
 	}
 
@@ -246,7 +246,7 @@ public class TestActionsArray {
 				new TreeBuilder(MiscSyntax.one).build(),
 				new TreeBuilder(MiscSyntax.four).build(),
 				new TreeBuilder(MiscSyntax.five).build()
-		).build(), context.document.rootArray);
+		).build(), Helper.rootArray(context.document));
 		assertThat(context.selection.getPath().toList(), equalTo(ImmutableList.of("0", "1")));
 	}
 
@@ -266,7 +266,7 @@ public class TestActionsArray {
 				new TreeBuilder(MiscSyntax.three).build(),
 				new TreeBuilder(MiscSyntax.four).build(),
 				new TreeBuilder(MiscSyntax.five).build()
-		).build(), context.document.rootArray);
+		).build(), Helper.rootArray(context.document));
 		assertThat(context.selection.getPath().toList(), equalTo(ImmutableList.of("0", "1", "0")));
 	}
 
@@ -279,7 +279,7 @@ public class TestActionsArray {
 		new GeneralTestWizard(MiscSyntax.syntax, atom)
 				.run(context -> value.select(context, true, 0, 0))
 				.act("insert_before")
-				.checkTree(new TreeBuilder(MiscSyntax.restrictedArray).addArray("value",
+				.checkArrayTree(new TreeBuilder(MiscSyntax.restrictedArray).addArray("value",
 						new TreeBuilder(MiscSyntax.quoted).add("value", "").build(),
 						new TreeBuilder(MiscSyntax.quoted).add("value", "").build()
 				).build())
@@ -304,7 +304,7 @@ public class TestActionsArray {
 				MiscSyntax.syntax.gap.create(),
 				new TreeBuilder(MiscSyntax.four).build(),
 				new TreeBuilder(MiscSyntax.five).build()
-		).build(), context.document.rootArray);
+		).build(), Helper.rootArray(context.document));
 		assertThat(context.selection.getPath().toList(), equalTo(ImmutableList.of("0", "3", "0")));
 	}
 
@@ -317,7 +317,7 @@ public class TestActionsArray {
 		new GeneralTestWizard(MiscSyntax.syntax, atom)
 				.run(context -> value.select(context, true, 0, 0))
 				.act("insert_after")
-				.checkTree(new TreeBuilder(MiscSyntax.restrictedArray).addArray("value",
+				.checkArrayTree(new TreeBuilder(MiscSyntax.restrictedArray).addArray("value",
 						new TreeBuilder(MiscSyntax.quoted).add("value", "").build(),
 						new TreeBuilder(MiscSyntax.quoted).add("value", "").build()
 				).build())
@@ -341,7 +341,7 @@ public class TestActionsArray {
 				new TreeBuilder(MiscSyntax.one).build(),
 				new TreeBuilder(MiscSyntax.four).build(),
 				new TreeBuilder(MiscSyntax.five).build()
-		).build(), context.document.rootArray);
+		).build(), Helper.rootArray(context.document));
 		final VisualArray.ArraySelection selection = (VisualArray.ArraySelection) context.selection;
 		assertThat(selection.beginIndex, equalTo(0));
 		assertThat(selection.endIndex, equalTo(1));
@@ -362,7 +362,7 @@ public class TestActionsArray {
 				new TreeBuilder(MiscSyntax.three).build(),
 				new TreeBuilder(MiscSyntax.four).build(),
 				new TreeBuilder(MiscSyntax.five).build()
-		).build(), context.document.rootArray);
+		).build(), Helper.rootArray(context.document));
 		final VisualArray.ArraySelection selection = (VisualArray.ArraySelection) context.selection;
 		assertThat(selection.beginIndex, equalTo(0));
 		assertThat(selection.endIndex, equalTo(1));
@@ -383,7 +383,7 @@ public class TestActionsArray {
 				new TreeBuilder(MiscSyntax.two).build(),
 				new TreeBuilder(MiscSyntax.three).build(),
 				new TreeBuilder(MiscSyntax.five).build()
-		).build(), context.document.rootArray);
+		).build(), Helper.rootArray(context.document));
 		final VisualArray.ArraySelection selection = (VisualArray.ArraySelection) context.selection;
 		assertThat(selection.beginIndex, equalTo(2));
 		assertThat(selection.endIndex, equalTo(3));
@@ -404,7 +404,7 @@ public class TestActionsArray {
 				new TreeBuilder(MiscSyntax.three).build(),
 				new TreeBuilder(MiscSyntax.four).build(),
 				new TreeBuilder(MiscSyntax.five).build()
-		).build(), context.document.rootArray);
+		).build(), Helper.rootArray(context.document));
 		final VisualArray.ArraySelection selection = (VisualArray.ArraySelection) context.selection;
 		assertThat(selection.beginIndex, equalTo(3));
 		assertThat(selection.endIndex, equalTo(4));
@@ -426,7 +426,7 @@ public class TestActionsArray {
 				new TreeBuilder(MiscSyntax.four).build(),
 				new TreeBuilder(MiscSyntax.two).build(),
 				new TreeBuilder(MiscSyntax.three).build()
-		).build(), context.document.rootArray);
+		).build(), Helper.rootArray(context.document));
 		final VisualArray.ArraySelection selection = (VisualArray.ArraySelection) context.selection;
 		assertThat(selection.beginIndex, equalTo(5));
 		assertThat(selection.endIndex, equalTo(5));
@@ -458,7 +458,7 @@ public class TestActionsArray {
 				new TreeBuilder(MiscSyntax.four).build(),
 				new TreeBuilder(MiscSyntax.two).build(),
 				new TreeBuilder(MiscSyntax.three).build()
-		).build(), context.document.rootArray);
+		).build(), Helper.rootArray(context.document));
 		{
 			final VisualArray.ArraySelection selection = (VisualArray.ArraySelection) context.selection;
 			assertThat(selection.beginIndex, equalTo(3));
@@ -480,7 +480,7 @@ public class TestActionsArray {
 				new TreeBuilder(MiscSyntax.three).build(),
 				new TreeBuilder(MiscSyntax.four).build(),
 				new TreeBuilder(MiscSyntax.five).build()
-		).build(), context.document.rootArray);
+		).build(), Helper.rootArray(context.document));
 		assertThat(context.selection.getPath().toList(), equalTo(ImmutableList.of("0", "1", "gap", "0")));
 	}
 
@@ -497,7 +497,7 @@ public class TestActionsArray {
 				new TreeBuilder(MiscSyntax.three).build(),
 				new TreeBuilder(MiscSyntax.four).build(),
 				new TreeBuilder(MiscSyntax.five).build()
-		).build(), context.document.rootArray);
+		).build(), Helper.rootArray(context.document));
 		assertThat(context.selection.getPath().toList(), equalTo(ImmutableList.of("0", "1", "gap", "0")));
 	}
 }

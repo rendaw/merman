@@ -39,6 +39,12 @@ import com.zarbosoft.bonestruct.syntax.style.Style;
 import com.zarbosoft.luxem.read.InvalidStream;
 import com.zarbosoft.luxem.read.Parse;
 import com.zarbosoft.luxem.write.RawWriter;
+import com.zarbosoft.pidgoon.events.Grammar;
+import com.zarbosoft.pidgoon.events.Operator;
+import com.zarbosoft.pidgoon.events.Store;
+import com.zarbosoft.pidgoon.internal.NamedOperator;
+import com.zarbosoft.pidgoon.nodes.Reference;
+import com.zarbosoft.pidgoon.nodes.Repeat;
 import com.zarbosoft.rendaw.common.WeakCache;
 import javafx.animation.Interpolator;
 import org.pcollections.HashTreePSet;
@@ -188,11 +194,25 @@ public class Context {
 		if (bytes == null)
 			return ImmutableList.of();
 		try {
-			return new Parse<Atom>()
-					.grammar(syntax.getGrammar())
-					.node(type)
-					.parse(new ByteArrayInputStream(bytes))
-					.collect(Collectors.toList());
+			final Grammar grammar = new Grammar(syntax.getGrammar());
+			grammar.add(new NamedOperator(this,
+					new Operator(new Repeat(new Operator(new Reference(type),
+							store -> com.zarbosoft.pidgoon.internal.Helper.stackSingleElement(store)
+					)).max(7), store -> {
+						final List<Atom> temp = new ArrayList<>();
+						store = (Store) com.zarbosoft.pidgoon.internal.Helper.<Atom>stackPopSingleList(store,
+								temp::add
+						);
+						Collections.reverse(temp);
+						return store.pushStack(temp);
+					})
+			));
+			return new Parse<List<Atom>>()
+					.grammar(grammar)
+					.stack(() -> 0)
+					.root(this)
+					.eventUncertainty(1000)
+					.parse(new ByteArrayInputStream(bytes));
 		} catch (final InvalidStream e) {
 
 		} catch (final InvalidDocument e) {
@@ -242,9 +262,9 @@ public class Context {
 		int pathIndex = -1;
 		final List<String> segments = ImmutableList.copyOf(path.segments);
 		// Either (value) or (atom & part) are always set
-		Value value = document.rootArray;
-		Atom atom = null;
-		BackPart part = null;
+		Value value = null;
+		Atom atom = document.root;
+		BackPart part = document.root.type.back().get(0);
 		for (int cycle = 0; cycle < 10000; ++cycle) {
 			if (part != null) {
 				// Process from either the root or a sublevel of a atom
@@ -287,6 +307,9 @@ public class Context {
 						part = recordPart.pairs.get(segment);
 					} else if (part instanceof BackDataArray) {
 						middle = ((BackDataArray) part).middle;
+						break;
+					} else if (part instanceof BackDataRootArray) {
+						middle = ((BackDataRootArray) part).middle;
 						break;
 					} else if (part instanceof BackDataKey) {
 						middle = ((BackDataKey) part).middle;
@@ -893,7 +916,7 @@ public class Context {
 			));
 		}
 		modules = document.syntax.modules.stream().map(p -> p.initialize(this)).collect(Collectors.toList());
-		document.rootArray.selectDown(this);
+		document.root.visual.selectDown(this);
 		idleLayBricksOutward();
 	}
 

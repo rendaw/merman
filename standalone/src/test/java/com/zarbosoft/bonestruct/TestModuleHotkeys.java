@@ -40,6 +40,6 @@ public class TestModuleHotkeys {
 	public void testInitialHotkeys() {
 		new GeneralTestWizard(syntax, new TreeBuilder(one).build())
 				.sendHIDEvent(new HIDEvent(Key.Q, true, ImmutableSet.of()))
-				.checkTree(syntax.gap.create());
+				.checkArrayTree(syntax.gap.create());
 	}
 }

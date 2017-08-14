@@ -1,3 +1,1 @@
-
-application: 
-    quit: "Quits the application. Shows confirmation if the document has unsaved changes.",
+{"application":{"quit":"Quits the application. Shows confirmation if the document has unsaved changes.",},"array":{"copy":"Copy the selected elements.","cut":(__gap)"Copy and delete the selected elements.","delete":"Delete the selected elements.","enter":"Enter the first selected element.","exit":"Exit the array.",},},

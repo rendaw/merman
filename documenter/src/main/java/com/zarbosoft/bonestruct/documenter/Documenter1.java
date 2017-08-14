@@ -45,7 +45,7 @@ public class Documenter1 {
 						reflections,
 						new Walk.TypeInfo(Map.class, new Walk.TypeInfo(String.class), new Walk.TypeInfo(String.class)),
 						descriptionsSource
-				).findFirst().get();
+				);
 			} catch (final IOException e) {
 				throw new UncheckedIOException(e);
 			}
@@ -78,7 +78,7 @@ public class Documenter1 {
 								)
 						),
 						descriptionsSource
-				).findFirst().get();
+				);
 			} catch (final IOException e) {
 				throw new UncheckedIOException(e);
 			}

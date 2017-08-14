@@ -10,6 +10,7 @@ import com.zarbosoft.bonestruct.editor.Path;
 import com.zarbosoft.bonestruct.editor.history.changes.ChangeArray;
 import com.zarbosoft.bonestruct.editor.history.changes.ChangeNodeSet;
 import com.zarbosoft.bonestruct.editor.visual.visuals.VisualArray;
+import com.zarbosoft.bonestruct.helper.Helper;
 import com.zarbosoft.bonestruct.helper.MiscSyntax;
 import com.zarbosoft.bonestruct.helper.TreeBuilder;
 import com.zarbosoft.bonestruct.syntax.Syntax;
@@ -43,20 +44,20 @@ public class TestSelectionChanges {
 
 		// Transform
 		transform.accept(context, found);
-		assertThat(context.document.rootArray.data.size(), equalTo(1));
-		assertTreeEqual(context.document.rootArray.data.get(0), end);
+		assertThat(Helper.rootArray(context.document).data.size(), equalTo(1));
+		assertTreeEqual(Helper.rootArray(context.document).data.get(0), end);
 		assertThat(context.selection.getPath(), equalTo(selectEnd));
 
 		// Undo
 		context.history.undo(context);
-		assertThat(context.document.rootArray.data.size(), equalTo(1));
-		assertTreeEqual(context.document.rootArray.data.get(0), begin);
+		assertThat(Helper.rootArray(context.document).data.size(), equalTo(1));
+		assertTreeEqual(Helper.rootArray(context.document).data.get(0), begin);
 		assertThat(context.selection.getPath(), equalTo(selectBegin));
 
 		// Redo
 		context.history.redo(context);
-		assertThat(context.document.rootArray.data.size(), equalTo(1));
-		assertTreeEqual(context.document.rootArray.data.get(0), end);
+		assertThat(Helper.rootArray(context.document).data.size(), equalTo(1));
+		assertTreeEqual(Helper.rootArray(context.document).data.get(0), end);
 		assertThat(context.selection.getPath(), equalTo(selectEnd));
 	}
 
@@ -75,7 +76,7 @@ public class TestSelectionChanges {
 				new TreeBuilder(MiscSyntax.five).build()
 		).build());
 
-		final ValueArray value = (ValueArray) context.document.rootArray.data.get(0).data.get("value");
+		final ValueArray value = (ValueArray) Helper.rootArray(context.document).data.get(0).data.get("value");
 		final VisualArray visual = (VisualArray) value.visual;
 		visual.select(context, true, beginSelectBegin, beginSelectEnd);
 		final VisualArray.ArraySelection selection = visual.selection;
@@ -102,7 +103,7 @@ public class TestSelectionChanges {
 				new TreeBuilder(MiscSyntax.infinity).build(),
 				new Path("0"),
 				(context, selected) -> context.history.apply(context,
-						new ChangeArray(context.document.rootArray, 0, 1, ImmutableList.of())
+						new ChangeArray(Helper.rootArray(context.document), 0, 1, ImmutableList.of())
 				),
 				MiscSyntax.syntax.gap.create(),
 				new Path("0")

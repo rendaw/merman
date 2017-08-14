@@ -54,7 +54,7 @@ public class PrimitiveSyntax {
 				.type(array)
 				.group("any", new GroupBuilder().type(primitive).type(low).type(high).type(quoted).type(array).build())
 				.style(new StyleBuilder().tag(new StateTag("compact")).tag(new FreeTag("split")).split(true).build())
+				.addRootFrontPrefix(new FrontSpaceBuilder().tag("split").build())
 				.build();
-		syntax.rootFront.prefix.add(new FrontSpaceBuilder().tag("split").build());
 	}
 }

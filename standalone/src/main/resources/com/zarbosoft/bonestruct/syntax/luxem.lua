@@ -231,12 +231,12 @@ end
 
 return _lessmodal_keys {
     name = 'luxem',
-    --[[pad = {
+    pad = {
         converse_start = 15,
         converse_end = 5,
         transverse_start = 60,
         transverse_end = 60,
-    },]]
+    },
     banner_pad = {
         converse_start = 15,
     },
@@ -246,6 +246,7 @@ return _lessmodal_keys {
     background = rgb { r = 74 / 255, g = 60 / 255, b = 89 / 255 },
     animate_course_placement = true,
     mouse_peek = true,
+    pretty_save = true,
     styles = {
         {
             color = rgb { r = 163 / 255, g = 164 / 255, b = 232 / 255 },
@@ -308,13 +309,24 @@ return _lessmodal_keys {
             'luxem_primitive',
         },
     },
-    root = 'value',
-    root_alignments = {
-        indent = absolute { offset = 0 },
-    },
-    root_front = {
-        prefix = { { type = space {}, tags = { 'split' } } },
-        separator = { { type = text ',' } },
+    root = {
+        id = 'root',
+        middle = {
+            data = array {
+                type = 'value'
+            }
+        },
+        back = { root_data_array 'data' },
+        front = {
+            array {
+                middle = 'data',
+                prefix = { { type = space {}, tags = { 'split' } } },
+                separator = { { type = text ',' } },
+            },
+        },
+        alignments = {
+            indent = absolute { offset = 0 },
+        },
     },
     types = {
         {

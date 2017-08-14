@@ -208,7 +208,7 @@ public class TestLayoutAlignment {
 	@Test
 	public void testDynamicAddLine() {
 		new GeneralTestWizard(syntax, new TreeBuilder(pair).add("first", "a").add("second", "b").build())
-				.run(context -> context.history.apply(context, new ChangeArray(context.document.rootArray,
+				.run(context -> context.history.apply(context, new ChangeArray(Helper.rootArray(context.document),
 						1,
 						0,
 						ImmutableList.of(new TreeBuilder(pair).add("first", "ccc").add("second", "d").build())
@@ -223,7 +223,7 @@ public class TestLayoutAlignment {
 				new TreeBuilder(pair).add("first", "ccc").add("second", "d").build()
 		)
 				.run(context -> context.history.apply(context,
-						new ChangeArray(context.document.rootArray, 1, 1, ImmutableList.of())
+						new ChangeArray(Helper.rootArray(context.document), 1, 1, ImmutableList.of())
 				))
 				.checkBrick(0, 2, 10);
 	}

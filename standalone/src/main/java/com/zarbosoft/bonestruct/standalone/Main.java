@@ -174,6 +174,9 @@ public class Main extends Application {
 
 		//mouse peek
 		//scroll up/down; scroll large up/down; reset scroll
+		I don't think gaps are allowed everywhere - direct references should be substituted with groups containing 1 type + gap types
+			+ gaps should be added to all user groups
+		//Disallow referring to the root type somehow
 		readme
 		doc on tagging
 		//syntax documenter
@@ -244,9 +247,6 @@ public class Main extends Application {
 			doc = uncheck(() -> syntax.load(path));
 		else
 			doc = syntax.create();
-		if (doc.rootArray.data.isEmpty()) {
-			doc.rootArray.sideload(syntax.gap.create());
-		}
 		this.display = new JavaFXDisplay(syntax);
 		final Editor editor = new Editor(syntax, doc, display, this::addIdle, path, history);
 		editor.addActions(this, ImmutableList.of(new ActionQuit()));

@@ -1,94 +1,17 @@
 package com.zarbosoft.bonestruct;
 
-import com.zarbosoft.bonestruct.helper.*;
-import com.zarbosoft.bonestruct.syntax.FreeAtomType;
-import com.zarbosoft.bonestruct.syntax.Syntax;
+import com.zarbosoft.bonestruct.helper.TreeBuilder;
 import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 
 import static com.zarbosoft.bonestruct.helper.Helper.buildDoc;
+import static com.zarbosoft.bonestruct.helper.SyntaxLoadSave.*;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 public class TestDocumentSave {
-	final static FreeAtomType primitive;
-	final static FreeAtomType doublePrimitive;
-	final static FreeAtomType array;
-	final static FreeAtomType record;
-	final static FreeAtomType dataPrimitive;
-	final static FreeAtomType dataArray;
-	final static FreeAtomType dataRecord;
-	final static FreeAtomType dataRecordElement;
-	static Syntax syntax;
-
-	static {
-		primitive = new TypeBuilder("primitive").back(Helper.buildBackPrimitive("x")).frontMark("x").build();
-		doublePrimitive = new TypeBuilder("doublePrimitive")
-				.back(Helper.buildBackPrimitive("x"))
-				.back(Helper.buildBackPrimitive("y"))
-				.frontMark("x")
-				.build();
-		array = new TypeBuilder("array")
-				.back(new BackArrayBuilder()
-						.add(Helper.buildBackPrimitive("x"))
-						.add(Helper.buildBackPrimitive("y"))
-						.build())
-				.frontMark("x")
-				.build();
-		record = new TypeBuilder("record")
-				.back(new BackRecordBuilder()
-						.add("a", Helper.buildBackPrimitive("x"))
-						.add("b", Helper.buildBackPrimitive("y"))
-						.build())
-				.frontMark("x")
-				.build();
-		dataPrimitive = new TypeBuilder("dataPrimitive")
-				.middlePrimitive("value")
-				.back(Helper.buildBackDataPrimitive("value"))
-				.frontDataPrimitive("value")
-				.build();
-		dataArray = new TypeBuilder("dataArray")
-				.middleArray("value", "any")
-				.back(Helper.buildBackDataArray("value"))
-				.frontDataArray("value")
-				.build();
-		dataRecord = new TypeBuilder("dataRecord")
-				.middleRecord("value", "dataRecordElement")
-				.back(Helper.buildBackDataRecord("value"))
-				.frontDataArray("value")
-				.build();
-		dataRecordElement = new TypeBuilder("dataRecordElement")
-				.middleRecordKey("key")
-				.back(Helper.buildBackDataKey("key"))
-				.back(Helper.buildBackPrimitive("value"))
-				.frontDataPrimitive("key")
-				.build();
-		syntax = new SyntaxBuilder("any")
-				.type(primitive)
-				.type(doublePrimitive)
-				.type(array)
-				.type(record)
-				.type(dataPrimitive)
-				.type(dataArray)
-				.type(dataRecord)
-				.type(dataRecordElement)
-				.group("any",
-						new GroupBuilder()
-								.type(primitive)
-								.type(doublePrimitive)
-								.type(array)
-								.type(record)
-								.type(dataPrimitive)
-								.type(dataArray)
-								.type(dataRecord)
-								.type(dataRecordElement)
-								.build()
-				)
-				.build();
-	}
-
 	public void check(final TreeBuilder tree, final String result) {
 		final ByteArrayOutputStream stream = new ByteArrayOutputStream();
 		buildDoc(syntax, tree.build()).document.write(stream);
@@ -98,6 +21,11 @@ public class TestDocumentSave {
 	@Test
 	public void testPrimitive() {
 		check(new TreeBuilder(primitive), "\"x\",");
+	}
+
+	@Test
+	public void testTypedPrimitive() {
+		check(new TreeBuilder(typedPrimitive), "(z)\"x\",");
 	}
 
 	@Test
@@ -126,6 +54,22 @@ public class TestDocumentSave {
 	}
 
 	@Test
+	public void testDataArrayWithType() {
+		check(new TreeBuilder(dataArray).addArray("value", new TreeBuilder(typedPrimitive).build()), "[(z)\"x\",],");
+	}
+
+	@Test
+	public void testDataArrayWithTwoElements() {
+		check(
+				new TreeBuilder(dataArray).addArray("value",
+						new TreeBuilder(typedPrimitive).build(),
+						new TreeBuilder(primitive).build()
+				),
+				"[(z)\"x\",\"x\",],"
+		);
+	}
+
+	@Test
 	public void testDataArrayDouble() {
 		check(
 				new TreeBuilder(dataArray).addArray("value", new TreeBuilder(doublePrimitive).build()),
@@ -136,7 +80,34 @@ public class TestDocumentSave {
 	@Test
 	public void testDataRecord() {
 		check(new TreeBuilder(dataRecord).addArray("value",
-				new TreeBuilder(dataRecordElement).addKey("key", "cat").build()
-		), "{\"cat\":\"value\",},");
+				new TreeBuilder(dataRecordElement)
+						.addKey("key", "cat")
+						.add("value", new TreeBuilder(primitive).build())
+						.build()
+		), "{\"cat\":\"x\",},");
+	}
+
+	@Test
+	public void testDataRecordWithType() {
+		check(new TreeBuilder(dataRecord).addArray("value",
+				new TreeBuilder(dataRecordElement)
+						.addKey("key", "cat")
+						.add("value", new TreeBuilder(typedPrimitive).build())
+						.build()
+		), "{\"cat\":(z)\"x\",},");
+	}
+
+	@Test
+	public void testDataRecordWithTwoElements() {
+		check(new TreeBuilder(dataRecord).addArray("value",
+				new TreeBuilder(dataRecordElement)
+						.addKey("key", "cat")
+						.add("value", new TreeBuilder(typedPrimitive).build())
+						.build(),
+				new TreeBuilder(dataRecordElement)
+						.addKey("key", "dog")
+						.add("value", new TreeBuilder(primitive).build())
+						.build()
+		), "{\"cat\":(z)\"x\",\"dog\":\"x\",},");
 	}
 }

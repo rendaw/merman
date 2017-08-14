@@ -1,6 +1,7 @@
 package com.zarbosoft.bonestruct.helper;
 
 import com.zarbosoft.bonestruct.document.Atom;
+import com.zarbosoft.bonestruct.document.values.ValueArray;
 import com.zarbosoft.bonestruct.editor.Action;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.banner.BannerMessage;
@@ -171,8 +172,7 @@ public class GeneralTestWizard {
 	}
 
 	public GeneralTestWizard checkBrickCount(final int i) {
-		assertThat(
-				inner.context.foreground.children.stream().mapToInt(course -> course.children.size()).sum(),
+		assertThat(inner.context.foreground.children.stream().mapToInt(course -> course.children.size()).sum(),
 				equalTo(i)
 		);
 		return this;
@@ -184,8 +184,10 @@ public class GeneralTestWizard {
 		return this;
 	}
 
-	public GeneralTestWizard checkTree(final Atom... atoms) {
-		zip(Stream.of(atoms), inner.context.document.rootArray.data.stream()).forEach(pair -> {
+	public GeneralTestWizard checkArrayTree(final Atom... atoms) {
+		zip(Stream.of(atoms),
+				((ValueArray) inner.context.document.root.data.get("value")).data.stream()
+		).forEach(pair -> {
 			Helper.assertTreeEqual(pair.first, pair.second);
 		});
 		return this;

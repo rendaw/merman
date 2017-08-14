@@ -14,7 +14,8 @@ public class PrimitiveTestWizard {
 		inner = new TestWizard(PrimitiveSyntax.syntax,
 				new TreeBuilder(PrimitiveSyntax.primitive).add("value", string).build()
 		);
-		this.primitive = ((ValuePrimitive) inner.context.document.rootArray.data.get(0).data.get("value")).visual;
+		this.primitive =
+				((ValuePrimitive) Helper.rootArray(inner.context.document).data.get(0).data.get("value")).visual;
 	}
 
 	public PrimitiveTestWizard check(final String... lines) {

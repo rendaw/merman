@@ -115,6 +115,9 @@ public abstract class AtomType {
 			} else if (next instanceof BackDataArray) {
 				if (((BackDataArray) next).middle.equals(id))
 					return next;
+			} else if (next instanceof BackDataRootArray) {
+				if (((BackDataRootArray) next).middle.equals(id))
+					return next;
 			} else if (next instanceof BackDataKey) {
 				if (((BackDataKey) next).middle.equals(id))
 					return next;

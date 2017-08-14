@@ -90,7 +90,7 @@ public class TestLayoutGeneral {
 		)
 				.resizeTransitive(40)
 				.run(context -> {
-					context.document.rootArray.data.get(4).parent.selectUp(context);
+					Helper.rootArray(context.document).data.get(4).parent.selectUp(context);
 				})
 				.checkScroll(24)
 				.checkCourse(4, 47, 57)

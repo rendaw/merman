@@ -28,8 +28,8 @@ public class TestLayoutRootArray {
 				.type(text)
 				.group("any", new GroupBuilder().type(one).type(text).build())
 				.style(new StyleBuilder().tag(new StateTag("compact")).tag(new FreeTag("split")).split(true).build())
+				.addRootFrontPrefix(new FrontSpaceBuilder().tag("split").build())
 				.build();
-		syntax.rootFront.prefix.add(new FrontSpaceBuilder().tag("split").build());
 	}
 
 	@Test
