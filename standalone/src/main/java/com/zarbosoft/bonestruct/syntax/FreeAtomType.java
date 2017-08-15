@@ -15,7 +15,13 @@ import java.util.*;
 @Configuration
 public class FreeAtomType extends AtomType {
 	@Configuration
+	public String id;
+
+	@Configuration
 	public String name;
+
+	@Configuration(name = "depth_score", optional = true)
+	public int depthScore = 0;
 
 	@Configuration
 	public List<FrontPart> front = new ArrayList<>();
@@ -37,6 +43,16 @@ public class FreeAtomType extends AtomType {
 
 	@Configuration(name = "auto_choose_ambiguity", optional = true)
 	public int autoChooseAmbiguity = -1;
+
+	@Override
+	public String id() {
+		return id;
+	}
+
+	@Override
+	public int depthScore() {
+		return depthScore;
+	}
 
 	@Override
 	public List<FrontPart> front() {

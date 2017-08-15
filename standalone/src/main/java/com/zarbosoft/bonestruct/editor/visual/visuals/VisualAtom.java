@@ -165,7 +165,7 @@ public class VisualAtom extends Visual {
 		if (parent == null)
 			this.depth = 0;
 		else
-			this.depth = depth + atom.type.depthScore;
+			this.depth = depth + atom.type.depthScore();
 		this.alignments.clear();
 		this.alignments.putAll(alignments);
 		for (final Map.Entry<String, Alignment> alignment : localAlignments.entrySet()) {

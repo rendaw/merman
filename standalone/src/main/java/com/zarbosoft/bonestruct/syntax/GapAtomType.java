@@ -32,6 +32,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -40,12 +41,12 @@ import static com.zarbosoft.rendaw.common.Common.iterable;
 @Configuration
 public class GapAtomType extends AtomType {
 	private final MiddlePrimitive dataGap;
-	@Configuration
+	@Configuration(name = "prefix")
 	public List<FrontSymbol> frontPrefix = new ArrayList<>();
-	@Configuration
+	@Configuration(name = "suffix")
 	public List<FrontSymbol> frontSuffix = new ArrayList<>();
 
-	private final List<FrontPart> front;
+	private List<FrontPart> front;
 	private final List<BackPart> back;
 	private final Map<String, MiddlePart> middle;
 
@@ -101,7 +102,25 @@ public class GapAtomType extends AtomType {
 	}
 
 	public GapAtomType() {
-		id = "__gap";
+		{
+			final BackDataPrimitive backDataPrimitive = new BackDataPrimitive();
+			backDataPrimitive.middle = "gap";
+			final BackType backType = new BackType();
+			backType.value = "__gap";
+			backType.child = backDataPrimitive;
+			back = ImmutableList.of(backType);
+		}
+		{
+			dataGap = new MiddlePrimitive();
+			dataGap.id = "gap";
+			middle = ImmutableMap.of("gap", dataGap);
+		}
+	}
+
+	@Override
+	public void finish(
+			final Syntax syntax, final Set<String> allTypes, final Set<String> scalarTypes
+	) {
 		{
 			final FrontGapBase gap = new FrontGapBase() {
 				@Override
@@ -215,19 +234,17 @@ public class GapAtomType extends AtomType {
 			};
 			front = ImmutableList.copyOf(Iterables.concat(frontPrefix, ImmutableList.of(gap), frontSuffix));
 		}
-		{
-			final BackDataPrimitive backDataPrimitive = new BackDataPrimitive();
-			backDataPrimitive.middle = "gap";
-			final BackType backType = new BackType();
-			backType.value = "__gap";
-			backType.child = backDataPrimitive;
-			back = ImmutableList.of(backType);
-		}
-		{
-			dataGap = new MiddlePrimitive();
-			dataGap.id = "gap";
-			middle = ImmutableMap.of("gap", dataGap);
-		}
+		super.finish(syntax, allTypes, scalarTypes);
+	}
+
+	@Override
+	public String id() {
+		return "__gap";
+	}
+
+	@Override
+	public int depthScore() {
+		return 0;
 	}
 
 	@Override

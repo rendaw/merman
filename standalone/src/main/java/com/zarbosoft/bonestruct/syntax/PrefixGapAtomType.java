@@ -32,6 +32,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -48,12 +49,37 @@ public class PrefixGapAtomType extends AtomType {
 	@Configuration(name = "suffix", optional = true)
 	public List<FrontSymbol> frontSuffix = new ArrayList<>();
 
-	private final List<FrontPart> front;
+	private List<FrontPart> front;
 	private final List<BackPart> back;
 	private final Map<String, MiddlePart> middle;
 
 	public PrefixGapAtomType() {
-		id = "__prefix_gap";
+		{
+			final BackDataPrimitive gap = new BackDataPrimitive();
+			gap.middle = "gap";
+			final BackDataArray value = new BackDataArray();
+			value.middle = "value";
+			final BackRecord record = new BackRecord();
+			record.pairs.put("gap", gap);
+			record.pairs.put("value", value);
+			final BackType type = new BackType();
+			type.value = "__gap";
+			type.child = record;
+			back = ImmutableList.of(type);
+		}
+		{
+			dataValue = new MiddleArray();
+			dataValue.id = "value";
+			dataGap = new MiddlePrimitive();
+			dataGap.id = "gap";
+			middle = ImmutableMap.of("gap", dataGap, "value", dataValue);
+		}
+	}
+
+	@Override
+	public void finish(
+			final Syntax syntax, final Set<String> allTypes, final Set<String> scalarTypes
+	) {
 		{
 			final FrontGapBase gap = new FrontGapBase() {
 				@Override
@@ -183,26 +209,17 @@ public class PrefixGapAtomType extends AtomType {
 					frontSuffix
 			));
 		}
-		{
-			final BackDataPrimitive gap = new BackDataPrimitive();
-			gap.middle = "gap";
-			final BackDataArray value = new BackDataArray();
-			value.middle = "value";
-			final BackRecord record = new BackRecord();
-			record.pairs.put("gap", gap);
-			record.pairs.put("value", value);
-			final BackType type = new BackType();
-			type.value = "__gap";
-			type.child = record;
-			back = ImmutableList.of(type);
-		}
-		{
-			dataValue = new MiddleArray();
-			dataValue.id = "value";
-			dataGap = new MiddlePrimitive();
-			dataGap.id = "gap";
-			middle = ImmutableMap.of("gap", dataGap, "value", dataValue);
-		}
+		super.finish(syntax, allTypes, scalarTypes);
+	}
+
+	@Override
+	public String id() {
+		return "__prefix_gap";
+	}
+
+	@Override
+	public int depthScore() {
+		return 0;
 	}
 
 	@Override

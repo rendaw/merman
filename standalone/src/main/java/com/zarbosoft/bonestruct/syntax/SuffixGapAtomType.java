@@ -34,6 +34,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -48,7 +49,7 @@ public class SuffixGapAtomType extends AtomType {
 	@Configuration(name = "suffix", optional = true)
 	public List<FrontSymbol> frontSuffix = new ArrayList<>();
 
-	private final List<FrontPart> front;
+	private List<FrontPart> front;
 	private final List<BackPart> back;
 	private final Map<String, MiddlePart> middle;
 
@@ -96,7 +97,32 @@ public class SuffixGapAtomType extends AtomType {
 	}
 
 	public SuffixGapAtomType() {
-		id = "__suffix_gap";
+		{
+			final BackDataArray value = new BackDataArray();
+			value.middle = "value";
+			final BackDataPrimitive gap = new BackDataPrimitive();
+			gap.middle = "gap";
+			final BackRecord record = new BackRecord();
+			record.pairs.put("value", value);
+			record.pairs.put("gap", gap);
+			final BackType type = new BackType();
+			type.value = "__gap";
+			type.child = record;
+			back = ImmutableList.of(type);
+		}
+		{
+			dataValue = new MiddleArray();
+			dataValue.id = "value";
+			dataGap = new MiddlePrimitive();
+			dataGap.id = "gap";
+			middle = ImmutableMap.of("gap", dataGap, "value", dataValue);
+		}
+	}
+
+	@Override
+	public void finish(
+			final Syntax syntax, final Set<String> allTypes, final Set<String> scalarTypes
+	) {
 		{
 			final FrontDataArrayAsAtom value = new FrontDataArrayAsAtom();
 			value.middle = "value";
@@ -114,9 +140,9 @@ public class SuffixGapAtomType extends AtomType {
 
 						if (context.syntax
 								.getLeafTypes(test.childType())
-								.map(t -> t.id)
+								.map(t -> t.id())
 								.collect(Collectors.toSet())
-								.contains(type.id)) {
+								.contains(type.id())) {
 							parent = test;
 							child = testAtom;
 							allowed = true;
@@ -313,26 +339,17 @@ public class SuffixGapAtomType extends AtomType {
 					frontSuffix
 			));
 		}
-		{
-			final BackDataArray value = new BackDataArray();
-			value.middle = "value";
-			final BackDataPrimitive gap = new BackDataPrimitive();
-			gap.middle = "gap";
-			final BackRecord record = new BackRecord();
-			record.pairs.put("value", value);
-			record.pairs.put("gap", gap);
-			final BackType type = new BackType();
-			type.value = "__gap";
-			type.child = record;
-			back = ImmutableList.of(type);
-		}
-		{
-			dataValue = new MiddleArray();
-			dataValue.id = "value";
-			dataGap = new MiddlePrimitive();
-			dataGap.id = "gap";
-			middle = ImmutableMap.of("gap", dataGap, "value", dataValue);
-		}
+		super.finish(syntax, allTypes, scalarTypes);
+	}
+
+	@Override
+	public String id() {
+		return "__suffix_gap";
+	}
+
+	@Override
+	public int depthScore() {
+		return 0;
 	}
 
 	@Override

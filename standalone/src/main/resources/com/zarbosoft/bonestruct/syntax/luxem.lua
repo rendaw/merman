@@ -173,6 +173,7 @@ _lessmodal_keys = function(config)
             {
                 hotkeys = {
                     exit = { key 'escape' },
+                    debug = { key { key = 'd', modifiers = { 'control' } } },
                     enter = { key 'enter' },
                     undo = { key { key = 'z', modifiers = { 'control' } } },
                     redo = { key { key = 'z', modifiers = { 'control', 'shift' } } },
@@ -306,7 +307,6 @@ return _lessmodal_keys {
         },
     },
     root = {
-        id = 'root',
         middle = {
             data = array {
                 type = 'value'
@@ -322,6 +322,21 @@ return _lessmodal_keys {
         },
         alignments = {
             indent = absolute { offset = 0 },
+        },
+    },
+    gap = {
+        prefix = {
+            text '◇',
+        },
+    },
+    prefix_gap = {
+        prefix = {
+            text '⬗',
+        },
+    },
+    suffix_gap = {
+        prefix = {
+            text '⬖',
         },
     },
     types = {
@@ -350,6 +365,7 @@ return _lessmodal_keys {
             },
             auto_choose_ambiguity = 999,
             precedence = 0,
+            depth_score = 1,
         },
         {
             id = 'luxem_object_element',
@@ -391,6 +407,7 @@ return _lessmodal_keys {
             },
             auto_choose_ambiguity = 999,
             precedence = 0,
+            depth_score = 1,
         },
         {
             id = 'luxem_primitive',
@@ -400,6 +417,7 @@ return _lessmodal_keys {
             front = {
                 primitive 'data',
             },
+            auto_choose_ambiguity = 1,
         }
     },
     modules = {

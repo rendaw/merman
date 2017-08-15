@@ -391,4 +391,41 @@ public class TestCompaction {
 				.checkTextBrick(2, 1, "one")
 				.checkTextBrick(2, 3, "one");
 	}
+
+	@Test
+	public void testIdentical() {
+		new GeneralTestWizard(syntax,
+				new TreeBuilder(low)
+						.addArray("value", new TreeBuilder(infinity).build(), new TreeBuilder(high).addArray("value",
+								new TreeBuilder(low)
+										.addArray("value", new TreeBuilder(one).build(), new TreeBuilder(one).build())
+										.build()
+						).build(), new TreeBuilder(infinity).build())
+						.build()
+		)
+				.checkTextBrick(0, 1, "infinity")
+				.checkTextBrick(0, 5, "one")
+				.checkTextBrick(0, 7, "one")
+				.checkTextBrick(0, 9, "infinity")
+				.resize(100)
+				.checkTextBrick(0, 1, "infinity")
+				.checkTextBrick(1, 3, "one")
+				.checkTextBrick(1, 5, "one")
+				.checkTextBrick(2, 1, "infinity")
+				.resize(50)
+				.checkTextBrick(0, 1, "infinity")
+				.checkTextBrick(2, 1, "one")
+				.checkTextBrick(3, 1, "one")
+				.checkTextBrick(4, 1, "infinity")
+				.resize(100)
+				.checkTextBrick(0, 1, "infinity")
+				.checkTextBrick(1, 3, "one")
+				.checkTextBrick(1, 5, "one")
+				.checkTextBrick(2, 1, "infinity")
+				.resize(10_000_000)
+				.checkTextBrick(0, 1, "infinity")
+				.checkTextBrick(0, 5, "one")
+				.checkTextBrick(0, 7, "one")
+				.checkTextBrick(0, 9, "infinity");
+	}
 }

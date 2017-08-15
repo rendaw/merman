@@ -39,8 +39,8 @@ public class BackDataAtom extends BackPart {
 			if (child.back.size() > 1)
 				throw new InvalidSyntax(String.format(
 						"Type [%s] is a child of [%s] at middle [%s], but deserializes as an array segment.",
-						child.id,
-						atomType.id,
+						child.id(),
+						atomType.id(),
 						middle
 				));
 		}

@@ -47,7 +47,7 @@ public class Helper {
 
 	private static void dump(final Atom value, final RawWriter writer) {
 		uncheck(() -> {
-			writer.type(value.type.id.getBytes(StandardCharsets.UTF_8));
+			writer.type(value.type.id().getBytes(StandardCharsets.UTF_8));
 			writer.recordBegin();
 			value.data
 					.keySet()

@@ -55,7 +55,7 @@ public class BackDataRecord extends BackPart {
 	private static void finishThrow(final AtomType type) {
 		throw new InvalidSyntax(String.format("As the element type of a back record, [%s] must have exactly a back key, followed by a back type " +
 						"then value or just a back value.",
-				type.id
+				type.id()
 		));
 	}
 

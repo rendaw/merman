@@ -615,7 +615,8 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 		@Override
 		public void clear(final Context context) {
 			border.destroy(context);
-			hoverable = null;
+			if (hoverable == this)
+				hoverable = null;
 		}
 
 		@Override
@@ -1204,11 +1205,6 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 				if (parent != null)
 					return parent.hover(context, point);
 				return null;
-			}
-			if (selection != null && selection.beginIndex == valueIndex() && selection.endIndex == valueIndex()) {
-				if (hoverable != null)
-					throw new AssertionError();
-				return hoverable;
 			}
 			if (hoverable == null) {
 				hoverable = new ElementHoverable(context);

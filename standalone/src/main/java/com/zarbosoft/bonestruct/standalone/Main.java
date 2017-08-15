@@ -177,6 +177,7 @@ public class Main extends Application {
 		//I don't think gaps are allowed everywhere - direct references should be substituted with groups containing 1 type + gap types
 		//	+ gaps should be added to all user groups
 		//Disallow referring to the root type somehow
+		save -> still dirty popup
 		readme
 		doc on tagging
 		//syntax documenter
@@ -232,7 +233,7 @@ public class Main extends Application {
 		if (getParameters().getUnnamed().isEmpty())
 			throw new IllegalArgumentException("Must specify a filename as first argument.");
 		filename = Paths.get(getParameters().getUnnamed().get(0));
-		if (!Files.exists(filename.getParent()))
+		if (!Files.exists(filename.toAbsolutePath().normalize().getParent()))
 			throw new IllegalArgumentException(String.format(
 					"Directory of specified file must exist.\nAbsolute path: %s",
 					filename.toAbsolutePath().normalize()
@@ -249,7 +250,7 @@ public class Main extends Application {
 			doc = syntax.create();
 		this.display = new JavaFXDisplay(syntax);
 		final Editor editor = new Editor(syntax, doc, display, this::addIdle, path, history);
-		editor.addActions(this, ImmutableList.of(new ActionQuit()));
+		editor.addActions(this, ImmutableList.of(new ActionQuit(), new ActionDebug()));
 		final HBox filesystemLayout = new HBox();
 		filesystemLayout.setPadding(new Insets(3, 2, 3, 2));
 		filesystemLayout.setSpacing(5);
@@ -423,6 +424,15 @@ public class Main extends Application {
 		@Override
 		public boolean run(final Context context) {
 			Platform.exit();
+			return true;
+		}
+	}
+
+	@Action.StaticID(id = "debug")
+	private static class ActionDebug extends ActionBase {
+		@Override
+		public boolean run(final Context context) {
+			System.out.format("This is a convenient place to put a breakpoint.\n");
 			return true;
 		}
 	}

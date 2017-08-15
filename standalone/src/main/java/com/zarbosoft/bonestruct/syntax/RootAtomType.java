@@ -26,6 +26,16 @@ public class RootAtomType extends AtomType {
 	public Map<String, AlignmentDefinition> alignments = new HashMap<>();
 
 	@Override
+	public String id() {
+		return "root";
+	}
+
+	@Override
+	public int depthScore() {
+		return 0;
+	}
+
+	@Override
 	public List<FrontPart> front() {
 		return front;
 	}

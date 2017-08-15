@@ -9,7 +9,7 @@ public class GroupBuilder {
 	Set<String> subtypes = new HashSet<>();
 
 	public GroupBuilder type(final FreeAtomType type) {
-		subtypes.add(type.id);
+		subtypes.add(type.id());
 		return this;
 	}
 

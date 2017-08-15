@@ -22,14 +22,9 @@ import static com.zarbosoft.rendaw.common.Common.enumerate;
 
 @Configuration
 public abstract class AtomType {
-	@Configuration
-	public String id;
 
 	@Configuration
 	public Set<String> tags = new HashSet<>();
-
-	@Configuration(name = "depth_score", optional = true)
-	public int depthScore = 0;
 
 	public abstract List<FrontPart> front();
 
@@ -42,6 +37,10 @@ public abstract class AtomType {
 	public abstract int precedence();
 
 	public abstract boolean frontAssociative();
+
+	public abstract String id();
+
+	public abstract int depthScore();
 
 	public static class NodeBackParent extends BackPart.Parent {
 		public int index;
@@ -68,7 +67,7 @@ public abstract class AtomType {
 			if (!missing.isEmpty())
 				throw new InvalidSyntax(String.format("Middle elements %s in %s are unused by back parts.",
 						missing,
-						id
+						id()
 				));
 		}
 		{
@@ -78,7 +77,7 @@ public abstract class AtomType {
 			if (!missing.isEmpty())
 				throw new InvalidSyntax(String.format("Middle elements %s in %s are unused by front parts.",
 						missing,
-						id
+						id()
 				));
 		}
 	}
@@ -144,11 +143,11 @@ public abstract class AtomType {
 	private <D extends MiddlePart> D getData(final Class<? extends MiddlePart> type, final String id) {
 		final MiddlePart found = middle().get(id);
 		if (found == null)
-			throw new InvalidSyntax(String.format("No middle element [%s] in [%s]", id, this.id));
+			throw new InvalidSyntax(String.format("No middle element [%s] in [%s]", id, this.id()));
 		if (!type.isAssignableFrom(found.getClass()))
 			throw new InvalidSyntax(String.format("Conflicting types for middle element [%s] in [%s]: %s, %s",
 					id,
-					this.id,
+					this.id(),
 					found.getClass(),
 					type
 			));

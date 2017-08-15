@@ -619,7 +619,7 @@ public class Context {
 			windowAtom = value.parent.atom();
 			int depth = 0;
 			while (true) {
-				depth += windowAtom.type.depthScore;
+				depth += windowAtom.type.depthScore();
 				if (depth >= depthThreshold)
 					break;
 				if (windowAtom.parent == null)

@@ -153,8 +153,6 @@ public class Syntax {
 	}
 
 	public void finish() {
-		root.id = "value";
-
 		// jfx, qt, and swing don't support vertical languages
 		if (!ImmutableSet.of(Direction.LEFT, Direction.RIGHT).contains(converseDirection) ||
 				(transverseDirection != Direction.DOWN))
@@ -200,12 +198,12 @@ public class Syntax {
 		final Set<String> allTypes = new HashSet<>();
 		for (final FreeAtomType t : types) {
 			if (t.back.isEmpty())
-				throw new InvalidSyntax(String.format("Type [%s] has no back parts.", t.id));
-			if (allTypes.contains(t.id))
-				throw new InvalidSyntax(String.format("Multiple types with id [%s].", t.id));
-			allTypes.add(t.id);
+				throw new InvalidSyntax(String.format("Type [%s] has no back parts.", t.id()));
+			if (allTypes.contains(t.id()))
+				throw new InvalidSyntax(String.format("Multiple types with id [%s].", t.id()));
+			allTypes.add(t.id());
 			if (t.back.size() == 1)
-				scalarTypes.add(t.id);
+				scalarTypes.add(t.id());
 		}
 		final Map<String, Set<String>> groupsThatContainType = new HashMap<>();
 		final Set<String> potentiallyScalarGroups = new HashSet<>();
@@ -229,7 +227,7 @@ public class Syntax {
 			if (t.back.size() == 1)
 				continue;
 			final Deque<Iterator<String>> stack = new ArrayDeque<>();
-			stack.add(groupsThatContainType.getOrDefault(t.id, ImmutableSet.of()).iterator());
+			stack.add(groupsThatContainType.getOrDefault(t.id(), ImmutableSet.of()).iterator());
 			while (!stack.isEmpty()) {
 				final Iterator<String> top = stack.pollLast();
 				if (top.hasNext()) {
@@ -246,7 +244,6 @@ public class Syntax {
 		for (final FreeAtomType t : types) {
 			t.finish(this, allTypes, scalarTypes);
 		}
-		root.id = "root";
 		root.finish(this, allTypes, scalarTypes);
 		gap.finish(this, allTypes, scalarTypes);
 		prefixGap.finish(this, allTypes, scalarTypes);
@@ -265,10 +262,10 @@ public class Syntax {
 	public Grammar getGrammar() {
 		if (grammar == null) {
 			grammar = new Grammar();
-			types.forEach(t -> grammar.add(t.id, t.buildBackRule(this)));
-			grammar.add(gap.id, gap.buildBackRule(this));
-			grammar.add(prefixGap.id, prefixGap.buildBackRule(this));
-			grammar.add(suffixGap.id, suffixGap.buildBackRule(this));
+			types.forEach(t -> grammar.add(t.id(), t.buildBackRule(this)));
+			grammar.add(gap.id(), gap.buildBackRule(this));
+			grammar.add(prefixGap.id(), prefixGap.buildBackRule(this));
+			grammar.add(suffixGap.id(), suffixGap.buildBackRule(this));
 			groups.forEach((k, v) -> {
 				final Union group = new Union();
 				v.forEach(n -> group.add(new Reference(n)));
@@ -302,7 +299,7 @@ public class Syntax {
 	}
 
 	public FreeAtomType getType(final String type) {
-		return types.stream().filter(t -> t.id.equals(type)).findFirst().get();
+		return types.stream().filter(t -> t.id().equals(type)).findFirst().get();
 	}
 
 	public Stream<FreeAtomType> getLeafTypes(final String type) {

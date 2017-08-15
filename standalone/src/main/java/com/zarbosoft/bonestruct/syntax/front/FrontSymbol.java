@@ -25,6 +25,7 @@ public class FrontSymbol extends FrontPart {
 
 	@Configuration(optional = true)
 	public ConditionType condition = null;
+
 	@Configuration(name = "gap_key", optional = true)
 	public String gapKey = "";
 

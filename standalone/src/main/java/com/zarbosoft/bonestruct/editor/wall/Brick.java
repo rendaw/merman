@@ -95,9 +95,10 @@ public abstract class Brick implements AlignmentListener {
 		return inter.getVisual();
 	}
 
-	public void setParent(final Context context, final Course parent) {
+	public void setParent(final Context context, final Course parent, final int index) {
 		final Course oldParent = this.parent;
 		this.parent = parent;
+		this.index = index;
 		if (alignment != null)
 			alignment.courseChanged(context, this, oldParent, parent);
 	}

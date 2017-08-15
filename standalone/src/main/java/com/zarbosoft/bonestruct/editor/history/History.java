@@ -8,20 +8,25 @@ import com.zarbosoft.rendaw.common.DeadCode;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.time.Instant;
 import java.util.*;
 
 import static com.zarbosoft.rendaw.common.Common.last;
 
 public class History {
+	private int levelId = 0;
 	boolean locked = false;
-	private Instant pastEnd;
 	private final Deque<Level> past = new ArrayDeque<>();
 	private final Deque<Level> future = new ArrayDeque<>();
+	private Integer clearLevel;
 
 	private static class Level extends Change {
+		private final int id;
 		public final List<Change> subchanges = new ArrayList<>();
 		private SelectionState select;
+
+		private Level(final int id) {
+			this.id = id;
+		}
 
 		@Override
 		public boolean merge(final Change other) {
@@ -35,12 +40,13 @@ public class History {
 
 		@Override
 		public Change apply(final Context context) {
-			final Level out = new Level();
+			final Level out = new Level(id);
 			out.select = context.selection.saveState();
 			for (final Change change : Lists.reverse(subchanges)) {
 				out.subchanges.add(change.apply(context));
 			}
-			select.select(context);
+			if (select != null)
+				select.select(context);
 			return out;
 		}
 
@@ -81,13 +87,18 @@ public class History {
 	}
 
 	public boolean undo(final Context context) {
+		final boolean wasModified = isModified();
 		try (Closeable lock = lock()) {
+			if (past.isEmpty())
+				return false;
+			if (past.getLast().isEmpty())
+				past.removeLast();
 			if (past.isEmpty())
 				return false;
 			future.addLast(applyLevel(context, past.pollLast()));
 		} catch (final IOException e) {
 		}
-		if (past.isEmpty())
+		if (isModified() != wasModified)
 			modifiedStateListeners.forEach(l -> l.changed(false));
 		return true;
 	}
@@ -98,9 +109,10 @@ public class History {
 			if (future.isEmpty())
 				return false;
 			past.addLast(applyLevel(context, future.pollLast()));
+			past.addLast(new Level(levelId++));
 		} catch (final IOException e) {
 		}
-		if (!wasModified)
+		if (wasModified != isModified())
 			modifiedStateListeners.forEach(l -> l.changed(true));
 		return true;
 	}
@@ -109,7 +121,7 @@ public class History {
 		try (Closeable lock = lock()) {
 			if (!past.isEmpty() && past.peekLast().isEmpty())
 				return;
-			past.addLast(new Level());
+			past.addLast(new Level(levelId++));
 		} catch (final IOException e) {
 		}
 	}
@@ -120,7 +132,7 @@ public class History {
 			future.clear();
 			final Level reverseLevel;
 			if (past.isEmpty()) {
-				reverseLevel = new Level();
+				reverseLevel = new Level(levelId++);
 				past.addLast(reverseLevel);
 			} else
 				reverseLevel = past.peek();
@@ -137,15 +149,36 @@ public class History {
 			modifiedStateListeners.forEach(l -> l.changed(true));
 	}
 
+	private Integer fixedTop() {
+		if (past.size() < 2)
+			return null;
+		final Iterator<Level> iter = past.descendingIterator();
+		iter.next();
+		return iter.next().id;
+	}
+
 	public boolean isModified() {
-		if (past.isEmpty())
-			return false;
-		return past.size() > 1 || !past.peekLast().isEmpty();
+		if (clearLevel == null) {
+			if (past.isEmpty())
+				return false;
+			return past.size() > 1 || !past.peekLast().isEmpty();
+		} else {
+			return clearLevel != fixedTop();
+		}
 	}
 
 	public void clear() {
 		past.clear();
 		future.clear();
+		clearLevel = null;
+	}
+
+	public void clearModified(final Context context) {
+		finishChange(context);
+		final Integer oldClearLevel = clearLevel;
+		clearLevel = fixedTop();
+		if (clearLevel != oldClearLevel)
+			modifiedStateListeners.forEach(l -> l.changed(false));
 	}
 
 	public void addListener(final Listener listener) {

@@ -24,7 +24,7 @@ public class Atom {
 	public Atom(final AtomType type, final Map<String, Value> data) {
 		this.type = type;
 		this.data = data;
-		tags = Context.asFreeTags(type.tags).plus(new TypeTag(type.id));
+		tags = Context.asFreeTags(type.tags).plus(new TypeTag(type.id()));
 		data.forEach((k, v) -> {
 			v.setParent(new Parent() {
 				@Override

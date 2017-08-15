@@ -27,7 +27,7 @@ import java.util.Map;
 import static com.zarbosoft.rendaw.common.Common.uncheck;
 import static j2html.TagCreator.*;
 
-public class Documenter1 {
+public class Main {
 	public static void main(final String[] args) {
 		final Reflections reflections = new Reflections("com.zarbosoft.bonestruct");
 
@@ -35,7 +35,7 @@ public class Documenter1 {
 		{
 			final Map<String, String> descriptions;
 			try (
-					InputStream descriptionsSource = Documenter1.class
+					InputStream descriptionsSource = Main.class
 							.getClassLoader()
 							.getResourceAsStream("com/zarbosoft/bonestruct/documenter/descriptions.luxem")
 			) {
@@ -64,7 +64,7 @@ public class Documenter1 {
 		{
 			final Map<String, Map<String, String>> descriptions;
 			try (
-					InputStream descriptionsSource = Documenter1.class
+					InputStream descriptionsSource = Main.class
 							.getClassLoader()
 							.getResourceAsStream("com/zarbosoft/bonestruct/documenter/actionDescriptions.luxem")
 			) {

@@ -55,6 +55,7 @@ public class Editor {
 
 	public void save(final Path dest) {
 		context.document.write(dest);
+		context.history.clearModified(context);
 	}
 
 	public void addActions(final Object key, final List<Action> actions) {

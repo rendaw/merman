@@ -111,9 +111,11 @@ public class Course {
 		if (bricks.size() == 0)
 			throw new AssertionError("Adding no bricks");
 		children.addAll(at, bricks);
-		for (final Brick brick : bricks)
-			brick.setParent(context, this);
-		renumber(at);
+		for (int i = 0; i < bricks.size(); ++i) {
+			final Brick brick = bricks.get(i);
+			brick.setParent(context, this, at + i);
+		}
+		renumber(at + bricks.size());
 		visual.addAll(at, bricks.stream().map(c -> c.getDisplayNode()).collect(Collectors.toList()));
 		bricks.stream().forEach(c -> {
 			c.allocateTransverse(context, ascent, descent);
@@ -132,7 +134,7 @@ public class Course {
 		if (context.hoverBrick == brick) {
 			context.clearHover();
 		}
-		brick.setParent(context, null);
+		brick.setParent(context, null, 0);
 		children.remove(at);
 		if (children.isEmpty()) {
 			if (index - 1 >= 0)
