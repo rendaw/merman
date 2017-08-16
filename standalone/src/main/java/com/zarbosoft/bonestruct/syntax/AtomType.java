@@ -169,4 +169,9 @@ public abstract class AtomType {
 	public MiddleRecordKey getDataKey(final String key) {
 		return getData(MiddleRecordKey.class, key);
 	}
+
+	@Override
+	public String toString() {
+		return String.format("<type %s>", id());
+	}
 }

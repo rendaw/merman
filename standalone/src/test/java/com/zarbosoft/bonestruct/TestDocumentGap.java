@@ -7,8 +7,10 @@ import com.zarbosoft.bonestruct.document.values.ValueArray;
 import com.zarbosoft.bonestruct.document.values.ValuePrimitive;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.Path;
+import com.zarbosoft.bonestruct.editor.history.changes.ChangePrimitiveSet;
 import com.zarbosoft.bonestruct.helper.*;
 import com.zarbosoft.bonestruct.syntax.Syntax;
+import com.zarbosoft.bonestruct.syntax.front.FrontGapBase;
 import org.junit.Test;
 
 import java.util.function.Consumer;
@@ -16,6 +18,8 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static com.zarbosoft.bonestruct.helper.Helper.*;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -120,6 +124,24 @@ public class TestDocumentGap {
 						.build(),
 				Helper.rootArray(context.document)
 		);
+	}
+
+	@Test
+	public void immediateReplaceOnSelection() {
+		/*
+		If the order isn't correct, context.setSyntax may be called after the selection is replaced by the converted
+		value's selection.
+		 */
+		final Atom gap = MiscSyntax.syntax.gap.create();
+		final ValuePrimitive primitive = (ValuePrimitive) gap.data.get("gap");
+		new GeneralTestWizard(MiscSyntax.syntax, gap)
+				.run(context -> context.history.apply(context, new ChangePrimitiveSet(primitive, "\"")))
+				.checkArrayTree(gap)
+				.run(context -> primitive.selectDown(context))
+				.checkArrayTree(new TreeBuilder(MiscSyntax.quoted).add("value", "").build())
+				.run(context -> assertThat(context.selection,
+						not(instanceOf(FrontGapBase.GapVisualPrimitive.GapSelection.class))
+				));
 	}
 
 	// ========================================================================

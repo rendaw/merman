@@ -332,7 +332,6 @@ public abstract class VisualNestedBase extends Visual implements VisualLeaf {
 		}
 		selection = new NestedSelection(context);
 		context.setSelection(selection);
-		context.foreground.setCornerstone(context, body.createOrGetFirstBrick(context));
 	}
 
 	protected Stream<Action> getActions(final Context context) {

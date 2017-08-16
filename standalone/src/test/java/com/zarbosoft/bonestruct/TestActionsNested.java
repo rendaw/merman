@@ -69,6 +69,7 @@ public class TestActionsNested {
 
 	@Test
 	public void testDelete() {
+		/*
 		final Context context = buildDoc(MiscSyntax.syntax, new TreeBuilder(MiscSyntax.snooze).add("value",
 				new TreeBuilder(MiscSyntax.snooze).add("value", new TreeBuilder(MiscSyntax.infinity).build()).build()
 		).build());
@@ -78,6 +79,17 @@ public class TestActionsNested {
 				new TreeBuilder(MiscSyntax.snooze).add("value", MiscSyntax.syntax.gap.create()).build(),
 				Helper.rootArray(context.document)
 		);
+		*/
+		new GeneralTestWizard(MiscSyntax.syntax, new TreeBuilder(MiscSyntax.snooze).add("value",
+				new TreeBuilder(MiscSyntax.snooze).add("value", new TreeBuilder(MiscSyntax.infinity).build()).build()
+		).build())
+				.run(context -> {
+					((Atom) context.locateLong(new Path("0", "value"))).parent.selectUp(context);
+				})
+				.act("delete")
+				.checkArrayTree(new TreeBuilder(MiscSyntax.snooze)
+						.add("value", MiscSyntax.syntax.gap.create())
+						.build());
 	}
 
 	@Test

@@ -35,12 +35,12 @@ public class TestDocumentSave {
 
 	@Test
 	public void testArray() {
-		check(new TreeBuilder(array), "[\"x\",\"y\",],");
+		check(new TreeBuilder(array), "(typedArray)[\"x\",\"y\",],");
 	}
 
 	@Test
 	public void testRecord() {
-		check(new TreeBuilder(record), "{\"a\":\"x\",\"b\":\"y\",},");
+		check(new TreeBuilder(record), "(typedRecord){\"a\":\"x\",\"b\":\"y\",},");
 	}
 
 	@Test

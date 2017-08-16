@@ -171,10 +171,10 @@ public class TestPrimitiveBreaking {
 				.checkCourse(1, 0, 10)
 				.run(context -> context.history.apply(context, new ChangePrimitiveRemove(primitive, 3, 2)))
 				.checkCourseCount(1)
-				.checkCourse(0, 0, 10)
+				.checkCourse(0, -20, -10)
 				.run(context -> {
-					assertThat(primitive.visual.selection.range.cursor.drawing.transverse(context), is(-3));
-					assertThat(primitive.visual.selection.range.cursor.drawing.transverseEdge(context), is(11));
+					assertThat(primitive.visual.selection.range.cursor.drawing.transverse(context), is(-23));
+					assertThat(primitive.visual.selection.range.cursor.drawing.transverseEdge(context), is(-9));
 				});
 	}
 

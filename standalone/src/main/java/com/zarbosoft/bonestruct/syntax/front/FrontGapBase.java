@@ -93,7 +93,7 @@ public abstract class FrontGapBase extends FrontPart {
 		public abstract Iterable<? extends FrontPart> parts();
 	}
 
-	private class GapVisualPrimitive extends VisualPrimitive {
+	public class GapVisualPrimitive extends VisualPrimitive {
 		private final Map<String, Value> data;
 
 		public GapVisualPrimitive(
@@ -110,6 +110,14 @@ public abstract class FrontGapBase extends FrontPart {
 									.collect(Collectors.toSet()))
 			);
 			this.data = atom.data;
+		}
+
+		@Override
+		public void select(final Context context, final boolean leadFirst, final int beginOffset, final int endOffset) {
+			super.select(context, leadFirst, beginOffset, endOffset);
+			if (((GapSelection) selection).self.data.length() > 0) {
+				((GapSelection) selection).updateGap(context);
+			}
 		}
 
 		@Override
@@ -306,9 +314,6 @@ public abstract class FrontGapBase extends FrontPart {
 			) {
 				super(context, leadFirst, beginOffset, endOffset);
 				self = dataType.get(data);
-				if (self.data.length() > 0) {
-					updateGap(context);
-				}
 			}
 
 			public void updateGap(final Context context) {

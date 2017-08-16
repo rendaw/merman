@@ -17,6 +17,10 @@ import static com.zarbosoft.rendaw.common.Common.flatStream;
 import static com.zarbosoft.rendaw.common.Common.last;
 
 public class Wall {
+	/*
+	Cornerstone may be null.
+	Cornerstone course is only null in transition.
+	 */
 	public final Group visual;
 	public List<Course> children = new ArrayList<>();
 	private IdleAdjustTask idleAdjust;
@@ -98,7 +102,9 @@ public class Wall {
 	}
 
 	void remove(final Context context, final int at) {
-		final boolean adjustForward = at > cornerstoneCourse.index;
+		if (cornerstoneCourse != null && cornerstoneCourse.index == at) {
+			cornerstoneCourse = null;
+		}
 		children.remove(at);
 		visual.remove(at);
 		if (at < children.size()) {
@@ -179,20 +185,24 @@ public class Wall {
 
 	public void setCornerstone(final Context context, final Brick cornerstone) {
 		this.cornerstone = cornerstone;
-		if (cornerstone.parent == null) {
-			clear(context);
-			final Course course = new Course(context);
-			add(context, 0, ImmutableList.of(course));
-			course.add(context, 0, ImmutableList.of(cornerstone));
+		if (cornerstone == null) {
+			this.cornerstoneCourse = null;
+		} else {
+			if (cornerstone.parent == null) {
+				clear(context);
+				final Course course = new Course(context);
+				add(context, 0, ImmutableList.of(course));
+				course.add(context, 0, ImmutableList.of(cornerstone));
+			}
+			this.cornerstoneCourse = cornerstone.parent;
+			if (beddingBefore > 0 || beddingAfter > 0)
+				adjust(context, cornerstoneCourse.index);
+			ImmutableList
+					.copyOf(cornerstoneListeners)
+					.forEach(listener -> listener.cornerstoneChanged(context, cornerstone));
+			context.idleLayBricksBeforeStart(cornerstone);
+			context.idleLayBricksAfterEnd(cornerstone);
 		}
-		this.cornerstoneCourse = cornerstone.parent;
-		if (beddingBefore > 0 || beddingAfter > 0)
-			adjust(context, cornerstoneCourse.index);
-		ImmutableList
-				.copyOf(cornerstoneListeners)
-				.forEach(listener -> listener.cornerstoneChanged(context, cornerstone));
-		context.idleLayBricksBeforeStart(cornerstone);
-		context.idleLayBricksAfterEnd(cornerstone);
 	}
 
 	class IdleCompactTask extends IdleTask {
@@ -315,6 +325,8 @@ public class Wall {
 		}
 
 		public void at(final int at) {
+			if (cornerstoneCourse == null)
+				return;
 			if (at <= cornerstoneCourse.index && at > backward)
 				backward = Math.min(cornerstoneCourse.index - 1, at);
 			if (at >= cornerstoneCourse.index && at < forward)

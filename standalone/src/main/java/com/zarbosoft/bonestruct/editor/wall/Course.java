@@ -103,7 +103,8 @@ public class Course {
 			visual.remove(index, visual.size() - index);
 			next.add(context, 0, transplant);
 		}
-		parent.setCornerstone(context, parent.cornerstone);
+		if (resetCornerstone)
+			parent.setCornerstone(context, parent.cornerstone);
 		return next;
 	}
 
@@ -131,6 +132,8 @@ public class Course {
 
 	void removeFromSystem(final Context context, final int at) {
 		final Brick brick = children.get(at);
+		if (parent.cornerstone == brick)
+			parent.cornerstone = null;
 		if (context.hoverBrick == brick) {
 			context.clearHover();
 		}

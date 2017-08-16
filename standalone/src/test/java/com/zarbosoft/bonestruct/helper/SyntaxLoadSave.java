@@ -26,20 +26,17 @@ public class SyntaxLoadSave {
 				.back(Helper.buildBackPrimitive("y"))
 				.frontMark("x")
 				.build();
-		array = new TypeBuilder("array")
-				.back(new BackArrayBuilder()
-						.add(Helper.buildBackPrimitive("x"))
-						.add(Helper.buildBackPrimitive("y"))
-						.build())
-				.frontMark("x")
-				.build();
-		record = new TypeBuilder("record")
-				.back(new BackRecordBuilder()
+		array = new TypeBuilder("array").back(Helper.buildBackType(
+				"typedArray",
+				new BackArrayBuilder().add(Helper.buildBackPrimitive("x")).add(Helper.buildBackPrimitive("y")).build()
+		)).frontMark("x").build();
+		record = new TypeBuilder("record").back(Helper.buildBackType(
+				"typedRecord",
+				new BackRecordBuilder()
 						.add("a", Helper.buildBackPrimitive("x"))
 						.add("b", Helper.buildBackPrimitive("y"))
-						.build())
-				.frontMark("x")
-				.build();
+						.build()
+		)).frontMark("x").build();
 		dataPrimitive = new TypeBuilder("dataPrimitive")
 				.middlePrimitive("value")
 				.back(Helper.buildBackDataPrimitive("value"))

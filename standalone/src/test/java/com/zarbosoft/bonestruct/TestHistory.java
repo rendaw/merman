@@ -29,11 +29,13 @@ public class TestHistory {
 		modify = new Consumer<>() {
 			@Override
 			public void accept(final Context context) {
-				context.history.apply(context, new ChangeArray(Helper.rootArray(context.document),
-						0,
-						0,
-						ImmutableList.of(new TreeBuilder(one).build())
-				));
+				context.history.apply(context,
+						new ChangeArray(Helper.rootArray(context.document),
+								0,
+								0,
+								ImmutableList.of(new TreeBuilder(one).build())
+						)
+				);
 				context.history.finishChange(context);
 			}
 		};

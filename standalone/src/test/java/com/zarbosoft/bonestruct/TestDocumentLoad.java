@@ -35,6 +35,8 @@ public class TestDocumentLoad {
 
 	@Test
 	public void record() {
-		assertTreeEqual(Helper.rootArray(syntax.load("{a:x,b:y}")).data.get(0), new TreeBuilder(record).build());
+		assertTreeEqual(Helper.rootArray(syntax.load("(typedRecord){a:x,b:y}")).data.get(0),
+				new TreeBuilder(record).build()
+		);
 	}
 }
