@@ -105,12 +105,6 @@ public class Syntax {
 	@Configuration(optional = true, name = "retry_expand_factor")
 	public double retryExpandFactor = 1.25;
 
-	@Configuration(optional = true, name = "mouse_peek")
-	public boolean mousePeek = false;
-
-	@Configuration(optional = true, name = "mouse_peek_factor")
-	public double mousePeekFactor = 1.0;
-
 	@Configuration(optional = true, name = "scroll_factor")
 	public double scrollFactor = 0.1;
 

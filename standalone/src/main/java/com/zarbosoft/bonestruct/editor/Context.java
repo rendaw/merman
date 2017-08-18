@@ -836,10 +836,6 @@ public class Context {
 			selection.receiveText(this, text);
 		});
 		display.addMouseExitListener(() -> {
-			if (syntax.mousePeek) {
-				peek = 0;
-				applyScroll();
-			}
 			if (hoverIdle != null) {
 				hoverIdle.point = null;
 			} else if (hover != null) {
@@ -847,10 +843,6 @@ public class Context {
 			}
 		});
 		display.addMouseMoveListener(vector -> {
-			if (syntax.mousePeek) {
-				peek = vector.transverse - transverseEdge / 2;
-				applyScroll();
-			}
 			if (hoverIdle == null) {
 				hoverIdle = new HoverIdle(this);
 				addIdle.accept(hoverIdle);

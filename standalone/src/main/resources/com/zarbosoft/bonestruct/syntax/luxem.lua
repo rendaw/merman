@@ -246,7 +246,6 @@ return _lessmodal_keys {
     },
     background = rgb { r = 74 / 255, g = 60 / 255, b = 89 / 255 },
     animate_course_placement = true,
-    mouse_peek = true,
     pretty_save = true,
     styles = {
         {
