@@ -39,144 +39,151 @@ public class Hotkeys extends Module {
 	@Configuration(name = "show_details", optional = true)
 	public boolean showDetails = true;
 
-	private Grammar hotkeyGrammar;
-	private EventStream<Action> hotkeyParse;
-	private String hotkeySequence = "";
-	private HotkeyDetails hotkeyDetails = null;
-	Map<String, List<Node>> hotkeys = new HashMap<>();
-	boolean freeTyping = true;
+	@Override
+	public State initialize(final Context context) {
+		return new ModuleState(context);
+	}
 
-	private class HotkeyDetails extends DetailsPage {
-		public HotkeyDetails(final Context context) {
-			final Group group = context.display.group();
-			this.node = group;
-			final TLayout layout = new TLayout(group);
+	private class ModuleState extends State {
+		private class HotkeyDetails extends DetailsPage {
+			public HotkeyDetails(final Context context) {
+				final Group group = context.display.group();
+				this.node = group;
+				final TLayout layout = new TLayout(group);
 
-			final Text first = context.display.text();
-			final Style.Baked firstStyle = context.getStyle(context.globalTags
-					.plus(new PartTag("details_prompt"))
-					.plus(new PartTag("details")));
-			first.setColor(context, firstStyle.color);
-			first.setFont(context, firstStyle.getFont(context));
-			first.setText(context, hotkeySequence);
-			layout.add(first);
+				final Text first = context.display.text();
+				final Style.Baked firstStyle = context.getStyle(context.globalTags
+						.plus(new PartTag("details_prompt"))
+						.plus(new PartTag("details")));
+				first.setColor(context, firstStyle.color);
+				first.setFont(context, firstStyle.getFont(context));
+				first.setText(context, hotkeySequence);
+				layout.add(first);
 
-			final Style.Baked lineStyle =
-					context.getStyle(context.globalTags.plus(new PartTag("details_line")).plus(new PartTag("details")));
-			final ColumnarTableLayout table = new ColumnarTableLayout(context, context.syntax.detailSpan);
-			for (final com.zarbosoft.pidgoon.internal.State leaf : hotkeyParse.context().leaves) {
-				final Action action = leaf.color();
-				final Text rule = context.display.text();
-				rule.setColor(context, lineStyle.color);
-				rule.setFont(context, lineStyle.getFont(context));
-				rule.setText(context, hotkeyGrammar.getNode(action.id()).toString());
-				final Text name = context.display.text();
-				name.setColor(context, lineStyle.color);
-				name.setFont(context, lineStyle.getFont(context));
-				name.setText(context, action.id());
-				table.add(ImmutableList.of(rule, name));
+				final Style.Baked lineStyle = context.getStyle(context.globalTags
+						.plus(new PartTag("details_line"))
+						.plus(new PartTag("details")));
+				final ColumnarTableLayout table = new ColumnarTableLayout(context, context.syntax.detailSpan);
+				for (final com.zarbosoft.pidgoon.internal.State leaf : hotkeyParse.context().leaves) {
+					final Action action = leaf.color();
+					final Text rule = context.display.text();
+					rule.setColor(context, lineStyle.color);
+					rule.setFont(context, lineStyle.getFont(context));
+					rule.setText(context, hotkeyGrammar.getNode(action.id()).toString());
+					final Text name = context.display.text();
+					name.setColor(context, lineStyle.color);
+					name.setFont(context, lineStyle.getFont(context));
+					name.setText(context, action.id());
+					table.add(ImmutableList.of(rule, name));
+				}
+				table.layout(context);
+				layout.add(table.group);
+				layout.layout(context);
 			}
-			table.layout(context);
-			layout.add(table.group);
-			layout.layout(context);
+
+			@Override
+			public void tagsChanged(final Context context) {
+
+			}
+		}
+
+		private Grammar hotkeyGrammar;
+		private EventStream<Action> hotkeyParse;
+		private String hotkeySequence = "";
+		private HotkeyDetails hotkeyDetails = null;
+		Map<String, List<Node>> hotkeys = new HashMap<>();
+		boolean freeTyping = true;
+
+		public ModuleState(final Context context) {
+			context.addKeyListener(this::handleEvent);
+			context.addSelectionTagsChangeListener(new Context.TagsListener() {
+				@Override
+				public void tagsChanged(final Context context) {
+					update(context);
+				}
+			});
+			context.addActionChangeListener(new Context.ActionChangeListener() {
+				@Override
+				public void actionsAdded(final Context context) {
+					update(context);
+				}
+
+				@Override
+				public void actionsRemoved(final Context context) {
+					update(context);
+				}
+			});
 		}
 
 		@Override
-		public void tagsChanged(final Context context) {
-
-		}
-	}
-
-	private void update(final Context context) {
-		if (context.selection == null)
-			return;
-		final PSet<Tag> tags = context.globalTags.plusAll(context.selection.getTags(context));
-		clean(context);
-		hotkeys = new HashMap<>();
-		freeTyping = true;
-		for (final HotkeyRule rule : rules) {
-			if (!tags.containsAll(rule.with) || !Sets.intersection(tags, rule.without).isEmpty())
-				continue;
-			hotkeys.putAll(rule.hotkeys);
-			freeTyping = freeTyping && rule.freeTyping;
-		}
-		hotkeyGrammar = new Grammar();
-		final Union union = new Union();
-		for (final Action action : iterable(context.actions())) {
-			if (hotkeys.containsKey(action.id())) {
-				for (final Node hotkey : hotkeys.get(action.id())) {
-					union.add(new Operator(hotkey.build(), store -> store.pushStack(action)));
-				}
-			}
-		}
-		hotkeyGrammar.add("root", union);
-	}
-
-	@Override
-	public State initialize(final Context context) {
-		context.addKeyListener(this::handleEvent);
-		context.addSelectionTagsChangeListener(new Context.TagsListener() {
-			@Override
-			public void tagsChanged(final Context context) {
-				update(context);
-			}
-		});
-		context.addActionChangeListener(new Context.ActionChangeListener() {
-			@Override
-			public void actionsAdded(final Context context) {
-				update(context);
-			}
-
-			@Override
-			public void actionsRemoved(final Context context) {
-				update(context);
-			}
-		});
-		return new State() {
-			@Override
-			public void destroy(final Context context) {
-				clean(context);
-			}
-		};
-	}
-
-	public boolean handleEvent(final Context context, final HIDEvent event) {
-		if (hotkeyParse == null) {
-			hotkeyParse = new Parse<Action>().grammar(hotkeyGrammar).parse();
-		}
-		if (hotkeySequence.isEmpty())
-			hotkeySequence += event.toString();
-		else
-			hotkeySequence += " " + event.toString();
-		boolean result;
-		try {
-			hotkeyParse = hotkeyParse.push(event, hotkeySequence);
-			if (hotkeyParse.ended()) {
-				final Action action = hotkeyParse.finish();
-				clean(context);
-				action.run(context);
-			} else {
-				if (showDetails) {
-					if (hotkeyDetails != null)
-						context.details.removePage(context, hotkeyDetails);
-					hotkeyDetails = new HotkeyDetails(context);
-					context.details.addPage(context, hotkeyDetails);
-				}
-			}
-			result = true;
-		} catch (final InvalidStream e) {
+		public void destroy(final Context context) {
 			clean(context);
-			result = freeTyping ? false : true;
 		}
-		return result;
+
+		private void update(final Context context) {
+			if (context.selection == null)
+				return;
+			final PSet<Tag> tags = context.globalTags.plusAll(context.selection.getTags(context));
+			clean(context);
+			hotkeys = new HashMap<>();
+			freeTyping = true;
+			for (final HotkeyRule rule : rules) {
+				if (!tags.containsAll(rule.with) || !Sets.intersection(tags, rule.without).isEmpty())
+					continue;
+				hotkeys.putAll(rule.hotkeys);
+				freeTyping = freeTyping && rule.freeTyping;
+			}
+			hotkeyGrammar = new Grammar();
+			final Union union = new Union();
+			for (final Action action : iterable(context.actions())) {
+				if (hotkeys.containsKey(action.id())) {
+					for (final Node hotkey : hotkeys.get(action.id())) {
+						union.add(new Operator(hotkey.build(), store -> store.pushStack(action)));
+					}
+				}
+			}
+			hotkeyGrammar.add("root", union);
+		}
+
+		public boolean handleEvent(final Context context, final HIDEvent event) {
+			if (hotkeyParse == null) {
+				hotkeyParse = new Parse<Action>().grammar(hotkeyGrammar).parse();
+			}
+			if (hotkeySequence.isEmpty())
+				hotkeySequence += event.toString();
+			else
+				hotkeySequence += " " + event.toString();
+			boolean result;
+			try {
+				hotkeyParse = hotkeyParse.push(event, hotkeySequence);
+				if (hotkeyParse.ended()) {
+					final Action action = hotkeyParse.finish();
+					clean(context);
+					action.run(context);
+				} else {
+					if (showDetails) {
+						if (hotkeyDetails != null)
+							context.details.removePage(context, hotkeyDetails);
+						hotkeyDetails = new HotkeyDetails(context);
+						context.details.addPage(context, hotkeyDetails);
+					}
+				}
+				result = true;
+			} catch (final InvalidStream e) {
+				clean(context);
+				result = freeTyping ? false : true;
+			}
+			return result;
+		}
+
+		private void clean(final Context context) {
+			hotkeySequence = "";
+			hotkeyParse = null;
+			if (hotkeyDetails != null) {
+				context.details.removePage(context, hotkeyDetails);
+				hotkeyDetails = null;
+			}
+		}
 	}
 
-	private void clean(final Context context) {
-		hotkeySequence = "";
-		hotkeyParse = null;
-		if (hotkeyDetails != null) {
-			context.details.removePage(context, hotkeyDetails);
-			hotkeyDetails = null;
-		}
-	}
 }

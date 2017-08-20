@@ -18,15 +18,20 @@ public class LuaActions extends Module {
 
 	@Override
 	public State initialize(final Context context) {
-		context.addActions(this, actions.entrySet().stream().map(entry -> {
-			return new ActionAct(entry);
-		}).collect(Collectors.toList()));
-		return new State() {
-			@Override
-			public void destroy(final Context context) {
-				context.removeActions(LuaActions.this);
-			}
-		};
+		return new ModuleState(context);
+	}
+
+	private class ModuleState extends State {
+		ModuleState(final Context context) {
+			context.addActions(this, actions.entrySet().stream().map(entry -> {
+				return new ActionAct(entry);
+			}).collect(Collectors.toList()));
+		}
+
+		@Override
+		public void destroy(final Context context) {
+			context.removeActions(this);
+		}
 	}
 
 	private abstract static class ActionBase extends Action {

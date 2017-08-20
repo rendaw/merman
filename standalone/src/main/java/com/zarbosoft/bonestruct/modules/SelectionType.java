@@ -17,11 +17,14 @@ public class SelectionType extends Module {
 	@Configuration(optional = true)
 	public boolean part = true;
 
-	private BannerMessage message;
-
 	@Override
 	public State initialize(final Context context) {
-		context.addSelectionListener(new Context.SelectionListener() {
+		return new ModuleState(context);
+	}
+
+	private class ModuleState extends State {
+		private BannerMessage message;
+		private final Context.SelectionListener listener = new Context.SelectionListener() {
 			@Override
 			public void selectionChanged(final Context context, final Selection selection) {
 				BannerMessage oldMessage = message;
@@ -58,12 +61,15 @@ public class SelectionType extends Module {
 					oldMessage = null;
 				}
 			}
-		});
-		return new State() {
-			@Override
-			public void destroy(final Context context) {
-
-			}
 		};
+
+		public ModuleState(final Context context) {
+			context.addSelectionListener(listener);
+		}
+
+		@Override
+		public void destroy(final Context context) {
+			context.removeSelectionListener(listener);
+		}
 	}
 }

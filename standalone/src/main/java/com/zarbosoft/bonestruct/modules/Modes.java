@@ -19,25 +19,9 @@ public class Modes extends Module {
 	@Configuration
 	public List<String> states;
 
-	private int state = 0;
-
-	private Tag getTag(final int state) {
-		return new GlobalTag(String.format("mode_%s", states.get(state)));
-	}
-
 	@Override
 	public State initialize(final Context context) {
-		context.addActions(this, enumerate(states.stream()).map(pair -> {
-			return new ActionMode(pair);
-		}).collect(Collectors.toList()));
-		context.changeGlobalTags(new TagsChange(ImmutableSet.of(getTag(state)), ImmutableSet.of()));
-		return new State() {
-			@Override
-			public void destroy(final Context context) {
-				context.changeGlobalTags(new TagsChange(ImmutableSet.of(), ImmutableSet.of(getTag(state))));
-				context.removeActions(this);
-			}
-		};
+		return new ModuleState(context);
 	}
 
 	private abstract static class ActionBase extends Action {
@@ -46,26 +30,47 @@ public class Modes extends Module {
 		}
 	}
 
-	@Action.StaticID(id = "mode_%s (%s = mode id)")
-	private class ActionMode extends ActionBase {
-		private final Pair<Integer, String> pair;
+	private class ModuleState extends State {
+		private int state = 0;
 
-		public ActionMode(final Pair<Integer, String> pair) {
-			this.pair = pair;
+		ModuleState(final Context context) {
+			context.addActions(this, enumerate(states.stream()).map(pair -> {
+				return new ActionMode(pair);
+			}).collect(Collectors.toList()));
+			context.changeGlobalTags(new TagsChange(ImmutableSet.of(getTag(state)), ImmutableSet.of()));
 		}
 
 		@Override
-		public boolean run(final Context context) {
-			context.changeGlobalTags(new TagsChange(ImmutableSet.of(getTag(pair.first)),
-					ImmutableSet.of(getTag(state))
-			));
-			state = pair.first;
-			return true;
+		public void destroy(final Context context) {
+			context.changeGlobalTags(new TagsChange(ImmutableSet.of(), ImmutableSet.of(getTag(state))));
+			context.removeActions(this);
 		}
 
-		@Override
-		public String id() {
-			return String.format("mode_%s", pair.second);
+		private Tag getTag(final int state) {
+			return new GlobalTag(String.format("mode_%s", states.get(state)));
+		}
+
+		@Action.StaticID(id = "mode_%s (%s = mode id)")
+		private class ActionMode extends ActionBase {
+			private final Pair<Integer, String> pair;
+
+			public ActionMode(final Pair<Integer, String> pair) {
+				this.pair = pair;
+			}
+
+			@Override
+			public boolean run(final Context context) {
+				context.changeGlobalTags(new TagsChange(ImmutableSet.of(getTag(pair.first)),
+						ImmutableSet.of(getTag(state))
+				));
+				state = pair.first;
+				return true;
+			}
+
+			@Override
+			public String id() {
+				return String.format("mode_%s", pair.second);
+			}
 		}
 	}
 }
