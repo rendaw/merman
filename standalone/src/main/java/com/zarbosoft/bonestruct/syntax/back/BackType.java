@@ -1,9 +1,9 @@
 package com.zarbosoft.bonestruct.syntax.back;
 
+import com.zarbosoft.bonestruct.editor.backevents.ETypeEvent;
 import com.zarbosoft.bonestruct.syntax.AtomType;
 import com.zarbosoft.bonestruct.syntax.Syntax;
 import com.zarbosoft.interface1.Configuration;
-import com.zarbosoft.luxem.read.source.LTypeEvent;
 import com.zarbosoft.pidgoon.Node;
 import com.zarbosoft.pidgoon.events.MatchingEventTerminal;
 import com.zarbosoft.pidgoon.nodes.Sequence;
@@ -38,6 +38,8 @@ public class BackType extends BackPart {
 
 	@Override
 	public Node buildBackRule(final Syntax syntax, final AtomType atomType) {
-		return new Sequence().add(new MatchingEventTerminal(new LTypeEvent(value))).add(child.buildBackRule(syntax, atomType));
+		return new Sequence()
+				.add(new MatchingEventTerminal(new ETypeEvent(value)))
+				.add(child.buildBackRule(syntax, atomType));
 	}
 }

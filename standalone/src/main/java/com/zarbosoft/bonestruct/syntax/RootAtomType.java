@@ -1,5 +1,7 @@
 package com.zarbosoft.bonestruct.syntax;
 
+import com.zarbosoft.bonestruct.document.Atom;
+import com.zarbosoft.bonestruct.document.values.Value;
 import com.zarbosoft.bonestruct.syntax.alignments.AlignmentDefinition;
 import com.zarbosoft.bonestruct.syntax.back.BackPart;
 import com.zarbosoft.bonestruct.syntax.front.FrontPart;
@@ -68,5 +70,11 @@ public class RootAtomType extends AtomType {
 	@Override
 	public String name() {
 		return "root array";
+	}
+
+	public Atom create(final Syntax syntax) {
+		final Map<String, Value> data = new HashMap<>();
+		middle.entrySet().stream().forEach(e -> data.put(e.getKey(), e.getValue().create(syntax)));
+		return new Atom(this, data);
 	}
 }

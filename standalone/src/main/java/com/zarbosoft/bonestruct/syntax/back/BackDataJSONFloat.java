@@ -1,7 +1,7 @@
 package com.zarbosoft.bonestruct.syntax.back;
 
 import com.zarbosoft.bonestruct.document.values.ValuePrimitive;
-import com.zarbosoft.bonestruct.editor.backevents.EPrimitiveEvent;
+import com.zarbosoft.bonestruct.editor.backevents.JFloatEvent;
 import com.zarbosoft.bonestruct.syntax.AtomType;
 import com.zarbosoft.bonestruct.syntax.Syntax;
 import com.zarbosoft.interface1.Configuration;
@@ -14,17 +14,16 @@ import com.zarbosoft.rendaw.common.Pair;
 
 import java.util.Set;
 
-@Configuration(name = "data_primitive")
-public class BackDataPrimitive extends BackPart {
+@Configuration(name = "json_data_primitive")
+public class BackDataJSONFloat extends BackPart {
 	@Configuration
 	public String middle;
 
 	@Override
 	public Node buildBackRule(final Syntax syntax, final AtomType atomType) {
-		return new Operator(new MatchingEventTerminal(new EPrimitiveEvent(null)), store -> {
-			store = (Store) store.pushStack(new Pair<>(
-					middle,
-					new ValuePrimitive(atomType.getDataPrimitive(middle), ((EPrimitiveEvent) store.top()).value)
+		return new Operator(new MatchingEventTerminal(new JFloatEvent(null)), store -> {
+			store = (Store) store.pushStack(new Pair<>(middle,
+					new ValuePrimitive(atomType.getDataPrimitive(middle), ((JFloatEvent) store.top()).value)
 			));
 			return Helper.stackSingleElement(store);
 		});

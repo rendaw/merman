@@ -18,6 +18,8 @@ import com.zarbosoft.bonestruct.editor.display.Group;
 import com.zarbosoft.bonestruct.editor.hid.HIDEvent;
 import com.zarbosoft.bonestruct.editor.history.Change;
 import com.zarbosoft.bonestruct.editor.history.History;
+import com.zarbosoft.bonestruct.editor.serialization.Load;
+import com.zarbosoft.bonestruct.editor.serialization.Write;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.VisualParent;
@@ -37,14 +39,6 @@ import com.zarbosoft.bonestruct.syntax.middle.MiddleArray;
 import com.zarbosoft.bonestruct.syntax.middle.MiddleRecord;
 import com.zarbosoft.bonestruct.syntax.style.Style;
 import com.zarbosoft.luxem.read.InvalidStream;
-import com.zarbosoft.luxem.read.Parse;
-import com.zarbosoft.luxem.write.RawWriter;
-import com.zarbosoft.pidgoon.events.Grammar;
-import com.zarbosoft.pidgoon.events.Operator;
-import com.zarbosoft.pidgoon.events.Store;
-import com.zarbosoft.pidgoon.internal.NamedOperator;
-import com.zarbosoft.pidgoon.nodes.Reference;
-import com.zarbosoft.pidgoon.nodes.Repeat;
 import com.zarbosoft.rendaw.common.WeakCache;
 import javafx.animation.Interpolator;
 import org.pcollections.HashTreePSet;
@@ -178,10 +172,7 @@ public class Context {
 
 	public void copy(final List<Atom> atoms) {
 		final ByteArrayOutputStream stream = new ByteArrayOutputStream();
-		final RawWriter writer = new RawWriter(stream);
-		for (final Atom atom : atoms) {
-			Document.write(atom, writer);
-		}
+		Write.write(atoms, document.syntax, stream);
 		clipboardEngine.set(stream.toByteArray());
 	}
 
@@ -194,25 +185,7 @@ public class Context {
 		if (bytes == null)
 			return ImmutableList.of();
 		try {
-			final Grammar grammar = new Grammar(syntax.getGrammar());
-			grammar.add(new NamedOperator(this,
-					new Operator(new Repeat(new Operator(new Reference(type),
-							store -> com.zarbosoft.pidgoon.internal.Helper.stackSingleElement(store)
-					)).max(7), store -> {
-						final List<Atom> temp = new ArrayList<>();
-						store = (Store) com.zarbosoft.pidgoon.internal.Helper.<Atom>stackPopSingleList(store,
-								temp::add
-						);
-						Collections.reverse(temp);
-						return store.pushStack(temp);
-					})
-			));
-			return new Parse<List<Atom>>()
-					.grammar(grammar)
-					.stack(() -> 0)
-					.root(this)
-					.eventUncertainty(1000)
-					.parse(new ByteArrayInputStream(bytes));
+			return Load.loadMultiple(syntax, type, new ByteArrayInputStream(bytes));
 		} catch (final InvalidStream e) {
 
 		} catch (final InvalidDocument e) {

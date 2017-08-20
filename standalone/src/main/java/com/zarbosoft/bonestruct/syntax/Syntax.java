@@ -1,8 +1,8 @@
 package com.zarbosoft.bonestruct.syntax;
 
 import com.google.common.collect.ImmutableSet;
-import com.zarbosoft.bonestruct.document.Atom;
 import com.zarbosoft.bonestruct.document.Document;
+import com.zarbosoft.bonestruct.editor.serialization.Load;
 import com.zarbosoft.bonestruct.modules.Module;
 import com.zarbosoft.bonestruct.syntax.style.BoxStyle;
 import com.zarbosoft.bonestruct.syntax.style.ModelColor;
@@ -11,10 +11,7 @@ import com.zarbosoft.bonestruct.syntax.symbol.Symbol;
 import com.zarbosoft.bonestruct.syntax.symbol.SymbolText;
 import com.zarbosoft.interface1.Configuration;
 import com.zarbosoft.interface1.Walk;
-import com.zarbosoft.interface1.events.InterfaceEvent;
 import com.zarbosoft.luaconf.LuaConf;
-import com.zarbosoft.luxem.read.LuxemEvent;
-import com.zarbosoft.luxem.read.Parse;
 import com.zarbosoft.pidgoon.Node;
 import com.zarbosoft.pidgoon.events.Grammar;
 import com.zarbosoft.pidgoon.nodes.Reference;
@@ -42,14 +39,22 @@ public class Syntax {
 	@Configuration()
 	public String name;
 
+	@Configuration
+	public static enum BackType {
+		@Configuration(name = "luxem")
+		LUXEM,
+		@Configuration(name = "json")
+		JSON
+	}
+
+	@Configuration(name = "type", optional = true)
+	public BackType backType = BackType.LUXEM;
+
 	@Configuration(optional = true)
 	public ModelColor background = ModelColor.RGB.white;
 
 	@Configuration(optional = true, name = "pad")
 	public Padding pad = new Padding();
-
-	@Configuration(optional = true)
-	public List<InterfaceEvent> template = new ArrayList<>();
 
 	@Configuration(optional = true)
 	public String placeholder = "▢";
@@ -271,9 +276,7 @@ public class Syntax {
 	}
 
 	public Document create() {
-		return new Document(this,
-				new Parse<Atom>().grammar(getGrammar()).parse(template.stream().map(e -> (LuxemEvent) e))
-		);
+		return new Document(this, root.create(this));
 	}
 
 	public Document load(final Path path) throws FileNotFoundException, IOException {
@@ -289,7 +292,7 @@ public class Syntax {
 	}
 
 	public Document load(final InputStream data) {
-		return new Document(this, new Parse<Atom>().grammar(getGrammar()).eventUncertainty(1000).parse(data));
+		return Load.load(this, data);
 	}
 
 	public FreeAtomType getType(final String type) {

@@ -1,11 +1,11 @@
 package com.zarbosoft.bonestruct.syntax.back;
 
+import com.zarbosoft.bonestruct.editor.backevents.EKeyEvent;
+import com.zarbosoft.bonestruct.editor.backevents.EObjectCloseEvent;
+import com.zarbosoft.bonestruct.editor.backevents.EObjectOpenEvent;
 import com.zarbosoft.bonestruct.syntax.AtomType;
 import com.zarbosoft.bonestruct.syntax.Syntax;
 import com.zarbosoft.interface1.Configuration;
-import com.zarbosoft.luxem.read.source.LKeyEvent;
-import com.zarbosoft.luxem.read.source.LObjectCloseEvent;
-import com.zarbosoft.luxem.read.source.LObjectOpenEvent;
 import com.zarbosoft.pidgoon.Node;
 import com.zarbosoft.pidgoon.events.MatchingEventTerminal;
 import com.zarbosoft.pidgoon.nodes.Sequence;
@@ -23,15 +23,15 @@ public class BackRecord extends BackPart {
 	public Node buildBackRule(final Syntax syntax, final AtomType atomType) {
 		final Sequence sequence;
 		sequence = new Sequence();
-		sequence.add(new MatchingEventTerminal(new LObjectOpenEvent()));
+		sequence.add(new MatchingEventTerminal(new EObjectOpenEvent()));
 		final Set set = new Set();
 		pairs.forEach((key, value) -> {
 			set.add(new Sequence()
-					.add(new MatchingEventTerminal(new LKeyEvent(key)))
+					.add(new MatchingEventTerminal(new EKeyEvent(key)))
 					.add(value.buildBackRule(syntax, atomType)));
 		});
 		sequence.add(set);
-		sequence.add(new MatchingEventTerminal(new LObjectCloseEvent()));
+		sequence.add(new MatchingEventTerminal(new EObjectCloseEvent()));
 		return sequence;
 	}
 

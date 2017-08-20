@@ -3,14 +3,14 @@ package com.zarbosoft.bonestruct.syntax.back;
 import com.google.common.collect.ImmutableList;
 import com.zarbosoft.bonestruct.document.Atom;
 import com.zarbosoft.bonestruct.document.values.ValueArray;
+import com.zarbosoft.bonestruct.editor.backevents.EObjectCloseEvent;
+import com.zarbosoft.bonestruct.editor.backevents.EObjectOpenEvent;
 import com.zarbosoft.bonestruct.syntax.AtomType;
 import com.zarbosoft.bonestruct.syntax.FreeAtomType;
 import com.zarbosoft.bonestruct.syntax.InvalidSyntax;
 import com.zarbosoft.bonestruct.syntax.Syntax;
 import com.zarbosoft.bonestruct.syntax.middle.MiddleRecord;
 import com.zarbosoft.interface1.Configuration;
-import com.zarbosoft.luxem.read.source.LObjectCloseEvent;
-import com.zarbosoft.luxem.read.source.LObjectOpenEvent;
 import com.zarbosoft.pidgoon.Node;
 import com.zarbosoft.pidgoon.events.MatchingEventTerminal;
 import com.zarbosoft.pidgoon.events.Operator;
@@ -37,11 +37,11 @@ public class BackDataRecord extends BackPart {
 	public Node buildBackRule(final Syntax syntax, final AtomType atomType) {
 		final Sequence sequence;
 		sequence = new Sequence();
-		sequence.add(new Operator(new MatchingEventTerminal(new LObjectOpenEvent()), (store) -> store.pushStack(0)));
+		sequence.add(new Operator(new MatchingEventTerminal(new EObjectOpenEvent()), (store) -> store.pushStack(0)));
 		sequence.add(new Repeat(new Operator(syntax.backRuleRef(atomType.getDataArray(middle).type),
 				(store) -> com.zarbosoft.pidgoon.internal.Helper.stackSingleElement(store)
 		)));
-		sequence.add(new MatchingEventTerminal(new LObjectCloseEvent()));
+		sequence.add(new MatchingEventTerminal(new EObjectCloseEvent()));
 		return new Operator(sequence, (store) -> {
 			final List<Atom> temp = new ArrayList<>();
 			store = (Store) com.zarbosoft.pidgoon.internal.Helper.<Atom>stackPopSingleList(store, temp::add);
