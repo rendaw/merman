@@ -81,10 +81,16 @@ public class Details {
 	}
 
 	private void setPosition(final Context context) {
-		current.node.setPosition(context, new Vector(
-				context.syntax.detailPad.converseStart,
-				transverse + transverseSpan + context.syntax.detailPad.transverseStart - documentScroll
-		), false);
+		final int padStart = context.syntax.detailPad.transverseStart;
+		final int padEnd = context.syntax.detailPad.transverseEnd;
+		current.node.setPosition(context,
+				new Vector(context.syntax.detailPad.converseStart,
+						Math.min(context.transverseEdge - padStart - current.node.transverseSpan(context) - padEnd,
+								-documentScroll + transverse + transverseSpan + padStart
+						)
+				),
+				false
+		);
 	}
 
 	public Details(final Context context) {
@@ -120,8 +126,7 @@ public class Details {
 			}
 			current = queue.peek();
 			context.midground.add(current.node);
-			bedding = new Bedding(
-					0,
+			bedding = new Bedding(0,
 					context.syntax.detailPad.transverseStart +
 							current.node.transverseSpan(context) +
 							context.syntax.detailPad.transverseEnd

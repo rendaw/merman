@@ -781,9 +781,7 @@ public class Context {
 		});
 		display.addTransverseEdgeListener((
 				(oldValue, newValue) -> {
-					transverseEdge = Math.max(0,
-							newValue - document.syntax.pad.transverseStart - document.syntax.pad.transverseEnd
-					);
+					transverseEdge = newValue;
 					scrollVisible();
 					transverseEdgeListeners.forEach(listener -> listener.changed(this, oldValue, newValue));
 				}
@@ -895,12 +893,23 @@ public class Context {
 	private void scrollVisible() {
 		final int minimum = scrollStart - scrollStartBeddingBefore - syntax.pad.transverseStart;
 		final int maximum = scrollEnd + scrollStartBeddingAfter + syntax.pad.transverseEnd;
+
+		// Change to scroll required to make it match the start of the window that ends at the max
 		final int maxDiff = maximum - transverseEdge - scroll;
+
 		Integer newScroll = null;
 		if (minimum < scroll) {
+			// Minimum is above scroll
 			newScroll = minimum;
-		} else if (maxDiff > 0 && scroll + maxDiff < minimum) {
-			newScroll = scroll + maxDiff;
+		} else if (maxDiff > 0) {
+			// Maximum is below scroll window
+			if (scroll + maxDiff < minimum) {
+				// Adjusted scroll doesn't go past the minimum
+				newScroll = scroll + maxDiff;
+			} else {
+				// Adjusted scroll goes past the minimum, so just go to minimum
+				newScroll = minimum;
+			}
 		}
 		if (newScroll != null) {
 			scroll = newScroll;

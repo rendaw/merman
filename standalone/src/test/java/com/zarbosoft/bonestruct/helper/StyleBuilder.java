@@ -16,6 +16,26 @@ public class StyleBuilder {
 		return this;
 	}
 
+	public StyleBuilder spaceBefore(final int x) {
+		style.spaceBefore = x;
+		return this;
+	}
+
+	public StyleBuilder spaceAfter(final int x) {
+		style.spaceAfter = x;
+		return this;
+	}
+
+	public StyleBuilder spaceTransverseBefore(final int x) {
+		style.spaceTransverseBefore = x;
+		return this;
+	}
+
+	public StyleBuilder spaceTransverseAfter(final int x) {
+		style.spaceTransverseAfter = x;
+		return this;
+	}
+
 	public Style build() {
 		return style;
 	}

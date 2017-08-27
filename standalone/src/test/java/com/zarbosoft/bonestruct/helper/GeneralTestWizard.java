@@ -79,8 +79,8 @@ public class GeneralTestWizard {
 		assertThat(node.transverseEdge(inner.context), equalTo(te));
 	}
 
-	public GeneralTestWizard checkBanner(final int t, final int te) {
-		checkNode(inner.context.banner.text, t, te);
+	public GeneralTestWizard checkBanner(final int transversePlusAscent, final int transverseEdge) {
+		checkNode(inner.context.banner.text, transversePlusAscent, transverseEdge);
 		return this;
 	}
 

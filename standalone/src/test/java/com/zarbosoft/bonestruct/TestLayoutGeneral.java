@@ -4,6 +4,7 @@ import com.zarbosoft.bonestruct.document.Atom;
 import com.zarbosoft.bonestruct.document.values.ValuePrimitive;
 import com.zarbosoft.bonestruct.editor.history.changes.ChangePrimitiveRemove;
 import com.zarbosoft.bonestruct.editor.visual.tags.FreeTag;
+import com.zarbosoft.bonestruct.editor.visual.tags.TypeTag;
 import com.zarbosoft.bonestruct.helper.*;
 import com.zarbosoft.bonestruct.syntax.FreeAtomType;
 import com.zarbosoft.bonestruct.syntax.Syntax;
@@ -12,9 +13,11 @@ import org.junit.Test;
 public class TestLayoutGeneral {
 	final public static FreeAtomType one;
 	final public static FreeAtomType two;
+	final public static FreeAtomType big;
 	final public static FreeAtomType text;
 	final public static FreeAtomType array;
 	final public static Syntax syntax;
+	final public static Syntax syntaxPadded;
 
 	static {
 		one = new TypeBuilder("one")
@@ -24,6 +27,10 @@ public class TestLayoutGeneral {
 		two = new TypeBuilder("two")
 				.back(Helper.buildBackPrimitive("two"))
 				.front(new FrontMarkBuilder("two").build())
+				.build();
+		big = new TypeBuilder("big")
+				.back(Helper.buildBackPrimitive("big"))
+				.front(new FrontSpaceBuilder().build())
 				.build();
 		text = new TypeBuilder("text")
 				.middlePrimitive("value")
@@ -48,7 +55,22 @@ public class TestLayoutGeneral {
 				.group("any", new GroupBuilder().type(one).type(two).type(text).type(array).build())
 				.style(new StyleBuilder().split(true).build())
 				.style(new StyleBuilder().tag(new FreeTag("separator")).split(false).build())
+				.style(new StyleBuilder().tag(new TypeTag("big")).spaceTransverseAfter(60).build())
 				.build();
+		syntaxPadded = new SyntaxBuilder("any")
+				.type(one)
+				.type(two)
+				.type(big)
+				.type(text)
+				.type(array)
+				.group("any", new GroupBuilder().type(one).type(two).type(big).type(text).type(array).build())
+				.style(new StyleBuilder().split(true).build())
+				.style(new StyleBuilder().tag(new FreeTag("separator")).split(false).build())
+				.build();
+		syntaxPadded.pad.converseStart = 5;
+		syntaxPadded.pad.converseEnd = 5;
+		syntaxPadded.pad.transverseStart = 9;
+		syntaxPadded.pad.transverseEnd = 9;
 	}
 
 	@Test
@@ -78,7 +100,7 @@ public class TestLayoutGeneral {
 	}
 
 	@Test
-	public void testScrollLayout() {
+	public void testScrollLayoutPositive() {
 		new GeneralTestWizard(
 				syntax,
 				new TreeBuilder(one).build(),
@@ -92,12 +114,109 @@ public class TestLayoutGeneral {
 				.run(context -> {
 					Helper.rootArray(context.document).data.get(4).parent.selectUp(context);
 				})
-				.checkScroll(24)
 				.checkCourse(4, 47, 57)
+				.checkScroll(24)
 				.checkCourse(3, 27, 37)
 				.checkCourse(5, 64, 74)
 				.checkBanner(21, 23)
 				.checkDetails(33, 40);
+	}
+
+	@Test
+	public void testScrollLayoutNegative() {
+		new GeneralTestWizard(
+				syntax,
+				new TreeBuilder(one).build(),
+				new TreeBuilder(one).build(),
+				new TreeBuilder(one).build(),
+				new TreeBuilder(two).build(),
+				new TreeBuilder(one).build(),
+				new TreeBuilder(one).build()
+		).resizeTransitive(40).run(context -> {
+			Helper.rootArray(context.document).data.get(4).parent.selectUp(context);
+		}).checkScroll(24).run(context -> {
+			Helper.rootArray(context.document).data.get(0).parent.selectUp(context);
+		}).checkCourse(0, -3, 7).checkScroll(-13);
+	}
+
+	@Test
+	public void testScrollLayoutPaddedPositive() {
+		new GeneralTestWizard(
+				syntaxPadded,
+				new TreeBuilder(one).build(),
+				new TreeBuilder(one).build(),
+				new TreeBuilder(one).build(),
+				new TreeBuilder(two).build(),
+				new TreeBuilder(one).build(),
+				new TreeBuilder(one).build()
+		)
+				.resizeTransitive(50)
+				.run(context -> {
+					Helper.rootArray(context.document).data.get(4).parent.selectUp(context);
+				})
+				.checkCourse(4, 47, 57)
+				.checkScroll(23)
+				.checkCourse(3, 27, 37)
+				.checkCourse(5, 64, 74)
+				.checkBanner(22, 24)
+				.checkDetails(34, 41);
+	}
+
+	@Test
+	public void testScrollLayoutPaddedNegative() {
+		new GeneralTestWizard(
+				syntaxPadded,
+				new TreeBuilder(one).build(),
+				new TreeBuilder(one).build(),
+				new TreeBuilder(one).build(),
+				new TreeBuilder(two).build(),
+				new TreeBuilder(one).build(),
+				new TreeBuilder(one).build()
+		).resizeTransitive(50).run(context -> {
+			Helper.rootArray(context.document).data.get(4).parent.selectUp(context);
+		}).checkScroll(23).run(context -> {
+			Helper.rootArray(context.document).data.get(0).parent.selectUp(context);
+		}).checkCourse(0, -3, 7).checkScroll(-22);
+	}
+
+	@Test
+	public void testScrollLayoutPositiveTooBig() {
+		new GeneralTestWizard(
+				syntax,
+				new TreeBuilder(one).build(),
+				new TreeBuilder(one).build(),
+				new TreeBuilder(one).build(),
+				new TreeBuilder(two).build(),
+				new TreeBuilder(big).build(),
+				new TreeBuilder(one).build()
+		)
+				.resizeTransitive(40)
+				.run(context -> {
+					Helper.rootArray(context.document).data.get(4).parent.selectUp(context);
+				})
+				.checkCourse(4, 47, 107)
+				.checkScroll(37)
+				.checkCourse(3, 27, 37)
+				.checkCourse(5, 114, 124)
+				.checkBanner(8, 10)
+				.checkDetails(33, 40);
+	}
+
+	@Test
+	public void testScrollLayoutNegativeTooBig() {
+		new GeneralTestWizard(
+				syntax,
+				new TreeBuilder(one).build(),
+				new TreeBuilder(one).build(),
+				new TreeBuilder(one).build(),
+				new TreeBuilder(two).build(),
+				new TreeBuilder(big).build(),
+				new TreeBuilder(one).build()
+		).resizeTransitive(40).run(context -> {
+			Helper.rootArray(context.document).data.get(4).parent.selectUp(context);
+		}).checkScroll(37).run(context -> {
+			Helper.rootArray(context.document).data.get(0).parent.selectUp(context);
+		}).checkCourse(0, -3, 7).checkScroll(-13);
 	}
 
 	@Test
