@@ -3,6 +3,7 @@ package com.zarbosoft.bonestruct.editor.wall;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.zarbosoft.bonestruct.editor.Context;
+import com.zarbosoft.bonestruct.editor.Editor;
 import com.zarbosoft.bonestruct.editor.Hoverable;
 import com.zarbosoft.bonestruct.editor.display.DisplayNode;
 import com.zarbosoft.bonestruct.editor.visual.Alignment;
@@ -13,7 +14,6 @@ import com.zarbosoft.bonestruct.editor.visual.tags.Tag;
 import com.zarbosoft.bonestruct.editor.visual.tags.TagsChange;
 import com.zarbosoft.bonestruct.syntax.style.Style;
 
-import java.util.HashSet;
 import java.util.Set;
 
 import static com.zarbosoft.rendaw.common.Common.last;
@@ -21,7 +21,7 @@ import static com.zarbosoft.rendaw.common.Common.last;
 public abstract class Brick implements AlignmentListener {
 	public Course parent;
 	public int index;
-	Set<Attachment> attachments = new HashSet<>();
+	Set<Attachment> attachments = Editor.createSet.get();
 	public Style.Baked style;
 	public Alignment alignment;
 	public int minConverse;

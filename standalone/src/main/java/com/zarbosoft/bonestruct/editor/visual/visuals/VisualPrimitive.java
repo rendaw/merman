@@ -1,5 +1,6 @@
 package com.zarbosoft.bonestruct.editor.visual.visuals;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.zarbosoft.bonestruct.document.values.ValuePrimitive;
@@ -30,7 +31,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.zarbosoft.rendaw.common.Common.*;
+import static com.zarbosoft.rendaw.common.Common.enumerate;
+import static com.zarbosoft.rendaw.common.Common.last;
 
 public class VisualPrimitive extends Visual implements VisualLeaf {
 	// INVARIANT: Leaf nodes must always create at least one brick
@@ -1303,10 +1305,10 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 				}
 
 				// Remove text from subsequent lines
-				final int index = base.index + 1;
+				int index = base.index + 1;
 				int removeLines = 0;
 				while (remaining > 0) {
-					final Line line = lines.get(index);
+					final Line line = lines.get(index++);
 					if (line.hard) {
 						remaining -= 1;
 					}
@@ -1315,10 +1317,13 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 					remaining -= exciseEnd;
 					if (line.hard)
 						hardLineCount -= 1;
-					line.destroy(context);
 					removeLines += 1;
 				}
-				lines.subList(base.index + 1, base.index + 1 + removeLines).clear();
+				final List<Line> sublist = lines.subList(base.index + 1, base.index + 1 + removeLines);
+				final List<Line> oldSublist = ImmutableList.copyOf(sublist);
+				sublist.clear();
+				for (final Line line : oldSublist)
+					line.destroy(context);
 				enumerate(lines.stream().skip(base.index + 1)).forEach(pair -> {
 					pair.second.index = base.index + 1 + pair.first;
 					pair.second.offset -= count;
@@ -1625,12 +1630,13 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 		// If ran out of text early, delete following soft lines
 		if (j < endIndex) {
 			result.changed = true;
-			for (final Line line : iterable(lines.stream().skip(j))) {
+			final List<Line> oldLines = ImmutableList.copyOf(lines.subList(j, endIndex));
+			lines.subList(j, endIndex).clear();
+			for (final Line line : oldLines) {
 				if (line.hard)
 					hardLineCount -= 1;
 				line.destroy(context);
 			}
-			lines.subList(j, endIndex).clear();
 		}
 
 		// Cleanup

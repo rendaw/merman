@@ -718,6 +718,20 @@ public class TestActionsPrimitive {
 	}
 
 	@Test
+	public void testDeleteNextLongRangeLines() {
+		new GeneralTestWizard(MiscSyntax.syntax,
+				new TreeBuilder(MiscSyntax.quoted).add("value", "ab\ncognate\nefg").build()
+		)
+				.run(context -> Helper.rootArray(context.document).data.get(0).data.get("value").selectDown(context))
+				.run(context -> visual(context).select(context, true, 1, 13))
+				.act("delete_next")
+				.checkTextBrick(0, 1, "ag")
+				.checkCourseCount(1)
+				.checkArrayTree(new TreeBuilder(MiscSyntax.quoted).add("value", "ag").build())
+				.run(context -> assertSelection(context, 1, 1));
+	}
+
+	@Test
 	public void testCopyPasteSingle() {
 		final Context context = buildFive();
 		visual(context).select(context, true, 1, 3);

@@ -7,8 +7,6 @@ import com.zarbosoft.bonestruct.editor.*;
 import com.zarbosoft.bonestruct.editor.history.changes.ChangeArray;
 import com.zarbosoft.bonestruct.editor.visual.*;
 import com.zarbosoft.bonestruct.editor.visual.attachments.BorderAttachment;
-import com.zarbosoft.bonestruct.editor.visual.attachments.MultiVisualAttachmentAdapter;
-import com.zarbosoft.bonestruct.editor.visual.attachments.VisualAttachmentAdapter;
 import com.zarbosoft.bonestruct.editor.visual.attachments.VisualBorderAttachment;
 import com.zarbosoft.bonestruct.editor.visual.tags.PartTag;
 import com.zarbosoft.bonestruct.editor.visual.tags.StateTag;
@@ -351,7 +349,7 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 				if (selection.beginIndex == ((ArrayVisualParent) parent).valueIndex())
 					selection.border.setFirst(context, out);
 				if (selection.endIndex == ((ArrayVisualParent) parent).valueIndex())
-					selection.adapter.notifySeedBrick(context, out);
+					selection.border.notifySeedBrick(context, out);
 			}
 			if (hoverable != null)
 				hoverable.notifyCreateFirstBrick(context, ((ArrayVisualParent) parent).valueIndex(), out);
@@ -363,7 +361,7 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 			final Brick out = super.createLastBrick(context);
 			if (selection != null) {
 				if (selection.beginIndex == ((ArrayVisualParent) parent).valueIndex())
-					selection.adapter.notifySeedBrick(context, out);
+					selection.border.notifySeedBrick(context, out);
 				if (selection.endIndex == ((ArrayVisualParent) parent).valueIndex())
 					selection.border.setLast(context, out);
 			}
@@ -741,27 +739,13 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 	public ArraySelection selection;
 
 	public class ArraySelection extends Selection {
-		MultiVisualAttachmentAdapter adapter;
-		BorderAttachment border;
+		VisualBorderAttachment border;
 		public int beginIndex;
 		public int endIndex;
 		public boolean leadFirst;
 
 		public ArraySelection(final Context context, final boolean leadFirst, final int start, final int end) {
-			border = new BorderAttachment(context);
-			border.setStyle(context, getBorderStyle(context, tags).obbox);
-			adapter = new MultiVisualAttachmentAdapter(context);
-			adapter.addListener(context, new VisualAttachmentAdapter.BoundsListener() {
-				@Override
-				public void firstChanged(final Context context, final Brick brick) {
-					border.setFirst(context, brick);
-				}
-
-				@Override
-				public void lastChanged(final Context context, final Brick brick) {
-					border.setLast(context, brick);
-				}
-			});
+			border = new VisualBorderAttachment(context, getBorderStyle(context, tags).obbox);
 			this.leadFirst = leadFirst;
 			setRange(context, start, end);
 			context.addActions(this, ImmutableList.of(new ActionEnter(),
@@ -807,32 +791,31 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 		private void setBegin(final Context context, final int index) {
 			leadFirst = true;
 			setBeginInternal(context, index);
-			adapter.setFirst(context, children.get(visualIndex(index)));
+			border.setFirst(context, children.get(visualIndex(index)));
 		}
 
 		private void setEnd(final Context context, final int index) {
 			leadFirst = false;
 			setEndInternal(context, index);
-			adapter.setLast(context, children.get(visualIndex(index)));
+			border.setLast(context, children.get(visualIndex(index)));
 		}
 
 		private void setRange(final Context context, final int begin, final int end) {
 			setBeginInternal(context, begin);
 			setEndInternal(context, end);
-			adapter.setFirst(context, children.get(visualIndex(begin)));
-			adapter.setLast(context, children.get(visualIndex(end)));
+			border.setFirst(context, children.get(visualIndex(begin)));
+			border.setLast(context, children.get(visualIndex(end)));
 		}
 
 		private void setPosition(final Context context, final int index) {
 			setEndInternal(context, index);
 			setBeginInternal(context, index);
-			adapter.setFirst(context, children.get(visualIndex(index)));
-			adapter.setLast(context, children.get(visualIndex(index)));
+			border.setFirst(context, children.get(visualIndex(index)));
+			border.setLast(context, children.get(visualIndex(index)));
 		}
 
 		@Override
 		public void clear(final Context context) {
-			adapter.destroy(context);
 			border.destroy(context);
 			selection = null;
 			context.removeActions(this);
@@ -1218,7 +1201,7 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 		public Brick createPreviousBrick(final Context context) {
 			final Brick previous = super.createPreviousBrick(context);
 			if (selection != null && valueIndex() == selection.beginIndex)
-				selection.adapter.notifyPreviousBrickPastEdge(context);
+				selection.border.notifyPreviousBrickPastEdge(context);
 			if (hoverable != null && valueIndex() == ((ElementHoverable) hoverable).index)
 				((ElementHoverable) hoverable).border.notifyPreviousBrickPastEdge(context);
 			return previous;
@@ -1228,7 +1211,7 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 		public Brick createNextBrick(final Context context) {
 			final Brick next = super.createNextBrick(context);
 			if (selection != null && valueIndex() == selection.endIndex)
-				selection.adapter.notifyNextBrickPastEdge(context);
+				selection.border.notifyNextBrickPastEdge(context);
 			if (hoverable != null && valueIndex() == ((ElementHoverable) hoverable).index)
 				((ElementHoverable) hoverable).border.notifyNextBrickPastEdge(context);
 			return next;

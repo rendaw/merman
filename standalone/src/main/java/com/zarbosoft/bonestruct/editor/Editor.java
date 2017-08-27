@@ -7,8 +7,11 @@ import com.zarbosoft.bonestruct.editor.history.History;
 import com.zarbosoft.bonestruct.syntax.Syntax;
 
 import java.nio.file.Path;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public class Editor {
 	/**
@@ -30,6 +33,7 @@ public class Editor {
 	 * -- In selected visuals for tag listeners (hotkeys, indicators, etc)
 	 * therefore groups and atomtype visuals (array excepted) don't need tags - only primitive/constants
 	 */
+	public static Supplier<Set> createSet = () -> new HashSet<>();
 	private final Context context;
 	private final Display visual;
 

@@ -54,7 +54,8 @@ public class BorderAttachment {
 
 		@Override
 		public void destroy(final Context context) {
-			last = null;
+			// Either brick is destroyed with border (nested placeholder)
+			// or used with another attachment that resets the brick when destroyed
 		}
 	};
 	private int startConverse;
