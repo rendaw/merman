@@ -511,7 +511,7 @@ public class Context {
 		public Set<Brick> starts = new HashSet<>();
 
 		@Override
-		protected int priority() {
+		protected double priority() {
 			return 155;
 		}
 
@@ -669,7 +669,7 @@ public class Context {
 		Brick at;
 
 		@Override
-		protected int priority() {
+		protected double priority() {
 			return 500;
 		}
 
@@ -777,11 +777,6 @@ public class Context {
 		this.history = history;
 		display.addConverseEdgeListener((oldValue, newValue) -> {
 			edge = Math.max(0, newValue - document.syntax.pad.converseStart - document.syntax.pad.converseEnd);
-			if (newValue < oldValue) {
-				foreground.idleCompact(this);
-			} else if (newValue > oldValue) {
-				foreground.idleExpand(this);
-			}
 			converseEdgeListeners.forEach(listener -> listener.changed(this, oldValue, newValue));
 		});
 		display.addTransverseEdgeListener((

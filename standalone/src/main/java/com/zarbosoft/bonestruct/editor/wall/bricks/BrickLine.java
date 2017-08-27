@@ -33,4 +33,10 @@ public class BrickLine extends BrickText {
 	public Hoverable hover(final Context context, final Vector point) {
 		return line.hover(context, point);
 	}
+
+	@Override
+	public void setConverse(final Context context, final int minConverse, final int converse) {
+		super.setConverse(context, minConverse, converse);
+		line.idleResplit(context);
+	}
 }

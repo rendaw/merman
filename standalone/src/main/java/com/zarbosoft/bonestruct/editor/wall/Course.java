@@ -23,7 +23,7 @@ public class Course {
 	public int index;
 	final Group visual;
 	final Group brickVisual;
-	Wall parent;
+	public Wall parent;
 	private IdlePlaceTask idlePlace;
 	private IdleCompactTask idleCompact;
 	private IdleExpandTask idleExpand;
@@ -219,7 +219,7 @@ public class Course {
 	}
 
 	private PlaceData brickAdvanceLogic(
-			final Context context, int converse, final Brick brick, final Brick.Properties properties
+			final Context context, int converse, final Brick.Properties properties
 	) {
 		final int minConverse;
 		if (properties.alignment != null && properties.alignment.enabledForCourse(this)) {
@@ -243,7 +243,7 @@ public class Course {
 		}
 
 		@Override
-		protected int priority() {
+		protected double priority() {
 			return 170;
 		}
 
@@ -293,7 +293,7 @@ public class Course {
 			for (int index = at; index < children.size(); ++index) {
 				final Brick brick = children.get(index);
 				final Brick.Properties properties = brick.properties(context);
-				final PlaceData result = brickAdvanceLogic(context, converse, brick, properties);
+				final PlaceData result = brickAdvanceLogic(context, converse, properties);
 				brick.setConverse(context, result.minConverse, result.converse);
 				if (properties.alignment != null && properties.alignment.enabledForCourse(Course.this)) {
 					properties.alignment.feedback(context, result.minConverse);
@@ -341,7 +341,7 @@ public class Course {
 		}
 
 		@Override
-		protected int priority() {
+		protected double priority() {
 			return 150;
 		}
 
@@ -361,7 +361,7 @@ public class Course {
 					final VisualAtom atomVisual = visual.parent().atomVisual();
 					if (skip.contains(atomVisual))
 						continue;
-					if (visual.canCompact())
+					if (!visual.atomVisual().compact)
 						priorities.add(atomVisual);
 					converse = brick.converseEdge(context);
 					if (!priorities.isEmpty() && converse > context.edge)
@@ -386,22 +386,52 @@ public class Course {
 		}
 	}
 
+	private static class ExpandCalculateState {
+		public int index = -1;
+		public int converse = 0;
+		public final Map<Brick, Brick.Properties> lookup;
+
+		private ExpandCalculateState(final Map<Brick, Brick.Properties> lookup) {
+			this.lookup = lookup;
+		}
+	}
+
 	class IdleExpandTask extends IdleTask {
 		private final Context context;
-		private Visual lastTarget = null;
+		private final Set<Visual> seen = new HashSet<>();
 
 		IdleExpandTask(final Context context) {
 			this.context = context;
 		}
 
 		@Override
-		protected int priority() {
+		protected double priority() {
 			return -95;
 		}
 
 		@Override
 		public boolean runImplementation() {
 			return expand(context);
+		}
+
+		private boolean calculateCourseConverse(final ExpandCalculateState state, final Course course) {
+			if (course.index <= state.index)
+				return true;
+			if (course.index > state.index + 1) {
+				state.converse = 0;
+			}
+			state.index = course.index;
+			for (final Brick at : course.children) {
+				final Brick.Properties properties;
+				if (state.lookup.containsKey(at)) {
+					properties = state.lookup.get(at);
+				} else
+					properties = at.properties(context);
+				state.converse = brickAdvanceLogic(context, state.converse, properties).nextConverse;
+				if (state.converse > context.edge)
+					return false;
+			}
+			return true;
 		}
 
 		private boolean expand(final Context context) {
@@ -411,22 +441,22 @@ public class Course {
 			for (int index = 0; index < children.size(); ++index) {
 				final Brick brick = children.get(index);
 				final VisualLeaf visual = brick.getVisual();
-				if (visual.canExpand())
+				if (visual.atomVisual().compact)
 					priorities.add(visual.parent().atomVisual());
 			}
 			if (priorities.isEmpty())
 				return false;
 			final VisualAtom top = priorities.poll();
-			if (top == lastTarget)
+			if (seen.contains(top))
 				return false;
-			lastTarget = top;
+			seen.add(top);
 
 			// Check that all parents are either expanded or have lower expand priority
 			{
 				VisualAtom parentAtom = top;
 				while (parentAtom.parent() != null) {
 					parentAtom = parentAtom.parent().atomVisual();
-					if (parentAtom.compact && isOrdered(expandComparator, parentAtom, top))
+					if (isOrdered(expandComparator, parentAtom, top) && parentAtom.compact)
 						return false;
 				}
 			}
@@ -439,9 +469,9 @@ public class Course {
 						.streamRange(first.parent.index, first.index, last.parent.index, last.index)
 						.anyMatch(brick -> {
 							final VisualLeaf visual = brick.getVisual();
-							if (!visual.canExpand())
+							final VisualAtom atom = visual.atomVisual();
+							if (!atom.compact)
 								return false;
-							final VisualAtom atom = visual.parent().atomVisual();
 							if (atom == top)
 								return false;
 							if (isOrdered(expandComparator, top, atom))
@@ -459,30 +489,15 @@ public class Course {
 				);
 				final Map<Brick, Brick.Properties> lookup =
 						stream(brickProperties.iterator()).collect(Collectors.toMap(p -> p.first, p -> p.second));
-				final Set<Brick> seen = new HashSet<>();
-				int converse = 0;
-				Course course = null;
+				final ExpandCalculateState state = new ExpandCalculateState(lookup);
 				for (final Pair<Brick, Brick.Properties> pair : brickProperties) {
 					final Brick brick = pair.first;
-					if (seen.contains(brick))
-						continue;
-					if (course == null) {
-					} else if (brick.parent.index == course.index + 1 && !pair.second.split && brick.index == 0) {
-					} else {
-						converse = 0;
-					}
-					course = brick.parent;
-					for (final Brick at : course.children) {
-						final Brick.Properties properties;
-						if (lookup.containsKey(at)) {
-							seen.add(at);
-							properties = lookup.get(at);
-						} else
-							properties = at.properties(context);
-						converse = brickAdvanceLogic(context, converse, brick, properties).nextConverse;
-						if (converse > context.edge)
+					final Course course = brick.parent;
+					if (course.index > 0 && brick.index == 0 && !pair.second.split)
+						if (!calculateCourseConverse(state, parent.children.get(course.index - 1)))
 							return false;
-					}
+					if (!calculateCourseConverse(state, course))
+						return false;
 				}
 			}
 

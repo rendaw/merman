@@ -201,7 +201,7 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 				final FrontSymbol fix = getSeparator().get(fixIndex);
 				group.add(context, fix.createVisual(context, group.createParent(fixIndex), tags, alignments, depth()));
 			}
-			if (parent.atomVisual().compact)
+			if (atomVisual().compact)
 				group.compact(context);
 			super.add(context, group, addAt);
 		};
@@ -264,6 +264,7 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 
 					@Override
 					public void expand(final Context context) {
+
 					}
 
 					@Override
@@ -302,7 +303,7 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 					group.add(context,
 							fix.createVisual(context, group.createParent(groupIndex++), tags, alignments, depth())
 					);
-				if (parent.atomVisual().compact)
+				if (atomVisual().compact)
 					group.compact(context);
 				super.add(context, group, addIndex++);
 			}
@@ -1232,20 +1233,6 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 				((ElementHoverable) hoverable).border.notifyNextBrickPastEdge(context);
 			return next;
 		}
-	}
-
-	@Override
-	public boolean canExpand() {
-		if (ellipsis == null && empty == null)
-			throw new AssertionError();
-		return parent.atomVisual().compact;
-	}
-
-	@Override
-	public boolean canCompact() {
-		if (ellipsis == null && empty == null)
-			throw new AssertionError();
-		return !parent.atomVisual().compact;
 	}
 
 	@Override

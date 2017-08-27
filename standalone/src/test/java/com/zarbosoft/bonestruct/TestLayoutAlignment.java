@@ -4,29 +4,42 @@ import com.google.common.collect.ImmutableList;
 import com.zarbosoft.bonestruct.document.Atom;
 import com.zarbosoft.bonestruct.document.values.ValueArray;
 import com.zarbosoft.bonestruct.document.values.ValuePrimitive;
+import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.history.changes.ChangeArray;
 import com.zarbosoft.bonestruct.editor.history.changes.ChangePrimitiveAdd;
 import com.zarbosoft.bonestruct.editor.history.changes.ChangePrimitiveRemove;
+import com.zarbosoft.bonestruct.editor.visual.Visual;
 import com.zarbosoft.bonestruct.editor.visual.tags.FreeTag;
 import com.zarbosoft.bonestruct.editor.visual.tags.StateTag;
+import com.zarbosoft.bonestruct.editor.visual.tags.TagsChange;
 import com.zarbosoft.bonestruct.editor.visual.tags.TypeTag;
 import com.zarbosoft.bonestruct.helper.*;
 import com.zarbosoft.bonestruct.syntax.FreeAtomType;
 import com.zarbosoft.bonestruct.syntax.Syntax;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
+import java.util.function.Function;
+
+@RunWith(Parameterized.class)
 public class TestLayoutAlignment {
-	final public static FreeAtomType primitive;
-	final public static FreeAtomType relative;
-	final public static FreeAtomType absolute;
-	final public static FreeAtomType array;
-	final public static FreeAtomType compactArray;
-	final public static FreeAtomType line;
-	final public static FreeAtomType pair;
-	final public static FreeAtomType triple;
-	final public static Syntax syntax;
+	@Parameterized.Parameters
+	public static Iterable<Object[]> parameters() {
+		return ImmutableList.of(new Object[] {1}, new Object[] {2}, new Object[] {10});
+	}
 
-	static {
+	final public FreeAtomType primitive;
+	final public FreeAtomType relative;
+	final public FreeAtomType absolute;
+	final public FreeAtomType array;
+	final public FreeAtomType compactArray;
+	final public FreeAtomType line;
+	final public FreeAtomType pair;
+	final public FreeAtomType triple;
+	final public Syntax syntax;
+
+	public TestLayoutAlignment(final int layBrickBatchSize) {
 		primitive = new TypeBuilder("primitive")
 				.middlePrimitive("value")
 				.back(Helper.buildBackDataPrimitive("value"))
@@ -123,6 +136,7 @@ public class TestLayoutAlignment {
 				.style(new StyleBuilder().tag(new FreeTag("concensus2")).alignment("concensus2").build())
 				.style(new StyleBuilder().tag(new TypeTag("relative")).alignment("relative").build())
 				.build();
+		syntax.layBrickBatchSize = layBrickBatchSize;
 	}
 
 	@Test
@@ -279,10 +293,21 @@ public class TestLayoutAlignment {
 
 	@Test
 	public void testConcensusExpand() {
+		// It's okay if it doesn't expand when there's a concensus involved until much wider
 		new GeneralTestWizard(syntax, new TreeBuilder(compactArray).addArray("value",
 				new TreeBuilder(pair).add("first", "a").add("second", "b").build(),
 				new TreeBuilder(pair).add("first", "cccc").add("second", "d").build()
-		).build()).resize(60).checkTextBrick(1, 1, "a").checkTextBrick(2, 1, "cccc").resize(70).checkCourseCount(1);
+		).build())
+				.resize(60)
+				.checkCourseCount(3)
+				.checkTextBrick(1, 1, "a")
+				.checkTextBrick(2, 1, "cccc")
+				.resize(70)
+				.checkCourseCount(3)
+				.resize(95)
+				.checkCourseCount(3)
+				.resize(100)
+				.checkCourseCount(1);
 	}
 
 	@Test
@@ -300,5 +325,71 @@ public class TestLayoutAlignment {
 				.checkTextBrick(2, 1, "two")
 				.resize(10000)
 				.checkCourseCount(1);
+	}
+
+	@Test
+	public void testDynamicConcensusSplitAdjust() {
+		final Function<Context, Visual> line2Visual =
+				context -> Helper.rootArray(context.document).data.get(1).visual.parent().visual();
+		final Atom pair1 = new TreeBuilder(pair).add("first", "12345678").add("second", "x").build();
+		new GeneralTestWizard(syntax, pair1, new TreeBuilder(pair).add("first", "1").add("second", "y").build())
+				.checkCourseCount(2)
+				.checkBrick(0, 2, 80)
+				.checkBrick(1, 2, 80)
+				.run(context -> line2Visual
+						.apply(context)
+						.changeTags(context, new TagsChange().remove(new FreeTag("split"))))
+				.checkCourseCount(1)
+				.run(context -> line2Visual
+						.apply(context)
+						.changeTags(context, new TagsChange().add(new FreeTag("split"))))
+				.run(context -> context.history.apply(context,
+						new ChangePrimitiveAdd((ValuePrimitive) pair1.data.get("first"), 8, "9X")
+				))
+				.checkCourseCount(2)
+				.checkBrick(0, 2, 100)
+				.checkBrick(1, 2, 100);
+	}
+
+	@Test
+	public void testDisabledConcensusSplit() {
+		final Atom pairAtom1 = new TreeBuilder(pair).add("first", "gmippii").add("second", "mmm").build();
+		final Atom lineAtom = new TreeBuilder(line).addArray("value", pairAtom1).build();
+		new GeneralTestWizard(syntax, lineAtom)
+				.checkCourseCount(1)
+				.run(context -> context.history.apply(context,
+						new ChangeArray((ValueArray) lineAtom.data.get("value"),
+								1,
+								0,
+								ImmutableList.of(new TreeBuilder(pair).add("first", "mo").add("second", "oo").build(),
+										new TreeBuilder(pair).add("first", "g").add("second", "q").build()
+								)
+						)
+				))
+				.run(context -> context.history.apply(context,
+						new ChangePrimitiveAdd((ValuePrimitive) pairAtom1.data.get("first"), 7, "9X")
+				))
+				.run(context -> ((ValuePrimitive) pairAtom1.data.get("first")).visual.changeTags(context,
+						new TagsChange().add(new FreeTag("split"))
+				))
+				.checkCourseCount(2);
+	}
+
+	@Test
+	public void testDisabledConcensusSplit2() {
+		final Atom pairAtom1 = new TreeBuilder(pair).add("first", "gmippii").add("second", "mmm").build();
+		new GeneralTestWizard(syntax,
+				new TreeBuilder(line)
+						.addArray("value",
+								pairAtom1,
+								new TreeBuilder(pair).add("first", "mo").add("second", "oo").build()
+						)
+						.build()
+		)
+				.checkCourseCount(1)
+				.run(context -> ((ValuePrimitive) pairAtom1.data.get("second")).visual.changeTags(context,
+						new TagsChange().add(new FreeTag("split"))
+				))
+				.checkCourseCount(2);
 	}
 }

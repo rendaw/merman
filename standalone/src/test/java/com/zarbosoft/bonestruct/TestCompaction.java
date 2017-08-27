@@ -16,8 +16,11 @@ import org.junit.Test;
 
 public class TestCompaction {
 	final public static FreeAtomType one;
+	final public static FreeAtomType initialSplitOne;
 	final public static FreeAtomType text;
+	final public static FreeAtomType initialSplitText;
 	final public static FreeAtomType infinity;
+	final public static FreeAtomType line;
 	final public static FreeAtomType low;
 	final public static FreeAtomType unary;
 	final public static FreeAtomType mid;
@@ -33,10 +36,26 @@ public class TestCompaction {
 				.back(Helper.buildBackPrimitive("one"))
 				.front(new FrontMarkBuilder("one").build())
 				.build();
+		initialSplitOne = new TypeBuilder("splitOne")
+				.back(Helper.buildBackPrimitive("one"))
+				.front(new FrontMarkBuilder("one").tag("split").build())
+				.build();
 		text = new TypeBuilder("text")
 				.middlePrimitive("value")
 				.back(Helper.buildBackDataPrimitive("value"))
 				.frontDataPrimitive("value")
+				.build();
+		initialSplitText = new TypeBuilder("splitText")
+				.middlePrimitive("value")
+				.back(Helper.buildBackDataPrimitive("value"))
+				.front(new FrontDataPrimitiveBuilder("value").tag("split").build())
+				.build();
+		line = new TypeBuilder("line")
+				.middleArray("value", "any")
+				.back(Helper.buildBackDataArray("value"))
+				.front(new FrontDataArrayBuilder("value").addPrefix(new FrontSpaceBuilder().build()).build())
+				.precedence(0)
+				.depthScore(1)
 				.build();
 		low = new TypeBuilder("low")
 				.middleArray("value", "any")
@@ -74,8 +93,11 @@ public class TestCompaction {
 				.build();
 		syntax = new SyntaxBuilder("any")
 				.type(one)
+				.type(initialSplitOne)
 				.type(text)
+				.type(initialSplitText)
 				.type(infinity)
+				.type(line)
 				.type(low)
 				.type(unary)
 				.type(mid)
@@ -84,11 +106,14 @@ public class TestCompaction {
 						new GroupBuilder()
 								.type(infinity)
 								.type(one)
+								.type(initialSplitOne)
+								.type(line)
 								.type(low)
 								.type(unary)
 								.type(mid)
 								.type(high)
 								.type(text)
+								.type(initialSplitText)
 								.build()
 				)
 				.style(new StyleBuilder().tag(new FreeTag("split")).tag(new StateTag("compact")).split(true).build())
@@ -261,6 +286,42 @@ public class TestCompaction {
 				.checkCourseCount(1)
 				.checkTextBrick(0, 1, "one")
 				.checkTextBrick(0, 3, "oran");
+	}
+
+	@Test
+	public void testExpandPrimitiveOrder() {
+		new GeneralTestWizard(syntax, new TreeBuilder(low).addArray("value",
+				new TreeBuilder(one).build(),
+				new TreeBuilder(mid)
+						.addArray("value", new TreeBuilder(initialSplitText).add("value", "zet xor").build())
+						.build(),
+				new TreeBuilder(one).build()
+		).build())
+				.resize(130)
+				.checkCourseCount(1)
+				.checkTextBrick(0, 1, "one")
+				.checkTextBrick(0, 4, "zet xor")
+				.checkTextBrick(0, 6, "one")
+				.resize(40)
+				.checkCourseCount(6)
+				.checkTextBrick(0, 1, "one")
+				.checkTextBrick(3, 0, "zet ")
+				.checkTextBrick(4, 0, "xor")
+				.checkTextBrick(5, 1, "one")
+				.resize(130)
+				.checkCourseCount(1)
+				.checkTextBrick(0, 1, "one")
+				.checkTextBrick(0, 4, "zet xor")
+				.checkTextBrick(0, 6, "one");
+	}
+
+	@Test
+	public void testExpandEdge() {
+		new GeneralTestWizard(syntax,
+				new TreeBuilder(line)
+						.addArray("value", new TreeBuilder(one).build(), new TreeBuilder(initialSplitOne).build())
+						.build()
+		).resize(10).checkCourseCount(2).resize(50).checkCourseCount(2);
 	}
 
 	@Test

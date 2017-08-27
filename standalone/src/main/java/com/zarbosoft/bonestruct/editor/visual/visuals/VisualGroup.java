@@ -156,12 +156,14 @@ public class VisualGroup extends Visual {
 
 	@Override
 	public void compact(final Context context) {
-		children.forEach(c -> c.compact(context));
+		for (final Visual child : children)
+			child.compact(context);
 	}
 
 	@Override
 	public void expand(final Context context) {
-		children.forEach(c -> c.expand(context));
+		for (final Visual child : children)
+			child.expand(context);
 	}
 
 	@Override

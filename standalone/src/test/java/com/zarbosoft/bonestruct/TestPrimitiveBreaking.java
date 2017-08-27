@@ -110,7 +110,7 @@ public class TestPrimitiveBreaking {
 
 	@Test
 	public void testUnbreakableUnbreakFull() {
-		new PrimitiveTestWizard("123456789").resize(40).check("1234", "5678", "9").resize(50).check("12345", "6789");
+		new PrimitiveTestWizard("123456789").resize(40).check("1234", "5678", "9").resize(10000).check("123456789");
 	}
 
 	@Test

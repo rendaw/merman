@@ -36,6 +36,11 @@ public class RelativeAlignment extends Alignment implements AlignmentListener {
 	}
 
 	@Override
+	public void destroy(final Context context) {
+
+	}
+
+	@Override
 	public void align(final Context context) {
 		converse = (alignment == null ? 0 : alignment.converse) + offset;
 		submit(context);

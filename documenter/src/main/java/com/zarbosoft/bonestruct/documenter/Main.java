@@ -21,7 +21,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static com.zarbosoft.rendaw.common.Common.uncheck;
@@ -62,7 +64,7 @@ public class Main {
 
 		// Actions
 		{
-			final Map<String, Map<String, String>> descriptions;
+			final Map<String, Map<String, String>> descriptions, extraDescriptions;
 			try (
 					InputStream descriptionsSource = Main.class
 							.getClassLoader()
@@ -82,12 +84,21 @@ public class Main {
 			} catch (final IOException e) {
 				throw new UncheckedIOException(e);
 			}
+			extraDescriptions = new HashMap<>();
+			for (final Map.Entry<String, Map<String, String>> entry : descriptions.entrySet()) {
+				final Map<String, String> group = new HashMap<>();
+				extraDescriptions.put(entry.getKey(), group);
+				for (final Map.Entry<String, String> entry2 : entry.getValue().entrySet()) {
+					group.put(entry2.getKey(), entry2.getValue());
+				}
+			}
 			final ContainerTag toc = ul();
 			final ContainerTag body = body()
 					.with(div().withClass("toc").with(h1("Table of Contents"), toc), a().withName("top"))
 					.with(h1("Actions"));
 			final Map<String, ContainerTag> tocGroups = new HashMap<>();
 			final Map<String, ContainerTag> bodyGroups = new HashMap<>();
+			final List<String> missingDescriptions = new ArrayList<>();
 			reflections
 					.getSubTypesOf(Action.class)
 					.stream()
@@ -109,11 +120,34 @@ public class Main {
 								bodyGroups.computeIfAbsent(groupName, k -> div().with(h2(groupName)));
 						section.with(a().withName(key), h3().with(code().withText(id)));
 						{
-							final String description = descriptions.getOrDefault(groupName, ImmutableMap.of()).get(id);
-							if (description != null)
-								section.with(p(description));
+							final Map<String, String> descriptionGroup =
+									extraDescriptions.getOrDefault(groupName, ImmutableMap.of());
+							String description = descriptionGroup.remove(id);
+							if (description == null)
+								description = descriptions.getOrDefault(groupName, ImmutableMap.of()).get(id);
+							if (description == null) {
+								missingDescriptions.add(String.format("%s %s", groupName, id));
+								description = "";
+							}
+							section.with(p(description));
+							if (descriptionGroup.isEmpty())
+								extraDescriptions.remove(groupName);
 						}
 					});
+			if (!missingDescriptions.isEmpty() || !extraDescriptions.isEmpty()) {
+				System.out.format("\n\nMISSING ACTIONS\n");
+				for (final String error : missingDescriptions) {
+					System.out.println(error);
+				}
+				System.out.format("\n\nEXTRA ACTIONS\n");
+				for (final Map.Entry<String, Map<String, String>> entry : extraDescriptions.entrySet()) {
+					for (final String key : entry.getValue().keySet()) {
+						System.out.format("%s %s", entry.getKey(), key);
+					}
+				}
+				System.out.flush();
+				throw new AssertionError();
+			}
 			tocGroups
 					.entrySet()
 					.stream()

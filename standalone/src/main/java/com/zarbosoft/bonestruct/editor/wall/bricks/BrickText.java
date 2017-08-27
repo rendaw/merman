@@ -4,6 +4,7 @@ import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.display.DisplayNode;
 import com.zarbosoft.bonestruct.editor.display.Font;
 import com.zarbosoft.bonestruct.editor.display.Text;
+import com.zarbosoft.bonestruct.editor.visual.Alignment;
 import com.zarbosoft.bonestruct.editor.visual.AlignmentListener;
 import com.zarbosoft.bonestruct.editor.visual.Vector;
 import com.zarbosoft.bonestruct.editor.wall.Brick;
@@ -46,11 +47,14 @@ public class BrickText extends Brick implements AlignmentListener {
 			text.setColor(context, style.color);
 			text.setFont(context, style.getFont(context));
 		}
-		if (alignment != null)
-			alignment.removeListener(context, this);
-		alignment = inter.getAlignment(style);
-		if (alignment != null)
-			alignment.addListener(context, this);
+		final Alignment newAlignment = inter.getAlignment(style);
+		if (alignment != newAlignment) {
+			if (alignment != null)
+				alignment.removeListener(context, this);
+			if (newAlignment != null)
+				newAlignment.addListener(context, this);
+			alignment = newAlignment;
+		}
 		changed(context);
 	}
 

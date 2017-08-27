@@ -30,10 +30,12 @@ public abstract class Alignment {
 
 	public abstract void root(Context context, Map<String, Alignment> parents);
 
-	public void courseChanged(final Context context, final Brick brick, final Course parent, final Course newParent) {
+	public void courseChanged(final Context context, final Brick brick, final Course oldParent) {
 	}
 
 	public boolean enabledForCourse(final Course parent) {
 		return true;
 	}
+
+	public abstract void destroy(Context context);
 }

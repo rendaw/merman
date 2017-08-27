@@ -75,4 +75,5 @@ public abstract class Visual {
 	}
 
 	public abstract Stream<Brick> streamBricks();
+
 }

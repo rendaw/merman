@@ -136,18 +136,8 @@ public class VisualSymbol extends Visual implements VisualLeaf, ConditionAttachm
 	}
 
 	@Override
-	public boolean canCompact() {
-		return !parent.atomVisual().compact;
-	}
-
-	@Override
 	public void compact(final Context context) {
 		changeTagsCompact(context);
-	}
-
-	@Override
-	public boolean canExpand() {
-		return parent.atomVisual().compact;
 	}
 
 	@Override

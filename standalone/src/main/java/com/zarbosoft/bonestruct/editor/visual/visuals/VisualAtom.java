@@ -192,6 +192,8 @@ public class VisualAtom extends Visual {
 		atom.visual = null;
 		for (final Visual child : Lists.reverse(children))
 			child.uproot(context, root);
+		for (final Map.Entry<String, Alignment> entry : localAlignments.entrySet())
+			entry.getValue().destroy(context);
 	}
 
 	public AtomType type() {

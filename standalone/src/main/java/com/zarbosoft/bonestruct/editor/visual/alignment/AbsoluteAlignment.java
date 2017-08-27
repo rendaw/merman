@@ -22,6 +22,11 @@ public class AbsoluteAlignment extends Alignment implements AlignmentListener {
 	}
 
 	@Override
+	public void destroy(final Context context) {
+
+	}
+
+	@Override
 	public void align(final Context context) {
 		submit(context);
 	}

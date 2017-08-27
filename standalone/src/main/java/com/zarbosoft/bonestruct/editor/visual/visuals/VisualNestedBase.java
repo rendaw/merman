@@ -525,20 +525,6 @@ public abstract class VisualNestedBase extends Visual implements VisualLeaf {
 	}
 
 	@Override
-	public boolean canExpand() {
-		if (ellipsis == null)
-			throw new AssertionError();
-		return parent.atomVisual().compact;
-	}
-
-	@Override
-	public boolean canCompact() {
-		if (ellipsis == null)
-			throw new AssertionError();
-		return !parent.atomVisual().compact;
-	}
-
-	@Override
 	public void compact(final Context context) {
 		ellipsisTags = ellipsisTags.plus(new StateTag("compact"));
 		if (ellipsis != null)

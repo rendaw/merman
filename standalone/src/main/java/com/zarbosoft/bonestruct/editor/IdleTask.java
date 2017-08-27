@@ -9,7 +9,7 @@ public abstract class IdleTask implements Comparable<IdleTask> {
 			new ChainComparator<IdleTask>().greaterFirst(t -> t.priority()).build();
 	public boolean destroyed = false;
 
-	protected int priority() {
+	protected double priority() {
 		return 0;
 	}
 

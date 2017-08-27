@@ -4,12 +4,11 @@ import com.google.common.collect.ImmutableList;
 import com.zarbosoft.bonestruct.editor.Context;
 import com.zarbosoft.bonestruct.editor.IdleTask;
 import com.zarbosoft.bonestruct.editor.display.Group;
+import com.zarbosoft.bonestruct.editor.visual.visuals.VisualPrimitive;
+import com.zarbosoft.rendaw.common.ChainComparator;
 import com.zarbosoft.rendaw.common.Pair;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -33,6 +32,10 @@ public class Wall {
 	int beddingAfter = 0;
 	Set<BeddingListener> beddingListeners = new HashSet<>();
 	Set<CornerstoneListener> cornerstoneListeners = new HashSet<>();
+	public PriorityQueue<VisualPrimitive> splitPrimitives = new PriorityQueue<>(
+			11,
+			new ChainComparator<VisualPrimitive>().lesserFirst(visual -> visual.lines.get(0).brick.parent.index).build()
+	);
 
 	public static abstract class CornerstoneListener {
 		public abstract void cornerstoneChanged(Context context, Brick brick);
@@ -45,6 +48,16 @@ public class Wall {
 
 	public Wall(final Context context) {
 		visual = context.display.group();
+		context.addConverseEdgeListener((context1, oldValue, newValue) -> {
+			for (final VisualPrimitive primitive : splitPrimitives) {
+				primitive.idleResplit(context1);
+			}
+			if (newValue < oldValue) {
+				idleCompact(context1);
+			} else if (newValue > oldValue) {
+				idleExpand(context1);
+			}
+		});
 	}
 
 	public Stream<Brick> streamRange(
@@ -215,7 +228,7 @@ public class Wall {
 		}
 
 		@Override
-		protected int priority() {
+		protected double priority() {
 			return 110;
 		}
 
@@ -250,7 +263,7 @@ public class Wall {
 		}
 
 		@Override
-		protected int priority() {
+		protected double priority() {
 			return -100;
 		}
 
@@ -263,9 +276,12 @@ public class Wall {
 				expandTask = children.get(at).new IdleExpandTask(context);
 				at++;
 			}
+			final int oldCourseCount = children.size();
 			if (!expandTask.run()) {
 				expandTask = null;
 			}
+			if (oldCourseCount != children.size())
+				at = Math.max(0, at - 2);
 			return true;
 		}
 
@@ -285,7 +301,7 @@ public class Wall {
 		}
 
 		@Override
-		protected int priority() {
+		protected double priority() {
 			return 160;
 		}
 

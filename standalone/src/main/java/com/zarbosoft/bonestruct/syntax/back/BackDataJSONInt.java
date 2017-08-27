@@ -14,7 +14,7 @@ import com.zarbosoft.rendaw.common.Pair;
 
 import java.util.Set;
 
-@Configuration(name = "json_data_primitive")
+@Configuration(name = "json_data_int")
 public class BackDataJSONInt extends BackPart {
 	@Configuration
 	public String middle;

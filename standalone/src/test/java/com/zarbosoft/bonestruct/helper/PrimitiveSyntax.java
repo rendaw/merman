@@ -56,5 +56,6 @@ public class PrimitiveSyntax {
 				.style(new StyleBuilder().tag(new StateTag("compact")).tag(new FreeTag("split")).split(true).build())
 				.addRootFrontPrefix(new FrontSpaceBuilder().tag("split").build())
 				.build();
+		syntax.retryExpandFactor = 1.05;
 	}
 }
