@@ -11,7 +11,9 @@ public class SyntaxManager {
 
 	public Syntax get(final AppDirs appDirs, final String id) {
 		return cache.getOrCreate(id, file -> {
-			return Syntax.loadSyntax(id, appDirs.user_config_dir().resolve("syntaxes").resolve(id + ".lua"));
+			return Syntax.loadSyntax(id,
+					appDirs.user_config_dir().resolve("syntaxes").resolve(String.format("syntax_%s.lua", id))
+			);
 		});
 	}
 }

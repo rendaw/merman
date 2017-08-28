@@ -357,7 +357,7 @@ public class Main extends Application {
 		mainLayout.getChildren().add(filesystemLayout);
 		mainLayout.getChildren().add(display.node);
 		VBox.setVgrow(display.node, Priority.ALWAYS);
-		final Scene scene = new Scene(mainLayout, 300, 275);
+		final Scene scene = new Scene(mainLayout, 700, 500);
 		stage.setScene(scene);
 		stage.setOnCloseRequest(new EventHandler<>() {
 			@Override

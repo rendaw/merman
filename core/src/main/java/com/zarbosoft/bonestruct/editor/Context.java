@@ -1013,8 +1013,8 @@ public class Context {
 		}
 	}
 
-	@Action.StaticID(id = "scroll_up")
-	private class ActionScrollUp extends ActionBase {
+	@Action.StaticID(id = "scroll_previous")
+	private class ActionScrollNext extends ActionBase {
 
 		@Override
 		public boolean run(final Context context) {
@@ -1024,8 +1024,8 @@ public class Context {
 		}
 	}
 
-	@Action.StaticID(id = "scroll_up_alot")
-	private class ActionScrollUpAlot extends ActionBase {
+	@Action.StaticID(id = "scroll_previous_alot")
+	private class ActionScrollNextAlot extends ActionBase {
 
 		@Override
 		public boolean run(final Context context) {
@@ -1035,8 +1035,8 @@ public class Context {
 		}
 	}
 
-	@Action.StaticID(id = "scroll_down")
-	private class ActionScrollDown extends ActionBase {
+	@Action.StaticID(id = "scroll_next")
+	private class ActionScrollPrevious extends ActionBase {
 
 		@Override
 		public boolean run(final Context context) {
@@ -1046,8 +1046,8 @@ public class Context {
 		}
 	}
 
-	@Action.StaticID(id = "scroll_down_alot")
-	private class ActionScrollDownAlot extends ActionBase {
+	@Action.StaticID(id = "scroll_next_alot")
+	private class ActionScrollPreviousAlot extends ActionBase {
 
 		@Override
 		public boolean run(final Context context) {
