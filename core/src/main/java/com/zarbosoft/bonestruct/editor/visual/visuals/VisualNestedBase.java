@@ -200,9 +200,6 @@ public abstract class VisualNestedBase extends Visual implements VisualLeaf {
 	public Hoverable hover(final Context context, final Vector point) {
 		if (selection != null)
 			return null;
-		final Hoverable parentHoverable = parent.hover(context, point);
-		if (parentHoverable != null)
-			return parentHoverable;
 		if (hoverable != null) {
 		} else if (ellipsis != null) {
 			hoverable = new PlaceholderHoverable(context, ellipsis);
