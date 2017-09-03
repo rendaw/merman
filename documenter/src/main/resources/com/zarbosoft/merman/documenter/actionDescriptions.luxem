@@ -1,0 +1,19 @@
+{
+    application: {
+        quit: "Quits the application. Shows confirmation if the document has unsaved changes.",
+    },
+    array: {
+        copy: "Copy the selected elements.",
+        cut: "Copy and delete the selected elements.",
+        delete: "Delete the selected elements.",
+        enter: "Enter the first selected element.",
+        exit: "Exit the array.",
+        gather_next: "Gather the next element from the selection.",
+        gather_previous: "Gather the previous element from the selection.",
+        insert_after: "Insert a gap after the selection.",
+        insert_before: "Insert a gap before the selection.",
+        move_after: "Move the selection after the next element.",
+        move_before: "Move the selection before the next element.",
+        next: "Select the next element, deselecting everything else.",
+    },
+},

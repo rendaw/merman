@@ -1,8 +1,0 @@
-package com.zarbosoft.bonestruct.modules.hotkeys.grammar;
-
-import com.zarbosoft.interface1.Configuration;
-
-@Configuration
-public interface Node {
-	com.zarbosoft.pidgoon.Node build();
-}
