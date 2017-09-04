@@ -8,7 +8,6 @@
     com.zarbosoft.merman.modules.hotkeys.grammar.Terminal/key: "",
     com.zarbosoft.merman.modules.hotkeys.grammar.Terminal/modifiers: "Inputs that must be active for this rule to match.",
     com.zarbosoft.merman.modules.hotkeys.grammar.Terminal/press: "True if the input is pressed, false if the input is released.",
-    com.zarbosoft.merman.modules.hotkeys.grammar.Terminal/withoutModifiers: "Inputs that must not be active for this rule to match.",
     com.zarbosoft.merman.modules.hotkeys.grammar.Union/nodes: "",
     com.zarbosoft.merman.modules.hotkeys.HotkeyRule/freeTyping: "Text keys that don't match a hotkey are passed to the selected primitive.",
     com.zarbosoft.merman.modules.hotkeys.HotkeyRule/hotkeys: "Hotkeys to use when the tags match.",

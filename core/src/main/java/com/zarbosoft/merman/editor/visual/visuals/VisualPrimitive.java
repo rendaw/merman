@@ -191,6 +191,7 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 	}
 
 	public class RangeAttachment {
+		private final boolean forSelection;
 		boolean leadFirst;
 		TextBorderAttachment border;
 		public CursorAttachment cursor;
@@ -201,10 +202,13 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 		private ObboxStyle.Baked style;
 		Set<BoundsListener> listeners = new HashSet<>();
 
-		private RangeAttachment() {
+		private RangeAttachment(final boolean forSelection) {
+			this.forSelection = forSelection;
 		}
 
 		private void setCornerstone(final Context context, final int index) {
+			if (!forSelection)
+				return;
 			context.foreground.setCornerstone(context, lines.get(index).createOrGetBrick(context), () -> {
 				for (int at = index - 1; at >= 0; --at) {
 					final Brick found = lines.get(at).brick;
@@ -433,7 +437,7 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 		public PrimitiveSelection(
 				final Context context, final boolean leadFirst, final int beginOffset, final int endOffset
 		) {
-			range = new RangeAttachment();
+			range = new RangeAttachment(true);
 			range.setStyle(context, getBorderStyle(context, tags).obbox);
 			range.leadFirst = leadFirst;
 			range.setOffsets(context, beginOffset, endOffset);
@@ -1049,7 +1053,7 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 		RangeAttachment range;
 
 		PrimitiveHoverable(final Context context) {
-			range = new RangeAttachment();
+			range = new RangeAttachment(false);
 			range.setStyle(context, getBorderStyle(context, tags).obbox);
 		}
 

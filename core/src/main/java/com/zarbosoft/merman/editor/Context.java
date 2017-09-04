@@ -968,6 +968,9 @@ public class Context {
 			));
 		}
 		modules = document.syntax.modules.stream().map(p -> p.initialize(this)).collect(Collectors.toList());
+		display.addHIDEventListener(event -> {
+			clearHover();
+		});
 		document.root.visual.selectDown(this);
 		idleLayBricksOutward();
 	}
