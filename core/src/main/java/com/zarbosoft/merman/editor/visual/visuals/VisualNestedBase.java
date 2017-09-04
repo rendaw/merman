@@ -463,6 +463,16 @@ public abstract class VisualNestedBase extends Visual implements VisualLeaf {
 		}
 
 		@Override
+		public Brick findPreviousBrick(final Context context) {
+			return parent.findPreviousBrick(context);
+		}
+
+		@Override
+		public Brick findNextBrick(final Context context) {
+			return parent.findNextBrick(context);
+		}
+
+		@Override
 		public Brick getPreviousBrick(final Context context) {
 			return parent.getPreviousBrick(context);
 		}

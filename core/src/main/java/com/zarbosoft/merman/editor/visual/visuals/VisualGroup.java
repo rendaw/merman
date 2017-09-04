@@ -234,6 +234,26 @@ public class VisualGroup extends Visual {
 		}
 
 		@Override
+		public Brick findPreviousBrick(final Context context) {
+			for (int at = index - 1; at >= 0; --at) {
+				final Brick test = target.children.get(at).getLastBrick(context);
+				if (test != null)
+					return test;
+			}
+			return target.parent.findPreviousBrick(context);
+		}
+
+		@Override
+		public Brick findNextBrick(final Context context) {
+			for (int at = index + 1; at < target.children.size(); ++at) {
+				final Brick test = target.children.get(at).getLastBrick(context);
+				if (test != null)
+					return test;
+			}
+			return target.parent.findNextBrick(context);
+		}
+
+		@Override
 		public Brick getPreviousBrick(final Context context) {
 			if (index == 0)
 				return target.parent.getPreviousBrick(context);

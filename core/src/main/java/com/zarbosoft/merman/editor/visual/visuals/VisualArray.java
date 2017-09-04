@@ -193,25 +193,25 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 		remove(context, visualIndex, visualRemove);
 
 		// Add
-		int addIndex = visualIndex;
-		final Consumer<Integer> addSeparator = addAt -> {
-			final VisualGroup group =
-					new VisualGroup(context, new ArrayVisualParent(addAt, false), visualDepth + 1, depthScore());
-			for (int fixIndex = 0; fixIndex < getSeparator().size(); ++fixIndex) {
-				final FrontSymbol fix = getSeparator().get(fixIndex);
-				group.add(context, fix.createVisual(context,
-						group.createParent(fixIndex),
-						tags,
-						alignments,
-						group.visualDepth + 1,
-						depthScore()
-				));
-			}
-			if (atomVisual().compact)
-				group.compact(context);
-			super.add(context, group, addAt);
-		};
 		if (!add.isEmpty()) {
+			int addIndex = visualIndex;
+			final Consumer<Integer> addSeparator = addAt -> {
+				final VisualGroup group =
+						new VisualGroup(context, new ArrayVisualParent(addAt, false), visualDepth + 1, depthScore());
+				for (int fixIndex = 0; fixIndex < getSeparator().size(); ++fixIndex) {
+					final FrontSymbol fix = getSeparator().get(fixIndex);
+					group.add(context, fix.createVisual(context,
+							group.createParent(fixIndex),
+							tags,
+							alignments,
+							group.visualDepth + 1,
+							depthScore()
+					));
+				}
+				if (atomVisual().compact)
+					group.compact(context);
+				super.add(context, group, addAt);
+			};
 			for (final Atom atom : add) {
 				if (!getSeparator().isEmpty() && addIndex > 0)
 					addSeparator.accept(addIndex++);
@@ -328,6 +328,8 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 					group.compact(context);
 				super.add(context, group, addIndex++);
 			}
+			if (!getSeparator().isEmpty() && visualIndex == 0 && value.data.size() > add.size())
+				addSeparator.accept(addIndex++);
 		}
 
 		// Cleanup
@@ -1165,6 +1167,8 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 					return parent.hover(context, point);
 				return null;
 			}
+			if (selection != null && selection.beginIndex == selection.endIndex && selection.beginIndex == valueIndex())
+				return null;
 			if (hoverable == null) {
 				hoverable = new ElementHoverable(context);
 			}

@@ -49,11 +49,11 @@ local syntax = {
             color = _theme.string,
         },
         {
-            with = { part 'gap' },
+            with = { type '__gap' },
             color = _theme.gap,
         },
         {
-            with = { part 'gap', free 'diamond' },
+            with = { type '__gap', free 'diamond' },
             color = _theme.gap_symbol,
         },
         {

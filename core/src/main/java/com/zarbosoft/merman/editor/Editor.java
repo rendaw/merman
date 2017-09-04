@@ -43,9 +43,10 @@ public class Editor {
 			final Display display,
 			final Consumer<IdleTask> addIdle,
 			final Path path,
-			final History history
+			final History history,
+			final ClipboardEngine clipboardEngine
 	) {
-		context = new Context(syntax, doc, display, addIdle, history);
+		context = new Context(syntax, doc, display, addIdle, history, clipboardEngine);
 		context.history.clear();
 		context.addActions(this, ImmutableList.of(new ActionUndo(), new ActionRedo(), new ActionClickHovered()));
 		this.visual = display;

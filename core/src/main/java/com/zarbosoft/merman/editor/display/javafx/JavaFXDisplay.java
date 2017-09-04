@@ -40,6 +40,7 @@ public class JavaFXDisplay implements Display {
 	List<IntListener> transverseEdgeListeners = new ArrayList<>();
 
 	public JavaFXDisplay(final Syntax syntax) {
+		node.setSnapToPixel(true);
 		node.setFocusTraversable(true);
 		node.getChildren().add(origin);
 		node.setOnMouseExited(event -> {
@@ -253,10 +254,16 @@ public class JavaFXDisplay implements Display {
 
 	public HIDEvent buildHIDEvent(final Key key, final boolean press) {
 		final HIDEvent out = new HIDEvent(key, press, modifiers);
-		if (press)
-			modifiers.add(key);
-		else
-			modifiers.remove(key);
+		switch (key) {
+			case MOUSE_SCROLL_DOWN:
+			case MOUSE_SCROLL_UP:
+				break;
+			default:
+				if (press)
+					modifiers.add(key);
+				else
+					modifiers.remove(key);
+		}
 		return out;
 	}
 

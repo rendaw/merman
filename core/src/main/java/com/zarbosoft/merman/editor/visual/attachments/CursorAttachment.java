@@ -91,11 +91,10 @@ public class CursorAttachment {
 		else
 			gc.setLineCapFlat();
 		gc.setLineColor(style.lineColor);
-		gc.beginPath();
+		gc.beginStrokePath();
 		gc.moveTo(halfBuffer, halfBuffer);
 		gc.lineTo(size.converse - halfBuffer - 1, size.transverse - halfBuffer - 1);
 		gc.closePath();
-		gc.stroke();
 		/*
 		switch (context.syntax.converseDirection) {
 			case UP:

@@ -207,31 +207,31 @@ public class Helper {
 						)
 				)
 		);
-		final Context context = new Context(syntax, doc, new MockeryDisplay(), idleAdd, new History());
-		context.clipboardEngine = new ClipboardEngine() {
-			byte[] data = null;
-			String string = null;
+		final Context context =
+				new Context(syntax, doc, new MockeryDisplay(), idleAdd, new History(), new ClipboardEngine() {
+					byte[] data = null;
+					String string = null;
 
-			@Override
-			public void set(final byte[] bytes) {
-				data = bytes;
-			}
+					@Override
+					public void set(final byte[] bytes) {
+						data = bytes;
+					}
 
-			@Override
-			public void setString(final String string) {
-				this.string = string;
-			}
+					@Override
+					public void setString(final String string) {
+						this.string = string;
+					}
 
-			@Override
-			public byte[] get() {
-				return data;
-			}
+					@Override
+					public byte[] get() {
+						return data;
+					}
 
-			@Override
-			public String getString() {
-				return string;
-			}
-		};
+					@Override
+					public String getString() {
+						return string;
+					}
+				});
 		return context;
 	}
 }

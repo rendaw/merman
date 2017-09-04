@@ -211,14 +211,14 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 					if (found != null)
 						return found;
 				}
-				return parent.getPreviousBrick(context);
+				return parent.findPreviousBrick(context);
 			}, () -> {
 				for (int at = index + 1; at < lines.size(); ++at) {
 					final Brick found = lines.get(at).brick;
 					if (found != null)
 						return found;
 				}
-				return parent.getNextBrick(context);
+				return parent.findNextBrick(context);
 			});
 		}
 

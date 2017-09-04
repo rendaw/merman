@@ -37,28 +37,28 @@ public class Box {
 		final Drawing.DrawingContext gc = drawing.begin(context);
 		gc.translate(buffer, buffer);
 		if (style.fill) {
+			gc.beginFillPath();
 			gc.setFillColor(style.fillColor);
 			path(gc, converseSpan, transverseSpan);
-			gc.fill();
+			gc.closePath();
 		}
 		if (style.line) {
+			gc.beginStrokePath();
 			gc.setLineColor(style.lineColor);
 			gc.setLineThickness(style.lineThickness);
 			path(gc, converseSpan, transverseSpan);
-			gc.stroke();
+			gc.closePath();
 		}
 	}
 
 	private void path(
 			final Drawing.DrawingContext gc, final int converseSpan, final int transverseSpan
 	) {
-		gc.beginPath();
 		moveTo(gc, 0, transverseSpan / 2);
 		cornerTo(gc, style.roundStart, 0, 0, converseSpan / 2, 0);
 		cornerTo(gc, style.roundOuterEdges, converseSpan, 0, converseSpan, transverseSpan / 2);
 		cornerTo(gc, style.roundEnd, converseSpan, transverseSpan, converseSpan / 2, transverseSpan);
 		cornerTo(gc, style.roundOuterEdges, 0, transverseSpan, 0, transverseSpan / 2);
-		gc.closePath();
 	}
 
 	private void moveTo(final Drawing.DrawingContext gc, final int c, final int t) {

@@ -1,6 +1,5 @@
 package com.zarbosoft.merman.modules.hotkeys.grammar;
 
-import com.google.common.collect.Sets;
 import com.zarbosoft.interface1.Configuration;
 import com.zarbosoft.merman.editor.hid.HIDEvent;
 import com.zarbosoft.merman.modules.hotkeys.Key;
@@ -19,8 +18,6 @@ public class Terminal implements Node {
 
 	@Configuration(optional = true)
 	public Set<Key> modifiers = new HashSet<>();
-	@Configuration(name = "without_modifiers", optional = true)
-	public Set<Key> withoutModifiers = new HashSet<>();
 
 	public com.zarbosoft.pidgoon.Node build() {
 		return new com.zarbosoft.pidgoon.events.Terminal() {
@@ -29,9 +26,8 @@ public class Terminal implements Node {
 				final HIDEvent event1 = (HIDEvent) event;
 				final boolean a = key.equals(event1.key);
 				final boolean b = press == event1.press;
-				final boolean c = event1.modifiers.containsAll(modifiers);
-				final boolean d = Sets.intersection(event1.modifiers, withoutModifiers).isEmpty();
-				return a && b && c && d;
+				final boolean c = modifiers.equals(event1.modifiers);
+				return a && b && c;
 			}
 		};
 	}

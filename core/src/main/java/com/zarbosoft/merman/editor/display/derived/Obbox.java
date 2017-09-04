@@ -44,15 +44,17 @@ public class Obbox {
 		ete -= st;
 		st = 0;
 		if (style.fill) {
+			gc.beginFillPath();
 			gc.setFillColor(style.fillColor);
 			path(gc, oneLine, -style.padding, context.edge + style.padding, sc, st, ste, ec, et, ete);
-			gc.fill();
+			gc.closePath();
 		}
 		if (style.line) {
+			gc.beginStrokePath();
 			gc.setLineColor(style.lineColor);
 			gc.setLineThickness(style.lineThickness);
 			path(gc, oneLine, -style.padding, context.edge + style.padding, sc, st, ste, ec, et, ete);
-			gc.stroke();
+			gc.closePath();
 		}
 	}
 
@@ -69,7 +71,6 @@ public class Obbox {
 			final int endTransverseEdge
 	) {
 		if (oneLine) {
-			gc.beginPath();
 			moveTo(gc, startConverse, (startTransverse + startTransverseEdge) / 2);
 			cornerTo(
 					gc,
@@ -103,9 +104,7 @@ public class Obbox {
 					startConverse,
 					(startTransverse + startTransverseEdge) / 2
 			);
-			gc.closePath();
 		} else {
-			gc.beginPath();
 			moveTo(gc, startConverse, (startTransverse + startTransverseEdge) / 2);
 			cornerTo(
 					gc,
@@ -193,7 +192,6 @@ public class Obbox {
 						(startTransverse + startTransverseEdge) / 2
 				);
 			}
-			gc.closePath();
 		}
 	}
 

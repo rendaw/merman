@@ -56,7 +56,12 @@ public class MockeryDrawing extends MockeryDisplayNode implements Drawing {
 			}
 
 			@Override
-			public void beginPath() {
+			public void beginStrokePath() {
+
+			}
+
+			@Override
+			public void beginFillPath() {
 
 			}
 
@@ -72,16 +77,6 @@ public class MockeryDrawing extends MockeryDisplayNode implements Drawing {
 
 			@Override
 			public void closePath() {
-
-			}
-
-			@Override
-			public void stroke() {
-
-			}
-
-			@Override
-			public void fill() {
 
 			}
 

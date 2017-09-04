@@ -831,7 +831,8 @@ public class Context {
 			final Document document,
 			final Display display,
 			final Consumer<IdleTask> addIdle,
-			final History history
+			final History history,
+			final ClipboardEngine clipboardEngine
 	) {
 		actions.put(this, ImmutableList.of(new ActionWindowClear(),
 				new ActionWindowUp(document),
@@ -867,6 +868,7 @@ public class Context {
 			else
 				changeGlobalTags(new TagsChange().remove(tag));
 		});
+		this.clipboardEngine = clipboardEngine;
 		display.addConverseEdgeListener((oldValue, newValue) -> {
 			edge = Math.max(0, newValue - document.syntax.pad.converseStart - document.syntax.pad.converseEnd);
 			converseEdgeListeners.forEach(listener -> listener.changed(this, oldValue, newValue));

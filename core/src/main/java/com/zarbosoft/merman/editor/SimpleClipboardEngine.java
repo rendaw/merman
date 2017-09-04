@@ -8,7 +8,7 @@ import java.nio.charset.StandardCharsets;
 
 public class SimpleClipboardEngine extends ClipboardEngine {
 	Clipboard clipboard = Clipboard.getSystemClipboard();
-	DataFormat dataFormat = DataFormat.lookupMimeType("application/luxem");
+	DataFormat dataFormat = new DataFormat("application/luxem");
 
 	@Override
 	public void set(final byte[] bytes) {

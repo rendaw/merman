@@ -269,6 +269,34 @@ public class VisualAtom extends Visual {
 		}
 
 		@Override
+		public Brick findPreviousBrick(final Context context) {
+			for (int at = index - 1; at >= 0; --at) {
+				final Brick test = children.get(at).getLastBrick(context);
+				if (test != null)
+					return test;
+			}
+			if (context.windowAtom == VisualAtom.this.atom)
+				return null;
+			if (parent == null)
+				return null;
+			return parent.findPreviousBrick(context);
+		}
+
+		@Override
+		public Brick findNextBrick(final Context context) {
+			for (int at = index + 1; at < children.size(); ++at) {
+				final Brick test = children.get(at).getLastBrick(context);
+				if (test != null)
+					return test;
+			}
+			if (context.windowAtom == VisualAtom.this.atom)
+				return null;
+			if (parent == null)
+				return null;
+			return parent.findNextBrick(context);
+		}
+
+		@Override
 		public Brick getPreviousBrick(final Context context) {
 			if (index == 0) {
 				if (context.windowAtom == VisualAtom.this.atom)

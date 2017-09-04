@@ -22,17 +22,15 @@ public interface Drawing extends DisplayNode {
 
 		void setFillColor(ModelColor color);
 
-		void beginPath();
+		void beginStrokePath();
+
+		void beginFillPath();
 
 		void moveTo(int c, int t);
 
 		void lineTo(int c, int t);
 
 		void closePath();
-
-		void stroke();
-
-		void fill();
 
 		void arcTo(int c, int t, int c2, int t2, int radius);
 

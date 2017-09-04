@@ -177,7 +177,7 @@ public class Main extends Application {
 		//I don't think gaps are allowed everywhere - direct references should be substituted with groups containing 1 type + gap types
 		//	+ gaps should be added to all user groups
 		//Disallow referring to the root type somehow
-		save -> still dirty popup
+		//save -> still dirty popup
 		readme
 		doc on tagging
 		//syntax documenter
@@ -186,8 +186,8 @@ public class Main extends Application {
 		//	or java ast parser to extract actions? description as block comment?
 		action to select part directly
 		compact/expand all with same priority together
-		clean up luxem syntax (colors, etc)
-		improve hover type info
+		//clean up luxem syntax (colors, etc)
+		//improve hover type info
 		publish all dependencies
 		hn/reddit
 
@@ -249,7 +249,8 @@ public class Main extends Application {
 		else
 			doc = syntax.create();
 		this.display = new JavaFXDisplay(syntax);
-		final Editor editor = new Editor(syntax, doc, display, this::addIdle, path, history);
+		final Editor editor =
+				new Editor(syntax, doc, display, this::addIdle, path, history, new SimpleClipboardEngine());
 		editor.addActions(this, ImmutableList.of(new ActionQuit(), new ActionDebug()));
 		final HBox filesystemLayout = new HBox();
 		filesystemLayout.setPadding(new Insets(3, 2, 3, 2));

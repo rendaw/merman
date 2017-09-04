@@ -20,6 +20,10 @@ public abstract class VisualParent {
 
 	public abstract Brick getNextBrick(Context context);
 
+	public abstract Brick findPreviousBrick(final Context context);
+
+	public abstract Brick findNextBrick(final Context context);
+
 	public abstract Hoverable hover(Context context, Vector point);
 
 	public abstract boolean selectPrevious(Context context);

@@ -13,6 +13,10 @@ return {
     lightblue = _c(184, 191, 210),
     darkgreen = _c(37, 63, 57),
     lightgreen = _c(56, 118, 83),
+    lightyellowgreen1 = _c(142, 165, 73),
+    lightyellowgreen2 = _c(152, 158, 134),
+    darkyellowgreen1 = _c(87, 101, 45),
+    darkyellowgreen2 = _c(62, 66, 52),
     red = _c(242, 80, 27),
     lightred = _c2(242, 80, 27, 77),
 }

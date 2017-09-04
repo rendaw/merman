@@ -23,34 +23,34 @@ public class JavaFXDrawing extends JavaFXNode implements Drawing {
 		return node;
 	}
 
-	public Point2D toScreen(final Context context, final Vector source) {
+	public Point2D toScreen(final Context context, final Vector source, final boolean stroke) {
 		double x = 0, y = 0;
 		switch (context.syntax.converseDirection) {
 			case UP:
-				y = -source.converse;
+				y = -(source.converse + (stroke ? 0.5 : 0));
 				break;
 			case DOWN:
-				y = source.converse;
+				y = source.converse + (stroke ? 0.5 : 0);
 				break;
 			case LEFT:
-				x = -source.converse;
+				x = -(source.converse + (stroke ? 0.5 : 0));
 				break;
 			case RIGHT:
-				x = source.converse;
+				x = source.converse + (stroke ? 0.5 : 0);
 				break;
 		}
 		switch (context.syntax.transverseDirection) {
 			case UP:
-				y = -source.transverse;
+				y = -(source.transverse + (stroke ? 0.5 : 0));
 				break;
 			case DOWN:
-				y = source.transverse;
+				y = source.transverse + (stroke ? 0.5 : 0);
 				break;
 			case LEFT:
-				x = -source.transverse;
+				x = -(source.transverse + (stroke ? 0.5 : 0));
 				break;
 			case RIGHT:
-				x = source.transverse;
+				x = source.transverse + (stroke ? 0.5 : 0);
 				break;
 		}
 		return new Point2D(x, y);
@@ -91,6 +91,8 @@ public class JavaFXDrawing extends JavaFXNode implements Drawing {
 	public DrawingContext begin(final Context context) {
 		final GraphicsContext gc = node.getGraphicsContext2D();
 		return new DrawingContext() {
+			Boolean stroke = null;
+
 			@Override
 			public void setLineColor(final ModelColor color) {
 				gc.setStroke(Helper.convert(color));
@@ -117,47 +119,51 @@ public class JavaFXDrawing extends JavaFXNode implements Drawing {
 			}
 
 			@Override
-			public void beginPath() {
-				gc.beginPath();
-			}
-
-			@Override
 			public void moveTo(final int converse, final int transverse) {
-				final Point2D point = toScreen(context, new Vector(converse, transverse));
+				final Point2D point = toScreen(context, new Vector(converse, transverse), stroke);
 				gc.moveTo(point.getX(), point.getY());
 			}
 
 			@Override
 			public void lineTo(final int converse, final int transverse) {
-				final Point2D point = toScreen(context, new Vector(converse, transverse));
+				final Point2D point = toScreen(context, new Vector(converse, transverse), stroke);
 				gc.lineTo(point.getX(), point.getY());
+			}
+
+			@Override
+			public void beginStrokePath() {
+				stroke = true;
+				gc.beginPath();
+			}
+
+			@Override
+			public void beginFillPath() {
+				stroke = false;
+				gc.beginPath();
 			}
 
 			@Override
 			public void closePath() {
 				gc.closePath();
-			}
-
-			@Override
-			public void stroke() {
-				gc.stroke();
-			}
-
-			@Override
-			public void fill() {
-				gc.fill();
+				if (stroke == null)
+					throw new AssertionError();
+				if (stroke)
+					gc.stroke();
+				else
+					gc.fill();
+				stroke = null;
 			}
 
 			@Override
 			public void arcTo(final int c, final int t, final int c2, final int t2, final int radius) {
-				final Point2D point1 = toScreen(context, new Vector(c, t));
-				final Point2D point2 = toScreen(context, new Vector(c2, t2));
+				final Point2D point1 = toScreen(context, new Vector(c, t), stroke);
+				final Point2D point2 = toScreen(context, new Vector(c2, t2), stroke);
 				gc.arcTo(point1.getX(), point1.getY(), point2.getX(), point2.getY(), radius);
 			}
 
 			@Override
 			public void translate(final int c, final int t) {
-				final Point2D point = toScreen(context, new Vector(c, t));
+				final Point2D point = toScreen(context, new Vector(c, t), false);
 				gc.translate(point.getX(), point.getY());
 			}
 		};
