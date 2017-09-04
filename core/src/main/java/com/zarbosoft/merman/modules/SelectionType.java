@@ -1,21 +1,21 @@
 package com.zarbosoft.merman.modules;
 
+import com.google.common.collect.ImmutableMap;
 import com.zarbosoft.interface1.Configuration;
+import com.zarbosoft.merman.document.Atom;
 import com.zarbosoft.merman.editor.Context;
 import com.zarbosoft.merman.editor.Selection;
 import com.zarbosoft.merman.editor.banner.BannerMessage;
-import com.zarbosoft.merman.editor.visual.Visual;
 import com.zarbosoft.merman.editor.visual.visuals.VisualArray;
 import com.zarbosoft.merman.editor.visual.visuals.VisualAtom;
 import com.zarbosoft.merman.editor.visual.visuals.VisualNestedBase;
 import com.zarbosoft.merman.editor.visual.visuals.VisualPrimitive;
+import com.zarbosoft.merman.syntax.format.Format;
 
 @Configuration(name = "selection_type")
 public class SelectionType extends Module {
-	@Configuration(optional = true)
-	public boolean node = true;
-	@Configuration(optional = true)
-	public boolean part = true;
+	@Configuration
+	public Format format;
 
 	@Override
 	public State initialize(final Context context) {
@@ -30,31 +30,44 @@ public class SelectionType extends Module {
 				BannerMessage oldMessage = message;
 				message = new BannerMessage();
 				message.priority = 100;
-				final StringBuilder text = new StringBuilder();
-				if (node) {
+				final String outerId;
+				final String outerName;
+				{
 					final VisualAtom nodeType = selection.getVisual().parent().atomVisual();
-					if (nodeType == null)
-						text.append("Root Element");
-					else
-						text.append(nodeType.type().name());
+					outerId = nodeType.type().id();
+					outerName = nodeType.type().name();
 				}
-				if (part) {
-					final Visual part = selection.getVisual();
-					final String temp;
-					if (part instanceof VisualArray) {
-						temp = "array";
-					} else if (part instanceof VisualPrimitive) {
-						temp = "primitive";
-					} else if (part instanceof VisualNestedBase) {
-						temp = "nested";
+				final String part;
+				final String innerId;
+				final String innerName;
+				{
+					if (selection instanceof VisualArray.ArraySelection) {
+						part = "array";
+						final VisualArray.ArraySelection selection1 = (VisualArray.ArraySelection) selection;
+						final Atom child = selection1.self.value.data.get(selection1.leadFirst ?
+								selection1.beginIndex :
+								selection1.endIndex);
+						innerId = child.type.id();
+						innerName = child.type.name();
+					} else if (selection instanceof VisualNestedBase.NestedSelection) {
+						part = "nested";
+						final Atom child = ((VisualNestedBase) selection.getVisual()).atomGet();
+						innerId = child.type.id();
+						innerName = child.type.name();
+					} else if (selection instanceof VisualPrimitive.PrimitiveSelection) {
+						part = "primitive";
+						innerId = outerId;
+						innerName = outerName;
 					} else
-						temp = part.getClass().getSimpleName();
-					if (text.length() > 0)
-						text.append(" (" + temp + ")");
-					else
-						text.append(temp);
+						throw new AssertionError();
 				}
-				message.text = text.toString();
+				message.text = format.format(new ImmutableMap.Builder()
+						.put("outer_id", outerId)
+						.put("outer_name", outerName)
+						.put("part", part)
+						.put("inner_id", innerId)
+						.put("inner_name", innerName)
+						.build());
 				context.banner.addMessage(context, message);
 				if (oldMessage != null) {
 					context.banner.removeMessage(context, oldMessage); // TODO oldMessage callback on finish?

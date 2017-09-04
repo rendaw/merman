@@ -96,7 +96,7 @@ public class VisualGroup extends Visual {
 	public VisualParent parent = null;
 
 	// State
-	protected List<Visual> children = new ArrayList<>();
+	public List<Visual> children = new ArrayList<>();
 
 	@Override
 	public VisualParent parent() {

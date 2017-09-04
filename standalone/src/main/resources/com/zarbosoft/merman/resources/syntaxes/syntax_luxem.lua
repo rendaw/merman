@@ -208,7 +208,7 @@ local syntax = {
         }
     },
     modules = {
-        selection_type {},
+        selection_type { format = { 'Selected: ', ref 'inner_name' } },
         indicators {
             indicators = {
                 {

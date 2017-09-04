@@ -49,7 +49,7 @@ public abstract class VisualNestedFromArray extends VisualNestedBase {
 	}
 
 	@Override
-	protected Atom atomGet() {
+	public Atom atomGet() {
 		if (value.data.isEmpty())
 			return null;
 		return value.data.get(0);

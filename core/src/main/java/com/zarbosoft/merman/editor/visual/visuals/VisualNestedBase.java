@@ -42,7 +42,7 @@ public abstract class VisualNestedBase extends Visual implements VisualLeaf {
 
 	protected abstract void nodeSet(Context context, Atom value);
 
-	protected abstract Atom atomGet();
+	public abstract Atom atomGet();
 
 	protected abstract String nodeType();
 
@@ -304,7 +304,7 @@ public abstract class VisualNestedBase extends Visual implements VisualLeaf {
 		);
 	}
 
-	private class NestedSelection extends Selection {
+	public class NestedSelection extends Selection {
 		private BorderAttachment border;
 
 		public NestedSelection(final Context context) {

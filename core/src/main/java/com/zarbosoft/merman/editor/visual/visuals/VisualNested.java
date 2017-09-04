@@ -47,7 +47,7 @@ public abstract class VisualNested extends VisualNestedBase {
 	}
 
 	@Override
-	protected Atom atomGet() {
+	public Atom atomGet() {
 		return value.get();
 	}
 
