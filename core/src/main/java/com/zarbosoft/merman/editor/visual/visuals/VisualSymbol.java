@@ -55,11 +55,6 @@ public class VisualSymbol extends Visual implements VisualLeaf, ConditionAttachm
 	}
 
 	@Override
-	public void globalTagsChanged(final Context context) {
-		tagsChanged(context);
-	}
-
-	@Override
 	public void changeTags(final Context context, final TagsChange tagsChange) {
 		tags = tagsChange.apply(tags);
 		tagsChanged(context);

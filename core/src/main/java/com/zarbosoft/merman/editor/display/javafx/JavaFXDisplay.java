@@ -257,6 +257,9 @@ public class JavaFXDisplay implements Display {
 		switch (key) {
 			case MOUSE_SCROLL_DOWN:
 			case MOUSE_SCROLL_UP:
+			case MOUSE_1:
+			case MOUSE_2:
+			case MOUSE_3:
 				break;
 			default:
 				if (press)

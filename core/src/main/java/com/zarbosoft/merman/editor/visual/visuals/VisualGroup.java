@@ -35,11 +35,6 @@ public class VisualGroup extends Visual {
 	}
 
 	@Override
-	public void globalTagsChanged(final Context context) {
-		children.forEach(child -> child.globalTagsChanged(context));
-	}
-
-	@Override
 	public void changeTags(final Context context, final TagsChange tagsChange) {
 		children.forEach(child -> child.changeTags(context, tagsChange));
 	}

@@ -101,11 +101,6 @@ public class VisualAtom extends Visual {
 	}
 
 	@Override
-	public void globalTagsChanged(final Context context) {
-		children.forEach(child -> child.globalTagsChanged(context));
-	}
-
-	@Override
 	public void changeTags(final Context context, final TagsChange tagsChange) {
 		atom.tags = tagsChange.apply(atom.tags);
 		children.forEach(child -> child.changeTags(context, tagsChange));

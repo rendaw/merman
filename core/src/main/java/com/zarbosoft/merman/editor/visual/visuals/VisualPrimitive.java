@@ -133,11 +133,6 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 	}
 
 	@Override
-	public void globalTagsChanged(final Context context) {
-		tagsChanged(context);
-	}
-
-	@Override
 	public void changeTags(final Context context, final TagsChange change) {
 		tags = change.apply(tags);
 		tagsChanged(context);

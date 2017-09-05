@@ -240,11 +240,6 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 					}
 
 					@Override
-					public void globalTagsChanged(final Context context) {
-						nodeVisual.globalTagsChanged(context);
-					}
-
-					@Override
 					public void changeTags(final Context context, final TagsChange change) {
 					}
 
@@ -556,14 +551,6 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 			selection.tagsChanged(context);
 		if (hoverable != null)
 			hoverable.tagsChanged(context);
-	}
-
-	@Override
-	public void globalTagsChanged(
-			final Context context
-	) {
-		tagsChanged(context);
-		super.globalTagsChanged(context);
 	}
 
 	@Override

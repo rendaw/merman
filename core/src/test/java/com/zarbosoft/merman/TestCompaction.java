@@ -18,6 +18,7 @@ public class TestCompaction {
 	final public static FreeAtomType one;
 	final public static FreeAtomType initialSplitOne;
 	final public static FreeAtomType text;
+	final public static FreeAtomType comboText;
 	final public static FreeAtomType initialSplitText;
 	final public static FreeAtomType infinity;
 	final public static FreeAtomType line;
@@ -44,6 +45,12 @@ public class TestCompaction {
 				.middlePrimitive("value")
 				.back(Helper.buildBackDataPrimitive("value"))
 				.frontDataPrimitive("value")
+				.build();
+		comboText = new TypeBuilder("comboText")
+				.middlePrimitive("value")
+				.back(Helper.buildBackDataPrimitive("value"))
+				.frontDataPrimitive("value")
+				.frontMark("123")
 				.build();
 		initialSplitText = new TypeBuilder("splitText")
 				.middlePrimitive("value")
@@ -95,6 +102,7 @@ public class TestCompaction {
 				.type(one)
 				.type(initialSplitOne)
 				.type(text)
+				.type(comboText)
 				.type(initialSplitText)
 				.type(infinity)
 				.type(line)
@@ -113,6 +121,7 @@ public class TestCompaction {
 								.type(mid)
 								.type(high)
 								.type(text)
+								.type(comboText)
 								.type(initialSplitText)
 								.build()
 				)
@@ -286,6 +295,21 @@ public class TestCompaction {
 				.checkCourseCount(1)
 				.checkTextBrick(0, 1, "one")
 				.checkTextBrick(0, 3, "oran");
+	}
+
+	@Test
+	public void testSplitDynamicComboBrick() {
+		final Atom primitive = new TreeBuilder(comboText).add("value", "I am a banana").build();
+		new GeneralTestWizard(syntax, primitive)
+				.resize(140)
+				.checkTextBrick(0, 0, "I am a banana")
+				.checkTextBrick(0, 1, "123")
+				.run(context -> context.history.apply(context,
+						new ChangePrimitiveAdd((ValuePrimitive) primitive.data.get("value"), 0, "wigwam ")
+				))
+				.checkTextBrick(0, 0, "wigwam I am a ")
+				.checkTextBrick(1, 0, "banana")
+				.checkTextBrick(1, 1, "123");
 	}
 
 	@Test

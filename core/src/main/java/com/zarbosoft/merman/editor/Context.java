@@ -24,10 +24,7 @@ import com.zarbosoft.merman.editor.serialization.Write;
 import com.zarbosoft.merman.editor.visual.Vector;
 import com.zarbosoft.merman.editor.visual.Visual;
 import com.zarbosoft.merman.editor.visual.VisualParent;
-import com.zarbosoft.merman.editor.visual.tags.FreeTag;
-import com.zarbosoft.merman.editor.visual.tags.StateTag;
-import com.zarbosoft.merman.editor.visual.tags.Tag;
-import com.zarbosoft.merman.editor.visual.tags.TagsChange;
+import com.zarbosoft.merman.editor.visual.tags.*;
 import com.zarbosoft.merman.editor.visual.visuals.VisualAtom;
 import com.zarbosoft.merman.editor.wall.Attachment;
 import com.zarbosoft.merman.editor.wall.Brick;
@@ -65,6 +62,7 @@ public class Context {
 	private final Set<SelectionListener> selectionListeners = new HashSet<>();
 	private final Set<HoverListener> hoverListeners = new HashSet<>();
 	private final Set<TagsListener> selectionTagsChangeListeners = new HashSet<>();
+	private final Set<TagsListener> globalTagsChangeListeners = new HashSet<>();
 	private final Set<ActionChangeListener> actionChangeListeners = new HashSet<>();
 	public List<Module.State> modules;
 	public PSet<Tag> globalTags = HashTreePSet.empty();
@@ -202,10 +200,9 @@ public class Context {
 
 	public void changeGlobalTags(final TagsChange change) {
 		globalTags = change.apply(globalTags);
-		if (windowAtom == null)
-			document.root.visual.globalTagsChanged(this);
-		else
-			windowAtom.visual.globalTagsChanged(this);
+		banner.tagsChanged(this);
+		details.tagsChanged(this);
+		ImmutableList.copyOf(globalTagsChangeListeners).forEach(listener -> listener.tagsChanged(this));
 	}
 
 	public void selectionTagsChanged() {
@@ -213,7 +210,7 @@ public class Context {
 			return;
 		banner.tagsChanged(this);
 		details.tagsChanged(this);
-		selectionTagsChangeListeners.forEach(listener -> listener.tagsChanged(this));
+		ImmutableList.copyOf(selectionTagsChangeListeners).forEach(listener -> listener.tagsChanged(this));
 	}
 
 	public Object locateLong(final Path path) {
@@ -403,6 +400,14 @@ public class Context {
 
 	public void removeSelectionTagsChangeListener(final TagsListener listener) {
 		this.selectionTagsChangeListeners.remove(listener);
+	}
+
+	public void addGlobalTagsChangeListener(final TagsListener listener) {
+		this.globalTagsChangeListeners.add(listener);
+	}
+
+	public void removeGlobalTagsChangeListener(final TagsListener listener) {
+		this.globalTagsChangeListeners.remove(listener);
 	}
 
 	public void addKeyListener(final KeyListener listener) {
@@ -862,7 +867,7 @@ public class Context {
 		details = new Details(this);
 		this.history = history;
 		history.addModifiedStateListener(modified -> {
-			final StateTag tag = new StateTag("modified");
+			final Tag tag = new GlobalTag("modified");
 			if (modified)
 				changeGlobalTags(new TagsChange().add(tag));
 			else

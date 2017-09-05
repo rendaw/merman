@@ -22,10 +22,6 @@ public abstract class Visual {
 
 	public abstract VisualParent parent();
 
-	public abstract void globalTagsChanged(
-			Context context
-	);
-
 	public abstract void changeTags(final Context context, final TagsChange change);
 
 	public abstract Brick createOrGetFirstBrick(Context context);

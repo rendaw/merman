@@ -17,17 +17,14 @@ import com.zarbosoft.merman.modules.Module;
 import com.zarbosoft.merman.modules.hotkeys.grammar.Node;
 import com.zarbosoft.merman.syntax.style.Style;
 import com.zarbosoft.pidgoon.InvalidStream;
-import com.zarbosoft.pidgoon.events.EventStream;
-import com.zarbosoft.pidgoon.events.Grammar;
-import com.zarbosoft.pidgoon.events.Operator;
-import com.zarbosoft.pidgoon.events.Parse;
+import com.zarbosoft.pidgoon.events.*;
+import com.zarbosoft.pidgoon.internal.Helper;
 import com.zarbosoft.pidgoon.nodes.Union;
+import com.zarbosoft.rendaw.common.ChainComparator;
+import com.zarbosoft.rendaw.common.Pair;
 import org.pcollections.PSet;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.zarbosoft.rendaw.common.Common.iterable;
 
@@ -43,6 +40,9 @@ public class Hotkeys extends Module {
 	public State initialize(final Context context) {
 		return new ModuleState(context);
 	}
+
+	private static final Comparator<Pair<Integer, Action>> matchComparator =
+			new ChainComparator<Pair<Integer, Action>>().greaterFirst(p -> p.first).build();
 
 	private class ModuleState extends State {
 		private class HotkeyDetails extends DetailsPage {
@@ -88,7 +88,7 @@ public class Hotkeys extends Module {
 		}
 
 		private Grammar hotkeyGrammar;
-		private EventStream<Action> hotkeyParse;
+		private EventStream<Pair<Integer, Action>> hotkeyParse;
 		private String hotkeySequence = "";
 		private HotkeyDetails hotkeyDetails = null;
 		Map<String, List<Node>> hotkeys = new HashMap<>();
@@ -96,12 +96,14 @@ public class Hotkeys extends Module {
 
 		public ModuleState(final Context context) {
 			context.addKeyListener(this::handleEvent);
-			context.addSelectionTagsChangeListener(new Context.TagsListener() {
+			final Context.TagsListener tagsListener = new Context.TagsListener() {
 				@Override
 				public void tagsChanged(final Context context) {
 					update(context);
 				}
-			});
+			};
+			context.addSelectionTagsChangeListener(tagsListener);
+			context.addGlobalTagsChangeListener(tagsListener);
 			context.addActionChangeListener(new Context.ActionChangeListener() {
 				@Override
 				public void actionsAdded(final Context context) {
@@ -138,7 +140,13 @@ public class Hotkeys extends Module {
 			for (final Action action : iterable(context.actions())) {
 				if (hotkeys.containsKey(action.id())) {
 					for (final Node hotkey : hotkeys.get(action.id())) {
-						union.add(new Operator(hotkey.build(), store -> store.pushStack(action)));
+						union.add(new Operator(hotkey.build(), store -> {
+							final Pair<Integer, Action> out = new Pair<>(0, action);
+							store = (Store) Helper.<Integer>stackPopSingleList(store, i -> {
+								out.first += i;
+							});
+							return store.pushStack(out);
+						}));
 					}
 				}
 			}
@@ -147,7 +155,7 @@ public class Hotkeys extends Module {
 
 		public boolean handleEvent(final Context context, final HIDEvent event) {
 			if (hotkeyParse == null) {
-				hotkeyParse = new Parse<Action>().grammar(hotkeyGrammar).parse();
+				hotkeyParse = new Parse<Pair<Integer, Action>>().grammar(hotkeyGrammar).stack(() -> 0).parse();
 			}
 			if (hotkeySequence.isEmpty())
 				hotkeySequence += event.toString();
@@ -157,7 +165,8 @@ public class Hotkeys extends Module {
 			try {
 				hotkeyParse = hotkeyParse.push(event, hotkeySequence);
 				if (hotkeyParse.ended()) {
-					final Action action = hotkeyParse.finish();
+					final Action action =
+							hotkeyParse.finishAll().stream().sorted(matchComparator).findFirst().get().second;
 					clean(context);
 					action.run(context);
 				} else {

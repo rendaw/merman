@@ -57,12 +57,13 @@ public class Indicators extends Module {
 		private final Group group;
 
 		ModuleState(final Context context) {
-			context.addSelectionTagsChangeListener(new Context.TagsListener() {
+			final Context.TagsListener listener = new Context.TagsListener() {
 				@Override
 				public void tagsChanged(final Context context) {
 					update(context, context.globalTags.plusAll(context.selection.getTags(context)));
 				}
-			});
+			};
+			context.addGlobalTagsChangeListener(listener);
 			context.addConverseEdgeListener(resizeListener);
 			context.addTransverseEdgeListener(resizeListener);
 			group = context.display.group();

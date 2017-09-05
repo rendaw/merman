@@ -225,11 +225,6 @@ public abstract class VisualNestedBase extends Visual implements VisualLeaf {
 	}
 
 	@Override
-	public void globalTagsChanged(final Context context) {
-		tagsChanged(context);
-	}
-
-	@Override
 	public void changeTags(final Context context, final TagsChange change) {
 		tags = change.apply(tags);
 		ellipsisTags = tags.plus(new PartTag("ellipsis"));

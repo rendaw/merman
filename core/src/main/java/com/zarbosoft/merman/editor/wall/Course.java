@@ -10,6 +10,7 @@ import com.zarbosoft.merman.editor.visual.VisualLeaf;
 import com.zarbosoft.merman.editor.visual.tags.StateTag;
 import com.zarbosoft.merman.editor.visual.tags.TagsChange;
 import com.zarbosoft.merman.editor.visual.visuals.VisualAtom;
+import com.zarbosoft.merman.editor.visual.visuals.VisualPrimitive;
 import com.zarbosoft.rendaw.common.ChainComparator;
 import com.zarbosoft.rendaw.common.Pair;
 
@@ -363,7 +364,7 @@ public class Course {
 					final VisualAtom atomVisual = visual.parent().atomVisual();
 					if (skip.contains(atomVisual))
 						continue;
-					if (!visual.atomVisual().compact)
+					if (!visual.atomVisual().compact || visual instanceof VisualPrimitive)
 						priorities.add(atomVisual);
 					converse = brick.converseEdge(context);
 					if (!priorities.isEmpty() && converse > context.edge)

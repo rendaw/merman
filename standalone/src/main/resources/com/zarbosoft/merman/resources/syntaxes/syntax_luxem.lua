@@ -4,7 +4,7 @@ local _theme = require 'theme_dark'
 local syntax = {
     name = 'luxem',
     pad = {
-        converse_start = 15,
+        converse_start = 40,
         converse_end = 5,
         transverse_start = 60,
         transverse_end = 60,
@@ -15,7 +15,7 @@ local syntax = {
         transverse_end = 12,
     },
     detail_pad = {
-        converse_start = 15,
+        converse_start = 25,
     },
     background = _theme.background,
     animate_course_placement = true,
@@ -210,6 +210,8 @@ local syntax = {
     modules = {
         selection_type { format = { 'Selected: ', ref 'inner_name' } },
         indicators {
+            converse_padding = 8,
+            transverse_padding = 20,
             indicators = {
                 {
                     id = 'modified',
