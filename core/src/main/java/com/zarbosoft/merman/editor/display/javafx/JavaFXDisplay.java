@@ -38,6 +38,8 @@ public class JavaFXDisplay implements Display {
 	List<Consumer<String>> typingListeners = new ArrayList<>();
 	List<IntListener> converseEdgeListeners = new ArrayList<>();
 	List<IntListener> transverseEdgeListeners = new ArrayList<>();
+	int oldConverseEdge = Integer.MAX_VALUE;
+	int oldTransverseEdge = Integer.MAX_VALUE;
 
 	public JavaFXDisplay(final Syntax syntax) {
 		node.setSnapToPixel(true);
@@ -84,14 +86,22 @@ public class JavaFXDisplay implements Display {
 			e.consume();
 		});
 		final ChangeListener<Number> converseSizeListener = (observable, oldValue, newValue) -> {
-			ImmutableList
-					.copyOf(converseEdgeListeners)
-					.forEach(l -> l.changed((int) oldValue.doubleValue(), (int) newValue.doubleValue()));
+			final int newValue1 = (int) newValue.doubleValue();
+			// JavaFX does something stupid where middle mouse wheel causes the node to resize by 1px
+			if (Math.abs(oldConverseEdge - newValue1) < 10)
+				return;
+			ImmutableList.copyOf(converseEdgeListeners).forEach(l -> {
+				l.changed(oldConverseEdge, newValue1);
+			});
+			oldConverseEdge = newValue1;
 		};
 		final ChangeListener<Number> transverseSizeListener = (observable, oldValue, newValue) -> {
-			ImmutableList
-					.copyOf(transverseEdgeListeners)
-					.forEach(l -> l.changed((int) oldValue.doubleValue(), (int) newValue.doubleValue()));
+			final int newValue1 = (int) newValue.doubleValue();
+			// JavaFX does something stupid where middle mouse wheel causes the node to resize by 1px
+			if (Math.abs(oldTransverseEdge - newValue1) < 10)
+				return;
+			ImmutableList.copyOf(transverseEdgeListeners).forEach(l -> l.changed(oldTransverseEdge, newValue1));
+			oldTransverseEdge = newValue1;
 		};
 		switch (syntax.converseDirection) {
 			case UP:
