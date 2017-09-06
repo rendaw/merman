@@ -99,8 +99,6 @@ public abstract class Brick implements AlignmentListener {
 		final Course oldParent = this.parent;
 		this.parent = parent;
 		this.index = index;
-		if (alignment != null)
-			alignment.courseChanged(context, this, oldParent);
 	}
 
 	public static class Properties {

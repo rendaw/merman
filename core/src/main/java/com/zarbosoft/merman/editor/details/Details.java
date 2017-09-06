@@ -1,7 +1,8 @@
 package com.zarbosoft.merman.editor.details;
 
 import com.zarbosoft.merman.editor.Context;
-import com.zarbosoft.merman.editor.IdleTask;
+import com.zarbosoft.merman.editor.IterationContext;
+import com.zarbosoft.merman.editor.IterationTask;
 import com.zarbosoft.merman.editor.display.derived.Box;
 import com.zarbosoft.merman.editor.visual.Vector;
 import com.zarbosoft.merman.editor.visual.tags.PartTag;
@@ -25,7 +26,7 @@ public class Details {
 	private int transverseSpan;
 	private int documentScroll;
 	private Bedding bedding;
-	private IdlePlace idle;
+	private IterationPlace idle;
 	private final Attachment attachment = new Attachment() {
 		@Override
 		public void setTransverse(final Context context, final int transverse) {
@@ -49,7 +50,7 @@ public class Details {
 		if (current == null)
 			return;
 		if (idle == null) {
-			idle = new IdlePlace(context);
+			idle = new IterationPlace(context);
 			context.addIdle(idle);
 		}
 		idle.animate = idle.animate && animate;
@@ -87,17 +88,17 @@ public class Details {
 		}
 	}
 
-	private class IdlePlace extends IdleTask {
+	private class IterationPlace extends IterationTask {
 		private final Context context;
 		private boolean animate;
 
-		private IdlePlace(final Context context) {
+		private IterationPlace(final Context context) {
 			this.context = context;
 			this.animate = context.syntax.animateCoursePlacement;
 		}
 
 		@Override
-		protected boolean runImplementation() {
+		protected boolean runImplementation(final IterationContext iterationContext) {
 			if (current != null) {
 				place(context, animate);
 			}

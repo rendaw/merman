@@ -41,7 +41,7 @@ public class Editor {
 			final Syntax syntax,
 			final Document doc,
 			final Display display,
-			final Consumer<IdleTask> addIdle,
+			final Consumer<IterationTask> addIdle,
 			final Path path,
 			final History history,
 			final ClipboardEngine clipboardEngine

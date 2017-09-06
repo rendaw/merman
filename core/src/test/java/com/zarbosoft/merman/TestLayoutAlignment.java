@@ -24,6 +24,7 @@ import java.util.function.Function;
 
 @RunWith(Parameterized.class)
 public class TestLayoutAlignment {
+
 	@Parameterized.Parameters
 	public static Iterable<Object[]> parameters() {
 		return ImmutableList.of(new Object[] {1}, new Object[] {2}, new Object[] {10});
@@ -36,7 +37,12 @@ public class TestLayoutAlignment {
 	final public FreeAtomType compactArray;
 	final public FreeAtomType line;
 	final public FreeAtomType pair;
+	final public FreeAtomType atomPair;
+	final public FreeAtomType splitPair;
 	final public FreeAtomType triple;
+	final public FreeAtomType reverseTriple;
+	final public FreeAtomType threeLine;
+	final public FreeAtomType threeLine2;
 	final public Syntax syntax;
 
 	public TestLayoutAlignment(final int layBrickBatchSize) {
@@ -86,6 +92,28 @@ public class TestLayoutAlignment {
 				.front(new FrontDataPrimitiveBuilder("first").build())
 				.front(new FrontDataPrimitiveBuilder("second").tag("concensus1").build())
 				.build();
+		atomPair = new TypeBuilder("atomPair")
+				.middleNode("first", "any")
+				.middleNode("second", "any")
+				.back(new BackArrayBuilder()
+						.add(Helper.buildBackDataNode("first"))
+						.add(Helper.buildBackDataNode("second"))
+						.build())
+				.front(new FrontSpaceBuilder().build())
+				.frontDataNode("first")
+				.front(new FrontSpaceBuilder().tag("concensus1unsplit").tag("compact_split").build())
+				.frontDataNode("second")
+				.build();
+		splitPair = new TypeBuilder("splitPair")
+				.middlePrimitive("first")
+				.middlePrimitive("second")
+				.back(new BackArrayBuilder()
+						.add(Helper.buildBackDataPrimitive("first"))
+						.add(Helper.buildBackDataPrimitive("second"))
+						.build())
+				.front(new FrontDataPrimitiveBuilder("first").build())
+				.front(new FrontDataPrimitiveBuilder("second").tag("concensus1unsplit").tag("compact_split").build())
+				.build();
 		triple = new TypeBuilder("triple")
 				.middlePrimitive("first")
 				.middlePrimitive("second")
@@ -99,6 +127,36 @@ public class TestLayoutAlignment {
 				.front(new FrontDataPrimitiveBuilder("second").tag("concensus1").build())
 				.front(new FrontDataPrimitiveBuilder("third").tag("concensus2").build())
 				.build();
+		reverseTriple = new TypeBuilder("reverseTriple")
+				.middlePrimitive("first")
+				.middlePrimitive("second")
+				.middlePrimitive("third")
+				.back(new BackArrayBuilder()
+						.add(Helper.buildBackDataPrimitive("first"))
+						.add(Helper.buildBackDataPrimitive("second"))
+						.add(Helper.buildBackDataPrimitive("third"))
+						.build())
+				.front(new FrontDataPrimitiveBuilder("first").build())
+				.front(new FrontDataPrimitiveBuilder("second").tag("concensus2").build())
+				.front(new FrontDataPrimitiveBuilder("third").tag("concensus1").build())
+				.build();
+		threeLine = new TypeBuilder("threeLine").back(Helper.buildBackPrimitive("threeLine"))
+				/* Line 1 */
+				.front(new FrontMarkBuilder("width2").tag("concensus1unsplit").build())
+				.front(new FrontMarkBuilder("b").tag("concensus2").build())
+				/* Line 2 */
+				.front(new FrontSpaceBuilder().tag("split").build())
+				.front(new FrontMarkBuilder("width3").tag("compact_split").tag("concensus2unsplit").build())
+				/* Line 3 */
+				.front(new FrontMarkBuilder("width1").tag("split").build())
+				.front(new FrontMarkBuilder("a").tag("concensus1").build())
+				.build();
+		threeLine2 = new TypeBuilder("threeLine2")
+				.back(Helper.buildBackPrimitive("threeLine"))
+				.front(new FrontMarkBuilder("line1").build())
+				.front(new FrontMarkBuilder("line2").tag("split").build())
+				.front(new FrontMarkBuilder("line3").tag("compact_split").build())
+				.build();
 		syntax = new SyntaxBuilder("any")
 				.type(primitive)
 				.type(absolute)
@@ -107,7 +165,12 @@ public class TestLayoutAlignment {
 				.type(compactArray)
 				.type(line)
 				.type(pair)
+				.type(atomPair)
+				.type(splitPair)
 				.type(triple)
+				.type(reverseTriple)
+				.type(threeLine)
+				.type(threeLine2)
 				.group("any",
 						new GroupBuilder()
 								.type(primitive)
@@ -115,9 +178,14 @@ public class TestLayoutAlignment {
 								.type(relative)
 								.type(array)
 								.type(compactArray)
-								.type(pair)
-								.type(triple)
 								.type(line)
+								.type(pair)
+								.type(atomPair)
+								.type(splitPair)
+								.type(triple)
+								.type(reverseTriple)
+								.type(threeLine)
+								.type(threeLine2)
 								.build()
 				)
 				.absoluteAlignment("absolute", 7)
@@ -133,7 +201,17 @@ public class TestLayoutAlignment {
 						.build())
 				.style(new StyleBuilder().tag(new TypeTag("absolute")).alignment("absolute").build())
 				.style(new StyleBuilder().tag(new FreeTag("concensus1")).alignment("concensus1").build())
+				.style(new StyleBuilder()
+						.tag(new FreeTag("concensus1unsplit"))
+						.notag(new StateTag("compact"))
+						.alignment("concensus1")
+						.build())
 				.style(new StyleBuilder().tag(new FreeTag("concensus2")).alignment("concensus2").build())
+				.style(new StyleBuilder()
+						.tag(new FreeTag("concensus2unsplit"))
+						.notag(new StateTag("compact"))
+						.alignment("concensus2")
+						.build())
 				.style(new StyleBuilder().tag(new TypeTag("relative")).alignment("relative").build())
 				.build();
 		syntax.layBrickBatchSize = layBrickBatchSize;
@@ -167,11 +245,7 @@ public class TestLayoutAlignment {
 	public void testConcensusAlignmentSingle() {
 		new GeneralTestWizard(syntax,
 				new TreeBuilder(pair).add("first", "three").add("second", "lumbar").build()
-		).checkBrick(
-				0,
-				2,
-				50
-		);
+		).checkBrick(0, 2, 50);
 	}
 
 	@Test
@@ -270,11 +344,17 @@ public class TestLayoutAlignment {
 				.addArray("value", new TreeBuilder(pair).add("first", "ccc").add("second", "d").build())
 				.build();
 		final ValueArray array = (ValueArray) line2.data.get("value");
-		new GeneralTestWizard(syntax, line2).run(context -> context.history.apply(context, new ChangeArray(array,
-				0,
-				0,
-				ImmutableList.of(new TreeBuilder(pair).add("first", "a").add("second", "b").build())
-		))).checkBrick(0, 2, 10).checkBrick(0, 4, 50);
+		new GeneralTestWizard(syntax, line2)
+				.run(context -> context.history.apply(
+						context,
+						new ChangeArray(array,
+								0,
+								0,
+								ImmutableList.of(new TreeBuilder(pair).add("first", "a").add("second", "b").build())
+						)
+				))
+				.checkBrick(0, 2, 10)
+				.checkBrick(0, 4, 50);
 	}
 
 	@Test
@@ -325,6 +405,65 @@ public class TestLayoutAlignment {
 				.checkTextBrick(2, 1, "two")
 				.resize(10000)
 				.checkCourseCount(1);
+	}
+
+	@Test
+	public void testConcensusBreak2() {
+		// Accidentally found an issue where the primitive doesn't get tagged compact
+		new GeneralTestWizard(syntax,
+				new TreeBuilder(pair).add("first", "lumberpass").add("second", "ink").build(),
+				new TreeBuilder(splitPair).add("first", "dog").add("second", "equifortress").build()
+		)
+				.checkCourseCount(2)
+				.resize(200)
+				.checkCourseCount(3)
+				.checkTextBrick(0, 1, "lumberpass")
+				.checkTextBrick(0, 2, "ink")
+				.checkTextBrick(1, 1, "dog")
+				.checkTextBrick(2, 0, "equifortress")
+				.resize(10000)
+				.checkCourseCount(2);
+	}
+
+	@Test
+	public void testConcensusBreak3() {
+		new GeneralTestWizard(syntax,
+				new TreeBuilder(pair).add("first", "lumberpass").add("second", "ink").build(),
+				new TreeBuilder(atomPair)
+						.add("first", new TreeBuilder(primitive).add("value", "dog").build())
+						.add("second", new TreeBuilder(primitive).add("value", "equifortress").build())
+						.build()
+		)
+				.checkCourseCount(2)
+				.resize(200)
+				.resize(205)
+				.checkCourseCount(3)
+				.checkTextBrick(0, 1, "lumberpass")
+				.checkTextBrick(0, 2, "ink")
+				.checkTextBrick(1, 2, "dog")
+				.checkTextBrick(2, 1, "equifortress");
+	}
+
+	@Test
+	public void testMultiCourseConcensusLoop() {
+		new GeneralTestWizard(syntax,
+				new TreeBuilder(triple).add("first", "hower").add("second", "tuber").add("third", "breem").build(),
+				new TreeBuilder(reverseTriple)
+						.add("first", "ank")
+						.add("second", "reindeerkick")
+						.add("third", "whatever")
+						.build()
+		).checkBrick(0, 2, 50).checkBrick(0, 3, 100).checkBrick(1, 2, 100).checkBrick(1, 3, 220);
+	}
+
+	@Test
+	public void testPartiallyExpandConsecutiveLines() {
+		new GeneralTestWizard(syntax, new TreeBuilder(threeLine2).build()).resize(50).resize(120).checkCourseCount(2);
+	}
+
+	@Test
+	public void testSplitMultiCourseStackedAlignments() {
+		new GeneralTestWizard(syntax, new TreeBuilder(threeLine).build()).resize(160).resize(170).checkCourseCount(4);
 	}
 
 	@Test

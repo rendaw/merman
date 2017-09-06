@@ -1,129 +1,81 @@
 package com.zarbosoft.merman.editor.visual.alignment;
 
-import com.google.common.collect.ImmutableSet;
 import com.zarbosoft.merman.editor.Context;
-import com.zarbosoft.merman.editor.IdleTask;
+import com.zarbosoft.merman.editor.IterationContext;
+import com.zarbosoft.merman.editor.IterationTask;
 import com.zarbosoft.merman.editor.visual.Alignment;
 import com.zarbosoft.merman.editor.visual.AlignmentListener;
-import com.zarbosoft.merman.editor.wall.Brick;
-import com.zarbosoft.merman.editor.wall.Course;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 public class ConcensusAlignment extends Alignment {
+	private boolean disabled = false;
 	/**
-	 * Only bricks affect concensus.
+	 * Any alignments that have ocurred before (directoy or transitively) this alignment in a course
 	 */
-	private final Map<Course, Set<Brick>> courseCounts = new HashMap<>();
+	public Set<ConcensusAlignment> superior = new HashSet<>();
+	private IterationAlign iterationAlign;
 
-	private IdleFeedback idleFeedback;
-
-	private class IdleFeedback extends IdleTask {
+	private class IterationAlign extends IterationTask {
 		private final Context context;
 
-		private IdleFeedback(final Context context) {
+		private IterationAlign(final Context context) {
 			this.context = context;
 		}
 
 		@Override
-		protected boolean runImplementation() {
+		protected boolean runImplementation(final IterationContext iterationContext) {
 			final int oldConverse = converse;
-			converse = courseCounts
-					.entrySet()
-					.stream()
-					.filter(entry -> entry.getValue().size() == 1)
-					.mapToInt(entry -> entry.getValue().stream().mapToInt(brick -> brick.minConverse).max().orElse(0))
-					.max()
-					.orElse(0);
-			if (oldConverse != converse) {
-				courseCounts
-						.entrySet()
-						.stream()
-						.filter(entry -> entry.getValue().size() == 1)
-						.forEach(entry -> entry.getValue().stream().forEach(brick -> brick.align(context)));
-				listeners
-						.stream()
-						.filter(listener -> (listener instanceof Brick))
-						.forEach(listener -> listener.align(context));
-			}
+			converse = disabled ?
+					0 :
+					listeners.stream().mapToInt(listeners -> listeners.getMinConverse(context)).max().orElse(0);
+			if (oldConverse != converse)
+				listeners.stream().forEach(listener -> listener.align(context));
 			return false;
 		}
 
 		@Override
 		protected void destroyed() {
-			idleFeedback = null;
+			iterationAlign = null;
 		}
 	}
 
-	private void idleFeedback(final Context context) {
-		if (idleFeedback == null) {
-			idleFeedback = new IdleFeedback(context);
-			context.addIdle(idleFeedback);
+	private void iterationAlign(final Context context) {
+		if (iterationAlign == null) {
+			iterationAlign = new IterationAlign(context);
+			context.addIdle(iterationAlign);
 		}
 	}
 
 	@Override
 	public void destroy(final Context context) {
-		if (idleFeedback != null)
-			idleFeedback.destroy();
+		if (iterationAlign != null)
+			iterationAlign.destroy();
+	}
+
+	@Override
+	public void removeListener(final Context context, final AlignmentListener listener) {
+		super.removeListener(context, listener);
+		if (listener.getMinConverse(context) == converse)
+			iterationAlign(context);
 	}
 
 	@Override
 	public void feedback(final Context context, final int gotConverse) {
-		idleFeedback(context);
-	}
-
-	@Override
-	public void addListener(final Context context, final AlignmentListener listener) {
-		super.addListener(context, listener);
-		if (listener instanceof Brick) {
-			addedToCourse(context, (Brick) listener);
-		}
-	}
-
-	@Override
-	public void removeListener(
-			final Context context, final AlignmentListener listener
-	) {
-		super.removeListener(context, listener);
-		if (listener instanceof Brick) {
-			removedFromCourse(context, (Brick) listener, ((Brick) listener).parent);
-		}
-	}
-
-	private void addedToCourse(final Context context, final Brick brick) {
-		final Set<Brick> set = courseCounts.computeIfAbsent(brick.parent, k -> new HashSet<>());
-		set.add(brick);
-		if (set.isEmpty())
-			courseCounts.remove(brick.parent);
-		else if (set.size() == 1 && brick.minConverse > converse)
-			idleFeedback(context);
-	}
-
-	private void removedFromCourse(final Context context, final Brick brick, final Course parent) {
-		final Set<Brick> set = courseCounts.get(parent);
-		if (set == null) // courseChange on new bricks, not yet added
-			return;
-		set.remove(brick);
-		if (brick.minConverse == converse)
-			idleFeedback(context);
+		if (disabled)
+			throw new AssertionError();
+		iterationAlign(context);
 	}
 
 	@Override
 	public void root(final Context context, final Map<String, Alignment> parents) {
 	}
 
-	@Override
-	public void courseChanged(final Context context, final Brick brick, final Course oldParent) {
-		removedFromCourse(context, brick, oldParent);
-		addedToCourse(context, brick);
+	public void disable(final Context context) {
+		disabled = true;
+		iterationAlign(context);
 	}
 
-	@Override
-	public boolean enabledForCourse(final Course parent) {
-		return courseCounts.getOrDefault(parent, ImmutableSet.of()).size() == 1;
-	}
 }

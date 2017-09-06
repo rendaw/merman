@@ -47,7 +47,7 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 	public PSet<Tag> tags;
 	public int brickCount = 0;
 	public PrimitiveHoverable hoverable;
-	private IdleResplit idleResplit = null;
+	private IterationResplit idleResplit = null;
 
 	public class BrickStyle {
 		public Style.Baked softStyle;
@@ -65,15 +65,15 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 		}
 	}
 
-	private class IdleResplit extends IdleTask {
+	private class IterationResplit extends IterationTask {
 		final Context context;
 
-		private IdleResplit(final Context context) {
+		private IterationResplit(final Context context) {
 			this.context = context;
 		}
 
 		@Override
-		protected boolean runImplementation() {
+		protected boolean runImplementation(final IterationContext iterationContext) {
 			final ResplitResult result = new ResplitResult();
 			boolean go = true;
 			for (int i = lines.size() - 1; i >= 0; --i) {
@@ -93,10 +93,8 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 			final boolean oldCanExpand = canExpand;
 			canExpand = hardLineCount < lines.size();
 			if (canExpand && !oldCanExpand) {
-				changeTagsCompact(context);
 				context.foreground.splitPrimitives.add(VisualPrimitive.this);
 			} else if (!canExpand && oldCanExpand) {
-				changeTagsExpand(context);
 				context.foreground.splitPrimitives.remove(VisualPrimitive.this);
 			}
 			return false;
@@ -1213,7 +1211,7 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 
 	public void idleResplit(final Context context) {
 		if (idleResplit == null && canExpand) {
-			idleResplit = new IdleResplit(context);
+			idleResplit = new IterationResplit(context);
 			context.addIdle(idleResplit);
 		}
 	}
@@ -1377,7 +1375,6 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 						newEnd = offset;
 					selection.range.setOffsets(context, newBegin, newEnd);
 				}
-				decompacted(context);
 			}
 		};
 		value.addListener(dataListener);
@@ -1471,7 +1468,7 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 			}
 		}
 		canExpand = false;
-		decompacted(context);
+		changeTagsExpand(context);
 	}
 
 	@Override
@@ -1513,20 +1510,14 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 		final boolean oldCanExpand = canExpand;
 		canExpand = hardLineCount < lines.size();
 		if (canExpand && !oldCanExpand) {
-			changeTagsCompact(context);
 			context.foreground.splitPrimitives.add(this);
 		}
-	}
-
-	private void decompacted(final Context context) {
-		canExpand = hardLineCount < lines.size();
-		if (!canExpand) {
-			changeTagsExpand(context);
-		}
+		changeTagsCompact(context);
 	}
 
 	@Override
 	public void expand(final Context context) {
+		changeTagsExpand(context);
 	}
 
 	private static class ResplitResult {

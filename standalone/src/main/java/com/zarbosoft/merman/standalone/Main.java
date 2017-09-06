@@ -50,9 +50,10 @@ public class Main extends Application {
 
 	private final Logger logger = LoggerFactory.getLogger("main");
 	private final ScheduledThreadPoolExecutor worker = new ScheduledThreadPoolExecutor(1);
-	private boolean idlePending = false;
-	private ScheduledFuture<?> idleTimer = null;
-	private final PriorityQueue<IdleTask> idleQueue = new PriorityQueue<>();
+	private boolean iterationPending = false;
+	private ScheduledFuture<?> iterationTimer = null;
+	private IterationContext iterationContext = null;
+	private final PriorityQueue<IterationTask> iterationQueue = new PriorityQueue<>();
 	private Path filename;
 	private Stage stage;
 	private JavaFXDisplay display;
@@ -377,34 +378,37 @@ public class Main extends Application {
 		editor.focus();
 	}
 
-	private void addIdle(final IdleTask task) {
-		idleQueue.add(task);
-		if (idleTimer == null) {
+	private void addIdle(final IterationTask task) {
+		iterationQueue.add(task);
+		if (iterationTimer == null) {
 			try {
-				idleTimer = worker.scheduleWithFixedDelay(() -> {
+				iterationTimer = worker.scheduleWithFixedDelay(() -> {
 					//System.out.println("idle timer");
-					if (idlePending)
+					if (iterationPending)
 						return;
-					idlePending = true;
+					iterationPending = true;
 					Platform.runLater(() -> {
 						wrap(stage.getOwner(), () -> {
-							//System.out.println(String.format("idle timer inner: %d", idleQueue.size()));
+							//System.out.println(String.format("idle timer inner: %d", iterationQueue.size()));
 							// TODO measure pending event backlog, adjust batch size to accomodate
 							// by proxy? time since last invocation?
 							for (int i = 0; i < 1000; ++i) { // Batch
-								final IdleTask top = idleQueue.poll();
+								final IterationTask top = iterationQueue.poll();
 								if (top == null) {
-									idleTimer.cancel(false);
-									idleTimer = null;
+									iterationTimer.cancel(false);
+									iterationTimer = null;
+									iterationContext = null;
 									//System.out.format("Idle stopping at %d\n", i);
 									break;
 								} else {
-									if (top.run())
+									if (iterationContext == null)
+										iterationContext = new IterationContext();
+									if (top.run(iterationContext))
 										addIdle(top);
 								}
 							}
 							//System.out.format("Idle break at g i %d\n", idleCount);
-							idlePending = false;
+							iterationPending = false;
 						});
 					});
 				}, 0, 50, TimeUnit.MILLISECONDS);

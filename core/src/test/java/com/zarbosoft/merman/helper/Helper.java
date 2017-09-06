@@ -13,7 +13,7 @@ import com.zarbosoft.merman.document.values.ValuePrimitive;
 import com.zarbosoft.merman.editor.Action;
 import com.zarbosoft.merman.editor.ClipboardEngine;
 import com.zarbosoft.merman.editor.Context;
-import com.zarbosoft.merman.editor.IdleTask;
+import com.zarbosoft.merman.editor.IterationTask;
 import com.zarbosoft.merman.editor.display.MockeryDisplay;
 import com.zarbosoft.merman.editor.history.History;
 import com.zarbosoft.merman.syntax.Syntax;
@@ -199,7 +199,7 @@ public class Helper {
 		}, syntax, root);
 	}
 
-	public static Context buildDoc(final Consumer<IdleTask> idleAdd, final Syntax syntax, final Atom... root) {
+	public static Context buildDoc(final Consumer<IterationTask> idleAdd, final Syntax syntax, final Atom... root) {
 		final Document doc = new Document(syntax,
 				new Atom(syntax.root,
 						ImmutableMap.of("value",

@@ -3,16 +3,19 @@ package com.zarbosoft.merman.editor.wall;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.zarbosoft.merman.editor.Context;
-import com.zarbosoft.merman.editor.IdleTask;
+import com.zarbosoft.merman.editor.IterationContext;
+import com.zarbosoft.merman.editor.IterationTask;
 import com.zarbosoft.merman.editor.display.Group;
-import com.zarbosoft.merman.editor.visual.Visual;
 import com.zarbosoft.merman.editor.visual.VisualLeaf;
+import com.zarbosoft.merman.editor.visual.alignment.ConcensusAlignment;
 import com.zarbosoft.merman.editor.visual.tags.StateTag;
 import com.zarbosoft.merman.editor.visual.tags.TagsChange;
 import com.zarbosoft.merman.editor.visual.visuals.VisualAtom;
 import com.zarbosoft.merman.editor.visual.visuals.VisualPrimitive;
 import com.zarbosoft.rendaw.common.ChainComparator;
 import com.zarbosoft.rendaw.common.Pair;
+import org.pcollections.HashTreePSet;
+import org.pcollections.PSet;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -25,9 +28,9 @@ public class Course {
 	final Group visual;
 	final Group brickVisual;
 	public Wall parent;
-	private IdlePlaceTask idlePlace;
-	private IdleCompactTask idleCompact;
-	private IdleExpandTask idleExpand;
+	private IterationPlaceTask idlePlace;
+	private IterationCompactTask idleCompact;
+	private IterationExpandTask idleExpand;
 	public int transverseStart = 0;
 	public int ascent = 0;
 	public int descent = 0;
@@ -184,21 +187,21 @@ public class Course {
 
 	private void getIdlePlace(final Context context) {
 		if (idlePlace == null) {
-			idlePlace = new IdlePlaceTask(context);
+			idlePlace = new IterationPlaceTask(context);
 			context.addIdle(idlePlace);
 		}
 	}
 
 	private void getIdleCompact(final Context context) {
 		if (idleCompact == null) {
-			idleCompact = new IdleCompactTask(context);
+			idleCompact = new IterationCompactTask(context);
 			context.addIdle(idleCompact);
 		}
 	}
 
 	private void getIdleExpand(final Context context) {
 		if (idleExpand == null) {
-			idleExpand = new IdleExpandTask(context);
+			idleExpand = new IterationExpandTask(context);
 			context.addIdle(idleExpand);
 		}
 	}
@@ -208,30 +211,87 @@ public class Course {
 	}
 
 	private static class PlaceData {
-		final int converse;
+		final BrickAdvanceContext advanceContext;
 		final int minConverse;
-		final int nextConverse;
+		final int converse;
+		final boolean ignoreAlignment;
+		final boolean disableAlignment;
 
-		private PlaceData(final int converse, final int minConverse, final int nextConverse) {
-			this.converse = converse;
+		private PlaceData(
+				final BrickAdvanceContext advanceContext,
+				final int minConverse,
+				final int converse,
+				final boolean ignoreAlignment,
+				final boolean disableAlignment
+		) {
+			this.advanceContext = advanceContext;
 			this.minConverse = minConverse;
-			this.nextConverse = nextConverse;
+			this.converse = converse;
+			this.ignoreAlignment = ignoreAlignment;
+			this.disableAlignment = disableAlignment;
+		}
+	}
+
+	private static class BrickAdvanceContext {
+		final int converse;
+		final PSet<ConcensusAlignment> seenAlignments;
+		final PSet<ConcensusAlignment> seenAlignmentsTransitive;
+
+		public BrickAdvanceContext(
+				final int converse,
+				final PSet<ConcensusAlignment> seenAlignments,
+				final PSet<ConcensusAlignment> seenAlignmentsTransitive
+		) {
+			this.converse = converse;
+			this.seenAlignments = seenAlignments;
+			this.seenAlignmentsTransitive = seenAlignmentsTransitive;
+		}
+
+		public BrickAdvanceContext() {
+			this(0, HashTreePSet.empty(), HashTreePSet.empty());
 		}
 	}
 
 	private PlaceData brickAdvanceLogic(
-			final Context context, int converse, final Brick.Properties properties
+			final Context context, final BrickAdvanceContext advanceContext, final Brick.Properties properties
 	) {
+		PSet<ConcensusAlignment> seenAlignments = advanceContext.seenAlignments;
+		PSet<ConcensusAlignment> seenAlignmentsTransitive = advanceContext.seenAlignmentsTransitive;
+		boolean disableAlignment = false;
+		boolean ignoreAlignment = false;
+		if (properties.alignment instanceof ConcensusAlignment) {
+			final ConcensusAlignment concensusAlignment = (ConcensusAlignment) properties.alignment;
+			if (advanceContext.seenAlignments.contains(concensusAlignment)) {
+				// If the same alignment appears twice feedback is disabled so converse will be low
+				ignoreAlignment = true;
+			} else if (advanceContext.seenAlignmentsTransitive.contains(concensusAlignment)) {
+				// No need to disable here
+				disableAlignment = true;
+			} else {
+				seenAlignments = seenAlignments.plus(concensusAlignment);
+				seenAlignmentsTransitive =
+						seenAlignmentsTransitive.plus(concensusAlignment).plusAll(concensusAlignment.superior);
+			}
+		}
 		final int minConverse;
-		if (properties.alignment != null && properties.alignment.enabledForCourse(this)) {
-			minConverse = converse;
-			converse = Math.max(converse, properties.alignment.converse);
-		} else
+		final int converse;
+		if (properties.alignment != null && !disableAlignment && !ignoreAlignment) {
+			minConverse = advanceContext.converse;
+			converse = Math.max(advanceContext.converse, properties.alignment.converse);
+		} else {
 			minConverse = 0;
-		return new PlaceData(converse, minConverse, converse + properties.converseSpan);
+			converse = advanceContext.converse;
+		}
+		return new PlaceData(
+				new BrickAdvanceContext(converse + properties.converseSpan, seenAlignments, seenAlignmentsTransitive),
+				minConverse,
+				converse,
+				ignoreAlignment,
+				disableAlignment
+		);
 	}
 
-	class IdlePlaceTask extends IdleTask {
+	class IterationPlaceTask extends IterationTask {
 
 		private final Context context;
 		int first = Integer.MAX_VALUE;
@@ -239,7 +299,7 @@ public class Course {
 		int removeMaxAscent = 0;
 		int removeMaxDescent = 0;
 
-		public IdlePlaceTask(final Context context) {
+		public IterationPlaceTask(final Context context) {
 			this.context = context;
 		}
 
@@ -249,7 +309,7 @@ public class Course {
 		}
 
 		@Override
-		public boolean runImplementation() {
+		public boolean runImplementation(final IterationContext iterationContext) {
 			// Update transverse space
 			boolean newAscent = false, newDescent = false;
 			for (final Brick brick : changed) {
@@ -289,29 +349,49 @@ public class Course {
 
 			// Do converse placement
 			final int at = first;
-			int converse =
-					at == 0 ? 0 : (at >= children.size() ? last(children) : children.get(at - 1)).converseEdge(context);
+			BrickAdvanceContext advanceContext = new BrickAdvanceContext(
+					at == 0 ? 0 : (at >= children.size() ? last(children) : children.get(at - 1)).converseEdge(context),
+					HashTreePSet.empty(),
+					HashTreePSet.empty()
+			);
+			for (int index = 0; index < at && index < children.size(); ++index) {
+				final Brick brick = children.get(index);
+				final Brick.Properties properties = brick.properties(context);
+				if (properties.alignment == null || !(properties.alignment instanceof ConcensusAlignment))
+					continue;
+				advanceContext = new BrickAdvanceContext(advanceContext.converse,
+						advanceContext.seenAlignments.plus((ConcensusAlignment) properties.alignment),
+						advanceContext.seenAlignmentsTransitive
+								.plus((ConcensusAlignment) properties.alignment)
+								.plusAll(((ConcensusAlignment) properties.alignment).superior)
+				);
+			}
 			for (int index = at; index < children.size(); ++index) {
 				final Brick brick = children.get(index);
 				final Brick.Properties properties = brick.properties(context);
-				final PlaceData result = brickAdvanceLogic(context, converse, properties);
+				final PlaceData result = brickAdvanceLogic(context, advanceContext, properties);
+				advanceContext = result.advanceContext;
 				brick.setConverse(context, result.minConverse, result.converse);
-				if (properties.alignment != null && properties.alignment.enabledForCourse(Course.this)) {
-					properties.alignment.feedback(context, result.minConverse);
+				if (result.disableAlignment) {
+					((ConcensusAlignment) properties.alignment).disable(context);
+				} else if (result.ignoreAlignment) {
+				} else if (properties.alignment instanceof ConcensusAlignment) {
+					final ConcensusAlignment concensusAlignment = (ConcensusAlignment) properties.alignment;
+					concensusAlignment.feedback(context, result.minConverse);
+					concensusAlignment.superior.addAll(advanceContext.seenAlignmentsTransitive);
 				}
 				for (final Attachment attachment : brick.getAttachments(context))
 					attachment.setConverse(context, result.converse);
-				converse = result.nextConverse;
 			}
-			if (converse > context.edge)
+			if (advanceContext.converse > context.edge)
 				getIdleCompact(context);
-			if (converse * context.syntax.retryExpandFactor < lastExpandCheckConverse)
+			if (advanceContext.converse * context.syntax.retryExpandFactor < lastExpandCheckConverse)
 				getIdleExpand(context);
-			if (converse > lastExpandCheckConverse)
-				lastExpandCheckConverse = converse;
+			if (advanceContext.converse > lastExpandCheckConverse)
+				lastExpandCheckConverse = advanceContext.converse;
 
 			// Propagate changes up
-			if (newAscent || newDescent/* || fixtures[0] || fixtures[1]*/)
+			if (newAscent || newDescent)
 				parent.adjust(context, index);
 
 			return false;
@@ -335,11 +415,11 @@ public class Course {
 			.build();
 	private final static Comparator<VisualAtom> expandComparator = compactComparator.reversed();
 
-	class IdleCompactTask extends IdleTask {
+	class IterationCompactTask extends IterationTask {
 		private final Context context;
 		private final Set<VisualAtom> skip = new HashSet<>();
 
-		IdleCompactTask(final Context context) {
+		IterationCompactTask(final Context context) {
 			this.context = context;
 		}
 
@@ -349,7 +429,7 @@ public class Course {
 		}
 
 		@Override
-		public boolean runImplementation() {
+		public boolean runImplementation(final IterationContext iterationContext) {
 			final Set<Course> maskedCourses = new HashSet<>();
 			final Set<Course> queuedCourses;
 			final List<VisualAtom> compact = new ArrayList<>();
@@ -389,21 +469,20 @@ public class Course {
 		}
 	}
 
-	private static class ExpandCalculateState {
+	private static class ExpandCalculateContext {
 		public int index = -1;
-		public int converse = 0;
+		public BrickAdvanceContext advanceContext = new BrickAdvanceContext();
 		public final Map<Brick, Brick.Properties> lookup;
 
-		private ExpandCalculateState(final Map<Brick, Brick.Properties> lookup) {
+		private ExpandCalculateContext(final Map<Brick, Brick.Properties> lookup) {
 			this.lookup = lookup;
 		}
 	}
 
-	class IdleExpandTask extends IdleTask {
+	class IterationExpandTask extends IterationTask {
 		private final Context context;
-		private final Set<Visual> seen = new HashSet<>();
 
-		IdleExpandTask(final Context context) {
+		IterationExpandTask(final Context context) {
 			this.context = context;
 		}
 
@@ -413,16 +492,13 @@ public class Course {
 		}
 
 		@Override
-		public boolean runImplementation() {
-			return expand(context);
+		public boolean runImplementation(final IterationContext iterationContext) {
+			return expand(context, iterationContext);
 		}
 
-		private boolean calculateCourseConverse(final ExpandCalculateState state, final Course course) {
+		private boolean calculateCourseConverse(final ExpandCalculateContext state, final Course course) {
 			if (course.index <= state.index)
 				return true;
-			if (course.index > state.index + 1) {
-				state.converse = 0;
-			}
 			state.index = course.index;
 			for (final Brick at : course.children) {
 				final Brick.Properties properties;
@@ -430,14 +506,16 @@ public class Course {
 					properties = state.lookup.get(at);
 				} else
 					properties = at.properties(context);
-				state.converse = brickAdvanceLogic(context, state.converse, properties).nextConverse;
-				if (state.converse > context.edge)
+				if (properties.split)
+					state.advanceContext = new BrickAdvanceContext();
+				state.advanceContext = brickAdvanceLogic(context, state.advanceContext, properties).advanceContext;
+				if (state.advanceContext.converse > context.edge)
 					return false;
 			}
 			return true;
 		}
 
-		private boolean expand(final Context context) {
+		private boolean expand(final Context context, final IterationContext iterationContext) {
 			final PriorityQueue<VisualAtom> priorities = new PriorityQueue<>(11, expandComparator);
 
 			// Find next atom that can be expanded
@@ -450,9 +528,6 @@ public class Course {
 			if (priorities.isEmpty())
 				return false;
 			final VisualAtom top = priorities.poll();
-			if (seen.contains(top))
-				return false;
-			seen.add(top);
 
 			// Check that all parents are either expanded or have lower expand priority
 			{
@@ -492,7 +567,7 @@ public class Course {
 				);
 				final Map<Brick, Brick.Properties> lookup =
 						stream(brickProperties.iterator()).collect(Collectors.toMap(p -> p.first, p -> p.second));
-				final ExpandCalculateState state = new ExpandCalculateState(lookup);
+				final ExpandCalculateContext state = new ExpandCalculateContext(lookup);
 				for (final Pair<Brick, Brick.Properties> pair : brickProperties) {
 					final Brick brick = pair.first;
 					final Course course = brick.parent;
@@ -503,6 +578,11 @@ public class Course {
 						return false;
 				}
 			}
+
+			// Avoid bouncing
+			if (iterationContext.expanded.contains(top))
+				return false;
+			iterationContext.expanded.add(top);
 
 			// Expand
 			top.expand(context);

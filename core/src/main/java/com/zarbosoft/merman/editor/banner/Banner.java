@@ -1,7 +1,8 @@
 package com.zarbosoft.merman.editor.banner;
 
 import com.zarbosoft.merman.editor.Context;
-import com.zarbosoft.merman.editor.IdleTask;
+import com.zarbosoft.merman.editor.IterationContext;
+import com.zarbosoft.merman.editor.IterationTask;
 import com.zarbosoft.merman.editor.display.Font;
 import com.zarbosoft.merman.editor.display.Text;
 import com.zarbosoft.merman.editor.display.derived.Box;
@@ -30,7 +31,7 @@ public class Banner {
 	private int transverse;
 	private int scroll;
 	private Bedding bedding;
-	private IdlePlace idle;
+	private IterationPlace idle;
 	private final Attachment attachment = new Attachment() {
 		@Override
 		public void setTransverse(final Context context, final int transverse) {
@@ -48,7 +49,7 @@ public class Banner {
 		if (text == null)
 			return;
 		if (idle == null) {
-			idle = new IdlePlace(context);
+			idle = new IterationPlace(context);
 			context.addIdle(idle);
 		}
 		idle.animate = idle.animate && animate;
@@ -63,17 +64,17 @@ public class Banner {
 		updateStyle(context);
 	}
 
-	private class IdlePlace extends IdleTask {
+	private class IterationPlace extends IterationTask {
 		private final Context context;
 		public boolean animate;
 
-		private IdlePlace(final Context context) {
+		private IterationPlace(final Context context) {
 			this.context = context;
 			animate = context.syntax.animateCoursePlacement;
 		}
 
 		@Override
-		protected boolean runImplementation() {
+		protected boolean runImplementation(final IterationContext iterationContext) {
 			place(context, animate);
 			return false;
 		}
@@ -178,9 +179,9 @@ public class Banner {
 					timer.schedule(new TimerTask() {
 						@Override
 						public void run() {
-							context.addIdle(new IdleTask() {
+							context.addIdle(new IterationTask() {
 								@Override
-								protected boolean runImplementation() {
+								protected boolean runImplementation(final IterationContext iterationContext) {
 									queue.poll();
 									update(context);
 									return false;

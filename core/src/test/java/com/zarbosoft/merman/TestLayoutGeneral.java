@@ -266,18 +266,15 @@ public class TestLayoutGeneral {
 				.checkCourseCount(2)
 				.checkCourse(0, -20, -10)
 				.checkCourse(1, 0, 10)
-				.checkBrickCompact(0, 0)
 				.run(context -> context.history.apply(context, new ChangePrimitiveRemove(primitive, 4, 1)))
 				.checkCourseCount(1)
 				.checkCourse(0, -20, -10)
-				.checkBrickNotCompact(0, 0)
 				.run(context -> context.history.apply(context, new ChangePrimitiveRemove(primitive, 3, 1)))
 				.checkCourseCount(1)
 				.checkCourse(0, -20, -10)
 				.run(context -> context.history.apply(context, new ChangePrimitiveRemove(primitive, 2, 1)))
 				.checkCourseCount(1)
-				.checkCourse(0, -20, -10)
-				.checkBrickNotCompact(0, 0);
+				.checkCourse(0, -20, -10);
 	}
 
 	@Test

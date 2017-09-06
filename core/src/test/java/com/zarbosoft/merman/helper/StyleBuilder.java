@@ -44,4 +44,9 @@ public class StyleBuilder {
 		style.alignment = name;
 		return this;
 	}
+
+	public StyleBuilder notag(final Tag tag) {
+		style.without.add(tag);
+		return this;
+	}
 }

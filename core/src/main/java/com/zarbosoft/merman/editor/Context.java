@@ -486,7 +486,7 @@ public class Context {
 
 	public void idleLayBricksAfterEnd(final Brick end) {
 		if (idleLayBricks == null) {
-			idleLayBricks = new IdleLayBricks();
+			idleLayBricks = new IterationLayBricks();
 			addIdle(idleLayBricks);
 		}
 		idleLayBricks.ends.add(end);
@@ -494,13 +494,13 @@ public class Context {
 
 	public void idleLayBricksBeforeStart(final Brick start) {
 		if (idleLayBricks == null) {
-			idleLayBricks = new IdleLayBricks();
+			idleLayBricks = new IterationLayBricks();
 			addIdle(idleLayBricks);
 		}
 		idleLayBricks.starts.add(start);
 	}
 
-	public class IdleLayBricks extends IdleTask {
+	public class IterationLayBricks extends IterationTask {
 		public Set<Brick> ends = new HashSet<>();
 		public Set<Brick> starts = new HashSet<>();
 
@@ -510,7 +510,7 @@ public class Context {
 		}
 
 		@Override
-		public boolean runImplementation() {
+		public boolean runImplementation(final IterationContext iterationContext) {
 			for (int i = 0; i < syntax.layBrickBatchSize; ++i) {
 				if (ends.isEmpty() && starts.isEmpty()) {
 					return false;
@@ -539,7 +539,7 @@ public class Context {
 				}
 			}
 			if (idleNotifyBricksCreated != null) {
-				idleNotifyBricksCreated.run();
+				idleNotifyBricksCreated.run(iterationContext);
 			}
 			return true;
 		}
@@ -550,12 +550,12 @@ public class Context {
 		}
 	}
 
-	public IdleLayBricks idleLayBricks = null;
-	private IdleNotifyBricksCreated idleNotifyBricksCreated;
+	public IterationLayBricks idleLayBricks = null;
+	private IterationNotifyBricksCreated idleNotifyBricksCreated;
 
 	public void bricksCreated(final Visual visual, final ArrayList<Brick> bricks) {
 		if (idleNotifyBricksCreated == null) {
-			idleNotifyBricksCreated = new IdleNotifyBricksCreated();
+			idleNotifyBricksCreated = new IterationNotifyBricksCreated();
 		}
 		idleNotifyBricksCreated.newBricks.add(new Pair<>(visual, bricks));
 	}
@@ -566,7 +566,7 @@ public class Context {
 		bricksCreated(visual, out);
 	}
 
-	private class IdleNotifyBricksCreated extends IdleTask {
+	private class IterationNotifyBricksCreated extends IterationTask {
 		private final Queue<Pair<Visual, ArrayList<Brick>>> newBricks = new PriorityQueue<>(11,
 				new ChainComparator<Pair<Visual, ArrayList<Brick>>>()
 						.greaterFirst(pair -> pair.first.visualDepth)
@@ -580,7 +580,7 @@ public class Context {
 		}
 
 		@Override
-		protected boolean runImplementation() {
+		protected boolean runImplementation(final IterationContext iterationContext) {
 			final List<Pair<Visual, ArrayList<Brick>>> level = new ArrayList<>();
 			while (!newBricks.isEmpty()) {
 				// Find all bricks at next highest depth
@@ -747,7 +747,7 @@ public class Context {
 		hoverBrick = null;
 	}
 
-	public class HoverIdle extends IdleTask {
+	public class HoverIteration extends IterationTask {
 		public Vector point = null;
 		Context context;
 		Brick at;
@@ -757,13 +757,13 @@ public class Context {
 			return 500;
 		}
 
-		public HoverIdle(final Context context) {
+		public HoverIteration(final Context context) {
 			this.context = context;
 			at = hoverBrick == null ? context.foreground.children.get(0).children.get(0) : hoverBrick;
 		}
 
 		@Override
-		public boolean runImplementation() {
+		public boolean runImplementation(final IterationContext iterationContext) {
 			debugInHover = true;
 			if (at == null || at.parent == null) {
 				debugInHover = false;
@@ -814,7 +814,7 @@ public class Context {
 	public int transverseEdge;
 	public Brick hoverBrick;
 	public Hoverable hover;
-	public HoverIdle hoverIdle;
+	public HoverIteration hoverIdle;
 	public Selection selection;
 
 	public void windowClear() {
@@ -835,7 +835,7 @@ public class Context {
 			final Syntax syntax,
 			final Document document,
 			final Display display,
-			final Consumer<IdleTask> addIdle,
+			final Consumer<IterationTask> addIdle,
 			final History history,
 			final ClipboardEngine clipboardEngine
 	) {
@@ -909,7 +909,7 @@ public class Context {
 		});
 		display.addMouseMoveListener(vector -> {
 			if (hoverIdle == null) {
-				hoverIdle = new HoverIdle(this);
+				hoverIdle = new HoverIteration(this);
 				addIdle.accept(hoverIdle);
 			}
 			hoverIdle.point = vector.add(new Vector(-syntax.pad.converseStart, scroll + peek));
@@ -1019,9 +1019,9 @@ public class Context {
 		}
 	}
 
-	private final Consumer<IdleTask> addIdle;
+	private final Consumer<IterationTask> addIdle;
 
-	public void addIdle(final IdleTask task) {
+	public void addIdle(final IterationTask task) {
 		this.addIdle.accept(task);
 	}
 

@@ -2,7 +2,8 @@ package com.zarbosoft.merman.editor.wall;
 
 import com.google.common.collect.ImmutableList;
 import com.zarbosoft.merman.editor.Context;
-import com.zarbosoft.merman.editor.IdleTask;
+import com.zarbosoft.merman.editor.IterationContext;
+import com.zarbosoft.merman.editor.IterationTask;
 import com.zarbosoft.merman.editor.display.Group;
 import com.zarbosoft.merman.editor.visual.visuals.VisualPrimitive;
 import com.zarbosoft.rendaw.common.ChainComparator;
@@ -23,9 +24,9 @@ public class Wall {
 	 */
 	public final Group visual;
 	public List<Course> children = new ArrayList<>();
-	private IdleAdjustTask idleAdjust;
-	private IdleCompactTask idleCompact;
-	private IdleExpandTask idleExpand;
+	private IterationAdjustTask idleAdjust;
+	private IterationCompactTask idleCompact;
+	private IterationExpandTask idleExpand;
 	public Brick cornerstone;
 	public Course cornerstoneCourse;
 	Set<Bedding> bedding = new HashSet<>();
@@ -94,7 +95,7 @@ public class Wall {
 
 	private void getIdle(final Context context) {
 		if (idleAdjust == null) {
-			idleAdjust = new IdleAdjustTask(context);
+			idleAdjust = new IterationAdjustTask(context);
 			context.addIdle(idleAdjust);
 		}
 	}
@@ -134,7 +135,7 @@ public class Wall {
 
 	public void idleCompact(final Context context) {
 		if (idleCompact == null) {
-			idleCompact = new IdleCompactTask(context);
+			idleCompact = new IterationCompactTask(context);
 			context.addIdle(idleCompact);
 		}
 		idleCompact.at = 0;
@@ -142,7 +143,7 @@ public class Wall {
 
 	public void idleExpand(final Context context) {
 		if (idleExpand == null) {
-			idleExpand = new IdleExpandTask(context);
+			idleExpand = new IterationExpandTask(context);
 			context.addIdle(idleExpand);
 		}
 		idleExpand.at = 0;
@@ -235,12 +236,12 @@ public class Wall {
 		}
 	}
 
-	class IdleCompactTask extends IdleTask {
+	class IterationCompactTask extends IterationTask {
 		private final Context context;
-		Course.IdleCompactTask compactTask;
+		Course.IterationCompactTask compactTask;
 		int at = 0;
 
-		IdleCompactTask(final Context context) {
+		IterationCompactTask(final Context context) {
 			this.context = context;
 		}
 
@@ -250,15 +251,15 @@ public class Wall {
 		}
 
 		@Override
-		public boolean runImplementation() {
+		public boolean runImplementation(final IterationContext iterationContext) {
 			if (at >= children.size()) {
 				return false;
 			}
 			if (compactTask == null) {
-				compactTask = children.get(at).new IdleCompactTask(context);
+				compactTask = children.get(at).new IterationCompactTask(context);
 				at++;
 			}
-			if (!compactTask.run()) {
+			if (!compactTask.run(iterationContext)) {
 				compactTask = null;
 			}
 			return true;
@@ -270,12 +271,12 @@ public class Wall {
 		}
 	}
 
-	class IdleExpandTask extends IdleTask {
+	class IterationExpandTask extends IterationTask {
 		private final Context context;
-		Course.IdleExpandTask expandTask;
+		Course.IterationExpandTask expandTask;
 		int at = 0;
 
-		IdleExpandTask(final Context context) {
+		IterationExpandTask(final Context context) {
 			this.context = context;
 		}
 
@@ -285,16 +286,16 @@ public class Wall {
 		}
 
 		@Override
-		public boolean runImplementation() {
+		public boolean runImplementation(final IterationContext iterationContext) {
 			if (at >= children.size()) {
 				return false;
 			}
 			if (expandTask == null) {
-				expandTask = children.get(at).new IdleExpandTask(context);
+				expandTask = children.get(at).new IterationExpandTask(context);
 				at++;
 			}
 			final int oldCourseCount = children.size();
-			if (!expandTask.run()) {
+			if (!expandTask.run(iterationContext)) {
 				expandTask = null;
 			}
 			if (oldCourseCount != children.size())
@@ -308,12 +309,12 @@ public class Wall {
 		}
 	}
 
-	class IdleAdjustTask extends IdleTask {
+	class IterationAdjustTask extends IterationTask {
 		final private Context context;
 		int forward = Integer.MAX_VALUE;
 		int backward = Integer.MIN_VALUE;
 
-		IdleAdjustTask(final Context context) {
+		IterationAdjustTask(final Context context) {
 			this.context = context;
 		}
 
@@ -323,7 +324,7 @@ public class Wall {
 		}
 
 		@Override
-		public boolean runImplementation() {
+		public boolean runImplementation(final IterationContext iterationContext) {
 			boolean modified = false;
 			if (cornerstoneCourse.index <= backward || cornerstoneCourse.index >= forward) {
 				backward = cornerstoneCourse.index - 1;
