@@ -247,7 +247,7 @@ public class Wall {
 
 		@Override
 		protected double priority() {
-			return 110;
+			return P.wallCompact;
 		}
 
 		@Override
@@ -282,7 +282,7 @@ public class Wall {
 
 		@Override
 		protected double priority() {
-			return -100;
+			return P.wallExpand;
 		}
 
 		@Override
@@ -320,7 +320,7 @@ public class Wall {
 
 		@Override
 		protected double priority() {
-			return 160;
+			return P.wallAdjust;
 		}
 
 		@Override

@@ -305,7 +305,7 @@ public class Course {
 
 		@Override
 		protected double priority() {
-			return 170;
+			return P.coursePlace;
 		}
 
 		@Override
@@ -425,7 +425,7 @@ public class Course {
 
 		@Override
 		protected double priority() {
-			return 130;
+			return P.courseCompact;
 		}
 
 		@Override
@@ -488,7 +488,7 @@ public class Course {
 
 		@Override
 		protected double priority() {
-			return -95;
+			return P.courseExpand;
 		}
 
 		@Override

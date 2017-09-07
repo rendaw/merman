@@ -383,32 +383,40 @@ public class Main extends Application {
 		if (iterationTimer == null) {
 			try {
 				iterationTimer = worker.scheduleWithFixedDelay(() -> {
-					//System.out.println("idle timer");
 					if (iterationPending)
 						return;
 					iterationPending = true;
 					Platform.runLater(() -> {
 						wrap(stage.getOwner(), () -> {
-							//System.out.println(String.format("idle timer inner: %d", iterationQueue.size()));
-							// TODO measure pending event backlog, adjust batch size to accomodate
-							// by proxy? time since last invocation?
-							for (int i = 0; i < 1000; ++i) { // Batch
-								final IterationTask top = iterationQueue.poll();
-								if (top == null) {
-									iterationTimer.cancel(false);
-									iterationTimer = null;
-									iterationContext = null;
-									//System.out.format("Idle stopping at %d\n", i);
-									break;
-								} else {
-									if (iterationContext == null)
-										iterationContext = new IterationContext();
-									if (top.run(iterationContext))
-										addIdle(top);
+							try {
+								final long start = System.currentTimeMillis();
+								// TODO measure pending event backlog, adjust batch size to accomodate
+								// by proxy? time since last invocation?
+								for (int i = 0; i < 1000; ++i) {
+									{
+										long now = start;
+										if (i % 100 == 0) {
+											now = System.currentTimeMillis();
+										}
+										if (now - start > 500) {
+											iterationContext = null;
+											break;
+										}
+									}
+									final IterationTask top = iterationQueue.poll();
+									if (top == null) {
+										iterationContext = null;
+										break;
+									} else {
+										if (iterationContext == null)
+											iterationContext = new IterationContext();
+										if (top.run(iterationContext))
+											addIdle(top);
+									}
 								}
+							} finally {
+								iterationPending = false;
 							}
-							//System.out.format("Idle break at g i %d\n", idleCount);
-							iterationPending = false;
 						});
 					});
 				}, 0, 50, TimeUnit.MILLISECONDS);

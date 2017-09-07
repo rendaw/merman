@@ -506,7 +506,7 @@ public class Context {
 
 		@Override
 		protected double priority() {
-			return 150;
+			return P.layBricks;
 		}
 
 		@Override
@@ -576,7 +576,7 @@ public class Context {
 		@Override
 		protected double priority() {
 			// After laying bricks.  May be prematurely flushed after a brick laying batch.
-			return 140;
+			return P.notifyBricks;
 		}
 
 		@Override
