@@ -219,7 +219,7 @@ public class Wall {
 						found.addBefore(context, cornerstone);
 					} else {
 						clear(context);
-						final Course course = new Course(context);
+						final Course course = new Course(context, 0);
 						add(context, 0, ImmutableList.of(course));
 						course.add(context, 0, ImmutableList.of(cornerstone));
 					}
