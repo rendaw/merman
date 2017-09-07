@@ -1229,7 +1229,7 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 
 	private void idleLayBricks(final Context context, final int start, final int end) {
 		final Function<Integer, Brick> accessor = i -> lines.get(i).brick;
-		context.idleLayBricks(parent,
+		context.iterationLayBricks(parent,
 				start,
 				end - start,
 				lines.size(),

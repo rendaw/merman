@@ -88,7 +88,7 @@ public abstract class VisualNestedBase extends Visual implements VisualLeaf {
 			if (body != null) {
 				body.uproot(context, null);
 				body = null;
-				context.idleLayBricks(parent, 0, 1, 1, null, null, i -> createEllipsis(context));
+				context.iterationLayBricks(parent, 0, 1, 1, null, null, i -> createEllipsis(context));
 			}
 		} else {
 			if (ellipsis != null)
@@ -96,7 +96,7 @@ public abstract class VisualNestedBase extends Visual implements VisualLeaf {
 			if (atomGet() != null) {
 				if (body == null) {
 					coreSet(context, atomGet());
-					context.idleLayBricks(parent, 0, 1, 1, null, null, i -> body.createFirstBrick(context));
+					context.iterationLayBricks(parent, 0, 1, 1, null, null, i -> body.createFirstBrick(context));
 				} else
 					body.root(context, new NestedParent(), alignments, visualDepth + 1, depthScore);
 			}
@@ -399,7 +399,7 @@ public abstract class VisualNestedBase extends Visual implements VisualLeaf {
 		}
 
 		coreSet(context, data);
-		context.idleLayBricks(parent, 0, 1, 1, null, null, i -> body.createFirstBrick(context));
+		context.iterationLayBricks(parent, 0, 1, 1, null, null, i -> body.createFirstBrick(context));
 
 		if (fixDeepSelection)
 			select(context);

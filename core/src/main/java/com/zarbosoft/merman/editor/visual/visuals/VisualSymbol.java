@@ -48,7 +48,7 @@ public class VisualSymbol extends Visual implements VisualLeaf, ConditionAttachm
 	@Override
 	public void conditionChanged(final Context context, final boolean show) {
 		if (show) {
-			context.idleLayBricks(parent, 0, 1, 1, null, null, i -> createFirstBrick(context));
+			context.iterationLayBricks(parent, 0, 1, 1, null, null, i -> createFirstBrick(context));
 		} else if (brick != null) {
 			brick.destroy(context);
 		}

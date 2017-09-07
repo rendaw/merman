@@ -61,7 +61,7 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 						// Was blank, now ellipsized
 						if (empty != null)
 							empty.destroy(context);
-						context.idleLayBricks(parent, 0, 1, 1, null, null, i -> createEmpty(context));
+						context.iterationLayBricks(parent, 0, 1, 1, null, null, i -> createEmpty(context));
 						return;
 					} else if (add.isEmpty() && remove == value.data.size()) {
 						// Was ellipsized, now blank
@@ -110,7 +110,7 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 					if (empty != null)
 						empty.destroy(context);
 					final int layIndex = visualIndex(index);
-					context.idleLayBricks(parent,
+					context.iterationLayBricks(parent,
 							layIndex,
 							visualIndex(index + add.size()) - layIndex,
 							children.size(),
@@ -121,7 +121,7 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 				} else if (value.data.isEmpty()) {
 					if (ellipsis != null)
 						ellipsis.destroy(context);
-					context.idleLayBricks(parent, 0, 1, 1, null, null, i -> createEmpty(context));
+					context.iterationLayBricks(parent, 0, 1, 1, null, null, i -> createEmpty(context));
 				}
 
 				// Fix hover/selection
@@ -503,21 +503,21 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 		if (value.data.isEmpty()) {
 			super.root(context, parent, alignments, visualDepth, depthScore);
 			if (empty == null)
-				context.idleLayBricks(parent, 0, 1, 1, null, null, i -> createEmpty(context));
+				context.iterationLayBricks(parent, 0, 1, 1, null, null, i -> createEmpty(context));
 		} else if (ellipsize(context)) {
 			if (!children.isEmpty()) {
 				remove(context, 0, children.size());
 			}
 			super.root(context, parent, alignments, visualDepth, depthScore);
 			if (ellipsis == null)
-				context.idleLayBricks(parent, 0, 1, 1, null, null, i -> createEllipsis(context));
+				context.iterationLayBricks(parent, 0, 1, 1, null, null, i -> createEllipsis(context));
 		} else {
 			if (ellipsis != null)
 				ellipsis.destroy(context);
 			super.root(context, parent, alignments, visualDepth, depthScore);
 			if (children.isEmpty()) {
 				coreChange(context, 0, 0, value.data);
-				context.idleLayBricks(parent, 0, 1, 1, null, null, i -> children.get(0).createFirstBrick(context));
+				context.iterationLayBricks(parent, 0, 1, 1, null, null, i -> children.get(0).createFirstBrick(context));
 			}
 		}
 	}

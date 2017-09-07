@@ -14,6 +14,7 @@ public abstract class IterationTask implements Comparable<IterationTask> {
 		public static double wallCompact = 110;
 		public static double courseExpand = -95;
 		public static double wallExpand = -100;
+		public static double prunePriority = 130;
 	}
 
 	private static final Comparator<IterationTask> comparator =

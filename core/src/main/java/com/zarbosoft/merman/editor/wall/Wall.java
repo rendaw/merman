@@ -116,12 +116,12 @@ public class Wall {
 		}
 	}
 
-	void remove(final Context context, final int at) {
-		if (cornerstoneCourse != null && cornerstoneCourse.index == at) {
+	public void remove(final Context context, final int at, final int count) {
+		if (cornerstoneCourse != null && cornerstoneCourse.index >= at && cornerstoneCourse.index < at + count) {
 			cornerstoneCourse = null;
 		}
-		children.remove(at);
-		visual.remove(at);
+		children.subList(at, at + count).clear();
+		visual.remove(at, count);
 		if (at < children.size()) {
 			renumber(at);
 			getIdle(context);
@@ -131,6 +131,10 @@ public class Wall {
 				idleAdjust.forward -= 1;
 			idleAdjust.at(at);
 		}
+	}
+
+	public void remove(final Context context, final int at) {
+		remove(context, at, 1);
 	}
 
 	public void idleCompact(final Context context) {
@@ -219,7 +223,7 @@ public class Wall {
 						found.addBefore(context, cornerstone);
 					} else {
 						clear(context);
-						final Course course = new Course(context);
+						final Course course = new Course(context, 0);
 						add(context, 0, ImmutableList.of(course));
 						course.add(context, 0, ImmutableList.of(cornerstone));
 					}
@@ -231,8 +235,8 @@ public class Wall {
 			ImmutableList
 					.copyOf(cornerstoneListeners)
 					.forEach(listener -> listener.cornerstoneChanged(context, cornerstone));
-			context.idleLayBricksBeforeStart(cornerstone);
-			context.idleLayBricksAfterEnd(cornerstone);
+			context.iterationLayBricksBeforeStart(cornerstone);
+			context.iterationLayBricksAfterEnd(cornerstone);
 		}
 	}
 

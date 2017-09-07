@@ -28,6 +28,7 @@ import com.zarbosoft.merman.editor.visual.tags.*;
 import com.zarbosoft.merman.editor.visual.visuals.VisualAtom;
 import com.zarbosoft.merman.editor.wall.Attachment;
 import com.zarbosoft.merman.editor.wall.Brick;
+import com.zarbosoft.merman.editor.wall.Course;
 import com.zarbosoft.merman.editor.wall.Wall;
 import com.zarbosoft.merman.modules.Module;
 import com.zarbosoft.merman.syntax.Syntax;
@@ -418,12 +419,14 @@ public class Context {
 		this.keyListeners.remove(listener);
 	}
 
-	private void idleLayBricksOutward() {
-		idleLayBricksBeforeStart(foreground.children.get(0).children.get(0));
-		idleLayBricksAfterEnd(last(last(foreground.children).children));
+	private void iterationLayBricksOutward() {
+		if (foreground.children.isEmpty())
+			return;
+		iterationLayBricksBeforeStart(foreground.children.get(0).children.get(0));
+		iterationLayBricksAfterEnd(last(last(foreground.children).children));
 	}
 
-	public void idleLayBricks(
+	public void iterationLayBricks(
 			final VisualParent parent,
 			final int index,
 			final int addCount,
@@ -437,7 +440,7 @@ public class Context {
 		if (index > 0) {
 			final Brick previousBrick = accessLast.apply(index - 1);
 			if (previousBrick != null) {
-				idleLayBricksAfterEnd(previousBrick);
+				iterationLayBricksAfterEnd(previousBrick);
 				return;
 			}
 			if (index + addCount < size) {
@@ -445,7 +448,7 @@ public class Context {
 				final Brick nextBrick = accessFirst.apply(index + addCount);
 				if (nextBrick == null)
 					return;
-				idleLayBricksBeforeStart(nextBrick);
+				iterationLayBricksBeforeStart(nextBrick);
 			} else {
 				// Hits end edge
 				if (parent == null)
@@ -453,56 +456,62 @@ public class Context {
 				final Brick nextBrick = parent.getNextBrick(this);
 				if (nextBrick == null)
 					return;
-				idleLayBricksBeforeStart(nextBrick);
+				iterationLayBricksBeforeStart(nextBrick);
 			}
 		} else {
 			if (index + addCount < size) {
 				// Hits index edge
 				final Brick nextBrick = accessFirst.apply(index + addCount);
 				if (nextBrick != null) {
-					idleLayBricksBeforeStart(nextBrick);
+					iterationLayBricksBeforeStart(nextBrick);
 					return;
 				}
 				final Brick previousBrick = parent.getPreviousBrick(this);
 				if (previousBrick == null)
 					return;
-				idleLayBricksAfterEnd(previousBrick);
+				iterationLayBricksAfterEnd(previousBrick);
 			} else {
 				// Hits both edges
 				if (parent == null)
 					return;
 				final Brick previousBrick = parent.getPreviousBrick(this);
 				if (previousBrick != null) {
-					idleLayBricksAfterEnd(previousBrick);
+					iterationLayBricksAfterEnd(previousBrick);
 					return;
 				}
 				final Brick nextBrick = parent.getNextBrick(this);
 				if (nextBrick == null)
 					return;
-				idleLayBricksBeforeStart(nextBrick);
+				iterationLayBricksBeforeStart(nextBrick);
 			}
 		}
 	}
 
-	public void idleLayBricksAfterEnd(final Brick end) {
-		if (idleLayBricks == null) {
-			idleLayBricks = new IterationLayBricks();
-			addIdle(idleLayBricks);
+	public void iterationLayBricksAfterEnd(final Brick end) {
+		if (iterationLayBricks == null) {
+			iterationLayBricks = new IterationLayBricks();
+			addIdle(iterationLayBricks);
 		}
-		idleLayBricks.ends.add(end);
+		System.out.format("ab\n");
+		iterationLayBricks.ends.add(end);
 	}
 
-	public void idleLayBricksBeforeStart(final Brick start) {
-		if (idleLayBricks == null) {
-			idleLayBricks = new IterationLayBricks();
-			addIdle(idleLayBricks);
+	public void iterationLayBricksBeforeStart(final Brick start) {
+		if (iterationLayBricks == null) {
+			iterationLayBricks = new IterationLayBricks();
+			addIdle(iterationLayBricks);
 		}
-		idleLayBricks.starts.add(start);
+		iterationLayBricks.starts.add(start);
 	}
 
 	public class IterationLayBricks extends IterationTask {
 		public Set<Brick> ends = new HashSet<>();
 		public Set<Brick> starts = new HashSet<>();
+
+		IterationLayBricks() {
+			System.out.format("b\n");
+			iterationPrune();
+		}
 
 		@Override
 		protected double priority() {
@@ -518,18 +527,22 @@ public class Context {
 				if (!ends.isEmpty()) {
 					final Brick next = ends.iterator().next();
 					ends.remove(next);
-					if (next.parent != null) {
+					if (next.parent != null && inBoundsEnd(next.parent)) {
 						final Brick created = next.createNext(Context.this);
 						if (created != null) {
 							next.addAfter(Context.this, created);
 							ends.add(created);
 						}
-					}
+					} else
+						System.out.format("not in end: %s %s\n",
+								scroll,
+								next == null ? null : next.parent.transverseStart
+						);
 				}
 				if (!starts.isEmpty()) {
 					final Brick previous = starts.iterator().next();
 					starts.remove(previous);
-					if (previous.parent != null) {
+					if (previous.parent != null && inBoundsStart(previous.parent)) {
 						final Brick created = previous.createPrevious(Context.this);
 						if (created != null) {
 							previous.addBefore(Context.this, created);
@@ -546,11 +559,70 @@ public class Context {
 
 		@Override
 		protected void destroyed() {
-			idleLayBricks = null;
+			System.out.format("destroy!\n");
+			iterationLayBricks = null;
 		}
 	}
 
-	public IterationLayBricks idleLayBricks = null;
+	public IterationLayBricks iterationLayBricks = null;
+
+	public boolean inBoundsStart(final Course course) {
+		return course.transverseStart >= (
+				foreground.cornerstoneCourse == null ?
+						scroll :
+						Math.min(foreground.cornerstoneCourse.transverseStart, scroll)
+		) - transverseEdge * 3;
+	}
+
+	public boolean inBoundsEnd(final Course course) {
+		return course.transverseStart + course.transverseSpan() < (
+				foreground.cornerstoneCourse == null ? scroll : Math.max(
+
+						foreground.cornerstoneCourse.transverseStart + foreground.cornerstoneCourse.transverseSpan(),
+						scroll
+				)
+		) + transverseEdge * 3;
+	}
+
+	private void iterationPrune() {
+		if (iterationPrune == null) {
+			iterationPrune = new IterationPrune();
+			addIdle(iterationPrune);
+		}
+	}
+
+	public class IterationPrune extends IterationTask {
+
+		@Override
+		protected double priority() {
+			return P.prunePriority;
+		}
+
+		@Override
+		protected boolean runImplementation(final IterationContext iterationContext) {
+			for (int index = foreground.children.size() - 1; index >= 0; --index) {
+				final Course course = foreground.children.get(index);
+				if (inBoundsEnd(course))
+					break;
+				course.destroy(Context.this);
+			}
+			while (!foreground.children.isEmpty()) {
+				final Course course = foreground.children.get(0);
+				if (inBoundsEnd(course))
+					break;
+				course.destroy(Context.this);
+			}
+			return false;
+		}
+
+		@Override
+		protected void destroyed() {
+			iterationPrune = null;
+		}
+	}
+
+	public IterationPrune iterationPrune = null;
+
 	private IterationNotifyBricksCreated idleNotifyBricksCreated;
 
 	public void bricksCreated(final Visual visual, final ArrayList<Brick> bricks) {
@@ -698,7 +770,7 @@ public class Context {
 			oldWindow.uproot(this, windowVisual);
 		if (!tagsChange.add.isEmpty() || !tagsChange.remove.isEmpty())
 			changeGlobalTags(tagsChange);
-		idleLayBricksOutward();
+		iterationLayBricksOutward();
 	}
 
 	public void clearSelection() {
@@ -819,7 +891,7 @@ public class Context {
 
 	public void windowClear() {
 		windowClearNoLayBricks();
-		idleLayBricksOutward();
+		iterationLayBricksOutward();
 	}
 
 	public void windowClearNoLayBricks() {
@@ -883,6 +955,7 @@ public class Context {
 					transverseEdge = newValue;
 					scrollVisible();
 					transverseEdgeListeners.forEach(listener -> listener.changed(this, oldValue, newValue));
+					iterationLayBricksOutward();
 				}
 		));
 		display.addHIDEventListener(hidEvent -> {
@@ -977,7 +1050,7 @@ public class Context {
 			clearHover();
 		});
 		document.root.visual.selectDown(this);
-		idleLayBricksOutward();
+		iterationLayBricksOutward();
 	}
 
 	public void applyScroll() {
@@ -990,6 +1063,8 @@ public class Context {
 		overlay.setPosition(this, new Vector(syntax.pad.converseStart, -newScroll), syntax.animateCoursePlacement);
 		banner.setScroll(this, newScroll);
 		details.setScroll(this, newScroll);
+		System.out.format("a\n");
+		iterationLayBricksOutward();
 	}
 
 	private void scrollVisible() {
@@ -1079,7 +1154,7 @@ public class Context {
 				windowAtom = atom.parent.value().parent.atom();
 				windowVisual = windowAtom.createVisual(context, null, ImmutableMap.of(), 0, 0);
 			}
-			idleLayBricksOutward();
+			iterationLayBricksOutward();
 			return true;
 		}
 	}
@@ -1110,7 +1185,7 @@ public class Context {
 			windowAtom = windowVisual.atom;
 			last(chain).root(context, null, ImmutableMap.of(), 0, 0);
 			oldWindowVisual.uproot(context, windowVisual);
-			idleLayBricksOutward();
+			iterationLayBricksOutward();
 			return true;
 		}
 	}

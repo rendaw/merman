@@ -111,7 +111,7 @@ public class VisualGroup extends Visual {
 				parent.getNextBrick(context) :
 				children.get(index + 1).getFirstBrick(context);
 		if (previousBrick != null && nextBrick != null)
-			context.idleLayBricksAfterEnd(previousBrick);
+			context.iterationLayBricksAfterEnd(previousBrick);
 	}
 
 	protected VisualParent createParent(final int index) {

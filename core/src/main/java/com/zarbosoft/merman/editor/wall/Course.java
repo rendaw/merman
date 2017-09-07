@@ -37,10 +37,12 @@ public class Course {
 	public List<Brick> children = new ArrayList<>();
 	int lastExpandCheckConverse = 0;
 
-	Course(final Context context) {
+	Course(final Context context, final int transverse) {
+		this.transverseStart = transverse;
 		visual = context.display.group();
 		brickVisual = context.display.group();
 		visual.add(0, brickVisual);
+		visual.setTransverse(context, transverse, false);
 	}
 
 	public int transverseEdge(final Context context) {
@@ -91,7 +93,7 @@ public class Course {
 		if (index == 0)
 			throw new AssertionError("Breaking course at 0.");
 		boolean resetCornerstone = false;
-		final Course next = new Course(context);
+		final Course next = new Course(context, transverseStart + transverseSpan());
 		parent.add(context, this.index + 1, ImmutableList.of(next));
 		if (index < children.size()) {
 			final List<Brick> transplant = ImmutableList.copyOf(children.subList(index, children.size()));
@@ -174,7 +176,7 @@ public class Course {
 		parent.remove(context, index);
 	}
 
-	void destroy(final Context context) {
+	public void destroy(final Context context) {
 		while (!children.isEmpty())
 			last(children).destroy(context);
 	}
@@ -541,8 +543,12 @@ public class Course {
 
 			// Check that all children are either expanded or have lower expand priority
 			{
-				final Brick first = top.getFirstBrick(context);
-				final Brick last = top.getLastBrick(context);
+				Brick first = top.getFirstBrick(context);
+				if (first == null)
+					first = parent.children.get(0).children.get(0);
+				Brick last = top.getLastBrick(context);
+				if (last == null)
+					last = last(last(parent.children).children);
 				if (parent
 						.streamRange(first.parent.index, first.index, last.parent.index, last.index)
 						.anyMatch(brick -> {
