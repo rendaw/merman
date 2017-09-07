@@ -1,5 +1,6 @@
 package com.zarbosoft.merman.editor.display;
 
+import com.google.common.collect.ImmutableList;
 import com.zarbosoft.merman.editor.Context;
 
 import java.util.ArrayList;
@@ -15,7 +16,7 @@ public class MockeryGroup extends MockeryDisplayNode implements Group {
 	}
 
 	@Override
-	public void addAll(final int index, final List<DisplayNode> nodes) {
+	public void addAll(final int index, final ImmutableList<DisplayNode> nodes) {
 		this.nodes.addAll(index, nodes.stream().map(node -> (MockeryDisplayNode) node).collect(Collectors.toList()));
 	}
 

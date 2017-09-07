@@ -11,7 +11,6 @@ import com.zarbosoft.rendaw.common.Pair;
 
 import java.util.*;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.zarbosoft.rendaw.common.Common.flatStream;
@@ -105,7 +104,7 @@ public class Wall {
 		children.addAll(at, courses);
 		courses.stream().forEach(l -> l.parent = this);
 		renumber(at);
-		visual.addAll(at, courses.stream().map(l -> l.visual).collect(Collectors.toList()));
+		visual.addAll(at, courses.stream().map(l -> l.visual).collect(ImmutableList.toImmutableList()));
 		getIdle(context);
 		if (children.size() > 1) {
 			if (idleAdjust.backward >= at)
@@ -219,7 +218,7 @@ public class Wall {
 						found.addBefore(context, cornerstone);
 					} else {
 						clear(context);
-						final Course course = new Course(context);
+						final Course course = new Course(context, 0);
 						add(context, 0, ImmutableList.of(course));
 						course.add(context, 0, ImmutableList.of(cornerstone));
 					}

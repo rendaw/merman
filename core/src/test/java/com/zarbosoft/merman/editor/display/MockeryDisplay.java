@@ -122,6 +122,11 @@ public class MockeryDisplay implements Display {
 
 	}
 
+	@Override
+	public void flush() {
+
+	}
+
 	public void setConverseEdge(final Context context, final int converse) {
 		final int oldEdge = edge;
 		edge = converse;

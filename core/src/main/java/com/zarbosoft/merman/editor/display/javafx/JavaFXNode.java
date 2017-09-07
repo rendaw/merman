@@ -11,41 +11,62 @@ import javafx.scene.Node;
 public abstract class JavaFXNode implements DisplayNode {
 	protected abstract Node node();
 
+	protected class Properties {
+		final int width;
+		final int height;
+
+		Properties() {
+			final Bounds bounds = node().getLayoutBounds();
+			width = (int) bounds.getWidth();
+			height = (int) bounds.getHeight();
+		}
+	}
+
+	protected Properties properties = null;
+
+	protected void properties() {
+		if (properties == null)
+			properties = new Properties();
+	}
+
 	@Override
 	public int converseSpan(final Context context) {
+		properties();
 		switch (context.syntax.converseDirection) {
 			case UP:
 			case DOWN:
-				return (int) node().getLayoutBounds().getHeight();
+				return (int) properties.height;
 			case LEFT:
 			case RIGHT:
-				return (int) node().getLayoutBounds().getWidth();
+				return (int) properties.width;
 		}
 		throw new DeadCode();
 	}
 
 	@Override
 	public int transverseSpan(final Context context) {
+		properties();
 		switch (context.syntax.transverseDirection) {
 			case UP:
 			case DOWN:
-				return (int) node().getLayoutBounds().getHeight();
+				return (int) properties.height;
 			case LEFT:
 			case RIGHT:
-				return (int) node().getLayoutBounds().getWidth();
+				return (int) properties.width;
 		}
 		throw new DeadCode();
 	}
 
 	@Override
 	public int converse(final Context context) {
+		properties();
 		switch (context.syntax.converseDirection) {
 			case UP:
-				return -(int) node().getLayoutY() - (int) node().getLayoutBounds().getHeight();
+				return -(int) node().getLayoutY() - (int) properties.height;
 			case DOWN:
 				return (int) node().getLayoutY();
 			case LEFT:
-				return -(int) node().getLayoutX() - (int) node().getLayoutBounds().getWidth();
+				return -(int) node().getLayoutX() - (int) properties.width;
 			case RIGHT:
 				return (int) node().getLayoutX();
 		}
@@ -54,13 +75,14 @@ public abstract class JavaFXNode implements DisplayNode {
 
 	@Override
 	public int transverse(final Context context) {
+		properties();
 		switch (context.syntax.transverseDirection) {
 			case UP:
-				return -(int) node().getLayoutY() - (int) node().getLayoutBounds().getHeight();
+				return -(int) node().getLayoutY() - (int) properties.height;
 			case DOWN:
 				return (int) node().getLayoutY();
 			case LEFT:
-				return -(int) node().getLayoutX() - (int) node().getLayoutBounds().getWidth();
+				return -(int) node().getLayoutX() - (int) properties.width;
 			case RIGHT:
 				return (int) node().getLayoutX();
 		}
@@ -68,18 +90,19 @@ public abstract class JavaFXNode implements DisplayNode {
 	}
 
 	public Vector position(final Context context) {
+		properties();
 		final Bounds bounds = node().getLayoutBounds();
 		int converse = 0;
 		int transverse = 0;
 		switch (context.syntax.converseDirection) {
 			case UP:
-				converse = -(int) node().getLayoutY() - (int) node().getLayoutBounds().getHeight();
+				converse = -(int) node().getLayoutY() - (int) properties.height;
 				break;
 			case DOWN:
 				converse = (int) node().getLayoutY();
 				break;
 			case LEFT:
-				converse = -(int) node().getLayoutX() - (int) node().getLayoutBounds().getWidth();
+				converse = -(int) node().getLayoutX() - (int) properties.width;
 				break;
 			case RIGHT:
 				converse = (int) node().getLayoutX();
@@ -87,13 +110,13 @@ public abstract class JavaFXNode implements DisplayNode {
 		}
 		switch (context.syntax.transverseDirection) {
 			case UP:
-				transverse = -(int) node().getLayoutY() - (int) node().getLayoutBounds().getHeight();
+				transverse = -(int) node().getLayoutY() - (int) properties.height;
 				break;
 			case DOWN:
 				transverse = (int) node().getLayoutY();
 				break;
 			case LEFT:
-				transverse = -(int) node().getLayoutX() - (int) node().getLayoutBounds().getWidth();
+				transverse = -(int) node().getLayoutX() - (int) properties.width;
 				break;
 			case RIGHT:
 				transverse = (int) node().getLayoutX();
@@ -129,17 +152,18 @@ public abstract class JavaFXNode implements DisplayNode {
 
 	@Override
 	public void setTransverse(final Context context, final int transverse, final boolean animate) {
+		properties();
 		Integer x = null;
 		Integer y = null;
 		switch (context.syntax.transverseDirection) {
 			case UP:
-				y = -transverse - (int) node().getLayoutBounds().getHeight();
+				y = -transverse - (int) properties.height;
 				break;
 			case DOWN:
 				y = transverse;
 				break;
 			case LEFT:
-				x = -transverse - (int) node().getLayoutBounds().getWidth();
+				x = -transverse - (int) properties.width;
 				break;
 			case RIGHT:
 				x = transverse;
@@ -158,17 +182,18 @@ public abstract class JavaFXNode implements DisplayNode {
 
 	@Override
 	public void setConverse(final Context context, final int converse, final boolean animate) {
+		properties();
 		Integer x = null;
 		Integer y = null;
 		switch (context.syntax.converseDirection) {
 			case UP:
-				y = -converse - (int) node().getLayoutBounds().getHeight();
+				y = -converse - (int) properties.height;
 				break;
 			case DOWN:
 				y = converse;
 				break;
 			case LEFT:
-				x = -converse - (int) node().getLayoutBounds().getWidth();
+				x = -converse - (int) properties.width;
 				break;
 			case RIGHT:
 				x = converse;
@@ -189,17 +214,18 @@ public abstract class JavaFXNode implements DisplayNode {
 	public void setPosition(
 			final Context context, final Vector vector, final boolean animate
 	) {
+		properties();
 		int x = 0;
 		int y = 0;
 		switch (context.syntax.converseDirection) {
 			case UP:
-				y = -vector.converse - (int) node().getLayoutBounds().getHeight();
+				y = -vector.converse - (int) properties.height;
 				break;
 			case DOWN:
 				y = vector.converse;
 				break;
 			case LEFT:
-				x = -vector.converse - (int) node().getLayoutBounds().getWidth();
+				x = -vector.converse - (int) properties.width;
 				break;
 			case RIGHT:
 				x = vector.converse;
@@ -207,13 +233,13 @@ public abstract class JavaFXNode implements DisplayNode {
 		}
 		switch (context.syntax.transverseDirection) {
 			case UP:
-				y = -vector.transverse - (int) node().getLayoutBounds().getHeight();
+				y = -vector.transverse - (int) properties.height;
 				break;
 			case DOWN:
 				y = vector.transverse;
 				break;
 			case LEFT:
-				x = -vector.transverse - (int) node().getLayoutBounds().getWidth();
+				x = -vector.transverse - (int) properties.width;
 				break;
 			case RIGHT:
 				x = vector.transverse;
@@ -224,4 +250,8 @@ public abstract class JavaFXNode implements DisplayNode {
 		node().setLayoutX(x);
 		node().setLayoutY(y);
 	}
+
+	public void flush() {
+	}
+
 }

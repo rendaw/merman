@@ -85,6 +85,7 @@ public class JavaFXDrawing extends JavaFXNode implements Drawing {
 		final Point2D size = toScreenSpan(context, vector);
 		node.setWidth(size.getX());
 		node.setHeight(size.getY());
+		properties = null;
 	}
 
 	@Override

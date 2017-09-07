@@ -25,6 +25,7 @@ public class JavaFXText extends JavaFXNode implements Text {
 	public void setText(final Context context, final String newText) {
 		final Vector at = position(context);
 		text.setText(newText);
+		properties = null;
 		setPosition(context, at, false);
 	}
 
@@ -187,17 +188,20 @@ public class JavaFXText extends JavaFXNode implements Text {
 
 	@Override
 	public void setPosition(final Context context, final Vector vector, final boolean animate) {
+		properties();
+		if (properties == null)
+			properties = new Properties();
 		int x = 0;
 		int y = 0;
 		switch (context.syntax.converseDirection) {
 			case UP:
-				y = -vector.converse - (int) node().getLayoutBounds().getHeight();
+				y = -vector.converse - (int) properties.height;
 				break;
 			case DOWN:
 				y = vector.converse;
 				break;
 			case LEFT:
-				x = -vector.converse - (int) node().getLayoutBounds().getWidth();
+				x = -vector.converse - (int) properties.width;
 				break;
 			case RIGHT:
 				x = vector.converse;
@@ -205,13 +209,13 @@ public class JavaFXText extends JavaFXNode implements Text {
 		}
 		switch (context.syntax.transverseDirection) {
 			case UP:
-				y = -vector.transverse - (int) node().getLayoutBounds().getHeight();
+				y = -vector.transverse - (int) properties.height;
 				break;
 			case DOWN:
 				y = vector.transverse;
 				break;
 			case LEFT:
-				x = -vector.transverse - (int) node().getLayoutBounds().getWidth();
+				x = -vector.transverse - (int) properties.width;
 				break;
 			case RIGHT:
 				x = vector.transverse;

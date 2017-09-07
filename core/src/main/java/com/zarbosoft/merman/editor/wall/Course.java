@@ -37,7 +37,8 @@ public class Course {
 	public List<Brick> children = new ArrayList<>();
 	int lastExpandCheckConverse = 0;
 
-	Course(final Context context) {
+	Course(final Context context, final int transverseStart) {
+		this.transverseStart = transverseStart;
 		visual = context.display.group();
 		brickVisual = context.display.group();
 		visual.add(0, brickVisual);
@@ -91,7 +92,7 @@ public class Course {
 		if (index == 0)
 			throw new AssertionError("Breaking course at 0.");
 		boolean resetCornerstone = false;
-		final Course next = new Course(context);
+		final Course next = new Course(context, transverseStart);
 		parent.add(context, this.index + 1, ImmutableList.of(next));
 		if (index < children.size()) {
 			final List<Brick> transplant = ImmutableList.copyOf(children.subList(index, children.size()));
@@ -121,7 +122,7 @@ public class Course {
 			brick.setParent(context, this, at + i);
 		}
 		renumber(at + bricks.size());
-		visual.addAll(at, bricks.stream().map(c -> c.getDisplayNode()).collect(Collectors.toList()));
+		visual.addAll(at, bricks.stream().map(c -> c.getDisplayNode()).collect(ImmutableList.toImmutableList()));
 		bricks.stream().forEach(c -> {
 			c.allocateTransverse(context, ascent, descent);
 			ImmutableList.copyOf(c.getAttachments(context)).stream().forEach(a -> {

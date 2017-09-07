@@ -30,6 +30,7 @@ import static com.zarbosoft.merman.modules.hotkeys.Key.*;
 public class JavaFXDisplay implements Display {
 	public final Pane node = new Pane();
 	private final javafx.scene.Group origin = new javafx.scene.Group();
+	Set<JavaFXNode> dirty = new HashSet<>();
 
 	Set<Key> modifiers = new HashSet<>();
 	List<Runnable> mouseExitListeners = new ArrayList<>();
@@ -214,7 +215,7 @@ public class JavaFXDisplay implements Display {
 
 	@Override
 	public Group group() {
-		return new JavaFXGroup();
+		return new JavaFXGroup(this);
 	}
 
 	@Override
@@ -260,6 +261,13 @@ public class JavaFXDisplay implements Display {
 	@Override
 	public void setBackgroundColor(final ModelColor color) {
 		node.setBackground(new Background(new BackgroundFill(Helper.convert(color), null, null)));
+	}
+
+	@Override
+	public void flush() {
+		for (final JavaFXNode node : dirty)
+			node.flush();
+		dirty.clear();
 	}
 
 	public HIDEvent buildHIDEvent(final Key key, final boolean press) {

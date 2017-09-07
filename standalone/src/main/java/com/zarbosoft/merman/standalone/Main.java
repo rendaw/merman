@@ -398,6 +398,7 @@ public class Main extends Application {
 									iterationTimer.cancel(false);
 									iterationTimer = null;
 									iterationContext = null;
+									display.flush();
 									//System.out.format("Idle stopping at %d\n", i);
 									break;
 								} else {

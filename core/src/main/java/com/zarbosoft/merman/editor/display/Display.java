@@ -58,4 +58,6 @@ public interface Display {
 	void remove(DisplayNode node);
 
 	void setBackgroundColor(ModelColor color);
+
+	void flush();
 }
