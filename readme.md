@@ -1,4 +1,4 @@
-<p align="center"><img src="logo.png" width="80%" alt="merman logo"></p>
+<p align="center"><img src="logo.png" width="95%" alt="merman logo"></p>
 
 # Just what _is_ merman?
 
