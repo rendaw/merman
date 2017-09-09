@@ -172,7 +172,8 @@ public class GeneralTestWizard {
 	}
 
 	public GeneralTestWizard checkBrickCount(final int i) {
-		assertThat(inner.context.foreground.children.stream().mapToInt(course -> course.children.size()).sum(),
+		assertThat(
+				inner.context.foreground.children.stream().mapToInt(course -> course.children.size()).sum(),
 				equalTo(i)
 		);
 		return this;
@@ -185,9 +186,9 @@ public class GeneralTestWizard {
 	}
 
 	public GeneralTestWizard checkArrayTree(final Atom... atoms) {
-		zip(Stream.of(atoms),
-				((ValueArray) inner.context.document.root.data.get("value")).data.stream()
-		).forEach(pair -> {
+		final ValueArray documentAtoms = (ValueArray) inner.context.document.root.data.get("value");
+		assertThat(documentAtoms.data.size(), equalTo(atoms.length));
+		zip(Stream.of(atoms), documentAtoms.data.stream()).forEach(pair -> {
 			Helper.assertTreeEqual(pair.first, pair.second);
 		});
 		return this;

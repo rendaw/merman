@@ -29,13 +29,11 @@ public class TestHistory {
 		modify = new Consumer<>() {
 			@Override
 			public void accept(final Context context) {
-				context.history.apply(context,
-						new ChangeArray(Helper.rootArray(context.document),
-								0,
-								0,
-								ImmutableList.of(new TreeBuilder(one).build())
-						)
-				);
+				context.history.apply(context, new ChangeArray(Helper.rootArray(context.document),
+						0,
+						0,
+						ImmutableList.of(new TreeBuilder(one).build())
+				));
 				context.history.finishChange(context);
 			}
 		};
@@ -146,5 +144,49 @@ public class TestHistory {
 				.run(undo)
 				.run(redo)
 				.run(context -> assertThat(context.history.isModified(), is(false)));
+	}
+
+	@Test
+	public void testChangeFinishChange() {
+		initializeWithALongNameToForceChainWrapping()
+				.run(modify)
+				.run(context -> context.history.finishChange(context))
+				.run(modify)
+				.run(undo)
+				.checkArrayTree(new TreeBuilder(one).build(), new TreeBuilder(one).build());
+	}
+
+	@Test
+	public void testClearModifiedChangeUndo() {
+		initializeWithALongNameToForceChainWrapping()
+				.run(modify)
+				.run(context -> context.history.clearModified(context))
+				.run(modify)
+				.run(undo)
+				.run(context -> assertThat(context.history.isModified(), is(false)));
+	}
+
+	@Test
+	public void testModifyAfterFinishUndo() {
+		initializeWithALongNameToForceChainWrapping()
+				.run(modify)
+				.run(context -> context.history.finishChange(context))
+				.run(modify)
+				.run(undo)
+				.run(modify)
+				.run(undo)
+				.checkArrayTree(new TreeBuilder(one).build(), new TreeBuilder(one).build());
+	}
+
+	@Test
+	public void testModifyAfterFinishRedo() {
+		initializeWithALongNameToForceChainWrapping()
+				.run(modify)
+				.run(context -> context.history.finishChange(context))
+				.run(undo)
+				.run(redo)
+				.run(modify)
+				.run(undo)
+				.checkArrayTree(new TreeBuilder(one).build(), new TreeBuilder(one).build());
 	}
 }

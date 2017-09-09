@@ -95,7 +95,8 @@ public class History {
 				past.removeLast();
 			if (past.isEmpty())
 				return false;
-			future.addLast(applyLevel(context, past.pollLast()));
+			future.addLast(applyLevel(context, past.removeLast()));
+			past.addLast(new Level(levelId++));
 		} catch (final IOException e) {
 		}
 		if (isModified() != wasModified)
@@ -108,7 +109,7 @@ public class History {
 		try (Closeable lock = lock()) {
 			if (future.isEmpty())
 				return false;
-			past.addLast(applyLevel(context, future.pollLast()));
+			past.addLast(applyLevel(context, future.removeLast()));
 			past.addLast(new Level(levelId++));
 		} catch (final IOException e) {
 		}
@@ -119,7 +120,7 @@ public class History {
 
 	public void finishChange(final Context context) {
 		try (Closeable lock = lock()) {
-			if (!past.isEmpty() && past.peekLast().isEmpty())
+			if (!past.isEmpty() && past.getLast().isEmpty())
 				return;
 			past.addLast(new Level(levelId++));
 		} catch (final IOException e) {
@@ -135,7 +136,7 @@ public class History {
 				reverseLevel = new Level(levelId++);
 				past.addLast(reverseLevel);
 			} else
-				reverseLevel = past.peek();
+				reverseLevel = past.getLast();
 			if (reverseLevel.select == null && context.selection != null)
 				reverseLevel.select = context.selection.saveState();
 			final Change reverse = change.apply(context);
@@ -150,18 +151,23 @@ public class History {
 	}
 
 	private Integer fixedTop() {
-		if (past.size() < 2)
-			return null;
 		final Iterator<Level> iter = past.descendingIterator();
-		iter.next();
-		return iter.next().id;
+		if (!iter.hasNext())
+			return null;
+		Level next = iter.next();
+		if (next.isEmpty())
+			if (iter.hasNext())
+				next = iter.next();
+			else
+				return null;
+		return next.id;
 	}
 
 	public boolean isModified() {
 		if (clearLevel == null) {
 			if (past.isEmpty())
 				return false;
-			return past.size() > 1 || !past.peekLast().isEmpty();
+			return past.size() > 1 || !past.getLast().isEmpty();
 		} else {
 			return clearLevel != fixedTop();
 		}

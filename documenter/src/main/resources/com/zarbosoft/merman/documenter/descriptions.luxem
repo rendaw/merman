@@ -280,7 +280,7 @@
     com.zarbosoft.merman.syntax.FreeAtomType/id: ,
     com.zarbosoft.merman.syntax.FreeAtomType/middle: ,
     com.zarbosoft.merman.syntax.FreeAtomType/name: ,
-    com.zarbosoft.merman.syntax.FreeAtomType/precedence: "When filling a suffix",
+    com.zarbosoft.merman.syntax.FreeAtomType/precedence: "When filling a suffix or prefix gap, the resultant atom will be raised up the tree",
     com.zarbosoft.merman.syntax.FreeAtomType/tags: ,
     com.zarbosoft.merman.syntax.front.ConditionNode/invert: ,
     com.zarbosoft.merman.syntax.front.ConditionNode/is: ,
