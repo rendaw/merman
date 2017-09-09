@@ -31,7 +31,7 @@ public class Details {
 		@Override
 		public void setTransverse(final Context context, final int transverse) {
 			Details.this.transverse = transverse;
-			idlePlace(context, false);
+			iterationPlace(context, false);
 		}
 
 		@Override
@@ -42,11 +42,11 @@ public class Details {
 		@Override
 		public void setTransverseSpan(final Context context, final int ascent, final int descent) {
 			Details.this.transverseSpan = ascent + descent;
-			idlePlace(context, false);
+			iterationPlace(context, false);
 		}
 	};
 
-	private void idlePlace(final Context context, final boolean animate) {
+	private void iterationPlace(final Context context, final boolean animate) {
 		if (current == null)
 			return;
 		if (idle == null) {
@@ -58,11 +58,14 @@ public class Details {
 
 	public void setScroll(final Context context, final int scroll) {
 		this.documentScroll = scroll;
-		idlePlace(context, true);
+		iterationPlace(context, true);
 	}
 
 	public void tagsChanged(final Context context) {
+		if (current == null)
+			return;
 		updateStyle(context);
+		place(context, false);
 	}
 
 	private Style.Baked getStyle(final Context context) {
@@ -70,16 +73,15 @@ public class Details {
 	}
 
 	private void updateStyle(final Context context) {
-		if (current == null)
-			return;
 		current.tagsChanged(context);
 		final Style.Baked style = getStyle(context);
 		if (style.box != null) {
 			if (background == null) {
 				background = new Box(context);
+				context.midground.add(background.drawing);
 			}
 			background.setStyle(context, style.box);
-			idlePlace(context, true);
+			resizeBackground(context);
 		} else {
 			if (background != null) {
 				context.midground.remove(background.drawing);
@@ -111,17 +113,20 @@ public class Details {
 		}
 	}
 
-	private void place(final Context context, final boolean animate) {
+	private int pageTransverse(final Context context) {
 		final int padStart = context.syntax.detailPad.transverseStart;
 		final int padEnd = context.syntax.detailPad.transverseEnd;
-		final Vector position = new Vector(context.syntax.detailPad.converseStart,
-				Math.min(context.transverseEdge - padStart - current.node.transverseSpan(context) - padEnd,
-						-documentScroll + transverse + transverseSpan + padStart
-				)
+		return Math.min(
+				context.transverseEdge - padStart - current.node.transverseSpan(context) - padEnd,
+				-documentScroll + transverse + transverseSpan + padStart
 		);
-		current.node.setPosition(context, position, animate);
+	}
+
+	private void place(final Context context, final boolean animate) {
+		final int transverse = pageTransverse(context);
+		current.node.setPosition(context, new Vector(context.syntax.detailPad.converseStart, transverse), animate);
 		if (background != null)
-			background.setPosition(context, position, animate);
+			background.setPosition(context, new Vector(0, transverse), animate);
 	}
 
 	private void resizeBackground(final Context context) {
@@ -175,9 +180,10 @@ public class Details {
 			}
 			current = queue.peek();
 			updateStyle(context);
-			resizeBackground(context);
+			place(context, false);
 			context.midground.add(current.node);
-			bedding = new Bedding(0,
+			bedding = new Bedding(
+					0,
 					context.syntax.detailPad.transverseStart +
 							current.node.transverseSpan(context) +
 							context.syntax.detailPad.transverseEnd

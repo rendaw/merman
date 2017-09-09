@@ -522,7 +522,7 @@ public abstract class VisualNestedBase extends Visual implements VisualLeaf {
 	private class ActionEnter extends ActionBase {
 		@Override
 		public boolean run(final Context context) {
-			context.history.finishChange(context);
+
 			return body.selectDown(context);
 		}
 
@@ -532,7 +532,7 @@ public abstract class VisualNestedBase extends Visual implements VisualLeaf {
 	private class ActionExit extends ActionBase {
 		@Override
 		public boolean run(final Context context) {
-			context.history.finishChange(context);
+
 			if (value().parent == null)
 				return false;
 			return value().parent.selectUp(context);
@@ -572,7 +572,7 @@ public abstract class VisualNestedBase extends Visual implements VisualLeaf {
 	private class ActionCopy extends ActionBase {
 		@Override
 		public boolean run(final Context context) {
-			context.history.finishChange(context);
+
 			context.copy(ImmutableList.of(atomGet()));
 			return true;
 		}
@@ -583,7 +583,7 @@ public abstract class VisualNestedBase extends Visual implements VisualLeaf {
 	private class ActionCut extends ActionBase {
 		@Override
 		public boolean run(final Context context) {
-			context.history.finishChange(context);
+
 			context.copy(ImmutableList.of(atomGet()));
 			nodeSet(context, context.syntax.gap.create());
 			return true;
@@ -595,12 +595,12 @@ public abstract class VisualNestedBase extends Visual implements VisualLeaf {
 	private class ActionPaste extends ActionBase {
 		@Override
 		public boolean run(final Context context) {
-			context.history.finishChange(context);
+
 			final List<Atom> atoms = context.uncopy(nodeType());
 			if (atoms.size() != 1)
 				return false;
 			nodeSet(context, atoms.get(0));
-			context.history.finishChange(context);
+
 			return true;
 		}
 
@@ -623,7 +623,7 @@ public abstract class VisualNestedBase extends Visual implements VisualLeaf {
 	private class ActionPrefix extends ActionBase {
 		@Override
 		public boolean run(final Context context) {
-			context.history.finishChange(context);
+
 			final Atom old = atomGet();
 			final Atom gap = context.syntax.prefixGap.create();
 			nodeSet(context, gap);
@@ -640,7 +640,7 @@ public abstract class VisualNestedBase extends Visual implements VisualLeaf {
 	private class ActionSuffix extends ActionBase {
 		@Override
 		public boolean run(final Context context) {
-			context.history.finishChange(context);
+
 			final Atom old = atomGet();
 			final Atom gap = context.syntax.suffixGap.create(false);
 			nodeSet(context, gap);

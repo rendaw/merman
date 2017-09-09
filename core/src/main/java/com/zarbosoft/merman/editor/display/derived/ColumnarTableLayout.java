@@ -6,6 +6,7 @@ import com.zarbosoft.merman.editor.display.DisplayNode;
 import com.zarbosoft.merman.editor.display.Group;
 import com.zarbosoft.merman.editor.display.Text;
 import com.zarbosoft.merman.editor.visual.Vector;
+import com.zarbosoft.rendaw.common.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,25 +43,31 @@ public class ColumnarTableLayout {
 
 			// Find the converse size of each column, and the number of rows that fit in the transverse span
 			final int[] columnSpans = new int[columns];
-			final List<Integer> rowStarts = new ArrayList<>();
+			final List<Pair<Integer, Integer>> rowStarts = new ArrayList<>();
 			{
 				int transverse = 0;
 				for (int y = start; y < rows.size(); ++y) {
+					int ascent = 0;
+					int descent = 0;
 					final List<DisplayNode> row = rows.get(y);
-					int rowTransverseSpan = 0;
 					for (int x = 0; x < columns; ++x) {
 						final DisplayNode cell = row.get(x);
-						rowTransverseSpan = Math.max(rowTransverseSpan, cell.transverseSpan(context));
+						if (cell instanceof Text) {
+							ascent = Math.max(ascent, ((Text) cell).font().getAscent());
+							descent = Math.max(descent, ((Text) cell).font().getDescent());
+						}
+						if (!(cell instanceof Text))
+							ascent = Math.max(ascent, cell.transverseSpan(context));
 					}
-					if (end > start && transverse + rowTransverseSpan >= maxTransverse) {
+					if (end > start && transverse + ascent + descent >= maxTransverse) {
 						break;
 					}
 					for (int x = 0; x < columns; ++x) {
 						final DisplayNode cell = row.get(x);
 						columnSpans[x] = Math.max(columnSpans[x], cell.converseSpan(context));
 					}
-					rowStarts.add(transverse);
-					transverse += rowTransverseSpan;
+					rowStarts.add(new Pair<>(transverse, ascent));
+					transverse += ascent + descent;
 					end += 1;
 				}
 			}
@@ -71,9 +78,10 @@ public class ColumnarTableLayout {
 				int converse = columnEdge;
 				for (int x = 0; x < columns; ++x) {
 					final DisplayNode cell = row.get(x);
-					int transverse = rowStarts.get(y - start);
+					final Pair<Integer, Integer> rowTransverse = rowStarts.get(y - start);
+					int transverse = rowTransverse.first;
 					if (cell instanceof Text)
-						transverse += ((Text) cell).font().getAscent();
+						transverse += rowTransverse.second;
 					cell.setPosition(context, new Vector(converse, transverse), false);
 					converse += columnSpans[x];
 				}

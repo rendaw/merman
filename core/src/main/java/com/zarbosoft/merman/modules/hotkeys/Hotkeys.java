@@ -160,7 +160,7 @@ public class Hotkeys extends Module {
 			if (hotkeySequence.isEmpty())
 				hotkeySequence += event.toString();
 			else
-				hotkeySequence += " " + event.toString();
+				hotkeySequence += ", " + event.toString();
 			boolean result;
 			try {
 				hotkeyParse = hotkeyParse.push(event, hotkeySequence);
@@ -168,7 +168,9 @@ public class Hotkeys extends Module {
 					final Action action =
 							hotkeyParse.finishAll().stream().sorted(matchComparator).findFirst().get().second;
 					clean(context);
+					context.history.finishChange(context);
 					action.run(context);
+					context.history.finishChange(context);
 				} else {
 					if (showDetails) {
 						if (hotkeyDetails != null)

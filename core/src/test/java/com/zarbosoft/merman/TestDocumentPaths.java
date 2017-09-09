@@ -127,7 +127,7 @@ public class TestDocumentPaths {
 						.build())
 				.type(new TypeBuilder("element")
 						.back(Helper.buildBackDataKey("k"))
-						.middleRecordKey("k")
+						.middlePrimitive("k")
 						.frontDataPrimitive("k")
 						.back(Helper.buildBackDataPrimitive("v"))
 						.middlePrimitive("v")
@@ -284,12 +284,15 @@ public class TestDocumentPaths {
 
 	@Test
 	public void testLocateDataArrayElement() {
-		final Context context = buildDoc(MiscSyntax.syntax, new TreeBuilder(MiscSyntax.array)
-				.addArray("value",
-						new TreeBuilder(MiscSyntax.one).build(),
-						new TreeBuilder(MiscSyntax.one).build()
-				)
-				.build());
+		final Context context = buildDoc(
+				MiscSyntax.syntax,
+				new TreeBuilder(MiscSyntax.array)
+						.addArray("value",
+								new TreeBuilder(MiscSyntax.one).build(),
+								new TreeBuilder(MiscSyntax.one).build()
+						)
+						.build()
+		);
 		assertThat(context.locateLong(new Path("0", "0")),
 				equalTo(((ValueArray) Helper.rootArray(context.document).data.get(0).data.get("value")).data.get(0))
 		);

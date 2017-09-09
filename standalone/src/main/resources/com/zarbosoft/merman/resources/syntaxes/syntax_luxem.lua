@@ -16,6 +16,8 @@ local syntax = {
     },
     detail_pad = {
         converse_start = 25,
+        transverse_start = 15,
+        transverse_end = 15,
     },
     background = _theme.background,
     animate_course_placement = true,
@@ -28,6 +30,26 @@ local syntax = {
         {
             with = { part 'details' },
             font_size = 12,
+            color = _theme.notification,
+            box = {
+                pad = 8,
+                line = false,
+                fill = true,
+                fill_color = _theme.notification_background,
+            },
+        },
+        {
+            with = { part 'details_selection' },
+            box = {
+                round_start = true,
+                round_end = true,
+                round_outer_edges = true,
+                round_radius = 5,
+                line = true,
+                fill = false,
+                pad = 3,
+                line_color = _theme.notification,
+            },
         },
         {
             with = { part 'banner' },
@@ -46,7 +68,11 @@ local syntax = {
         },
         {
             with = { part 'primitive' },
-            color = _theme.string,
+            color = _theme.primitive,
+        },
+        {
+            with = { part 'primitive', type 'luxem_object_element' },
+            color = _theme.key,
         },
         {
             with = { type '__gap' },
@@ -81,17 +107,26 @@ local syntax = {
             align = 'indent',
         },
         {
+            with = { type 'luxem_primitive' },
+            without = { state 'first' },
+            align = 'indent',
+        },
+        {
             with = { free 'record_table' },
             without = { state 'compact' },
             align = 'record_table',
         },
     },
     groups = {
-        value = {
+        simple_value = {
             'luxem_object',
             'luxem_array',
             'luxem_primitive',
         },
+        value = {
+            'simple_value',
+            'luxem_type',
+        }
     },
     root = {
         middle = {
@@ -113,20 +148,43 @@ local syntax = {
     },
     gap = {
         prefix = {
-            { type = text '◇', tags = { 'diamond' } },
+            { type = text '◇ ', tags = { 'diamond' } },
         },
     },
     prefix_gap = {
         prefix = {
-            { type = text '⬗', tags = { 'diamond' } },
+            { type = text '⬗ ', tags = { 'diamond' } },
         },
     },
     suffix_gap = {
         prefix = {
-            { type = text '⬖', tags = { 'diamond' } },
+            { type = text '⬖ ', tags = { 'diamond' } },
         },
     },
     types = {
+        {
+            id = 'luxem_type',
+            name = 'Luxem Type',
+            back = {
+                data_type {
+                    middle = 'type',
+                    child = data_atom 'value',
+                }
+            },
+            middle = {
+                type = primitive {},
+                value = atom 'simple_value',
+            },
+            front = {
+                symbol { type = text '(' },
+                primitive 'type',
+                symbol { type = text ') ' },
+                atom 'value',
+            },
+            auto_choose_ambiguity = 1,
+            precedence = 0,
+            depth_score = 0,
+        },
         {
             id = 'luxem_object',
             name = 'Luxem Object',
@@ -159,13 +217,13 @@ local syntax = {
             name = 'Luxem Object Element',
             back = { data_key 'key', data_atom 'value' },
             middle = {
-                key = key {},
+                key = primitive {},
                 value = atom 'value',
             },
             front = {
                 primitive 'key',
                 symbol { type = text ': ' },
-                symbol { type = space {}, tags = { 'split', 'record_table' } },
+                symbol { type = space {}, tags = { 'record_table' } },
                 atom 'value',
             },
             precedence = 100,
@@ -201,6 +259,9 @@ local syntax = {
             name = 'Luxem Primitive',
             back = { data_primitive 'data' },
             middle = { data = primitive {} },
+            alignments = {
+                indent = relative { base = 'indent', offset = 16 },
+            },
             front = {
                 primitive 'data',
             },

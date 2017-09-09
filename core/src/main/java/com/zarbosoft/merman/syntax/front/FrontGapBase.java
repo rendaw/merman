@@ -186,7 +186,13 @@ public abstract class FrontGapBase extends FrontPart {
 					final Group group = context.display.group();
 					this.node = group;
 
-					final BoxStyle.Baked highlightStyle = new BoxStyle.Baked();
+					final PSet<Tag> tags = context.globalTags;
+
+					BoxStyle.Baked highlightStyle = context.getStyle(tags
+							.plus(new PartTag("details_selection"))
+							.plus(new PartTag("details"))).box;
+					if (highlightStyle == null)
+						highlightStyle = new BoxStyle.Baked();
 					highlightStyle.merge(context.syntax.gapChoiceStyle);
 					highlight = new Box(context);
 					highlight.setStyle(context, highlightStyle);
@@ -196,7 +202,6 @@ public abstract class FrontGapBase extends FrontPart {
 					tableGroup = table.group;
 					group.add(table.group);
 
-					final PSet<Tag> tags = context.globalTags;
 					final Style.Baked lineStyle =
 							context.getStyle(tags.plus(new PartTag("details_choice")).plus(new PartTag("details")));
 					final int transverse = 0;

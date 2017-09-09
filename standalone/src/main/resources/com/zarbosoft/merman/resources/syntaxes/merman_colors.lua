@@ -11,6 +11,7 @@ return {
     darkblue = _c(17, 21, 34),
     midblue = _c(80, 112, 151),
     lightblue = _c(184, 191, 210),
+    semilightblue = _c(126, 137, 163),
     darkgreen = _c(37, 63, 57),
     lightgreen = _c(56, 118, 83),
     lightyellowgreen1 = _c(142, 165, 73),

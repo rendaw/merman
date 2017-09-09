@@ -314,6 +314,26 @@ public class TestActionsPrimitive {
 	}
 
 	@Test
+	public void testGatherNextNewline() {
+		final Atom primitiveAtom = new TreeBuilder(MiscSyntax.quoted).add("value", "abc\n123").build();
+		new GeneralTestWizard(MiscSyntax.syntax, primitiveAtom)
+				.run(context -> ((ValuePrimitive) primitiveAtom.data.get("value")).visual.select(context, false, 2, 2))
+				.act("gather_next")
+				.act("gather_next")
+				.run(context -> assertSelection(context, 2, 4));
+	}
+
+	@Test
+	public void testGatherNextNewlineShorter() {
+		final Atom primitiveAtom = new TreeBuilder(MiscSyntax.quoted).add("value", "abc\n1").build();
+		new GeneralTestWizard(MiscSyntax.syntax, primitiveAtom)
+				.run(context -> ((ValuePrimitive) primitiveAtom.data.get("value")).visual.select(context, false, 2, 2))
+				.act("gather_next")
+				.act("gather_next")
+				.run(context -> assertSelection(context, 2, 4));
+	}
+
+	@Test
 	public void testGatherNextWord() {
 		final Context context = build("dog hat chair");
 		visual(context).select(context, true, 3, 4);
@@ -362,11 +382,29 @@ public class TestActionsPrimitive {
 	}
 
 	@Test
-	public void testGatherPreviousLine() {
+	public void testGatherPreviousNewline() {
 		final Context context = build("chair\nhat pan");
 		visual(context).select(context, true, 9, 9);
 		Helper.act(context, "gather_previous_line");
 		assertSelection(context, 3, 9);
+	}
+
+	@Test
+	public void testGatherPreviousNewlineShorter() {
+		final Atom primitiveAtom = new TreeBuilder(MiscSyntax.quoted).add("value", "a\n1234").build();
+		new GeneralTestWizard(MiscSyntax.syntax, primitiveAtom)
+				.run(context -> ((ValuePrimitive) primitiveAtom.data.get("value")).visual.select(context, false, 5, 5))
+				.act("gather_previous_line")
+				.run(context -> assertSelection(context, 1, 5));
+	}
+
+	@Test
+	public void testGatherPreviousNewlineStart() {
+		final Atom primitiveAtom = new TreeBuilder(MiscSyntax.quoted).add("value", "abc\ndef").build();
+		new GeneralTestWizard(MiscSyntax.syntax, primitiveAtom)
+				.run(context -> ((ValuePrimitive) primitiveAtom.data.get("value")).visual.select(context, false, 4, 4))
+				.act("gather_previous_line")
+				.run(context -> assertSelection(context, 0, 4));
 	}
 
 	@Test
@@ -418,6 +456,14 @@ public class TestActionsPrimitive {
 	}
 
 	@Test
+	public void testReleaseNextLineReversed() {
+		final Context context = build("one two\nthree");
+		visual(context).select(context, true, 6, 9);
+		Helper.act(context, "release_next_line");
+		assertSelection(context, 6, 6);
+	}
+
+	@Test
 	public void testReleasePrevious() {
 		final Context context = buildFive();
 		visual(context).select(context, true, 1, 2);
@@ -455,6 +501,14 @@ public class TestActionsPrimitive {
 		visual(context).select(context, true, 0, 5);
 		Helper.act(context, "release_previous_line");
 		assertSelection(context, 3, 5);
+	}
+
+	@Test
+	public void testReleasePreviousLineReversed() {
+		final Context context = build("no ultimatum\nyes");
+		visual(context).select(context, true, 7, 15);
+		Helper.act(context, "release_previous_line");
+		assertSelection(context, 15, 15);
 	}
 
 	@Test

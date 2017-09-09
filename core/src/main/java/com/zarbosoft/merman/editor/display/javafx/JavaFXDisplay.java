@@ -64,7 +64,7 @@ public class JavaFXDisplay implements Display {
 		});
 		node.setOnScroll(e -> {
 			node.requestFocus();
-			final HIDEvent event = buildHIDEvent(e.getDeltaY() > 0 ? Key.MOUSE_SCROLL_DOWN : Key.MOUSE_SCROLL_UP, true);
+			final HIDEvent event = buildHIDEvent(e.getDeltaY() > 0 ? Key.MOUSE_SCROLL_UP : Key.MOUSE_SCROLL_DOWN, true);
 			ImmutableList.copyOf(hidEventListeners).forEach(l -> l.accept(event));
 		});
 		node.setOnKeyPressed(e -> {
@@ -88,7 +88,7 @@ public class JavaFXDisplay implements Display {
 		final ChangeListener<Number> converseSizeListener = (observable, oldValue, newValue) -> {
 			final int newValue1 = (int) newValue.doubleValue();
 			// JavaFX does something stupid where middle mouse wheel causes the node to resize by 1px
-			if (Math.abs(oldConverseEdge - newValue1) < 10)
+			if (newValue1 > oldConverseEdge && newValue1 < oldConverseEdge + 10)
 				return;
 			ImmutableList.copyOf(converseEdgeListeners).forEach(l -> {
 				l.changed(oldConverseEdge, newValue1);
@@ -98,7 +98,7 @@ public class JavaFXDisplay implements Display {
 		final ChangeListener<Number> transverseSizeListener = (observable, oldValue, newValue) -> {
 			final int newValue1 = (int) newValue.doubleValue();
 			// JavaFX does something stupid where middle mouse wheel causes the node to resize by 1px
-			if (Math.abs(oldTransverseEdge - newValue1) < 10)
+			if (newValue1 > oldTransverseEdge && newValue1 < oldTransverseEdge + 10)
 				return;
 			ImmutableList.copyOf(transverseEdgeListeners).forEach(l -> l.changed(oldTransverseEdge, newValue1));
 			oldTransverseEdge = newValue1;

@@ -81,7 +81,7 @@ public class TestDocumentSave {
 	public void testDataRecord() {
 		check(new TreeBuilder(dataRecord).addArray("value",
 				new TreeBuilder(dataRecordElement)
-						.addKey("key", "cat")
+						.add("key", "cat")
 						.add("value", new TreeBuilder(primitive).build())
 						.build()
 		), "{\"cat\":\"x\",},");
@@ -91,7 +91,7 @@ public class TestDocumentSave {
 	public void testDataRecordWithType() {
 		check(new TreeBuilder(dataRecord).addArray("value",
 				new TreeBuilder(dataRecordElement)
-						.addKey("key", "cat")
+						.add("key", "cat")
 						.add("value", new TreeBuilder(typedPrimitive).build())
 						.build()
 		), "{\"cat\":(z)\"x\",},");
@@ -101,11 +101,11 @@ public class TestDocumentSave {
 	public void testDataRecordWithTwoElements() {
 		check(new TreeBuilder(dataRecord).addArray("value",
 				new TreeBuilder(dataRecordElement)
-						.addKey("key", "cat")
+						.add("key", "cat")
 						.add("value", new TreeBuilder(typedPrimitive).build())
 						.build(),
 				new TreeBuilder(dataRecordElement)
-						.addKey("key", "dog")
+						.add("key", "dog")
 						.add("value", new TreeBuilder(primitive).build())
 						.build()
 		), "{\"cat\":(z)\"x\",\"dog\":\"x\",},");

@@ -54,11 +54,11 @@ public class TestDisplayDerived {
 		layout.layout(null);
 		int index = 0;
 		for (final Pair<Integer, Integer> pair : ImmutableList.of(new Pair<>(0, 0),
-				new Pair<>(30, 8),
-				new Pair<>(0, 18),
-				new Pair<>(30, 18),
-				new Pair<>(0, 28),
-				new Pair<>(30, 28),
+				new Pair<>(30, 10),
+				new Pair<>(0, 20),
+				new Pair<>(30, 20),
+				new Pair<>(0, 30),
+				new Pair<>(30, 30),
 				new Pair<>(60, 8),
 				new Pair<>(100, 8)
 		)) {
@@ -156,9 +156,9 @@ public class TestDisplayDerived {
 		layout.layout(null);
 		int index = 0;
 		for (final Pair<Integer, Integer> pair : ImmutableList.of(new Pair<>(0, 0),
-				new Pair<>(30, 8),
+				new Pair<>(30, 10),
 				new Pair<>(80, 0),
-				new Pair<>(90, 8)
+				new Pair<>(90, 10)
 		)) {
 			final int index2 = index++;
 			assertThat(String.format("for index %s, converse", index2),

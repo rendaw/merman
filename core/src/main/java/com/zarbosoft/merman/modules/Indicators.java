@@ -60,7 +60,10 @@ public class Indicators extends Module {
 			final Context.TagsListener listener = new Context.TagsListener() {
 				@Override
 				public void tagsChanged(final Context context) {
-					update(context, context.globalTags.plusAll(context.selection.getTags(context)));
+					if (context.selection == null)
+						update(context, context.globalTags);
+					else
+						update(context, context.globalTags.plusAll(context.selection.getTags(context)));
 				}
 			};
 			context.addGlobalTagsChangeListener(listener);

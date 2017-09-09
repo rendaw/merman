@@ -125,6 +125,9 @@ public abstract class AtomType {
 					return next;
 			} else if (next instanceof BackType) {
 				stack.addLast(Iterators.singletonIterator(((BackType) next).child));
+			} else if (next instanceof BackDataType) {
+				if (((BackDataType) next).middle.equals(id))
+					return next;
 			} else if (next instanceof BackDataPrimitive) {
 				if (((BackDataPrimitive) next).middle.equals(id))
 					return next;
@@ -164,10 +167,6 @@ public abstract class AtomType {
 
 	public MiddleArrayBase getDataArray(final String key) {
 		return getData(MiddleArrayBase.class, key);
-	}
-
-	public MiddleRecordKey getDataKey(final String key) {
-		return getData(MiddleRecordKey.class, key);
 	}
 
 	@Override

@@ -32,6 +32,8 @@ public class RowLayout {
 		for (final DisplayNode node : nodes) {
 			if (node instanceof Text)
 				maxAscent = Math.max(maxAscent, ((Text) node).font().getAscent());
+			else
+				maxAscent = Math.max(maxAscent, node.transverseSpan(context));
 		}
 		for (final DisplayNode node : nodes) {
 			if (node instanceof Text) {

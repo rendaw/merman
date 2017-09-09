@@ -18,6 +18,7 @@ import com.zarbosoft.merman.editor.visual.tags.TagsChange;
 import com.zarbosoft.merman.editor.wall.Brick;
 import com.zarbosoft.merman.editor.wall.BrickInterface;
 import com.zarbosoft.merman.editor.wall.bricks.BrickLine;
+import com.zarbosoft.merman.editor.wall.bricks.BrickText;
 import com.zarbosoft.merman.syntax.style.ObboxStyle;
 import com.zarbosoft.merman.syntax.style.Style;
 import com.zarbosoft.rendaw.common.Common;
@@ -224,8 +225,10 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 			this.beginOffset = Math.max(0, Math.min(value.length(), beginOffset));
 			this.endOffset = Math.max(beginOffset, Math.min(value.length(), endOffset));
 			if (beginOffset == endOffset) {
-				if (border != null)
+				if (border != null) {
 					border.destroy(context);
+					border = null;
+				}
 				if (cursor == null) {
 					cursor = new CursorAttachment(context);
 					cursor.setStyle(context, style);
@@ -243,38 +246,58 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 					beginLine = null;
 					endLine = null;
 				}
-				if (cursor != null)
+				if (cursor != null) {
 					cursor.destroy(context);
+					cursor = null;
+				}
+				final BrickText newFirstBrick;
+				final Integer newFirstIndex;
+				final BrickText newLastBrick;
+				final Integer newLastIndex;
+				final int beginIndex = findContaining(beginOffset);
+				if (beginLine != null && beginLine.index == beginIndex) {
+					newFirstBrick = beginLine.brick;
+					newFirstIndex = beginOffset - beginLine.offset;
+				} else {
+					beginLine = lines.get(beginIndex);
+					if (beginLine.brick != null)
+						newFirstBrick = beginLine.brick;
+					else
+						newFirstBrick = null;
+					newFirstIndex = beginOffset - beginLine.offset;
+				}
+				final int endIndex = findContaining(endOffset);
+				if (endLine != null && endLine.index == endIndex) {
+					newLastBrick = endLine.brick;
+					newLastIndex = endOffset - endLine.offset;
+				} else {
+					endLine = lines.get(endIndex);
+					if (endLine.brick != null)
+						newLastBrick = endLine.brick;
+					else
+						newLastBrick = null;
+					newLastIndex = endOffset - endLine.offset;
+				}
 				if (border == null) {
 					border = new TextBorderAttachment(context);
 					border.setStyle(context, style);
 				}
-				final int beginIndex = findContaining(beginOffset);
-				if (beginLine == null || beginLine.index != beginIndex) {
-					beginLine = lines.get(beginIndex);
-					if (leadFirst)
+				if (leadFirst) {
+					if (newFirstBrick != null)
 						setCornerstone(context, beginIndex);
-					if (beginLine.brick != null) {
-						border.setFirst(context, beginLine.brick);
-						ImmutableSet.copyOf(listeners).forEach(l -> {
-							l.firstChanged(context, beginLine.brick);
-						});
-					}
-				}
-				border.setFirstIndex(context, beginOffset - beginLine.offset);
-				final int endIndex = findContaining(endOffset);
-				if (endLine == null || endLine.index != endIndex) {
-					endLine = lines.get(endIndex);
-					if (!leadFirst)
+				} else {
+					if (newLastBrick != null)
 						setCornerstone(context, endIndex);
-					if (endLine.brick != null) {
-						border.setLast(context, endLine.brick);
-						ImmutableSet.copyOf(listeners).forEach(l -> {
-							l.firstChanged(context, beginLine.brick);
-						});
-					}
 				}
-				border.setLastIndex(context, endOffset - endLine.offset);
+				border.setBoth(context, newFirstBrick, newFirstIndex, newLastBrick, newLastIndex);
+				if (newFirstBrick != null)
+					ImmutableSet.copyOf(listeners).forEach(l -> {
+						l.firstChanged(context, beginLine.brick);
+					});
+				if (newFirstBrick != null)
+					ImmutableSet.copyOf(listeners).forEach(l -> {
+						l.lastChanged(context, beginLine.brick);
+					});
 			}
 		}
 
@@ -518,7 +541,7 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 		private class ActionExit extends ActionBase {
 			@Override
 			public boolean run(final Context context) {
-				context.history.finishChange(context);
+
 				if (value.parent == null)
 					return false;
 				value.parent.selectUp(context);
@@ -549,7 +572,7 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 		private class ActionNextElement extends ActionBase {
 			@Override
 			public boolean run(final Context context) {
-				context.history.finishChange(context);
+
 				final int newIndex = following();
 				if (range.beginOffset == newIndex && range.endOffset == newIndex)
 					return false;
@@ -562,7 +585,7 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 		private class ActionPreviousElement extends ActionBase {
 			@Override
 			public boolean run(final Context context) {
-				context.history.finishChange(context);
+
 				final int newIndex = preceding();
 				if (range.beginOffset == newIndex && range.endOffset == newIndex)
 					return false;
@@ -576,7 +599,7 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 		private class ActionNextWord extends ActionBase {
 			@Override
 			public boolean run(final Context context) {
-				context.history.finishChange(context);
+
 				final int newIndex = nextWord(range.endOffset);
 				if (range.beginOffset == newIndex && range.endOffset == newIndex)
 					return false;
@@ -590,7 +613,7 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 		private class ActionPreviousWord extends ActionBase {
 			@Override
 			public boolean run(final Context context) {
-				context.history.finishChange(context);
+
 				final int newIndex = previousWord(range.beginOffset);
 				if (range.beginOffset == newIndex && range.endOffset == newIndex)
 					return false;
@@ -603,7 +626,7 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 		private class ActionLineBegin extends ActionBase {
 			@Override
 			public boolean run(final Context context) {
-				context.history.finishChange(context);
+
 				final int newIndex = startOfLine(range.beginLine);
 				if (range.beginOffset == newIndex && range.endOffset == newIndex)
 					return false;
@@ -617,7 +640,7 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 		private class ActionLineEnd extends ActionBase {
 			@Override
 			public boolean run(final Context context) {
-				context.history.finishChange(context);
+
 				final int newIndex = endOfLine(range.endLine);
 				if (range.beginOffset == newIndex && range.endOffset == newIndex)
 					return false;
@@ -630,7 +653,7 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 		private class ActionNextLine extends ActionBase {
 			@Override
 			public boolean run(final Context context) {
-				context.history.finishChange(context);
+
 				final int newIndex = nextLine(range.endLine, range.endOffset);
 				if (range.beginOffset == newIndex && range.endOffset == newIndex)
 					return false;
@@ -644,7 +667,7 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 		private class ActionPreviousLine extends ActionBase {
 			@Override
 			public boolean run(final Context context) {
-				context.history.finishChange(context);
+
 				final int newIndex = previousLine(range.beginLine, range.beginOffset);
 				if (range.beginOffset == newIndex && range.endOffset == newIndex)
 					return false;
@@ -696,13 +719,13 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 		private class ActionSplit extends ActionBase {
 			@Override
 			public boolean run(final Context context) {
-				context.history.finishChange(context);
+
 				if (range.beginOffset != range.endOffset)
 					context.history.apply(context,
 							value.changeRemove(range.beginOffset, range.endOffset - range.beginOffset)
 					);
 				context.history.apply(context, value.changeAdd(range.beginOffset, "\n"));
-				context.history.finishChange(context);
+
 				return true;
 			}
 
@@ -716,16 +739,16 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 					if (range.beginLine.index + 1 >= lines.size())
 						return false;
 					final int select = range.endLine.offset + range.endLine.text.length();
-					context.history.finishChange(context);
+
 					context.history.apply(context,
 							value.changeRemove(lines.get(range.beginLine.index + 1).offset - 1, 1)
 					);
-					context.history.finishChange(context);
+
 					select(context, true, select, select);
 				} else {
 					if (range.beginLine == range.endLine)
 						return false;
-					context.history.finishChange(context);
+
 					final StringBuilder replace = new StringBuilder();
 					replace.append(range.beginLine.text.substring(range.beginOffset - range.beginLine.offset));
 					final int selectBegin = range.beginOffset;
@@ -739,7 +762,7 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 							value.changeRemove(range.beginOffset, range.endOffset - range.beginOffset)
 					);
 					context.history.apply(context, value.changeAdd(range.beginOffset, replace.toString()));
-					context.history.finishChange(context);
+
 					select(context, true, selectBegin, selectEnd);
 				}
 				return true;
@@ -750,7 +773,7 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 		private class ActionCopy extends ActionBase {
 			@Override
 			public boolean run(final Context context) {
-				context.history.finishChange(context);
+
 				context.copy(value.get().substring(range.beginOffset, range.endOffset));
 				return true;
 			}
@@ -760,13 +783,13 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 		private class ActionCut extends ActionBase {
 			@Override
 			public boolean run(final Context context) {
-				context.history.finishChange(context);
+
 				context.copy(value.get().substring(range.beginOffset, range.endOffset));
-				context.history.finishChange(context);
+
 				context.history.apply(context,
 						value.changeRemove(range.beginOffset, range.endOffset - range.beginOffset)
 				);
-				context.history.finishChange(context);
+
 				return true;
 			}
 		}
@@ -775,17 +798,17 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 		private class ActionPaste extends ActionBase {
 			@Override
 			public boolean run(final Context context) {
-				context.history.finishChange(context);
+
 				final String text = context.uncopyString();
 				if (text == null)
 					return false;
-				context.history.finishChange(context);
+
 				if (range.beginOffset != range.endOffset)
 					context.history.apply(context,
 							value.changeRemove(range.beginOffset, range.endOffset - range.beginOffset)
 					);
 				context.history.apply(context, value.changeAdd(range.beginOffset, text));
-				context.history.finishChange(context);
+
 				return true;
 			}
 
@@ -795,7 +818,7 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 		private class ActionGatherNext extends ActionBase {
 			@Override
 			public boolean run(final Context context) {
-				context.history.finishChange(context);
+
 				final int newIndex = following();
 				if (range.endOffset == newIndex)
 					return false;
@@ -808,7 +831,7 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 		private class ActionGatherNextWord extends ActionBase {
 			@Override
 			public boolean run(final Context context) {
-				context.history.finishChange(context);
+
 				final int newIndex = nextWord(range.endOffset);
 				if (range.endOffset == newIndex)
 					return false;
@@ -821,7 +844,7 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 		private class ActionGatherNextLineEnd extends ActionBase {
 			@Override
 			public boolean run(final Context context) {
-				context.history.finishChange(context);
+
 				final int newIndex = endOfLine(range.endLine);
 				if (range.endOffset == newIndex)
 					return false;
@@ -834,7 +857,7 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 		private class ActionGatherNextLine extends ActionBase {
 			@Override
 			public boolean run(final Context context) {
-				context.history.finishChange(context);
+
 				final int newIndex = nextLine(range.endLine, range.endOffset);
 				if (range.endOffset == newIndex)
 					return false;
@@ -847,7 +870,7 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 		private class ActionReleaseNext extends ActionBase {
 			@Override
 			public boolean run(final Context context) {
-				context.history.finishChange(context);
+
 				final int newIndex = Math.max(range.beginOffset, preceding(range.endOffset));
 				if (range.endOffset == newIndex)
 					return false;
@@ -860,7 +883,7 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 		private class ActionReleaseNextWord extends ActionBase {
 			@Override
 			public boolean run(final Context context) {
-				context.history.finishChange(context);
+
 				final int newIndex = Math.max(range.beginOffset, previousWord(range.endOffset));
 				if (range.endOffset == newIndex)
 					return false;
@@ -873,7 +896,7 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 		private class ActionReleaseNextLineEnd extends ActionBase {
 			@Override
 			public boolean run(final Context context) {
-				context.history.finishChange(context);
+
 				final int newIndex = Math.max(range.beginOffset, startOfLine(range.endLine));
 				if (range.endOffset == newIndex)
 					return false;
@@ -886,7 +909,7 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 		private class ActionReleaseNextLine extends ActionBase {
 			@Override
 			public boolean run(final Context context) {
-				context.history.finishChange(context);
+
 				final int newIndex = Math.max(range.beginOffset, previousLine(range.endLine, range.endOffset));
 				if (range.endOffset == newIndex)
 					return false;
@@ -899,7 +922,7 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 		private class ActionGatherPrevious extends ActionBase {
 			@Override
 			public boolean run(final Context context) {
-				context.history.finishChange(context);
+
 				final int newIndex = preceding();
 				if (range.beginOffset == newIndex)
 					return false;
@@ -912,7 +935,7 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 		private class ActionGatherPreviousWord extends ActionBase {
 			@Override
 			public boolean run(final Context context) {
-				context.history.finishChange(context);
+
 				final int newIndex = previousWord(range.beginOffset);
 				if (range.beginOffset == newIndex)
 					return false;
@@ -925,7 +948,6 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 		private class ActionGatherPreviousLineStart extends ActionBase {
 			@Override
 			public boolean run(final Context context) {
-				context.history.finishChange(context);
 				final int newIndex = startOfLine(range.beginLine);
 				if (range.beginOffset == newIndex)
 					return false;
@@ -938,7 +960,6 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 		private class ActionGatherPreviousLine extends ActionBase {
 			@Override
 			public boolean run(final Context context) {
-				context.history.finishChange(context);
 				final int newIndex = previousLine(range.beginLine, range.beginOffset);
 				if (range.beginOffset == newIndex)
 					return false;
@@ -951,7 +972,7 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 		private class ActionReleasePrevious extends ActionBase {
 			@Override
 			public boolean run(final Context context) {
-				context.history.finishChange(context);
+
 				final int newIndex = Math.min(range.endOffset, following(range.beginOffset));
 				if (range.beginOffset == newIndex)
 					return false;
@@ -964,7 +985,7 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 		private class ActionReleasePreviousWord extends ActionBase {
 			@Override
 			public boolean run(final Context context) {
-				context.history.finishChange(context);
+
 				final int newIndex = Math.min(range.endOffset, nextWord(range.beginOffset));
 				if (range.beginOffset == newIndex)
 					return false;
@@ -977,7 +998,7 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 		private class ActionReleasePreviousLineStart extends ActionBase {
 			@Override
 			public boolean run(final Context context) {
-				context.history.finishChange(context);
+
 				final int newIndex = Math.min(range.endOffset, endOfLine(range.beginLine));
 				if (range.beginOffset == newIndex)
 					return false;
@@ -996,7 +1017,7 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 
 			@Override
 			public boolean run(final Context context) {
-				context.history.finishChange(context);
+
 				final int newIndex = Math.min(range.endOffset, nextLine(range.beginLine, range.beginOffset));
 				if (newIndex == beginOffset)
 					return false;
@@ -1607,7 +1628,7 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 		// Wrap text into existing lines
 		for (; j < endIndex; ++j) {
 			final Line line = lines.get(j);
-			if (!build.hasText())
+			if (!build.hasText() && j > i)
 				break;
 			final Font font;
 			final int converse;

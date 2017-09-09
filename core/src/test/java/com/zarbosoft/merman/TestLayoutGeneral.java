@@ -246,13 +246,13 @@ public class TestLayoutGeneral {
 				.checkBrickNotCompact(0, 0)
 				.run(context -> context.selection.receiveText(context, "5"))
 				.checkCourseCount(2)
-				.checkCourse(0, -20, -10)
-				.checkCourse(1, 0, 10)
+				.checkCourse(0, -10, 0)
+				.checkCourse(1, 10, 20)
 				.checkBrickCompact(0, 0)
 				.run(context -> context.selection.receiveText(context, "6"))
 				.checkCourseCount(2)
-				.checkCourse(0, -20, -10)
-				.checkCourse(1, 0, 10);
+				.checkCourse(0, -10, 0)
+				.checkCourse(1, 10, 20);
 	}
 
 	@Test
@@ -264,17 +264,17 @@ public class TestLayoutGeneral {
 				.resize(40)
 				.run(context -> context.history.apply(context, new ChangePrimitiveRemove(primitive, 5, 1)))
 				.checkCourseCount(2)
-				.checkCourse(0, -20, -10)
-				.checkCourse(1, 0, 10)
+				.checkCourse(0, -10, 0)
+				.checkCourse(1, 10, 20)
 				.run(context -> context.history.apply(context, new ChangePrimitiveRemove(primitive, 4, 1)))
 				.checkCourseCount(1)
-				.checkCourse(0, -20, -10)
+				.checkCourse(0, -10, 0)
 				.run(context -> context.history.apply(context, new ChangePrimitiveRemove(primitive, 3, 1)))
 				.checkCourseCount(1)
-				.checkCourse(0, -20, -10)
+				.checkCourse(0, -10, 0)
 				.run(context -> context.history.apply(context, new ChangePrimitiveRemove(primitive, 2, 1)))
 				.checkCourseCount(1)
-				.checkCourse(0, -20, -10);
+				.checkCourse(0, -10, 0);
 	}
 
 	@Test

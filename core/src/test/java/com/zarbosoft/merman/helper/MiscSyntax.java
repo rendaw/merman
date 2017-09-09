@@ -175,7 +175,7 @@ public class MiscSyntax {
 				.autoComplete(99)
 				.build();
 		recordElement = new TypeBuilder("record_element")
-				.middleRecordKey("key")
+				.middlePrimitive("key")
 				.middleNode("value", "any")
 				.back(Helper.buildBackDataKey("key"))
 				.back(Helper.buildBackDataNode("value"))

@@ -102,6 +102,7 @@ public class Editor {
 			if (context.hover == null)
 				return false;
 			context.hover.click(context);
+
 			return true;
 		}
 	}

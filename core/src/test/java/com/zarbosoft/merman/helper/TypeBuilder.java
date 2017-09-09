@@ -6,7 +6,10 @@ import com.zarbosoft.merman.syntax.alignments.ConcensusAlignmentDefinition;
 import com.zarbosoft.merman.syntax.alignments.RelativeAlignmentDefinition;
 import com.zarbosoft.merman.syntax.back.BackPart;
 import com.zarbosoft.merman.syntax.front.*;
-import com.zarbosoft.merman.syntax.middle.*;
+import com.zarbosoft.merman.syntax.middle.MiddleArray;
+import com.zarbosoft.merman.syntax.middle.MiddleAtom;
+import com.zarbosoft.merman.syntax.middle.MiddlePrimitive;
+import com.zarbosoft.merman.syntax.middle.MiddleRecord;
 import com.zarbosoft.merman.syntax.symbol.SymbolSpace;
 import com.zarbosoft.merman.syntax.symbol.SymbolText;
 
@@ -105,13 +108,6 @@ public class TypeBuilder {
 	public TypeBuilder middleRecord(final String id, final String type) {
 		final MiddleRecord middle = new MiddleRecord();
 		middle.type = type;
-		middle.id = id;
-		this.type.middle.put(id, middle);
-		return this;
-	}
-
-	public TypeBuilder middleRecordKey(final String id) {
-		final MiddleRecordKey middle = new MiddleRecordKey();
 		middle.id = id;
 		this.type.middle.put(id, middle);
 		return this;

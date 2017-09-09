@@ -289,6 +289,10 @@ public class Context {
 					} else if (part instanceof BackDataAtom) {
 						middle = ((BackDataAtom) part).middle;
 						break;
+					} else if (part instanceof BackDataType) {
+						middle = ((BackDataType) part).middle;
+						part = ((BackType) part).child;
+						break;
 					} else if (part instanceof BackDataPrimitive) {
 						middle = ((BackDataPrimitive) part).middle;
 						break;
@@ -301,7 +305,7 @@ public class Context {
 						return atom;
 				}
 				value = atom.data.get(middle);
-				if (!goLong && pathIndex + 1 == segments.size())
+				if (!goLong && pathIndex + 1 == segments.size() && value != null)
 					return value;
 				part = null;
 				atom = null;
@@ -356,7 +360,8 @@ public class Context {
 								new Path(TreePVector.from(segments.subList(0, pathIndex)))
 						));
 					return value;
-				}
+				} else
+					throw new AssertionError();
 				value = null;
 			}
 		}
@@ -1120,7 +1125,7 @@ public class Context {
 
 		@Override
 		public boolean run(final Context context) {
-			scroll += syntax.scrollFactor * transverseEdge;
+			scroll -= syntax.scrollFactor * transverseEdge;
 			applyScroll();
 			return false;
 		}
@@ -1131,7 +1136,7 @@ public class Context {
 
 		@Override
 		public boolean run(final Context context) {
-			scroll += syntax.scrollAlotFactor * transverseEdge;
+			scroll -= syntax.scrollAlotFactor * transverseEdge;
 			applyScroll();
 			return false;
 		}
@@ -1142,7 +1147,7 @@ public class Context {
 
 		@Override
 		public boolean run(final Context context) {
-			scroll -= syntax.scrollFactor * transverseEdge;
+			scroll += syntax.scrollFactor * transverseEdge;
 			applyScroll();
 			return false;
 		}
@@ -1153,7 +1158,7 @@ public class Context {
 
 		@Override
 		public boolean run(final Context context) {
-			scroll -= syntax.scrollAlotFactor * transverseEdge;
+			scroll += syntax.scrollAlotFactor * transverseEdge;
 			applyScroll();
 			return false;
 		}

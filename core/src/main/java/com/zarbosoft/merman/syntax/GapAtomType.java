@@ -172,6 +172,11 @@ public class GapAtomType extends AtomType {
 						public Iterable<? extends FrontPart> parts() {
 							return key.keyParts;
 						}
+
+						@Override
+						public boolean equals(final Object obj) {
+							return type == ((GapChoice) obj).type;
+						}
 					}
 
 					// Get or build gap grammar
@@ -201,7 +206,7 @@ public class GapAtomType extends AtomType {
 					final List<GapChoice> choices =
 							Stream.concat(longest.first.results.stream().map(result -> (GapChoice) result),
 									longest.first.leaves.stream().map(leaf -> (GapChoice) leaf.color())
-							).collect(Collectors.toList());
+							).distinct().collect(Collectors.toList());
 					if (longest.second.distance() == string.length()) {
 						for (final GapChoice choice : choices) {
 							if (longest.first.leaves.size() <= choice.ambiguity()) {
@@ -210,6 +215,7 @@ public class GapAtomType extends AtomType {
 							}
 						}
 					} else if (longest.second.distance() >= 1) {
+						// When the text stops matching (new element started?) go ahead and choose a previous choice
 						for (final GapChoice choice : choices) {
 							choice.choose(context, string);
 							return ImmutableList.of();

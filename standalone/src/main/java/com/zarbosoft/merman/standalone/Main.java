@@ -19,6 +19,7 @@ import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
@@ -57,6 +58,7 @@ public class Main extends Application {
 	private Path filename;
 	private Stage stage;
 	private JavaFXDisplay display;
+	private Editor editor;
 
 	@FunctionalInterface
 	private interface Wrappable {
@@ -101,84 +103,15 @@ public class Main extends Application {
 		return confirm.getResult() == ButtonType.YES;
 	}
 
+	private void setTitle() {
+		stage.setTitle(String.format("%s - merman", filename.getFileName().toString()));
+	}
+
 	@Override
 	public void start(final Stage primaryStage) {
 		stage = primaryStage;
 		/*
 		TODO
-		//add mouse scroll buttons to input patterns
-		//	make select_hovered an action
-		//button down + up hotkey events
-		//details
-		//editing, actions for everythinga
-		//save
-		//modes (global) - modules can create too
-		//	ex: nav/edit, edit, nav, debug, refactor
-		//	style/tag based on mode
-		//order of operations, conditional front elements
-		//windowing, depth indicator
-		//	window nodes, not values (except root valuearray)
-		//	atom, core, mote, basis; atom -> core?
-		//	actually, window visuals, so the above 2 lines moot probably
-		//ellipsis with depth score type param
-		//__ ellipsis is the opposite of windowing
-		//__ if selecting ellipsized visual, move the window until the ellipsis score is under the threshold
-		//__ change rootAlignments to just root, recursively update ellipsis values as well and stop after ellipsizement
-		//primitive compact/expand
-		//window indicator -> change global tags (state windowed/nonwindowed)
-		//indicators -> plugin that shows/hides indicators by tag
-		//gap handle conditional front elements
-		//non printable & front array/atom placeholder character as syntax param
-		//gap preview details styling
-		//	columns: 1:preview 2:type id
-		//gap choice selection
-		//gap preview styling
-		//hotkey preview details
-		//	columns: 1:rule 2:action name
-		//fix save modifications on empty doc
-		//test windowing
-		//add window up/down actions
-		//fix details position
-		//fix -> up arrow if not bound
-		//fix cursor (overlay padding + scroll?); still duplicating
-		//fix banner position
-		//syntaxes from dir && install reference syntaxes automatically
-		//separate lrtb padding
-		//box lrtb padding
-		//remove part tags (explicit only)
-		//add prefix/suffix actions in atom/array vis
-		//banner and details padding
-		//primitive leadFirst
-		//store array/primitive leadFirst in sel saveState
-		//show details on gap select if nonempty
-		//arbitrary key modifiers
-		//fix dialogs
-		//add actions for choice 1-9,0
-		//abstract xy origin for alternative converse/transverse directions, reduce window resize listeners
-		//test brick layout
-		//rename break -> split
-		//fix hotkey modifiers
-		//fix indent/breaking
-		//fix hover
-		//fix compact (root array)
-		//cornerstone on wrong element (visual array selectup)
-		//translation bounce on array element enter/exit
-		// X indicators in overlay
-		// X document extends atom?
-		//no more visualpart?
-		//new line in primitive
-		//_lua actions
-		//fix concensus in record
-		//fix record value reduce doesn't trigger expand?
-		//fix disappearing obboxes
-		//fix wrong cursor pos on expand - can't reproduce
-
-		//mouse peek
-		//scroll up/down; scroll large up/down; reset scroll
-		//I don't think gaps are allowed everywhere - direct references should be substituted with groups containing 1 type + gap types
-		//	+ gaps should be added to all user groups
-		//Disallow referring to the root type somehow
-		//save -> still dirty popup
 		readme
 		doc on tagging
 		//syntax documenter
@@ -239,7 +172,7 @@ public class Main extends Application {
 					"Directory of specified file must exist.\nAbsolute path: %s",
 					filename.toAbsolutePath().normalize()
 			));
-		stage.setTitle(filename.getFileName().toString());
+		setTitle();
 		final History history = new History();
 		final Path path = Paths.get(getParameters().getUnnamed().get(0));
 		final String extension = last(path.getFileName().toString().split("\\."));
@@ -250,17 +183,15 @@ public class Main extends Application {
 		else
 			doc = syntax.create();
 		this.display = new JavaFXDisplay(syntax);
-		final Editor editor =
-				new Editor(syntax, doc, display, this::addIdle, path, history, new SimpleClipboardEngine());
-		editor.addActions(this, ImmutableList.of(new ActionQuit(), new ActionDebug()));
+		editor = new Editor(syntax, doc, display, this::addIdle, path, history, new SimpleClipboardEngine());
+		editor.addActions(this, ImmutableList.of(new ActionSave(), new ActionQuit(), new ActionDebug()));
 		final HBox filesystemLayout = new HBox();
 		filesystemLayout.setPadding(new Insets(3, 2, 3, 2));
 		filesystemLayout.setSpacing(5);
 		final TextField filenameEntry = new TextField(getParameters().getUnnamed().get(0));
 		filesystemLayout.getChildren().add(filenameEntry);
 		HBox.setHgrow(filenameEntry, Priority.ALWAYS);
-		final Button save = new Button("Save") {
-		};
+		final Button save = new Button("Save");
 		final Button rename = new Button("Rename");
 		final Button saveAs = new Button("Save as");
 		final Button backup = new Button("Back-up");
@@ -321,7 +252,7 @@ public class Main extends Application {
 					editor.save(filename);
 					Files.move(filename, dest);
 					filename = Paths.get(filenameEntry.getText());
-					stage.setTitle(filename.getFileName().toString());
+					setTitle();
 					alignFilesystemLayout.changed(null, null, filename.toString());
 					editor.focus();
 				});
@@ -335,7 +266,7 @@ public class Main extends Application {
 					if (Files.exists(dest) && !confirmOverwrite(stage.getOwner()))
 						return;
 					filename = dest;
-					stage.setTitle(filename.getFileName().toString());
+					setTitle();
 					editor.save(dest);
 					alignFilesystemLayout.changed(null, null, filename.toString());
 					editor.focus();
@@ -374,6 +305,7 @@ public class Main extends Application {
 				worker.shutdown();
 			}
 		});
+		stage.getIcons().add(new Image(getClass().getResourceAsStream("/com/zarbosoft/merman/resources/icon48.png")));
 		stage.show();
 		editor.focus();
 	}
@@ -429,6 +361,15 @@ public class Main extends Application {
 	private abstract static class ActionBase extends Action {
 		public static String group() {
 			return "application";
+		}
+	}
+
+	@Action.StaticID(id = "save")
+	private class ActionSave extends ActionBase {
+		@Override
+		public boolean run(final Context context) {
+			editor.save(filename);
+			return true;
 		}
 	}
 

@@ -66,6 +66,7 @@ public class TextBorderAttachment {
 	private int endConverse;
 	private int endTransverse;
 	private int endTransverseSpan;
+	private boolean blockRedraw = false;
 
 	public TextBorderAttachment(
 			final Context context
@@ -74,35 +75,31 @@ public class TextBorderAttachment {
 		context.background.add(border.drawing);
 	}
 
-	public void setFirst(final Context context, final BrickText first) {
-		if (this.first != null)
+	public void setBoth(
+			final Context context,
+			final BrickText first,
+			final int firstIndex,
+			final BrickText last,
+			final int lastIndex
+	) {
+		if (this.first != null && this.first != first)
 			this.first.removeAttachment(context, this.firstAttachment);
-		this.first = first;
-		if (first == null)
-			return;
-		this.first.addAttachment(context, this.firstAttachment);
-	}
-
-	public void setFirstIndex(final Context context, final int index) {
-		if (index < 0)
-			throw new AssertionError();
-		firstIndex = index;
-		redraw(context);
-	}
-
-	public void setLast(final Context context, final BrickText last) {
-		if (this.last != null)
+		if (this.last != null && this.last != last)
 			this.last.removeAttachment(context, this.lastAttachment);
+		this.first = first;
 		this.last = last;
-		if (last == null)
-			return;
-		this.last.addAttachment(context, this.lastAttachment);
-	}
-
-	public void setLastIndex(final Context context, final int index) {
-		if (index < 0)
+		if (firstIndex < 0)
 			throw new AssertionError();
-		lastIndex = index;
+		this.firstIndex = firstIndex;
+		if (lastIndex < 0)
+			throw new AssertionError();
+		this.lastIndex = lastIndex;
+		blockRedraw = true;
+		if (first != null)
+			this.first.addAttachment(context, this.firstAttachment);
+		if (last != null)
+			this.last.addAttachment(context, this.lastAttachment);
+		blockRedraw = false;
 		redraw(context);
 	}
 
@@ -118,6 +115,8 @@ public class TextBorderAttachment {
 		if (first == null)
 			return;
 		if (last == null)
+			return;
+		if (blockRedraw)
 			return;
 		border.setSize(
 				context,

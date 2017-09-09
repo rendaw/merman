@@ -10,7 +10,6 @@ import com.zarbosoft.merman.document.Document;
 import com.zarbosoft.merman.document.values.ValueArray;
 import com.zarbosoft.merman.document.values.ValueAtom;
 import com.zarbosoft.merman.document.values.ValuePrimitive;
-import com.zarbosoft.merman.document.values.ValueRecordKey;
 import com.zarbosoft.merman.syntax.Syntax;
 import com.zarbosoft.merman.syntax.back.*;
 import com.zarbosoft.rendaw.common.DeadCode;
@@ -297,6 +296,10 @@ public class Write {
 			writer.recordBegin();
 			stack.addLast(new WriteStateRecordEnd());
 			stack.addLast(new WriteStateRecord(base, ((BackRecord) part).pairs));
+		} else if (part instanceof BackDataType) {
+			final BackDataType typePart = (BackDataType) part;
+			writer.type(((ValuePrimitive) base.data.get(((BackDataType) part).middle)).get());
+			stack.addLast(new WriteStateBack(base, ImmutableList.of(typePart.child).iterator()));
 		} else if (part instanceof BackDataPrimitive) {
 			writer.primitive(((ValuePrimitive) base.data.get(((BackDataPrimitive) part).middle)).get());
 		} else if (part instanceof BackDataJSONInt) {
@@ -317,7 +320,7 @@ public class Write {
 			stack.addLast(new WriteStateRecordEnd());
 			stack.addLast(new WriteStateDataArray(((ValueArray) base.data.get(((BackDataRecord) part).middle))));
 		} else if (part instanceof BackDataKey) {
-			writer.key(((ValueRecordKey) base.data.get(((BackDataKey) part).middle)).get());
+			writer.key(((ValuePrimitive) base.data.get(((BackDataKey) part).middle)).get());
 		} else
 			throw new AssertionError(String.format("Unimplemented back part type [%s].\n",
 					part.getClass().getCanonicalName()

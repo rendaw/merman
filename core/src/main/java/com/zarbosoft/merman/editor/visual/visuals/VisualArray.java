@@ -815,7 +815,7 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 		private class ActionEnter extends ActionBase {
 			@Override
 			public boolean run(final Context context) {
-				context.history.finishChange(context);
+
 				return self.value.data.get(beginIndex).visual.selectDown(context);
 			}
 		}
@@ -824,7 +824,7 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 		private class ActionExit extends ActionBase {
 			@Override
 			public boolean run(final Context context) {
-				context.history.finishChange(context);
+
 				return self.value.parent.selectUp(context);
 			}
 		}
@@ -851,7 +851,7 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 		private class ActionNextElement extends ActionBase {
 			@Override
 			public boolean run(final Context context) {
-				context.history.finishChange(context);
+
 				ArraySelection.this.leadFirst = true;
 				final int newIndex = Math.min(self.value.data.size() - 1, endIndex + 1);
 				if (newIndex == beginIndex && newIndex == endIndex)
@@ -865,7 +865,7 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 		private class ActionPreviousElement extends ActionBase {
 			@Override
 			public boolean run(final Context context) {
-				context.history.finishChange(context);
+
 				ArraySelection.this.leadFirst = true;
 				final int newIndex = Math.max(0, beginIndex - 1);
 				if (newIndex == beginIndex && newIndex == endIndex)
@@ -922,12 +922,12 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 		private class ActionCut extends ActionBase {
 			@Override
 			public boolean run(final Context context) {
-				context.history.finishChange(context);
+
 				context.copy(self.value.data.subList(beginIndex, endIndex + 1));
 				context.history.apply(context,
 						new ChangeArray(self.value, beginIndex, endIndex - beginIndex + 1, ImmutableList.of())
 				);
-				context.history.finishChange(context);
+
 				return true;
 			}
 
@@ -937,14 +937,14 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 		private class ActionPaste extends ActionBase {
 			@Override
 			public boolean run(final Context context) {
-				context.history.finishChange(context);
+
 				final List<Atom> atoms = context.uncopy(((MiddleArray) self.value.middle()).type);
 				if (atoms.isEmpty())
 					return false;
 				context.history.apply(context,
 						new ChangeArray(self.value, beginIndex, endIndex - beginIndex + 1, atoms)
 				);
-				context.history.finishChange(context);
+
 				return true;
 			}
 		}
@@ -953,7 +953,7 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 		private class ActionGatherNext extends ActionBase {
 			@Override
 			public boolean run(final Context context) {
-				context.history.finishChange(context);
+
 				final int newIndex = Math.min(self.value.data.size() - 1, endIndex + 1);
 				if (endIndex == newIndex)
 					return false;
@@ -967,7 +967,7 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 		private class ActionReleaseNext extends ActionBase {
 			@Override
 			public boolean run(final Context context) {
-				context.history.finishChange(context);
+
 				final int newIndex = Math.max(beginIndex, endIndex - 1);
 				if (endIndex == newIndex)
 					return false;
@@ -980,7 +980,7 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 		private class ActionGatherPrevious extends ActionBase {
 			@Override
 			public boolean run(final Context context) {
-				context.history.finishChange(context);
+
 				final int newIndex = Math.max(0, beginIndex - 1);
 				if (beginIndex == newIndex)
 					return false;
@@ -993,7 +993,7 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 		private class ActionReleasePrevious extends ActionBase {
 			@Override
 			public boolean run(final Context context) {
-				context.history.finishChange(context);
+
 				final int newIndex = Math.min(endIndex, beginIndex + 1);
 				if (beginIndex == newIndex)
 					return false;
@@ -1059,7 +1059,7 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 
 			@Override
 			public boolean run(final Context context) {
-				context.history.finishChange(context);
+
 				final int index = leadFirst ? beginIndex : endIndex;
 				final Atom old = self.value.data.get(index);
 				final Atom gap = context.syntax.prefixGap.create();
@@ -1082,7 +1082,7 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 
 			@Override
 			public boolean run(final Context context) {
-				context.history.finishChange(context);
+
 				final int index = leadFirst ? beginIndex : endIndex;
 				final Atom old = self.value.data.get(index);
 				final Atom gap = context.syntax.suffixGap.create(false);

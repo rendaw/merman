@@ -158,7 +158,7 @@ public class Main {
 				}
 				System.out.flush();
 				System.err.flush();
-				throw new AssertionError();
+				//throw new AssertionError();
 			}
 			tocGroups
 					.entrySet()

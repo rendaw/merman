@@ -40,9 +40,9 @@ public class MockeryText extends MockeryDisplayNode implements Text {
 
 	@Override
 	public int getConverseAtIndex(final int index) {
-		if (index < text.length())
-			return font.getWidth(text.substring(0, index));
-		return font.getWidth(text);
+		if (index > text.length())
+			throw new AssertionError();
+		return font.getWidth(text.substring(0, index));
 	}
 
 	@Override

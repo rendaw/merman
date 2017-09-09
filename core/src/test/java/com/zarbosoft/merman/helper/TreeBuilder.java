@@ -1,11 +1,13 @@
 package com.zarbosoft.merman.helper;
 
 import com.zarbosoft.merman.document.Atom;
-import com.zarbosoft.merman.document.values.*;
+import com.zarbosoft.merman.document.values.Value;
+import com.zarbosoft.merman.document.values.ValueArray;
+import com.zarbosoft.merman.document.values.ValueAtom;
+import com.zarbosoft.merman.document.values.ValuePrimitive;
 import com.zarbosoft.merman.syntax.AtomType;
 import com.zarbosoft.merman.syntax.middle.MiddleAtom;
 import com.zarbosoft.merman.syntax.middle.MiddlePrimitive;
-import com.zarbosoft.merman.syntax.middle.MiddleRecordKey;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -32,11 +34,6 @@ public class TreeBuilder {
 
 	public TreeBuilder add(final String key, final String text) {
 		data.put(key, new ValuePrimitive((MiddlePrimitive) type.middle().get(key), text));
-		return this;
-	}
-
-	public TreeBuilder addKey(final String key, final String text) {
-		data.put(key, new ValueRecordKey((MiddleRecordKey) type.middle().get(key), text));
 		return this;
 	}
 

@@ -95,36 +95,6 @@ public class CursorAttachment {
 		gc.moveTo(halfBuffer, halfBuffer);
 		gc.lineTo(size.converse - halfBuffer - 1, size.transverse - halfBuffer - 1);
 		gc.closePath();
-		/*
-		switch (context.syntax.converseDirection) {
-			case UP:
-				switch (context.syntax.transverseDirection) {
-					case LEFT:
-						offset = new Point2D(-ascent - (style.roundStart ? halfBuffer : 0), -(halfBuffer + 1));
-						break;
-					case RIGHT:
-						offset = new Point2D(-descent - (style.roundStart ? halfBuffer : 0), -(halfBuffer + 1));
-						break;
-				}
-				break;
-			case DOWN:
-				switch (context.syntax.transverseDirection) {
-					case LEFT:
-						offset = new Point2D(-ascent - (style.roundStart ? halfBuffer : 0), -(halfBuffer));
-						break;
-					case RIGHT:
-						offset = new Point2D(-descent - (style.roundStart ? halfBuffer : 0), -(halfBuffer));
-						break;
-				}
-				break;
-			case LEFT:
-				offset = new Point2D(-(halfBuffer + 1), -ascent + descent - (style.roundStart ? halfBuffer : 0));
-				break;
-			case RIGHT:
-				offset = new Point2D(halfBuffer, -ascent + descent - (style.roundStart ? halfBuffer : 0));
-				break;
-		}
-		*/
 		offset = new Vector(halfBuffer, -ascent + descent - (style.roundStart ? halfBuffer : 0));
 	}
 
