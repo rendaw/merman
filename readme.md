@@ -1,6 +1,6 @@
 <p align="center"><img src="logo.png" width="95%" alt="merman logo"></p>
 
-# Just what _is_ merman?
+Just what _is_ merman?
 
 Traditional compiler
 
