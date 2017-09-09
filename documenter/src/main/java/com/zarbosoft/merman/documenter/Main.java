@@ -19,7 +19,6 @@ import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -140,7 +139,8 @@ public class Main {
 								missingDescriptions.add(String.format("%s | %s", groupName, id));
 								description = "";
 							}
-							section.p(description);
+							final String finalDescription = description;
+							section.p(p -> p.with(Documenter.transformText(finalDescription)));
 							if (descriptionGroup.isEmpty())
 								extraDescriptions.remove(groupName);
 						}
@@ -180,13 +180,13 @@ public class Main {
 					});
 			try (
 					OutputStream outStream = Files.newOutputStream(
-							path.resolve("Actions-Reference.md"),
+							path.resolve("Actions-Reference.rst"),
 							StandardOpenOption.WRITE,
 							StandardOpenOption.TRUNCATE_EXISTING,
 							StandardOpenOption.CREATE
 					)
 			) {
-				outStream.write(body.render(4).getBytes(StandardCharsets.UTF_8));
+				Documenter.writeRst(outStream, body);
 			} catch (final IOException e) {
 				throw new UncheckedIOException(e);
 			}
