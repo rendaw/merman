@@ -1,4 +1,4 @@
-<p align="center"><img src="logo.png" width="95%" alt="merman logo"></p>
+<p align="center"><img src="readme/logo.png" width="95%" alt="merman logo"></p>
 
 Just what _is_ merman?
 
@@ -30,7 +30,7 @@ And debugging:
 - Breakpoints and tracebacks are usually line based, when a single line may consist of dozens of clauses.  Sometimes breakpoints and tracebacks are statement based, which is even less precise.
 - Where grammatic elements begin and end is not always clear, making code flow hard to understand when stepping.
 
-merman is an editor that operates directly on the AST in the hopes of simplifying much of the above.
+*merman* is an editor that operates directly on the AST in the hopes of simplifying much of the above.
 
 ![Example #1](readme/diagram_merman.svg)
 
@@ -56,29 +56,67 @@ Of course, there are some drawbacks to this approach
 
 # Get it
 
-## Installer
-
-## Jar
+Version 0.0.0
 
 Requires Java 9.
 
-link
+## Installer
 
-run with
+Download [here]().
+
+## Jar
+
+Download [here]().
+
+Run with:
+```
+java -jar merman.jar FILENAME
+```
 
 ## Build from source
 
-Need to maven install these
+Clone each of the following and this project:
 
-Then in this project
+- https://github.com/Rendaw/java-common
+- https://github.com/Rendaw/pidgoon
+- https://github.com/Rendaw/java-interface1
+- https://github.com/Rendaw/java-luxem
+- https://github.com/Rendaw/luaconf
 
+Create a new directory named `aggregate-merman` next to all of them and add this `pom.xml` file:
+```
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                      https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+ 
+  <groupId>org.codehaus.mojo</groupId>
+  <artifactId>merman-parent</artifactId>
+  <version>2.0</version>
+  <packaging>pom</packaging>
+ 
+  <modules>
+    <module>../pidgoon</module>
+    <module>../java-common</module>
+    <module>../java-luxem</module>
+    <module>../java-interface1</module>
+    <module>../java-interfacedocument</module>
+    <module>../luaconf</module>
+    <module>../pidgooncommand</module>
+    <module>../merman</module>
+  </modules>
+</project>
+```
+
+Then run:
+```
 mvn package
-
-java -jar standalone/target/standalone.jar
+java -jar standalone/target/standalone.jar FILENAME
+```
 
 # Documentation
 
-- Create a language in 10 minutes
-- Syntax reference
-- Action reference
-- Concepts
+- [Create a language in 10 minutes](/rendaw/merman/wiki/Create-a-language-in-10-minutes)
+- [Syntax reference](/rendaw/merman/wiki/Syntax-Reference)
+- [Action reference](/rendaw/merman/wiki/Actions-Reference)
