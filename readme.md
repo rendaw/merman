@@ -30,7 +30,7 @@ And debugging:
 - Breakpoints and tracebacks are usually line based, when a single line may consist of dozens of clauses.  Sometimes breakpoints and tracebacks are statement based, which is even less precise.
 - Where grammatic elements begin and end is not always clear, making code flow hard to understand when stepping.
 
-*merman* is an editor that operates directly on the AST in the hopes of simplifying much of the above.
+**merman** is an editor that operates directly on the AST in the hopes of simplifying much of the above.
 
 ![Example #1](readme/diagram_merman.svg)
 
@@ -81,7 +81,9 @@ Clone each of the following and this project:
 - https://github.com/Rendaw/pidgoon
 - https://github.com/Rendaw/java-interface1
 - https://github.com/Rendaw/java-luxem
+- https://github.com/Rendaw/java-interfacedocument
 - https://github.com/Rendaw/luaconf
+- https://github.com/Rendaw/pidgooncommand
 
 Create a new directory named `aggregate-merman` next to all of them and add this `pom.xml` file:
 ```
@@ -97,10 +99,10 @@ Create a new directory named `aggregate-merman` next to all of them and add this
   <packaging>pom</packaging>
  
   <modules>
-    <module>../pidgoon</module>
     <module>../java-common</module>
-    <module>../java-luxem</module>
+    <module>../pidgoon</module>
     <module>../java-interface1</module>
+    <module>../java-luxem</module>
     <module>../java-interfacedocument</module>
     <module>../luaconf</module>
     <module>../pidgooncommand</module>
@@ -117,6 +119,6 @@ java -jar standalone/target/standalone.jar FILENAME
 
 # Documentation
 
-- [Create a language in 10 minutes](/rendaw/merman/wiki/Create-a-language-in-10-minutes)
+- [Create a language in 10 minutes!](/rendaw/merman/wiki/Create-a-language-in-10-minutes)
 - [Syntax reference](/rendaw/merman/wiki/Syntax-Reference)
 - [Action reference](/rendaw/merman/wiki/Actions-Reference)
