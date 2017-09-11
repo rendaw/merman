@@ -25,6 +25,7 @@ import com.zarbosoft.pidgoon.bytes.Position;
 import com.zarbosoft.pidgoon.nodes.Color;
 import com.zarbosoft.pidgoon.nodes.Union;
 import com.zarbosoft.rendaw.common.Common;
+import com.zarbosoft.rendaw.common.DeadCode;
 import com.zarbosoft.rendaw.common.Pair;
 
 import java.io.ByteArrayInputStream;
@@ -106,8 +107,8 @@ public class GapAtomType extends AtomType {
 			final BackDataPrimitive backDataPrimitive = new BackDataPrimitive();
 			backDataPrimitive.middle = "gap";
 			final BackType backType = new BackType();
-			backType.value = "__gap";
-			backType.child = backDataPrimitive;
+			backType.type = "__gap";
+			backType.value = backDataPrimitive;
 			back = ImmutableList.of(backType);
 		}
 		{
@@ -147,18 +148,40 @@ public class GapAtomType extends AtomType {
 							final GapKey.ParseResult parsed = key.parse(context, type, string);
 							final Atom atom = parsed.atom;
 							final String remainder = parsed.remainder;
+							Atom root = atom;
+							final Value.Parent rootPlacement = self.parent;
+
+							// Find the selection/remainder entry point
+							Value selectNext = null;
+							FrontPart nextWhatever = null;
+							if (parsed.nextInput == null) {
+								if (key.indexAfter == -1) {
+									// No such place exists - wrap the placement atom in a suffix gap
+									root = context.syntax.suffixGap.create(true, atom);
+									selectNext = (ValuePrimitive) root.data.get("gap");
+								} else {
+									nextWhatever = type.front.get(key.indexAfter);
+								}
+							} else
+								nextWhatever = parsed.nextInput;
+							if (selectNext == null) {
+								if (nextWhatever instanceof FrontDataAtom) {
+									selectNext = atom.data.get(nextWhatever.middle());
+								} else if (nextWhatever instanceof FrontDataPrimitive ||
+										nextWhatever instanceof FrontDataArrayBase) {
+									selectNext = atom.data.get(nextWhatever.middle());
+								} else
+									throw new DeadCode();
+							}
 
 							// Place the atom
-							Value selectNext = findSelectNext(context, atom, false);
-							final Atom replacement;
-							if (selectNext == null) {
-								replacement = context.syntax.suffixGap.create(true, atom);
-								selectNext = replacement.data.get("gap");
-							} else {
-								replacement = atom;
-							}
-							self.parent.replace(context, replacement);
-							selectNext.selectDown(context);
+							rootPlacement.replace(context, root);
+
+							// Select and dump remainder
+							if (selectNext instanceof ValueAtom &&
+									((ValueAtom) selectNext).data.visual.selectDown(context)) {
+							} else
+								selectNext.selectDown(context);
 							if (!remainder.isEmpty())
 								context.selection.receiveText(context, remainder);
 						}
@@ -209,7 +232,7 @@ public class GapAtomType extends AtomType {
 							).distinct().collect(Collectors.toList());
 					if (longest.second.distance() == string.length()) {
 						for (final GapChoice choice : choices) {
-							if (longest.first.leaves.size() <= choice.ambiguity()) {
+							if (choices.size() <= choice.ambiguity()) {
 								choice.choose(context, string);
 								return ImmutableList.of();
 							}

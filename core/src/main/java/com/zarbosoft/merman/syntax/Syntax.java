@@ -36,9 +36,6 @@ import static com.zarbosoft.rendaw.common.Common.stream;
 @Configuration
 public class Syntax {
 
-	@Configuration()
-	public String name;
-
 	@Configuration
 	public static enum BackType {
 		@Configuration(name = "luxem")
@@ -74,7 +71,7 @@ public class Syntax {
 	public List<FreeAtomType> types = new ArrayList<>();
 
 	@Configuration(optional = true)
-	public Map<String, java.util.Set<String>> groups = new HashMap<>();
+	public Map<String, List<String>> groups = new HashMap<>();
 
 	@Configuration
 	public RootAtomType root;
@@ -183,7 +180,7 @@ public class Syntax {
 				if (!top.second.hasNext())
 					continue;
 				final String childKey = top.second.next();
-				final Set<String> child = groups.get(childKey);
+				final List<String> child = groups.get(childKey);
 				if (child == null)
 					continue;
 				if (top.first.contains(childKey))
@@ -206,8 +203,10 @@ public class Syntax {
 		}
 		final Map<String, Set<String>> groupsThatContainType = new HashMap<>();
 		final Set<String> potentiallyScalarGroups = new HashSet<>();
-		for (final Map.Entry<String, Set<String>> pair : groups.entrySet()) {
+		for (final Map.Entry<String, List<String>> pair : groups.entrySet()) {
 			final String group = pair.getKey();
+			if (new HashSet<>(pair.getValue()).size() != pair.getValue().size())
+				throw new InvalidSyntax(String.format("Duplicate type ids in group [%s].", group));
 			for (final String child : pair.getValue()) {
 				if (!allTypes.contains(child) && !groups.containsKey(child))
 					throw new InvalidSyntax(String.format("Group [%s] refers to non-existant member [%s].",
@@ -302,11 +301,12 @@ public class Syntax {
 	public Stream<FreeAtomType> getLeafTypes(final String type) {
 		if (type == null)
 			return types.stream(); // Gap types
-		final Set<String> group = groups.get(type);
+		final List<String> group = groups.get(type);
 		if (group == null)
 			return Stream.of(getType(type));
 		final Deque<Iterator<String>> stack = new ArrayDeque<>();
 		stack.addLast(group.iterator());
+		// TODO deduplicate to prevent loops?
 		return stream(new Iterator<FreeAtomType>() {
 			@Override
 			public boolean hasNext() {
@@ -321,7 +321,7 @@ public class Syntax {
 				final String childKey = top.next();
 				if (top.hasNext())
 					stack.addLast(top);
-				final Set<String> child = groups.get(childKey);
+				final List<String> child = groups.get(childKey);
 				if (child == null) {
 					return getType(childKey);
 				} else {

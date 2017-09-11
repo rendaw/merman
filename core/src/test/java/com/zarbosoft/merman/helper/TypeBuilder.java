@@ -10,6 +10,9 @@ import com.zarbosoft.merman.syntax.middle.MiddleArray;
 import com.zarbosoft.merman.syntax.middle.MiddleAtom;
 import com.zarbosoft.merman.syntax.middle.MiddlePrimitive;
 import com.zarbosoft.merman.syntax.middle.MiddleRecord;
+import com.zarbosoft.merman.syntax.middle.primitive.Digits;
+import com.zarbosoft.merman.syntax.middle.primitive.Letters;
+import com.zarbosoft.merman.syntax.middle.primitive.Repeat1;
 import com.zarbosoft.merman.syntax.symbol.SymbolSpace;
 import com.zarbosoft.merman.syntax.symbol.SymbolText;
 
@@ -89,7 +92,25 @@ public class TypeBuilder {
 		return this;
 	}
 
-	public TypeBuilder middleNode(final String id, final String type) {
+	public TypeBuilder middlePrimitiveLetters(final String id) {
+		final MiddlePrimitive middle = new MiddlePrimitive();
+		middle.id = id;
+		middle.pattern = new Repeat1();
+		((Repeat1) middle.pattern).pattern = new Letters();
+		this.type.middle.put(id, middle);
+		return this;
+	}
+
+	public TypeBuilder middlePrimitiveDigits(final String id) {
+		final MiddlePrimitive middle = new MiddlePrimitive();
+		middle.id = id;
+		middle.pattern = new Repeat1();
+		((Repeat1) middle.pattern).pattern = new Digits();
+		this.type.middle.put(id, middle);
+		return this;
+	}
+
+	public TypeBuilder middleAtom(final String id, final String type) {
 		final MiddleAtom middle = new MiddleAtom();
 		middle.type = type;
 		middle.id = id;
@@ -152,4 +173,5 @@ public class TypeBuilder {
 		this.type.alignments.put(name, new ConcensusAlignmentDefinition());
 		return this;
 	}
+
 }

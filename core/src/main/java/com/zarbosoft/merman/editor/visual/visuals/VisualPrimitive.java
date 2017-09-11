@@ -507,6 +507,12 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 
 		@Override
 		public void receiveText(final Context context, final String text) {
+			String preview = value.get();
+			preview = preview.substring(0, range.beginOffset) +
+					text +
+					preview.substring(range.endOffset, preview.length());
+			if (!value.middle.matcher.match(preview))
+				return;
 			if (range.beginOffset != range.endOffset)
 				context.history.apply(context,
 						value.changeRemove(range.beginOffset, range.endOffset - range.beginOffset)

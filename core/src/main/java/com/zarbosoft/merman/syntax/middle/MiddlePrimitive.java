@@ -5,17 +5,21 @@ import com.zarbosoft.merman.document.values.ValuePrimitive;
 import com.zarbosoft.merman.editor.history.Change;
 import com.zarbosoft.merman.editor.history.changes.ChangePrimitiveAdd;
 import com.zarbosoft.merman.editor.history.changes.ChangePrimitiveRemove;
-import com.zarbosoft.merman.modules.hotkeys.grammar.Node;
 import com.zarbosoft.merman.syntax.Syntax;
+import com.zarbosoft.merman.syntax.middle.primitive.Pattern;
 
 import java.util.Map;
 import java.util.Set;
+
+import static com.zarbosoft.merman.syntax.middle.primitive.Pattern.repeatedAny;
 
 @Configuration(name = "primitive")
 public class MiddlePrimitive extends MiddlePart {
 
 	@Configuration(optional = true)
-	public Node validation;
+	public Pattern pattern = repeatedAny;
+
+	public Pattern.Matcher matcher = null;
 
 	public Change changeAdd(final ValuePrimitive value, final int begin, final String text) {
 		return new ChangePrimitiveAdd(value, begin, text);
@@ -31,7 +35,7 @@ public class MiddlePrimitive extends MiddlePart {
 
 	@Override
 	public void finish(final Set<String> allTypes, final Set<String> scalarTypes) {
-
+		matcher = pattern.new Matcher();
 	}
 
 	@Override

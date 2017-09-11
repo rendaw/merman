@@ -2,7 +2,6 @@ local _hotkeys = require 'hotkeys'
 local _theme = require 'theme_dark'
 
 local syntax = {
-    name = 'luxem',
     pad = {
         converse_start = 40,
         converse_end = 5,

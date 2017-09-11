@@ -32,9 +32,7 @@ import com.zarbosoft.pidgoon.ParseContext;
 import com.zarbosoft.pidgoon.bytes.Grammar;
 import com.zarbosoft.pidgoon.bytes.Parse;
 import com.zarbosoft.pidgoon.bytes.Position;
-import com.zarbosoft.pidgoon.nodes.Repeat;
 import com.zarbosoft.pidgoon.nodes.Sequence;
-import com.zarbosoft.pidgoon.nodes.Wildcard;
 import com.zarbosoft.rendaw.common.Common;
 import com.zarbosoft.rendaw.common.DeadCode;
 import com.zarbosoft.rendaw.common.Pair;
@@ -106,7 +104,8 @@ public abstract class FrontGapBase extends FrontPart {
 				final int visualDepth,
 				final int depthScore
 		) {
-			super(context,
+			super(
+					context,
 					parent,
 					FrontGapBase.this.dataType.get(atom.data),
 					tags
@@ -234,7 +233,8 @@ public abstract class FrontGapBase extends FrontPart {
 					table.layout(context);
 					changeChoice(context, 0);
 					final List<Action> actions = new ArrayList<>();
-					actions.addAll(ImmutableList.of(new ActionChoose(choices),
+					actions.addAll(ImmutableList.of(
+							new ActionChoose(choices),
 							new ActionNextChoice(choices),
 							new ActionPreviousChoice(choices)
 					));
@@ -344,6 +344,12 @@ public abstract class FrontGapBase extends FrontPart {
 				if (!choices.isEmpty()) {
 					gapDetails = new GapDetails(context, choices);
 					context.details.addPage(context, gapDetails);
+				} else {
+					if (gapDetails != null) {
+						context.details.removePage(context, gapDetails);
+						gapDetails.destroy(context);
+						gapDetails = null;
+					}
 				}
 			}
 
@@ -394,7 +400,7 @@ public abstract class FrontGapBase extends FrontPart {
 				} else if (part instanceof FrontDataPrimitive) {
 					final MiddlePrimitive middle =
 							(MiddlePrimitive) type.middle.get(((FrontDataPrimitive) part).middle);
-					out.add(middle.validation == null ? new Repeat(new Wildcard()) : middle.validation.build());
+					out.add(middle.pattern.build());
 				} else
 					throw new DeadCode();
 			}
@@ -420,15 +426,13 @@ public abstract class FrontGapBase extends FrontPart {
 				final Grammar grammar = new Grammar();
 				if (front instanceof FrontSymbol) {
 					String text = ((FrontSymbol) front).gapKey;
-					if (((FrontSymbol) front).type instanceof SymbolText)
+					if (text.isEmpty() && ((FrontSymbol) front).type instanceof SymbolText)
 						text = ((SymbolText) ((FrontSymbol) front).type).text;
 					grammar.add("root", Grammar.stringSequence(text));
 				} else if (front instanceof FrontDataPrimitive) {
 					final MiddlePrimitive middle =
 							(MiddlePrimitive) type.middle.get(((FrontDataPrimitive) front).middle);
-					grammar.add("root",
-							middle.validation == null ? new Repeat(new Wildcard()) : middle.validation.build()
-					);
+					grammar.add("root", middle.pattern.build());
 				} else
 					throw new DeadCode();
 				final Pair<ParseContext, Position> longest = new Parse<>()
@@ -437,26 +441,32 @@ public abstract class FrontGapBase extends FrontPart {
 								.substring(at)
 								.getBytes(StandardCharsets.UTF_8)));
 				if (front instanceof FrontDataPrimitive) {
-					data.put(front.middle(), new ValuePrimitive(type.getDataPrimitive(front.middle()),
+					data.put(front.middle(), new ValuePrimitive(
+							type.getDataPrimitive(front.middle()),
 							string.substring(at, at + (int) longest.second.distance())
 					));
 					filled.remove(front.middle());
-				}
+					out.nextInput = front;
+				} else
+					out.nextInput = null;
 				at = at + (int) longest.second.distance();
 				if (at >= string.length())
 					break;
 			}
+			if (at < string.length())
+				out.nextInput = null;
 			filled.forEach(middle -> data.put(middle, type.middle.get(middle).create(context.syntax)));
 			out.remainder = string.substring(at);
 			out.atom = new Atom(type, data);
 
 			// Look for the next place to enter text
-			for (final FrontPart part : iterable(frontIterator)) {
-				if (part instanceof FrontDataPrimitive) {
+			if (out.nextInput == null)
+				for (final FrontPart part : iterable(frontIterator)) {
+					if (!(part instanceof FrontDataPrimitive))
+						continue;
 					out.nextInput = part;
 					break;
 				}
-			}
 
 			return out;
 		}

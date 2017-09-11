@@ -42,7 +42,7 @@ public class FreeAtomType extends AtomType {
 	public boolean frontAssociative = false;
 
 	@Configuration(name = "auto_choose_ambiguity", optional = true)
-	public int autoChooseAmbiguity = -1;
+	public int autoChooseAmbiguity = 1;
 
 	@Override
 	public String id() {

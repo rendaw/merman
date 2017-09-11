@@ -34,8 +34,8 @@ public class TestWindowing {
 		a2_1 = new TypeBuilder("a2_1").back(Helper.buildBackPrimitive("a2_1")).frontMark("2_1").build();
 		a3_1 = new TypeBuilder("a3_1").back(Helper.buildBackPrimitive("a3_1")).frontMark("3_1").build();
 		oneAtom = new TypeBuilder("oneAtom")
-				.middleNode("value", "any")
-				.back(new BackRecordBuilder().add("stop", Helper.buildBackDataNode("value")).build())
+				.middleAtom("value", "any")
+				.back(new BackRecordBuilder().add("stop", Helper.buildBackDataAtom("value")).build())
 				.frontDataNode("value")
 				.depthScore(1)
 				.build();

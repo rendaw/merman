@@ -112,8 +112,13 @@ public class Main extends Application {
 		stage = primaryStage;
 		/*
 		TODO
-		readme
-		doc on tagging
+		lots of duplicate code between gap types
+		create default code (array) repeated a lot?
+		infinite recursion select down array which only has itself as a child type.
+			don't auto create child in that case? only create child if user selects down
+		get leaf types - deduplicate to prevent endless loops
+		//readme
+		x//doc on tagging
 		//syntax documenter
 		//action documenter
 		//	action name as a static method?

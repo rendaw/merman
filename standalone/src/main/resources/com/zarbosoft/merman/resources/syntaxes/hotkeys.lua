@@ -84,6 +84,7 @@ function module.create()
             },
         },
         apply = function(self, syntax)
+            if syntax['modules'] == nil then syntax['modules'] = {} end
             _utils.append_multiple(syntax['modules'], self.modules)
         end,
     }

@@ -286,8 +286,8 @@ public class Write {
 			writer.jsonNull();
 		} else if (part instanceof BackType) {
 			final BackType typePart = (BackType) part;
-			writer.type(typePart.value);
-			stack.addLast(new WriteStateBack(base, ImmutableList.of(typePart.child).iterator()));
+			writer.type(typePart.type);
+			stack.addLast(new WriteStateBack(base, ImmutableList.of(typePart.value).iterator()));
 		} else if (part instanceof BackArray) {
 			writer.arrayBegin();
 			stack.addLast(new WriteStateArrayEnd());
@@ -298,8 +298,8 @@ public class Write {
 			stack.addLast(new WriteStateRecord(base, ((BackRecord) part).pairs));
 		} else if (part instanceof BackDataType) {
 			final BackDataType typePart = (BackDataType) part;
-			writer.type(((ValuePrimitive) base.data.get(((BackDataType) part).middle)).get());
-			stack.addLast(new WriteStateBack(base, ImmutableList.of(typePart.child).iterator()));
+			writer.type(((ValuePrimitive) base.data.get(((BackDataType) part).type)).get());
+			stack.addLast(new WriteStateBack(base, ImmutableList.of(typePart.value).iterator()));
 		} else if (part instanceof BackDataPrimitive) {
 			writer.primitive(((ValuePrimitive) base.data.get(((BackDataPrimitive) part).middle)).get());
 		} else if (part instanceof BackDataJSONInt) {

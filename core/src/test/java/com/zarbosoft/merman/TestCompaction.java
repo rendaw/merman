@@ -74,8 +74,8 @@ public class TestCompaction {
 				.depthScore(1)
 				.build();
 		unary = new TypeBuilder("unary")
-				.middleNode("value", "any")
-				.back(Helper.buildBackDataNode("value"))
+				.middleAtom("value", "any")
+				.back(Helper.buildBackDataAtom("value"))
 				.frontDataNode("value")
 				.precedence(20)
 				.depthScore(1)

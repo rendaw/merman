@@ -24,6 +24,7 @@ public class TestHistory {
 		one = new TypeBuilder("one")
 				.back(Helper.buildBackPrimitive("one"))
 				.front(new FrontMarkBuilder("one").build())
+				.autoComplete(-1)
 				.build();
 		syntax = new SyntaxBuilder("any").type(one).group("any", new GroupBuilder().type(one).build()).build();
 		modify = new Consumer<>() {

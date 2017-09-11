@@ -76,8 +76,8 @@ public class Helper {
 
 	public static BackPart buildBackType(final String type, final BackPart child) {
 		final BackType back = new BackType();
-		back.value = type;
-		back.child = child;
+		back.type = type;
+		back.value = child;
 		return back;
 	}
 
@@ -87,7 +87,7 @@ public class Helper {
 		return back;
 	}
 
-	public static BackPart buildBackDataNode(final String middle) {
+	public static BackPart buildBackDataAtom(final String middle) {
 		final BackDataAtom back = new BackDataAtom();
 		back.middle = middle;
 		return back;

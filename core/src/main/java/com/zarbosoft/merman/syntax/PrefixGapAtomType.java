@@ -63,8 +63,8 @@ public class PrefixGapAtomType extends AtomType {
 			record.pairs.put("gap", gap);
 			record.pairs.put("value", value);
 			final BackType type = new BackType();
-			type.value = "__gap";
-			type.child = record;
+			type.type = "__gap";
+			type.value = record;
 			back = ImmutableList.of(type);
 		}
 		{
@@ -147,6 +147,11 @@ public class PrefixGapAtomType extends AtomType {
 						public Iterable<? extends FrontPart> parts() {
 							return key.keyParts;
 						}
+
+						@Override
+						public boolean equals(final Object obj) {
+							return type == ((PrefixChoice) obj).type;
+						}
 					}
 
 					// Get or build gap grammar
@@ -179,9 +184,9 @@ public class PrefixGapAtomType extends AtomType {
 						final List<PrefixChoice> choices =
 								Stream.concat(longest.first.results.stream().map(result -> (PrefixChoice) result),
 										longest.first.leaves.stream().map(leaf -> (PrefixChoice) leaf.color())
-								).collect(Collectors.toList());
+								).distinct().collect(Collectors.toList());
 						for (final PrefixChoice choice : choices) {
-							if (longest.first.leaves.size() <= choice.ambiguity()) {
+							if (choices.size() <= choice.ambiguity()) {
 								choice.choose(context, string);
 								return ImmutableList.of();
 							}

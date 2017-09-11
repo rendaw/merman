@@ -151,7 +151,6 @@ public class TestLayoutArray {
 	public void testDynamicGapDeselectLast() {
 		new GeneralTestWizard(MiscSyntax.syntax, new TreeBuilder(MiscSyntax.array).addArray("value").build())
 				.act("enter")
-				.act("enter")
 				.act("exit")
 				.checkTextBrick(0, 0, "[")
 				.checkSpaceBrick(0, 1)

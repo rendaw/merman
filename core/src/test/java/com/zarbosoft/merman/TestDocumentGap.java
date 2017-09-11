@@ -8,6 +8,7 @@ import com.zarbosoft.merman.document.values.ValuePrimitive;
 import com.zarbosoft.merman.editor.Context;
 import com.zarbosoft.merman.editor.Path;
 import com.zarbosoft.merman.editor.history.changes.ChangePrimitiveSet;
+import com.zarbosoft.merman.editor.visual.visuals.VisualPrimitive;
 import com.zarbosoft.merman.helper.*;
 import com.zarbosoft.merman.syntax.Syntax;
 import com.zarbosoft.merman.syntax.front.FrontGapBase;
@@ -17,7 +18,8 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import static com.zarbosoft.merman.helper.Helper.*;
+import static com.zarbosoft.merman.helper.Helper.assertTreeEqual;
+import static com.zarbosoft.merman.helper.Helper.buildDoc;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -103,13 +105,65 @@ public class TestDocumentGap {
 		final Context context = blank();
 		context.selection.receiveText(context, "one");
 		context.selection.receiveText(context, "!");
+		context.selection.receiveText(context, "t");
 		assertTreeEqual(context,
 				new TreeBuilder(MiscSyntax.binaryBang)
 						.add("first", new TreeBuilder(MiscSyntax.one))
-						.add("second", new TreeBuilder(MiscSyntax.syntax.gap).add("gap", ""))
+						.add("second", new TreeBuilder(MiscSyntax.syntax.gap).add("gap", "t"))
 						.build(),
 				Helper.rootArray(context.document)
 		);
+	}
+
+	@Test
+	public void binaryTextImmediate() {
+		final Context context = blank();
+		context.selection.receiveText(context, "7");
+		context.selection.receiveText(context, "!");
+		context.selection.receiveText(context, "t");
+		assertTreeEqual(context,
+				new TreeBuilder(MiscSyntax.binaryBang)
+						.add("first", new TreeBuilder(MiscSyntax.digits).add("value", "7"))
+						.add("second", new TreeBuilder(MiscSyntax.syntax.gap).add("gap", "t"))
+						.build(),
+				Helper.rootArray(context.document)
+		);
+	}
+
+	@Test
+	public void textPrimitiveImmediate() {
+		final Atom atom = MiscSyntax.syntax.gap.create();
+		new GeneralTestWizard(MiscSyntax.syntax, atom)
+				.run(context -> atom.data.get("gap").selectDown(context))
+				.sendText("9")
+				.checkArrayTree(new TreeBuilder(MiscSyntax.digits).add("value", "9").build())
+				.run(context -> {
+					final VisualPrimitive.RangeAttachment range =
+							((VisualPrimitive.PrimitiveSelection) context.selection).range;
+					assertThat(range.beginOffset, equalTo(1));
+					assertThat(range.endOffset, equalTo(1));
+				});
+	}
+
+	@Test
+	public void textMark1Immediate() {
+		final Atom atom = MiscSyntaxTextMark.syntax.gap.create();
+		new GeneralTestWizard(MiscSyntaxTextMark.syntax, atom)
+				.run(context -> atom.data.get("gap").selectDown(context))
+				.sendText("t")
+				.sendText("$")
+				.sendText("1")
+				.sendText("t")
+				.checkArrayTree(new TreeBuilder(MiscSyntaxTextMark.textMark1)
+						.add("text", "t")
+						.add("atom", new TreeBuilder(MiscSyntaxTextMark.syntax.gap).add("gap", "t"))
+						.build())
+				.run(context -> {
+					final VisualPrimitive.RangeAttachment range =
+							((VisualPrimitive.PrimitiveSelection) context.selection).range;
+					assertThat(range.beginOffset, equalTo(1));
+					assertThat(range.endOffset, equalTo(1));
+				});
 	}
 
 	@Test
@@ -162,7 +216,6 @@ public class TestDocumentGap {
 		final Context context = blank();
 		context.selection.receiveText(context, "[");
 		context.selection.receiveText(context, "e");
-		dump(Helper.rootArray(context.document));
 		assertTreeEqual(context,
 				new TreeBuilder(MiscSyntax.array)
 						.addArray("value", new TreeBuilder(MiscSyntax.syntax.gap).add("gap", "e").build())
@@ -189,6 +242,22 @@ public class TestDocumentGap {
 								.build())
 				).add("gap", "e").build()
 		);
+	}
+
+	@Test
+	public void textMark3Immediate() {
+		final Atom atom =
+				MiscSyntaxTextMark.syntax.suffixGap.create(true, new TreeBuilder(MiscSyntaxTextMark.one).build());
+		new GeneralTestWizard(MiscSyntaxTextMark.syntax, atom)
+				.run(context -> atom.data.get("gap").selectDown(context))
+				.sendText("t")
+				.sendText("$")
+				.sendText("t")
+				.checkArrayTree(new TreeBuilder(MiscSyntaxTextMark.textMark3)
+						.add("text", "t")
+						.add("atom", new TreeBuilder(MiscSyntaxTextMark.syntax.gap).add("gap", "t"))
+						.add("atom2", new TreeBuilder(MiscSyntaxTextMark.one))
+						.build());
 	}
 
 	// ========================================================================

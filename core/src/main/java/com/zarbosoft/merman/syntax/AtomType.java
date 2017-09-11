@@ -124,9 +124,9 @@ public abstract class AtomType {
 				if (((BackDataAtom) next).middle.equals(id))
 					return next;
 			} else if (next instanceof BackType) {
-				stack.addLast(Iterators.singletonIterator(((BackType) next).child));
+				stack.addLast(Iterators.singletonIterator(((BackType) next).value));
 			} else if (next instanceof BackDataType) {
-				if (((BackDataType) next).middle.equals(id))
+				if (((BackDataType) next).type.equals(id))
 					return next;
 			} else if (next instanceof BackDataPrimitive) {
 				if (((BackDataPrimitive) next).middle.equals(id))

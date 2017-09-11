@@ -54,9 +54,9 @@ public class SyntaxLoadSave {
 				.build();
 		dataRecordElement = new TypeBuilder("dataRecordElement")
 				.middlePrimitive("key")
-				.middleNode("value", "value")
+				.middleAtom("value", "value")
 				.back(Helper.buildBackDataKey("key"))
-				.back(Helper.buildBackDataNode("value"))
+				.back(Helper.buildBackDataAtom("value"))
 				.frontDataPrimitive("key")
 				.frontDataNode("value")
 				.build();

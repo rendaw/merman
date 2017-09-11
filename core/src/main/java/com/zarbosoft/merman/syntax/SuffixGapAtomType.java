@@ -106,8 +106,8 @@ public class SuffixGapAtomType extends AtomType {
 			record.pairs.put("value", value);
 			record.pairs.put("gap", gap);
 			final BackType type = new BackType();
-			type.value = "__gap";
-			type.child = record;
+			type.type = "__gap";
+			type.value = record;
 			back = ImmutableList.of(type);
 		}
 		{
@@ -211,39 +211,27 @@ public class SuffixGapAtomType extends AtomType {
 							}
 
 							// Find the selection/remainder entry point
-							final ValuePrimitive selectNext;
+							Value selectNext = null;
+							FrontPart nextWhatever = null;
 							if (parsed.nextInput == null) {
 								if (key.indexAfter == -1) {
 									// No such place exists - wrap the placement atom in a suffix gap
 									root = context.syntax.suffixGap.create(true, atom);
 									selectNext = (ValuePrimitive) root.data.get("gap");
 								} else {
-									final Value nextNode = atom.data.get(type.front.get(key.indexAfter).middle());
-									if (nextNode instanceof ValueAtom) {
-										selectNext = (ValuePrimitive) ((ValueAtom) nextNode).data.data.get("gap");
-									} else if (nextNode instanceof ValueArray) {
-										final Atom gap = context.syntax.gap.create();
-										context.history.apply(context,
-												new ChangeArray((ValueArray) nextNode, 0, 0, ImmutableList.of(gap))
-										);
-										selectNext = (ValuePrimitive) gap.data.get("gap");
-									} else
-										throw new DeadCode();
+									nextWhatever = type.front.get(key.indexAfter);
 								}
-							} else if (parsed.nextInput instanceof FrontDataPrimitive) {
-								selectNext = (ValuePrimitive) atom.data.get(parsed.nextInput.middle());
-							} else if (parsed.nextInput instanceof FrontDataAtom) {
-								final ValueAtom value1 = (ValueAtom) atom.data.get(parsed.nextInput.middle());
-								final Atom newGap = context.syntax.gap.create();
-								context.history.apply(context, new ChangeNodeSet(value1, newGap));
-								selectNext = (ValuePrimitive) newGap.data.get("gap");
-							} else if (parsed.nextInput instanceof FrontDataArrayBase) {
-								final ValueArray value1 = (ValueArray) atom.data.get(parsed.nextInput.middle());
-								final Atom newGap = context.syntax.gap.create();
-								context.history.apply(context, new ChangeArray(value1, 0, 0, ImmutableList.of(newGap)));
-								selectNext = (ValuePrimitive) newGap.data.get("gap");
 							} else
-								throw new DeadCode();
+								nextWhatever = parsed.nextInput;
+							if (selectNext == null) {
+								if (nextWhatever instanceof FrontDataAtom) {
+									selectNext = atom.data.get(nextWhatever.middle());
+								} else if (nextWhatever instanceof FrontDataPrimitive ||
+										nextWhatever instanceof FrontDataArrayBase) {
+									selectNext = atom.data.get(nextWhatever.middle());
+								} else
+									throw new DeadCode();
+							}
 
 							// Place everything starting from the bottom
 							rootPlacement.replace(context, root);
@@ -259,7 +247,10 @@ public class SuffixGapAtomType extends AtomType {
 								child2Placement.replace(context, child2);
 
 							// Select and dump remainder
-							selectNext.visual.selectDown(context);
+							if (selectNext instanceof ValueAtom &&
+									((ValueAtom) selectNext).data.visual.selectDown(context)) {
+							} else
+								selectNext.selectDown(context);
 							if (!remainder.isEmpty())
 								context.selection.receiveText(context, remainder);
 						}
@@ -272,6 +263,11 @@ public class SuffixGapAtomType extends AtomType {
 						@Override
 						public Iterable<? extends FrontPart> parts() {
 							return key.keyParts;
+						}
+
+						@Override
+						public boolean equals(final Object obj) {
+							return type == ((SuffixChoice) obj).type;
 						}
 					}
 
@@ -305,10 +301,10 @@ public class SuffixGapAtomType extends AtomType {
 					final List<SuffixChoice> choices =
 							Stream.concat(longest.first.results.stream().map(result -> (SuffixChoice) result),
 									longest.first.leaves.stream().map(leaf -> (SuffixChoice) leaf.color())
-							).collect(Collectors.toList());
+							).distinct().collect(Collectors.toList());
 					if (longest.second.distance() == string.length()) {
 						for (final SuffixChoice choice : choices) {
-							if (longest.first.leaves.size() <= choice.ambiguity()) {
+							if (choices.size() <= choice.ambiguity()) {
 								choice.choose(context, string);
 								return ImmutableList.of();
 							}

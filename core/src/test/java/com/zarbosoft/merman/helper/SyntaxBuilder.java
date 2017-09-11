@@ -12,7 +12,7 @@ import com.zarbosoft.merman.syntax.front.FrontSymbol;
 import com.zarbosoft.merman.syntax.middle.MiddleArray;
 import com.zarbosoft.merman.syntax.style.Style;
 
-import java.util.Set;
+import java.util.List;
 
 public class SyntaxBuilder {
 
@@ -39,7 +39,7 @@ public class SyntaxBuilder {
 		return syntax;
 	}
 
-	public SyntaxBuilder group(final String name, final Set<String> subtypes) {
+	public SyntaxBuilder group(final String name, final List<String> subtypes) {
 		syntax.groups.put(name, subtypes);
 		return this;
 	}

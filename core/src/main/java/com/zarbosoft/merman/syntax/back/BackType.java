@@ -13,16 +13,16 @@ import java.util.Set;
 @Configuration(name = "type")
 public class BackType extends BackPart {
 	@Configuration
-	public String value;
+	public String type;
 
 	@Configuration
-	public BackPart child;
+	public BackPart value;
 
 	@Override
 	public void finish(final Syntax syntax, final AtomType atomType, final Set<String> middleUsed) {
 		super.finish(syntax, atomType, middleUsed);
-		child.finish(syntax, atomType, middleUsed);
-		child.parent = new PartParent() {
+		value.finish(syntax, atomType, middleUsed);
+		value.parent = new PartParent() {
 			@Override
 			public BackPart part() {
 				return BackType.this;
@@ -39,7 +39,7 @@ public class BackType extends BackPart {
 	@Override
 	public Node buildBackRule(final Syntax syntax, final AtomType atomType) {
 		return new Sequence()
-				.add(new MatchingEventTerminal(new ETypeEvent(value)))
-				.add(child.buildBackRule(syntax, atomType));
+				.add(new MatchingEventTerminal(new ETypeEvent(type)))
+				.add(value.buildBackRule(syntax, atomType));
 	}
 }

@@ -2,18 +2,18 @@ package com.zarbosoft.merman.helper;
 
 import com.zarbosoft.merman.syntax.FreeAtomType;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 public class GroupBuilder {
-	Set<String> subtypes = new HashSet<>();
+	List<String> subtypes = new ArrayList<>();
 
 	public GroupBuilder type(final FreeAtomType type) {
 		subtypes.add(type.id());
 		return this;
 	}
 
-	public Set<String> build() {
+	public List<String> build() {
 		return subtypes;
 	}
 

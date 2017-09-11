@@ -290,8 +290,8 @@ public class Context {
 						middle = ((BackDataAtom) part).middle;
 						break;
 					} else if (part instanceof BackDataType) {
-						middle = ((BackDataType) part).middle;
-						part = ((BackType) part).child;
+						middle = ((BackDataType) part).type;
+						part = ((BackType) part).value;
 						break;
 					} else if (part instanceof BackDataPrimitive) {
 						middle = ((BackDataPrimitive) part).middle;
@@ -300,7 +300,7 @@ public class Context {
 						middle = ((BackDataRecord) part).middle;
 						break;
 					} else if (part instanceof BackType) {
-						part = ((BackType) part).child;
+						part = ((BackType) part).value;
 					} else
 						return atom;
 				}

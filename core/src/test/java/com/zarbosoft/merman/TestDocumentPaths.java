@@ -1,7 +1,6 @@
 package com.zarbosoft.merman;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import com.zarbosoft.merman.document.Atom;
 import com.zarbosoft.merman.document.values.Value;
 import com.zarbosoft.merman.document.values.ValueArray;
@@ -43,7 +42,7 @@ public class TestDocumentPaths {
 						.middlePrimitive("a")
 						.frontDataPrimitive("a")
 						.build())
-				.group("any", ImmutableSet.of("base"))
+				.group("any", ImmutableList.of("base"))
 				.build();
 		final Context context = buildDoc(syntax, new TreeBuilder(syntax.types.get(0)).add("a", "").build());
 		final Value value1 = Helper.rootArray(context.document).data.get(0).data.get("a");
@@ -59,7 +58,7 @@ public class TestDocumentPaths {
 						.middlePrimitive("a")
 						.frontDataPrimitive("a")
 						.build())
-				.group("any", ImmutableSet.of("base"))
+				.group("any", ImmutableList.of("base"))
 				.build();
 		final Context context = buildDoc(syntax, new TreeBuilder(syntax.types.get(0)).add("a", "").build());
 		final Value value1 = Helper.rootArray(context.document).data.get(0).data.get("a");
@@ -71,8 +70,8 @@ public class TestDocumentPaths {
 	public void testDataNode() {
 		final Syntax syntax = new SyntaxBuilder("any")
 				.type(new TypeBuilder("base")
-						.back(Helper.buildBackDataNode("a"))
-						.middleNode("a", "child")
+						.back(Helper.buildBackDataAtom("a"))
+						.middleAtom("a", "child")
 						.frontDataNode("a")
 						.build())
 				.type(new TypeBuilder("child")
@@ -80,7 +79,7 @@ public class TestDocumentPaths {
 						.middlePrimitive("b")
 						.frontDataPrimitive("b")
 						.build())
-				.group("any", ImmutableSet.of("base"))
+				.group("any", ImmutableList.of("base"))
 				.build();
 		final Context context = buildDoc(syntax,
 				new TreeBuilder(syntax.types.get(0)).add("a", new TreeBuilder(syntax.types.get(1)).add("b", "")).build()
@@ -104,7 +103,7 @@ public class TestDocumentPaths {
 						.middlePrimitive("b")
 						.frontDataPrimitive("b")
 						.build())
-				.group("any", ImmutableSet.of("base"))
+				.group("any", ImmutableList.of("base"))
 				.build();
 		final Context context = buildDoc(syntax,
 				new TreeBuilder(syntax.types.get(0))
@@ -133,7 +132,7 @@ public class TestDocumentPaths {
 						.middlePrimitive("v")
 						.frontDataPrimitive("v")
 						.build())
-				.group("any", ImmutableSet.of("base"))
+				.group("any", ImmutableList.of("base"))
 				.build();
 		final Context context = buildDoc(syntax,
 				new TreeBuilder(syntax.types.get(0))
