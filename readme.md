@@ -60,10 +60,6 @@ Version 0.0.0
 
 Requires Java 9.
 
-## Installer
-
-Download [here]().
-
 ## Jar
 
 Download [here]().
@@ -119,6 +115,6 @@ java -jar standalone/target/standalone.jar FILENAME
 
 # Documentation
 
-- [Create a language in 10 minutes!](/rendaw/merman/wiki/Create-a-language-in-10-minutes)
-- [Syntax reference](/rendaw/merman/wiki/Syntax-Reference)
-- [Action reference](/rendaw/merman/wiki/Actions-Reference)
+- [Create a language in 10 minutes!](https://github.com/Rendaw/merman/wiki/Create-a-language-in-10-minutes)
+- [Syntax reference](https://github.com/Rendaw/merman/wiki/Syntax-Reference)
+- [Action reference](https://github.com/Rendaw/merman/wiki/Actions-Reference)

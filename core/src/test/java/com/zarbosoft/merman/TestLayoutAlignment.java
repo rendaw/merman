@@ -245,11 +245,7 @@ public class TestLayoutAlignment {
 	public void testConcensusAlignmentSingle() {
 		new GeneralTestWizard(syntax,
 				new TreeBuilder(pair).add("first", "three").add("second", "lumbar").build()
-		).checkBrick(
-				0,
-				2,
-				50
-		);
+		).checkBrick(0, 2, 50);
 	}
 
 	@Test
@@ -348,11 +344,17 @@ public class TestLayoutAlignment {
 				.addArray("value", new TreeBuilder(pair).add("first", "ccc").add("second", "d").build())
 				.build();
 		final ValueArray array = (ValueArray) line2.data.get("value");
-		new GeneralTestWizard(syntax, line2).run(context -> context.history.apply(context, new ChangeArray(array,
-				0,
-				0,
-				ImmutableList.of(new TreeBuilder(pair).add("first", "a").add("second", "b").build())
-		))).checkBrick(0, 2, 10).checkBrick(0, 4, 50);
+		new GeneralTestWizard(syntax, line2)
+				.run(context -> context.history.apply(
+						context,
+						new ChangeArray(array,
+								0,
+								0,
+								ImmutableList.of(new TreeBuilder(pair).add("first", "a").add("second", "b").build())
+						)
+				))
+				.checkBrick(0, 2, 10)
+				.checkBrick(0, 4, 50);
 	}
 
 	@Test
