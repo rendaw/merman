@@ -56,17 +56,17 @@ Of course, there are some drawbacks to this approach
 
 # Get it
 
-Version 0.0.0
+Version 0.0.1
 
 Requires Java 9.
 
 ## Jar
 
-Download [here]().
+Download [here](https://github.com/Rendaw/merman/releases/download/v0.0.1/merman-0.0.1.jar).
 
 Run with:
 ```
-java -jar merman.jar FILENAME
+java -jar merman-0.0.1.jar FILENAME
 ```
 
 ## Build from source
