@@ -1,4 +1,5 @@
 <p align="center"><img src="readme/logo.png" width="95%" alt="merman logo"></p>
+<hr>
 
 Just what _is_ merman?
 
@@ -44,6 +45,7 @@ merman aims to provide these benefits:
 - Languages can use color, font, and images to distinguish elements of the grammar.
 - The user can explicitly resolve ambiguity when it arises, rather than leaving it to the compiler to guess or give up.
 - AST manipulation in scripts and other programs is easy and safe.
+- Better diffs
 - Users can customize the syntax and add sugars to suit their workflow.
 - Programming languages can be localized.
 
