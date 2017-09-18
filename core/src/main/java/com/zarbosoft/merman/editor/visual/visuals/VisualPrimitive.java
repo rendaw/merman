@@ -134,12 +134,6 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 	@Override
 	public void changeTags(final Context context, final TagsChange change) {
 		tags = change.apply(tags);
-		System.out.format("vis primitive %s: tags change add %s, remove %s, done %s\n",
-				parent.atomVisual().atom.type.id(),
-				change.add,
-				change.remove,
-				tags
-		);
 		tagsChanged(context);
 	}
 
@@ -1281,11 +1275,6 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 			final int depthScore
 	) {
 		super(visualDepth);
-		System.out.format("vis primitive %s: tags %s this tags %s\n",
-				parent.atomVisual().atom.type.id(),
-				tags,
-				this.tags
-		);
 		this.tags = tags.plus(new PartTag("primitive"));
 		this.parent = parent;
 		brickStyle = new BrickStyle(context);
