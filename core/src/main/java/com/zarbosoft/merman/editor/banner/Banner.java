@@ -50,7 +50,7 @@ public class Banner {
 			return;
 		if (idle == null) {
 			idle = new IterationPlace(context);
-			context.addIdle(idle);
+			context.addIteration(idle);
 		}
 		idle.animate = idle.animate && animate;
 	}
@@ -179,7 +179,7 @@ public class Banner {
 					timer.schedule(new TimerTask() {
 						@Override
 						public void run() {
-							context.addIdle(new IterationTask() {
+							context.addIteration(new IterationTask() {
 								@Override
 								protected boolean runImplementation(final IterationContext iterationContext) {
 									queue.poll();

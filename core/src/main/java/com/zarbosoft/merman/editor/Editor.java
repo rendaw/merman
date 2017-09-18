@@ -41,12 +41,13 @@ public class Editor {
 			final Syntax syntax,
 			final Document doc,
 			final Display display,
-			final Consumer<IterationTask> addIdle,
+			final Consumer<IterationTask> addIteration,
+			final Consumer<Integer> flushIteration,
 			final Path path,
 			final History history,
 			final ClipboardEngine clipboardEngine
 	) {
-		context = new Context(syntax, doc, display, addIdle, history, clipboardEngine);
+		context = new Context(syntax, doc, display, addIteration, flushIteration, history, clipboardEngine);
 		context.history.clear();
 		context.addActions(this, ImmutableList.of(new ActionUndo(), new ActionRedo(), new ActionClickHovered()));
 		this.visual = display;

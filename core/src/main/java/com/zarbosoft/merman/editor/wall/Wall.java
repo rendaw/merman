@@ -96,7 +96,7 @@ public class Wall {
 	private void getIdle(final Context context) {
 		if (idleAdjust == null) {
 			idleAdjust = new IterationAdjustTask(context);
-			context.addIdle(idleAdjust);
+			context.addIteration(idleAdjust);
 		}
 	}
 
@@ -136,7 +136,7 @@ public class Wall {
 	public void idleCompact(final Context context) {
 		if (idleCompact == null) {
 			idleCompact = new IterationCompactTask(context);
-			context.addIdle(idleCompact);
+			context.addIteration(idleCompact);
 		}
 		idleCompact.at = 0;
 	}
@@ -144,7 +144,7 @@ public class Wall {
 	public void idleExpand(final Context context) {
 		if (idleExpand == null) {
 			idleExpand = new IterationExpandTask(context);
-			context.addIdle(idleExpand);
+			context.addIteration(idleExpand);
 		}
 		idleExpand.at = 0;
 	}

@@ -196,10 +196,16 @@ public class Helper {
 
 	public static Context buildDoc(final Syntax syntax, final Atom... root) {
 		return buildDoc(idleTask -> {
+		}, limit -> {
 		}, syntax, root);
 	}
 
-	public static Context buildDoc(final Consumer<IterationTask> idleAdd, final Syntax syntax, final Atom... root) {
+	public static Context buildDoc(
+			final Consumer<IterationTask> addIteration,
+			final Consumer<Integer> flushIteration,
+			final Syntax syntax,
+			final Atom... root
+	) {
 		final Document doc = new Document(syntax,
 				new Atom(syntax.root,
 						ImmutableMap.of("value",
@@ -207,8 +213,13 @@ public class Helper {
 						)
 				)
 		);
-		final Context context =
-				new Context(syntax, doc, new MockeryDisplay(), idleAdd, new History(), new ClipboardEngine() {
+		final Context context = new Context(syntax,
+				doc,
+				new MockeryDisplay(),
+				addIteration,
+				flushIteration,
+				new History(),
+				new ClipboardEngine() {
 					byte[] data = null;
 					String string = null;
 
@@ -231,7 +242,8 @@ public class Helper {
 					public String getString() {
 						return string;
 					}
-				});
+				}
+		);
 		return context;
 	}
 }

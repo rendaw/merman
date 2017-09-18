@@ -5,24 +5,33 @@ import com.zarbosoft.merman.editor.IterationTask;
 
 import java.util.PriorityQueue;
 
-public class IdleRunner {
+public class IterationRunner {
 	private final PriorityQueue<IterationTask> idleQueue = new PriorityQueue<>();
 
-	public void idleAdd(final IterationTask task) {
+	public void addIteration(final IterationTask task) {
 		idleQueue.add(task);
 	}
 
-	public void flush() {
+	public boolean flushInner(final int limit) {
 		final IterationContext iterationContext = new IterationContext();
-		for (int i = 0; i < 1000; ++i) { // Batch
+		for (int i = 0; i < limit; ++i) { // Batch
 			final IterationTask top = idleQueue.poll();
 			if (top == null) {
-				return;
+				return true;
 			} else {
 				if (top.run(iterationContext))
-					idleAdd(top);
+					addIteration(top);
 			}
 		}
-		throw new AssertionError("Too much idle activity");
+		return false;
+	}
+
+	public void flushIteration(final int limit) {
+		flushInner(limit);
+	}
+
+	public void flush() {
+		if (!flushInner(1000))
+			throw new AssertionError("Too much idle activity");
 	}
 }

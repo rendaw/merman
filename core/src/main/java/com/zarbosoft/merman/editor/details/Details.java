@@ -51,7 +51,7 @@ public class Details {
 			return;
 		if (idle == null) {
 			idle = new IterationPlace(context);
-			context.addIdle(idle);
+			context.addIteration(idle);
 		}
 		idle.animate = idle.animate && animate;
 	}

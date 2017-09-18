@@ -39,7 +39,6 @@ import com.zarbosoft.merman.syntax.style.Style;
 import com.zarbosoft.rendaw.common.ChainComparator;
 import com.zarbosoft.rendaw.common.Pair;
 import com.zarbosoft.rendaw.common.WeakCache;
-import javafx.animation.Interpolator;
 import org.pcollections.HashTreePSet;
 import org.pcollections.PSet;
 import org.pcollections.TreePVector;
@@ -492,7 +491,7 @@ public class Context {
 	public void idleLayBricksAfterEnd(final Brick end) {
 		if (idleLayBricks == null) {
 			idleLayBricks = new IterationLayBricks();
-			addIdle(idleLayBricks);
+			addIteration(idleLayBricks);
 		}
 		idleLayBricks.ends.add(end);
 	}
@@ -500,7 +499,7 @@ public class Context {
 	public void idleLayBricksBeforeStart(final Brick start) {
 		if (idleLayBricks == null) {
 			idleLayBricks = new IterationLayBricks();
-			addIdle(idleLayBricks);
+			addIteration(idleLayBricks);
 		}
 		idleLayBricks.starts.add(start);
 	}
@@ -840,7 +839,8 @@ public class Context {
 			final Syntax syntax,
 			final Document document,
 			final Display display,
-			final Consumer<IterationTask> addIdle,
+			final Consumer<IterationTask> addIteration,
+			final Consumer<Integer> flushIteration,
 			final History history,
 			final ClipboardEngine clipboardEngine
 	) {
@@ -867,7 +867,8 @@ public class Context {
 		display.add(midground);
 		display.add(foreground.visual);
 		display.add(overlay);
-		this.addIdle = addIdle;
+		this.addIteration = addIteration;
+		this.flushIteration = flushIteration;
 		banner = new Banner(this);
 		details = new Details(this);
 		this.history = history;
@@ -895,6 +896,7 @@ public class Context {
 			if (!keyListeners.stream().allMatch(l -> l.handleKey(this, hidEvent)))
 				return;
 			keyIgnore = true;
+			flushIteration(100);
 		});
 		display.addTypingListener(text -> {
 			if (keyIgnore) {
@@ -904,6 +906,7 @@ public class Context {
 			if (text.isEmpty())
 				return;
 			selection.receiveText(this, text);
+			flushIteration(100);
 		});
 		display.addMouseExitListener(() -> {
 			if (hoverIdle != null) {
@@ -915,7 +918,7 @@ public class Context {
 		display.addMouseMoveListener(vector -> {
 			if (hoverIdle == null) {
 				hoverIdle = new HoverIteration(this);
-				addIdle.accept(hoverIdle);
+				addIteration.accept(hoverIdle);
 			}
 			hoverIdle.point = vector.add(new Vector(-syntax.pad.converseStart, scroll + peek));
 		});
@@ -1024,24 +1027,16 @@ public class Context {
 		}
 	}
 
-	private final Consumer<IterationTask> addIdle;
+	private final Consumer<IterationTask> addIteration;
+	private final Consumer<Integer> flushIteration;
 
-	public void addIdle(final IterationTask task) {
-		this.addIdle.accept(task);
+	public void addIteration(final IterationTask task) {
+		this.addIteration.accept(task);
 	}
 
-	static class TheInterpolator extends Interpolator {
-		@Override
-		protected double curve(double t) {
-			t = t * 2;
-			if (t * 2 < 1)
-				return Math.pow(t, 3) / 2;
-			else
-				return Math.pow(t - 1, 3) / 2 + 1;
-		}
+	public void flushIteration(final int limit) {
+		this.flushIteration.accept(limit);
 	}
-
-	public static TheInterpolator interpolator = new TheInterpolator();
 
 	private abstract static class ActionBase extends Action {
 		public static String group() {

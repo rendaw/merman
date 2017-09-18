@@ -45,7 +45,7 @@ public class ConcensusAlignment extends Alignment {
 	private void iterationAlign(final Context context) {
 		if (iterationAlign == null) {
 			iterationAlign = new IterationAlign(context);
-			context.addIdle(iterationAlign);
+			context.addIteration(iterationAlign);
 		}
 	}
 

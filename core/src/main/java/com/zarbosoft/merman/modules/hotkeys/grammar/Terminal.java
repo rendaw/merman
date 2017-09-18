@@ -36,6 +36,6 @@ public class Terminal implements Node {
 
 	@Override
 	public String toString() {
-		return key.toString();
+		return String.valueOf(key);
 	}
 }

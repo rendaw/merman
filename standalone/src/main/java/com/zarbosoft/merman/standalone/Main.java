@@ -188,7 +188,16 @@ public class Main extends Application {
 		else
 			doc = syntax.create();
 		this.display = new JavaFXDisplay(syntax);
-		editor = new Editor(syntax, doc, display, this::addIdle, path, history, new SimpleClipboardEngine());
+		editor = new Editor(
+				syntax,
+				doc,
+				display,
+				this::addIteration,
+				this::flushIteration,
+				path,
+				history,
+				new SimpleClipboardEngine()
+		);
 		editor.addActions(this, ImmutableList.of(new ActionSave(), new ActionQuit(), new ActionDebug()));
 		final HBox filesystemLayout = new HBox();
 		filesystemLayout.setPadding(new Insets(3, 2, 3, 2));
@@ -315,7 +324,35 @@ public class Main extends Application {
 		editor.focus();
 	}
 
-	private void addIdle(final IterationTask task) {
+	private void flushIteration(final int limit) {
+		final long start = System.currentTimeMillis();
+		// TODO measure pending event backlog, adjust batch size to accomodate
+		// by proxy? time since last invocation?
+		for (int i = 0; i < limit; ++i) {
+			{
+				long now = start;
+				if (i % 100 == 0) {
+					now = System.currentTimeMillis();
+				}
+				if (now - start > 500) {
+					iterationContext = null;
+					break;
+				}
+			}
+			final IterationTask top = iterationQueue.poll();
+			if (top == null) {
+				iterationContext = null;
+				break;
+			} else {
+				if (iterationContext == null)
+					iterationContext = new IterationContext();
+				if (top.run(iterationContext))
+					addIteration(top);
+			}
+		}
+	}
+
+	private void addIteration(final IterationTask task) {
 		iterationQueue.add(task);
 		if (iterationTimer == null) {
 			try {
@@ -326,31 +363,7 @@ public class Main extends Application {
 					Platform.runLater(() -> {
 						wrap(stage.getOwner(), () -> {
 							try {
-								final long start = System.currentTimeMillis();
-								// TODO measure pending event backlog, adjust batch size to accomodate
-								// by proxy? time since last invocation?
-								for (int i = 0; i < 1000; ++i) {
-									{
-										long now = start;
-										if (i % 100 == 0) {
-											now = System.currentTimeMillis();
-										}
-										if (now - start > 500) {
-											iterationContext = null;
-											break;
-										}
-									}
-									final IterationTask top = iterationQueue.poll();
-									if (top == null) {
-										iterationContext = null;
-										break;
-									} else {
-										if (iterationContext == null)
-											iterationContext = new IterationContext();
-										if (top.run(iterationContext))
-											addIdle(top);
-									}
-								}
+								flushIteration(1000);
 							} finally {
 								iterationPending = false;
 							}

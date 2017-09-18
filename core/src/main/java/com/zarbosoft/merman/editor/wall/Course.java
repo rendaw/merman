@@ -190,21 +190,21 @@ public class Course {
 	private void getIdlePlace(final Context context) {
 		if (idlePlace == null) {
 			idlePlace = new IterationPlaceTask(context);
-			context.addIdle(idlePlace);
+			context.addIteration(idlePlace);
 		}
 	}
 
 	private void getIdleCompact(final Context context) {
 		if (idleCompact == null) {
 			idleCompact = new IterationCompactTask(context);
-			context.addIdle(idleCompact);
+			context.addIteration(idleCompact);
 		}
 	}
 
 	private void getIdleExpand(final Context context) {
 		if (idleExpand == null) {
 			idleExpand = new IterationExpandTask(context);
-			context.addIdle(idleExpand);
+			context.addIteration(idleExpand);
 		}
 	}
 

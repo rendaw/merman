@@ -1,5 +1,6 @@
 package com.zarbosoft.merman.syntax.front;
 
+import com.google.common.collect.ImmutableSet;
 import com.zarbosoft.interface1.Configuration;
 import com.zarbosoft.merman.document.Atom;
 import com.zarbosoft.merman.editor.Context;
@@ -25,7 +26,7 @@ import java.util.stream.Collectors;
 @Configuration(name = "primitive")
 public class FrontDataPrimitive extends FrontPart {
 	@Configuration
-	public Set<String> tags = new HashSet<>();
+	private Set<String> tags = new HashSet<>();
 
 	@Configuration
 	public String middle;
@@ -45,8 +46,12 @@ public class FrontDataPrimitive extends FrontPart {
 			final int visualDepth,
 			final int depthScore
 	) {
-		return new VisualPrimitive(
-				context,
+		System.out.format("front primitive %s: tags %s this tags %s\n",
+				parent.atomVisual().atom.type.id(),
+				tags,
+				this.tags
+		);
+		return new VisualPrimitive(context,
 				parent,
 				dataType.get(atom.data),
 				HashTreePSet
@@ -58,8 +63,24 @@ public class FrontDataPrimitive extends FrontPart {
 		);
 	}
 
+	public Set<String> tags() {
+		return ImmutableSet.copyOf(tags);
+	}
+
+	public void tags(final Set<String> tags) {
+		if (!this.tags.isEmpty())
+			throw new AssertionError();
+		this.tags = tags;
+	}
+
 	@Override
 	public void finish(final AtomType atomType, final Set<String> middleUsed) {
+		System.out.format("front primitive %s %s: finish tags %s %s\n",
+				System.identityHashCode(this),
+				atomType.id(),
+				System.identityHashCode(tags),
+				tags
+		);
 		middleUsed.add(middle);
 		this.dataType = atomType.getDataPrimitive(middle);
 	}

@@ -9,13 +9,13 @@ import com.zarbosoft.merman.syntax.Syntax;
 import static com.zarbosoft.merman.helper.Helper.buildDoc;
 
 public class TestWizard {
-	public final IdleRunner runner;
+	public final IterationRunner runner;
 	public final Context context;
 	private final MockeryDisplay display;
 
 	public TestWizard(final Syntax syntax, final Atom... initial) {
-		this.runner = new IdleRunner();
-		this.context = buildDoc(runner::idleAdd, syntax, initial);
+		this.runner = new IterationRunner();
+		this.context = buildDoc(runner::addIteration, runner::flushIteration, syntax, initial);
 		this.display = (MockeryDisplay) context.display;
 		runner.flush();
 	}
