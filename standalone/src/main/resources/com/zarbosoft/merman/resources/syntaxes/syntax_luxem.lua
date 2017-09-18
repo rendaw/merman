@@ -166,8 +166,8 @@ local syntax = {
             name = 'Luxem Type',
             back = {
                 data_type {
-                    middle = 'type',
-                    child = data_atom 'value',
+                    type = 'type',
+                    value = data_atom 'value',
                 }
             },
             middle = {

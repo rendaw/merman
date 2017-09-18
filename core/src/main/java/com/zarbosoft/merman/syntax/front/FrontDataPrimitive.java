@@ -46,12 +46,8 @@ public class FrontDataPrimitive extends FrontPart {
 			final int visualDepth,
 			final int depthScore
 	) {
-		System.out.format("front primitive %s: tags %s this tags %s\n",
-				parent.atomVisual().atom.type.id(),
-				tags,
-				this.tags
-		);
-		return new VisualPrimitive(context,
+		return new VisualPrimitive(
+				context,
 				parent,
 				dataType.get(atom.data),
 				HashTreePSet
@@ -75,12 +71,6 @@ public class FrontDataPrimitive extends FrontPart {
 
 	@Override
 	public void finish(final AtomType atomType, final Set<String> middleUsed) {
-		System.out.format("front primitive %s %s: finish tags %s %s\n",
-				System.identityHashCode(this),
-				atomType.id(),
-				System.identityHashCode(tags),
-				tags
-		);
 		middleUsed.add(middle);
 		this.dataType = atomType.getDataPrimitive(middle);
 	}
