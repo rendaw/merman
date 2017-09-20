@@ -329,9 +329,9 @@ public class SuffixGapAtomType extends AtomType {
 				}
 			};
 			front = ImmutableList.copyOf(Iterables.concat(frontPrefix,
-					ImmutableList.of(gap),
-					frontInfix,
 					ImmutableList.of(value),
+					frontInfix,
+					ImmutableList.of(gap),
 					frontSuffix
 			));
 		}
@@ -404,16 +404,4 @@ public class SuffixGapAtomType extends AtomType {
 				raise
 		);
 	}
-
-	public Atom create(final boolean raise) {
-		return new SuffixGapAtom(this,
-				ImmutableMap.of("value",
-						new ValueArray(dataValue, ImmutableList.of()),
-						"gap",
-						new ValuePrimitive(dataGap, "")
-				),
-				raise
-		);
-	}
-
 }

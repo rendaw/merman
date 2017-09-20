@@ -641,12 +641,8 @@ public abstract class VisualNestedBase extends Visual implements VisualLeaf {
 		@Override
 		public boolean run(final Context context) {
 
-			final Atom old = atomGet();
-			final Atom gap = context.syntax.suffixGap.create(false);
+			final Atom gap = context.syntax.suffixGap.create(false, atomGet());
 			nodeSet(context, gap);
-			context.history.apply(context,
-					new ChangeArray((ValueArray) gap.data.get("value"), 0, 0, ImmutableList.of(old))
-			);
 			gap.data.get("gap").selectDown(context);
 			return false;
 		}

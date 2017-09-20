@@ -18,8 +18,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import static com.zarbosoft.merman.helper.Helper.assertTreeEqual;
-import static com.zarbosoft.merman.helper.Helper.buildDoc;
+import static com.zarbosoft.merman.helper.Helper.*;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -232,7 +231,7 @@ public class TestDocumentGap {
 		innerTestTransform(MiscSyntax.syntax,
 				() -> MiscSyntax.syntax.suffixGap.create(true, new TreeBuilder(MiscSyntax.one).build()),
 				context -> {
-					Helper.rootArray(context.document).data.get(0).visual.selectDown(context);
+					Helper.rootArray(context.document).data.get(0).data.get("gap").selectDown(context);
 					context.selection.receiveText(context, "?");
 					context.selection.receiveText(context, "e");
 				},
