@@ -34,7 +34,7 @@ public class VisualAtom extends Visual {
 	public boolean compact = false;
 	private final Map<String, Alignment> alignments = new HashMap<>();
 	private final Map<String, Alignment> localAlignments = new HashMap<>();
-	private final List<Visual> children = new ArrayList<>();
+	public final List<Visual> children = new ArrayList<>();
 	private final List<Visual> selectable = new ArrayList<>();
 	public Brick firstBrick;
 	Attachment firstBrickListener = new Attachment() {
