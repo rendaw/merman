@@ -208,8 +208,7 @@ public class GapAtomType extends AtomType {
 						for (final FreeAtomType type : (
 								iterable(context.syntax.getLeafTypes(self.parent.childType()))
 						)) {
-							final List<GapKey> gapKeys = gapKeys(type);
-							for (final GapKey key : gapKeys(type)) {
+							for (final GapKey key : gapKeys(syntax, type, null)) {
 								final GapChoice choice = new GapChoice(type, key);
 								union.add(new Color(choice, new Operator(key.matchGrammar(type), store1 -> {
 									return store1.pushStack(choice);

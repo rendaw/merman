@@ -164,6 +164,7 @@ public class SuffixGapAtomType extends AtomType {
 				protected List<? extends Choice> process(
 						final Context context, final Atom self, final String string, final Common.UserData store
 				) {
+					final SuffixGapAtom suffixSelf = (SuffixGapAtom) self;
 					class SuffixChoice extends Choice {
 						private final FreeAtomType type;
 						private final GapKey key;
@@ -178,8 +179,6 @@ public class SuffixGapAtomType extends AtomType {
 						}
 
 						public void choose(final Context context, final String string) {
-							final SuffixGapAtom suffixSelf = (SuffixGapAtom) self;
-
 							Atom root;
 							Value.Parent rootPlacement;
 							Atom child;
@@ -272,6 +271,7 @@ public class SuffixGapAtomType extends AtomType {
 					}
 
 					// Get or build gap grammar
+					final AtomType childType = ((ValueArray) suffixSelf.data.get("value")).data.get(0).type;
 					final Grammar grammar = store.get(() -> {
 						final Union union = new Union();
 						for (final FreeAtomType type : context.syntax.types) {
@@ -279,7 +279,7 @@ public class SuffixGapAtomType extends AtomType {
 									findReplacementPoint(context, self.parent, type);
 							if (replacementPoint.first == null)
 								continue;
-							for (final GapKey key : gapKeys(type)) {
+							for (final GapKey key : gapKeys(syntax, type, childType)) {
 								if (key.indexBefore == -1)
 									continue;
 								final Choice choice = new SuffixChoice(type, key);

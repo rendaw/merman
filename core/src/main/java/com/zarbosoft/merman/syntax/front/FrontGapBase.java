@@ -24,6 +24,9 @@ import com.zarbosoft.merman.editor.visual.tags.Tag;
 import com.zarbosoft.merman.editor.visual.visuals.VisualPrimitive;
 import com.zarbosoft.merman.syntax.AtomType;
 import com.zarbosoft.merman.syntax.FreeAtomType;
+import com.zarbosoft.merman.syntax.Syntax;
+import com.zarbosoft.merman.syntax.middle.MiddleArrayBase;
+import com.zarbosoft.merman.syntax.middle.MiddleAtom;
 import com.zarbosoft.merman.syntax.middle.MiddlePrimitive;
 import com.zarbosoft.merman.syntax.style.BoxStyle;
 import com.zarbosoft.merman.syntax.style.Style;
@@ -472,19 +475,33 @@ public abstract class FrontGapBase extends FrontPart {
 		}
 	}
 
-	protected static List<GapKey> gapKeys(final FreeAtomType type) {
+	protected static List<GapKey> gapKeys(final Syntax syntax, final FreeAtomType type, final AtomType childType) {
 		final List<GapKey> out = new ArrayList<>();
 		final Common.Mutable<GapKey> top = new Common.Mutable<>(new GapKey());
 		top.value.indexBefore = -1;
 		enumerate(type.front().stream()).forEach(p -> {
 			p.second.dispatch(new FrontPart.DispatchHandler() {
-				private void flush(final boolean node) {
+				private void flush(final boolean drop) {
 					if (!top.value.keyParts.isEmpty()) {
-						top.value.indexAfter = p.first;
+						if (drop)
+							top.value.indexAfter = -1;
+						else
+							top.value.indexAfter = p.first;
 						out.add(top.value);
 						top.value = new GapKey();
 					}
-					top.value.indexBefore = p.first;
+					if (drop)
+						top.value.indexBefore = -1;
+					else
+						top.value.indexBefore = p.first;
+				}
+
+				private boolean isTypeAllowed(final String type) {
+					return childType == null ||
+							childType == syntax.gap ||
+							childType == syntax.prefixGap ||
+							childType == syntax.suffixGap ||
+							syntax.getLeafTypes(type).anyMatch(t -> t.equals(childType));
 				}
 
 				@Override
@@ -497,13 +514,13 @@ public abstract class FrontGapBase extends FrontPart {
 				@Override
 				public void handle(final FrontDataArrayBase front) {
 					front.prefix.forEach(front2 -> front2.dispatch(this));
-					flush(true);
+					flush(!isTypeAllowed(((MiddleArrayBase) type.middle.get(front.middle())).type));
 					front.suffix.forEach(front2 -> front2.dispatch(this));
 				}
 
 				@Override
 				public void handle(final FrontDataAtom front) {
-					flush(true);
+					flush(!isTypeAllowed(((MiddleAtom) type.middle.get(front.middle())).type));
 				}
 
 				@Override

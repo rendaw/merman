@@ -18,7 +18,8 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import static com.zarbosoft.merman.helper.Helper.*;
+import static com.zarbosoft.merman.helper.Helper.assertTreeEqual;
+import static com.zarbosoft.merman.helper.Helper.buildDoc;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -259,6 +260,20 @@ public class TestDocumentGap {
 						.build());
 	}
 
+	@Test
+	public void suffixOnlyPlaceAllowedTypes() {
+		final Atom gap = SyntaxRestrictedRoot.syntax.suffixGap.create(true,
+				new TreeBuilder(SyntaxRestrictedRoot.quoted).add("value", "hi").build()
+		);
+		new GeneralTestWizard(SyntaxRestrictedRoot.syntax, gap)
+				.run(context -> gap.data.get("gap").selectDown(context))
+				.sendText("!")
+				.checkArrayTree(new TreeBuilder(SyntaxRestrictedRoot.syntax.suffixGap)
+						.addArray("value", new TreeBuilder(SyntaxRestrictedRoot.quoted).add("value", "hi").build())
+						.add("gap", "!")
+						.build());
+	}
+
 	// ========================================================================
 	// Prefix
 	@Test
@@ -298,6 +313,20 @@ public class TestDocumentGap {
 								.addArray("value", new TreeBuilder(MiscSyntax.one).build())
 				).build()
 		);
+	}
+
+	@Test
+	public void prefixOnlyPlaceAllowedTypes() {
+		final Atom gap = SyntaxRestrictedRoot.syntax.prefixGap.create(new TreeBuilder(SyntaxRestrictedRoot.quoted)
+				.add("value", "hi")
+				.build());
+		new GeneralTestWizard(SyntaxRestrictedRoot.syntax, gap)
+				.run(context -> gap.data.get("gap").selectDown(context))
+				.sendText("!")
+				.checkArrayTree(new TreeBuilder(SyntaxRestrictedRoot.syntax.prefixGap)
+						.add("gap", "!")
+						.addArray("value", new TreeBuilder(SyntaxRestrictedRoot.quoted).add("value", "hi").build())
+						.build());
 	}
 
 	// ========================================================================

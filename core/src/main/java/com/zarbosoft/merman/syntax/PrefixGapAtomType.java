@@ -86,6 +86,7 @@ public class PrefixGapAtomType extends AtomType {
 				protected List<? extends Choice> process(
 						final Context context, final Atom self, final String string, final Common.UserData store
 				) {
+					final Atom value = ((ValueArray) self.data.get("value")).data.get(0);
 					class PrefixChoice extends Choice {
 						private final FreeAtomType type;
 						private final GapKey key;
@@ -108,7 +109,6 @@ public class PrefixGapAtomType extends AtomType {
 							self.parent.replace(context, atom);
 
 							// Wrap the value in a prefix gap and place
-							final Atom value = ((ValueArray) self.data.get("value")).data.get(0);
 							final Atom inner =
 									parsed.nextInput == null ? context.syntax.prefixGap.create(value) : value;
 							type.front().get(key.indexAfter).dispatch(new NodeOnlyDispatchHandler() {
@@ -159,9 +159,8 @@ public class PrefixGapAtomType extends AtomType {
 						final Union union = new Union();
 						for (final FreeAtomType type : (
 								iterable(context.syntax.getLeafTypes(self.parent.childType()))
-
 						)) {
-							for (final GapKey key : gapKeys(type)) {
+							for (final GapKey key : gapKeys(syntax, type, value.type)) {
 								if (key.indexAfter == -1)
 									continue;
 								final PrefixChoice choice = new PrefixChoice(type, key);
