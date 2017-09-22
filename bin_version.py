@@ -24,6 +24,7 @@ subprocess.check_call([
     'tag',
     '-a', 'v{}'.format(args.version),
     '-m', 'v{}'.format(args.version),
+    '-f',
 ])
 subprocess.check_call([
     'git',
