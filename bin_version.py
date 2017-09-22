@@ -13,7 +13,7 @@ subprocess.check_call([
     '-DnewVersion={}'.format(args.version),
     '-DgenerateBackupPoms=false',
 ])
-subprocess.check_call([
+subprocess.call([
     'git',
     'commit',
     '-a',
