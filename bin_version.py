@@ -30,4 +30,5 @@ subprocess.check_call([
     'git',
     'push',
     '--tags',
+    '-f',
 ])
