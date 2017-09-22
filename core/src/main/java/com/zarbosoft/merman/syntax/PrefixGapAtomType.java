@@ -252,7 +252,7 @@ public class PrefixGapAtomType extends AtomType {
 	}
 
 	@Override
-	public boolean frontAssociative() {
+	public boolean associateForward() {
 		return false;
 	}
 

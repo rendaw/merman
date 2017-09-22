@@ -38,7 +38,7 @@ public class ExpressionSyntax {
 				.frontMark("+")
 				.frontDataNode("second")
 				.precedence(10)
-				.associateAfter()
+				.associateForward()
 				.autoComplete(99)
 				.build();
 		minus = new TypeBuilder("minus")
@@ -52,7 +52,7 @@ public class ExpressionSyntax {
 				.frontMark("-")
 				.frontDataNode("second")
 				.precedence(10)
-				.associateBefore()
+				.associateBackward()
 				.autoComplete(99)
 				.build();
 		multiply = new TypeBuilder("multiply")
@@ -66,7 +66,7 @@ public class ExpressionSyntax {
 				.frontMark("*")
 				.frontDataNode("second")
 				.precedence(20)
-				.associateAfter()
+				.associateForward()
 				.autoComplete(99)
 				.build();
 		divide = new TypeBuilder("divide")
@@ -80,7 +80,7 @@ public class ExpressionSyntax {
 				.frontMark("/")
 				.frontDataNode("second")
 				.precedence(20)
-				.associateAfter()
+				.associateForward()
 				.autoComplete(99)
 				.build();
 		subscript = new TypeBuilder("subscript")

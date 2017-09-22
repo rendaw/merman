@@ -36,7 +36,7 @@ public abstract class AtomType {
 
 	public abstract int precedence();
 
-	public abstract boolean frontAssociative();
+	public abstract boolean associateForward();
 
 	public abstract String id();
 

@@ -39,7 +39,7 @@ public class FreeAtomType extends AtomType {
 	public int precedence = Integer.MAX_VALUE;
 
 	@Configuration(name = "associate_forward", optional = true)
-	public boolean frontAssociative = false;
+	public boolean associateForward = false;
 
 	@Configuration(name = "auto_choose_ambiguity", optional = true)
 	public int autoChooseAmbiguity = 1;
@@ -80,8 +80,8 @@ public class FreeAtomType extends AtomType {
 	}
 
 	@Override
-	public boolean frontAssociative() {
-		return frontAssociative;
+	public boolean associateForward() {
+		return associateForward;
 	}
 
 	@Override

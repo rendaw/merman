@@ -139,13 +139,13 @@ public class TypeBuilder {
 		return this;
 	}
 
-	public TypeBuilder associateAfter() {
-		this.type.frontAssociative = false;
+	public TypeBuilder associateForward() {
+		this.type.associateForward = true;
 		return this;
 	}
 
-	public TypeBuilder associateBefore() {
-		this.type.frontAssociative = true;
+	public TypeBuilder associateBackward() {
+		this.type.associateForward = false;
 		return this;
 	}
 

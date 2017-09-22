@@ -77,7 +77,7 @@ public class SuffixGapAtomType extends AtomType {
 				return false;
 
 			// Can't move up if next level has same precedence and parent is forward-associative
-			if (testAtom.type.precedence() == type.precedence && !testAtom.type.frontAssociative())
+			if (testAtom.type.precedence() == type.precedence && testAtom.type.associateForward())
 				return false;
 		}
 
@@ -374,7 +374,7 @@ public class SuffixGapAtomType extends AtomType {
 	}
 
 	@Override
-	public boolean frontAssociative() {
+	public boolean associateForward() {
 		return false;
 	}
 

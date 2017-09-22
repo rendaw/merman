@@ -301,7 +301,7 @@ public class GapAtomType extends AtomType {
 	}
 
 	@Override
-	public boolean frontAssociative() {
+	public boolean associateForward() {
 		return false;
 	}
 
