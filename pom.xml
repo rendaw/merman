@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.zarbosoft</groupId>
     <artifactId>merman</artifactId>
-    <version>0.0.3</version>
+    <version>0.0.5</version>
     <packaging>pom</packaging>
     <modules>
         <module>core</module>
