@@ -29,6 +29,10 @@ subprocess.check_call([
 subprocess.check_call([
     'git',
     'push',
+])
+subprocess.check_call([
+    'git',
+    'push',
     '--tags',
     '-f',
 ])
