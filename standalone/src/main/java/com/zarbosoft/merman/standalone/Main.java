@@ -110,48 +110,6 @@ public class Main extends Application {
 	@Override
 	public void start(final Stage primaryStage) {
 		stage = primaryStage;
-		/*
-		TODO
-		lots of duplicate code between gap types
-		create default code (array) repeated a lot?
-		infinite recursion select down array which only has itself as a child type.
-			don't auto create child in that case? only create child if user selects down
-		get leaf types - deduplicate to prevent endless loops
-		//readme
-		x//doc on tagging
-		//syntax documenter
-		//action documenter
-		//	action name as a static method?
-		//	or java ast parser to extract actions? description as block comment?
-		action to select part directly
-		compact/expand all with same priority together
-		//clean up luxem syntax (colors, etc)
-		//improve hover type info
-		publish all dependencies
-		hn/reddit
-
-		long range goals
-		_sed (led) substitution
-		_modules from dir
-		_document distributing modules
-		_document distributions
-		_layout templates for complete details + banner styling
-		_vertical text
-		_toc plugin
-		_persistent history ~ changes relative to back, watch syntax and autoreload
-		_better visibility into action bindings
-		_better syntax lua parse error messages
-		_limit bricks to widget boundaries +- 1 page or so
-			_when brick created and not split, if any atom with a brick in the new brick's course has lower space priority and is compact, compact this atom
-			_keep compact status in atom?  when creating a brick, make it start compacted
-		_pidgoon references ("mold"?) for things like swap sugar
-
-		?
-		move scroll to wall with listener for banner/details?
-		display methods take display, not context; add default methods to turn context -> display
-		add array prefix/suffix gaps (?)
-		store selection position in visual? restore on selectDown
-		 */
 		final EditorGlobal global = new EditorGlobal();
 		{
 			final Path logRoot = global.appDirs.user_log_dir(true);
