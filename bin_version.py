@@ -2,7 +2,7 @@
 import argparse
 import subprocess
 
-if subprocess.check_output(['git', 'ls-files', '-m']):
+if subprocess.call(['git', 'diff-index', '--quiet', 'HEAD']) != 0:
     raise RuntimeError('Working directory must be clean.')
 parser = argparse.ArgumentParser()
 parser.add_argument('version')
