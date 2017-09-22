@@ -58,7 +58,7 @@ Of course, there are some drawbacks to this approach
 
 # Get it
 
-Version 0.0.1
+Version 0.0.2
 
 Requires Java 9.
 
@@ -120,3 +120,4 @@ java -jar standalone/target/standalone.jar FILENAME
 - [Create a language in 10 minutes!](https://github.com/Rendaw/merman/wiki/Create-a-language-in-10-minutes!)
 - [Syntax reference](https://github.com/Rendaw/merman/wiki/Syntax-Reference)
 - [Action reference](https://github.com/Rendaw/merman/wiki/Actions-Reference)
+- [Roadmap](https://github.com/Rendaw/merman/wiki/Roadmap)
