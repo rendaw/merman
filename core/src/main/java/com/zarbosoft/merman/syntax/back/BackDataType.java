@@ -6,7 +6,6 @@ import com.zarbosoft.merman.editor.backevents.ETypeEvent;
 import com.zarbosoft.merman.syntax.AtomType;
 import com.zarbosoft.merman.syntax.Syntax;
 import com.zarbosoft.merman.syntax.middle.MiddlePrimitive;
-import com.zarbosoft.merman.syntax.middle.primitive.Pattern;
 import com.zarbosoft.pidgoon.Node;
 import com.zarbosoft.pidgoon.events.Event;
 import com.zarbosoft.pidgoon.events.Operator;
@@ -29,11 +28,11 @@ public class BackDataType extends BackPart {
 	@Override
 	public Node buildBackRule(final Syntax syntax, final AtomType atomType) {
 		final MiddlePrimitive middle = atomType.getDataPrimitive(this.type);
-		final Pattern.Matcher matcher = middle.pattern.new Matcher();
 		return new Sequence().add(new Operator(new Terminal() {
 			@Override
 			protected boolean matches(final Event event) {
-				return event instanceof ETypeEvent && matcher.match(((ETypeEvent) event).value);
+				return event instanceof ETypeEvent &&
+						(middle.matcher == null || middle.matcher.match(((ETypeEvent) event).value));
 			}
 		}, store -> {
 			store = (Store) store.pushStack(new Pair<>(this.type,

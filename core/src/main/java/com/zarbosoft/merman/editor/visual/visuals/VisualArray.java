@@ -15,7 +15,7 @@ import com.zarbosoft.merman.editor.wall.Brick;
 import com.zarbosoft.merman.editor.wall.BrickInterface;
 import com.zarbosoft.merman.editor.wall.bricks.BrickSpace;
 import com.zarbosoft.merman.syntax.front.FrontSymbol;
-import com.zarbosoft.merman.syntax.middle.MiddleArray;
+import com.zarbosoft.merman.syntax.middle.MiddleArrayBase;
 import com.zarbosoft.merman.syntax.style.Style;
 import com.zarbosoft.merman.syntax.symbol.Symbol;
 import com.zarbosoft.rendaw.common.DeadCode;
@@ -937,8 +937,7 @@ public abstract class VisualArray extends VisualGroup implements VisualLeaf {
 		private class ActionPaste extends ActionBase {
 			@Override
 			public boolean run(final Context context) {
-
-				final List<Atom> atoms = context.uncopy(((MiddleArray) self.value.middle()).type);
+				final List<Atom> atoms = context.uncopy(((MiddleArrayBase) self.value.middle()).type);
 				if (atoms.isEmpty())
 					return false;
 				context.history.apply(context,

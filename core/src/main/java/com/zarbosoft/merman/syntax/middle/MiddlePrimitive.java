@@ -11,13 +11,11 @@ import com.zarbosoft.merman.syntax.middle.primitive.Pattern;
 import java.util.Map;
 import java.util.Set;
 
-import static com.zarbosoft.merman.syntax.middle.primitive.Pattern.repeatedAny;
-
 @Configuration(name = "primitive")
 public class MiddlePrimitive extends MiddlePart {
 
 	@Configuration(optional = true)
-	public Pattern pattern = repeatedAny;
+	public Pattern pattern = null;
 
 	public Pattern.Matcher matcher = null;
 
@@ -35,12 +33,12 @@ public class MiddlePrimitive extends MiddlePart {
 
 	@Override
 	public void finish(final Set<String> allTypes, final Set<String> scalarTypes) {
-		matcher = pattern.new Matcher();
+		if (pattern != null)
+			matcher = pattern.new Matcher();
 	}
 
 	@Override
 	public com.zarbosoft.merman.document.values.Value create(final Syntax syntax) {
 		return new ValuePrimitive(this, "");
 	}
-
 }

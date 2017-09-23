@@ -10,14 +10,12 @@ import com.zarbosoft.merman.editor.visual.tags.FreeTag;
 import com.zarbosoft.merman.editor.visual.tags.PartTag;
 import com.zarbosoft.merman.editor.visual.tags.Tag;
 import com.zarbosoft.merman.editor.visual.visuals.VisualNestedFromArray;
-import com.zarbosoft.merman.modules.hotkeys.grammar.Node;
 import com.zarbosoft.merman.syntax.AtomType;
 import com.zarbosoft.merman.syntax.middle.MiddleArray;
 import com.zarbosoft.merman.syntax.symbol.Symbol;
 import org.pcollections.HashTreePSet;
 import org.pcollections.PSet;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -32,9 +30,6 @@ public class FrontDataArrayAsAtom extends FrontPart {
 	@Configuration
 	public String middle;
 	private MiddleArray dataType;
-
-	@Configuration(optional = true)
-	public Map<String, Node> hotkeys = new HashMap<>();
 
 	@Override
 	public Visual createVisual(

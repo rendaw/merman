@@ -59,14 +59,6 @@ public class Style {
 	@Configuration(optional = true)
 	public Integer rotate = null;
 
-	// Shape only
-
-	@Configuration(optional = true)
-	public Integer converse = null;
-
-	@Configuration(optional = true)
-	public Integer transverse = null;
-
 	// Space only
 
 	@Configuration(optional = true)
@@ -93,8 +85,6 @@ public class Style {
 		public int fontSize = 14;
 		public String image = null;
 		public int rotate = 0;
-		public int converse = 12;
-		public int transverse = 12;
 		public int space = 0;
 		public BoxStyle.Baked box = new BoxStyle.Baked();
 		public ObboxStyle.Baked obbox = new ObboxStyle.Baked();

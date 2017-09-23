@@ -1,6 +1,5 @@
 package com.zarbosoft.merman.documenter;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.zarbosoft.interface1.Configuration;
 import com.zarbosoft.interface1.Walk;
@@ -66,11 +65,10 @@ public class Main {
 			Documenter.document(
 					reflections,
 					descriptions,
-					path.resolve("syntax"),
+					path.resolve("syntax_reference"),
 					Documenter.Flavor.LUA,
 					"Merman",
-					new Walk.TypeInfo(Syntax.class),
-					ImmutableList.of("com.zarbosoft.merman.", "com.zarbosoft.interface1.")
+					new Walk.TypeInfo(Syntax.class)
 			);
 		}
 
@@ -126,9 +124,9 @@ public class Main {
 						tocGroups
 								.computeIfAbsent(groupName, k -> FluentJSoup.ul().h2(groupName))
 								.li(li -> li.a(a -> a.text(id).attr("href", key)));
-						final FluentJSoup.Element section =
-								bodyGroups.computeIfAbsent(groupName, k -> FluentJSoup.div().h2(groupName));
-						section.a(a -> a.attr("name", key).h3(h3 -> h3.code(id)));
+						final FluentJSoup.Element row = FluentJSoup.tr();
+						bodyGroups.computeIfAbsent(groupName, k -> FluentJSoup.table()).with(row);
+						row.with(FluentJSoup.td().a(a -> a.attr("name", key).h4(id)));
 						{
 							final Map<String, String> descriptionGroup =
 									extraDescriptions.computeIfAbsent(groupName, k -> new HashMap<>());
@@ -140,7 +138,7 @@ public class Main {
 								description = "";
 							}
 							final String finalDescription = description;
-							section.p(p -> p.with(Documenter.transformText(finalDescription)));
+							row.td(td -> td.with(Documenter.transformText(finalDescription)));
 							if (descriptionGroup.isEmpty())
 								extraDescriptions.remove(groupName);
 						}
@@ -176,17 +174,34 @@ public class Main {
 							.lesserFirst(Map.Entry::getKey)
 							.build())
 					.forEach(entry -> {
+						body.h2(entry.getKey());
 						body.with(entry.getValue());
+						body.br();
+						body.br();
 					});
-			try (
-					OutputStream outStream = Files.newOutputStream(
-							path.resolve("Actions-Reference.rst"),
-							StandardOpenOption.WRITE,
-							StandardOpenOption.TRUNCATE_EXISTING,
-							StandardOpenOption.CREATE
-					)
-			) {
-				Documenter.writeRst(outStream, body);
+			final Path out = path.resolve("actions_reference");
+			try {
+				Files.createDirectories(out);
+				try (
+						OutputStream outStream = Files.newOutputStream(
+								out.resolve("_Sidebar.rst"),
+								StandardOpenOption.WRITE,
+								StandardOpenOption.TRUNCATE_EXISTING,
+								StandardOpenOption.CREATE
+						)
+				) {
+					Documenter.writeRst(outStream, toc);
+				}
+				try (
+						OutputStream outStream = Files.newOutputStream(
+								out.resolve("Actions-Reference.rst"),
+								StandardOpenOption.WRITE,
+								StandardOpenOption.TRUNCATE_EXISTING,
+								StandardOpenOption.CREATE
+						)
+				) {
+					Documenter.writeRst(outStream, body);
+				}
 			} catch (final IOException e) {
 				throw new UncheckedIOException(e);
 			}

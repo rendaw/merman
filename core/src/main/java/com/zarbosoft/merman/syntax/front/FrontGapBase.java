@@ -28,6 +28,7 @@ import com.zarbosoft.merman.syntax.Syntax;
 import com.zarbosoft.merman.syntax.middle.MiddleArrayBase;
 import com.zarbosoft.merman.syntax.middle.MiddleAtom;
 import com.zarbosoft.merman.syntax.middle.MiddlePrimitive;
+import com.zarbosoft.merman.syntax.middle.primitive.Pattern;
 import com.zarbosoft.merman.syntax.style.BoxStyle;
 import com.zarbosoft.merman.syntax.style.Style;
 import com.zarbosoft.merman.syntax.symbol.SymbolText;
@@ -403,7 +404,7 @@ public abstract class FrontGapBase extends FrontPart {
 				} else if (part instanceof FrontDataPrimitive) {
 					final MiddlePrimitive middle =
 							(MiddlePrimitive) type.middle.get(((FrontDataPrimitive) part).middle);
-					out.add(middle.pattern.build());
+					out.add((middle.pattern == null ? Pattern.repeatedAny : middle.pattern).build());
 				} else
 					throw new DeadCode();
 			}
@@ -435,7 +436,7 @@ public abstract class FrontGapBase extends FrontPart {
 				} else if (front instanceof FrontDataPrimitive) {
 					final MiddlePrimitive middle =
 							(MiddlePrimitive) type.middle.get(((FrontDataPrimitive) front).middle);
-					grammar.add("root", middle.pattern.build());
+					grammar.add("root", (middle.pattern == null ? Pattern.repeatedAny : middle.pattern).build());
 				} else
 					throw new DeadCode();
 				final Pair<ParseContext, Position> longest = new Parse<>()

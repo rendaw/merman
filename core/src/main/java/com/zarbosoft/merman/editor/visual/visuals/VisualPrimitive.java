@@ -510,25 +510,27 @@ public class VisualPrimitive extends Visual implements VisualLeaf {
 		@Override
 		public void receiveText(final Context context, final String text) {
 			String preview = value.get();
-			preview = preview.substring(0, range.beginOffset) +
-					text +
-					preview.substring(range.endOffset, preview.length());
-			if (!value.middle.matcher.match(preview)) {
-				if (range.endOffset == value.length() && last(atomVisual().children) == VisualPrimitive.this) {
-					context.history.finishChange(context);
-					final Value.Parent parent = atomVisual().atom.parent;
-					final Atom gap = context.syntax.suffixGap.create(true, atomVisual().atom);
-					parent.replace(context, gap);
-					gap.data.get("gap").selectDown(context);
-					context.selection.receiveText(context, text);
+			if (value.middle.matcher != null) {
+				preview = preview.substring(0, range.beginOffset) +
+						text +
+						preview.substring(range.endOffset, preview.length());
+				if (!value.middle.matcher.match(preview)) {
+					if (range.endOffset == value.length() && last(atomVisual().children) == VisualPrimitive.this) {
+						context.history.finishChange(context);
+						final Value.Parent parent = atomVisual().atom.parent;
+						final Atom gap = context.syntax.suffixGap.create(true, atomVisual().atom);
+						parent.replace(context, gap);
+						gap.data.get("gap").selectDown(context);
+						context.selection.receiveText(context, text);
+					}
+					return;
 				}
-			} else {
-				if (range.beginOffset != range.endOffset)
-					context.history.apply(context,
-							value.changeRemove(range.beginOffset, range.endOffset - range.beginOffset)
-					);
-				context.history.apply(context, value.changeAdd(range.beginOffset, text));
 			}
+			if (range.beginOffset != range.endOffset)
+				context.history.apply(context,
+						value.changeRemove(range.beginOffset, range.endOffset - range.beginOffset)
+				);
+			context.history.apply(context, value.changeAdd(range.beginOffset, text));
 		}
 
 		@Override

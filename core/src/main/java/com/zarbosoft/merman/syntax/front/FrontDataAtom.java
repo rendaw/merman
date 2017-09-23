@@ -10,14 +10,12 @@ import com.zarbosoft.merman.editor.visual.tags.FreeTag;
 import com.zarbosoft.merman.editor.visual.tags.PartTag;
 import com.zarbosoft.merman.editor.visual.tags.Tag;
 import com.zarbosoft.merman.editor.visual.visuals.VisualNested;
-import com.zarbosoft.merman.modules.hotkeys.grammar.Node;
 import com.zarbosoft.merman.syntax.AtomType;
 import com.zarbosoft.merman.syntax.middle.MiddleAtom;
 import com.zarbosoft.merman.syntax.symbol.Symbol;
 import com.zarbosoft.merman.syntax.symbol.SymbolText;
 import org.pcollections.PSet;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -33,9 +31,6 @@ public class FrontDataAtom extends FrontPart {
 	@Configuration
 	public String middle;
 	private MiddleAtom dataType;
-
-	@Configuration(optional = true)
-	public Map<String, Node> hotkeys = new HashMap<>();
 
 	@Configuration(optional = true)
 	public Symbol ellipsis = new SymbolText("...");

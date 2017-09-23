@@ -169,7 +169,7 @@ public class History {
 				return false;
 			return past.size() > 1 || !past.getLast().isEmpty();
 		} else {
-			return clearLevel != fixedTop();
+			return !clearLevel.equals(fixedTop());
 		}
 	}
 
@@ -183,7 +183,7 @@ public class History {
 		finishChange(context);
 		final Integer oldClearLevel = clearLevel;
 		clearLevel = fixedTop();
-		if (clearLevel != oldClearLevel)
+		if (!Objects.equals(clearLevel, oldClearLevel))
 			modifiedStateListeners.forEach(l -> l.changed(false));
 	}
 

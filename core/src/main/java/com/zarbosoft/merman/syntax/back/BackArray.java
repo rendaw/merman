@@ -18,8 +18,6 @@ import static com.zarbosoft.rendaw.common.Common.enumerate;
 @Configuration(name = "array")
 public class BackArray extends BackPart {
 	@Configuration
-	public String name;
-	@Configuration
 	public List<BackPart> elements = new ArrayList<>();
 
 	@Override
