@@ -64,7 +64,7 @@ Requires Java 9.
 
 ## Jar
 
-Download [here](https://github.com/Rendaw/merman/releases/download/v0.0.6/merman-0.0.6.jar).
+Download [here](https://github.com/Rendaw/merman/releases/download/v0.0.7/merman-0.0.7.jar).
 
 Run with:
 ```
