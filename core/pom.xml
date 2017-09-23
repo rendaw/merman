@@ -3,11 +3,11 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.zarbosoft.merman</groupId>
     <artifactId>core</artifactId>
-    <version>0.0.6</version>
+    <version>0.0.7</version>
     <parent>
         <groupId>com.zarbosoft</groupId>
         <artifactId>merman</artifactId>
-        <version>0.0.6</version>
+        <version>0.0.7</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <build>
