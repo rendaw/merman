@@ -63,7 +63,7 @@ public class PrefixGapAtomType extends AtomType {
 			record.pairs.put("gap", gap);
 			record.pairs.put("value", value);
 			final BackType type = new BackType();
-			type.type = "__gap";
+			type.type = "__prefix_gap";
 			type.value = record;
 			back = ImmutableList.of(type);
 		}

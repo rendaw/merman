@@ -106,7 +106,7 @@ public class SuffixGapAtomType extends AtomType {
 			record.pairs.put("value", value);
 			record.pairs.put("gap", gap);
 			final BackType type = new BackType();
-			type.type = "__gap";
+			type.type = "__suffix_gap";
 			type.value = record;
 			back = ImmutableList.of(type);
 		}
