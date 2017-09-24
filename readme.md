@@ -112,7 +112,7 @@ Create a new directory named `aggregate-merman` next to all of them and add this
 Then run:
 ```
 mvn package
-java -jar standalone/target/standalone.jar FILENAME
+java -jar standalone/target/merman-0.0.7.jar FILENAME
 ```
 
 # Documentation

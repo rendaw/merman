@@ -16,6 +16,14 @@ subprocess.check_call([
     '-DnewVersion={}'.format(args.version),
     '-DgenerateBackupPoms=false',
 ])
+subprocess.check_call([
+    'sed',
+    '-e', '"s/\\(Version \\|merman-\\|v\\)[[:digit:]]\\+\\.[[:digit:]]\\+\\.[[:digit:]]\\+/\\1{}/g"'.format(  # noqa
+        args.version
+    ),
+    '-i',
+    'readme.md',
+])
 subprocess.call([
     'git',
     'commit',
