@@ -58,17 +58,17 @@ Of course, there are some drawbacks to this approach
 
 # Get it
 
-Version 0.0.7
+Version 0.0.8
 
 Requires Java 9.
 
 ## Jar
 
-Download [here](https://github.com/Rendaw/merman/releases/download/v0.0.7/merman-0.0.7.jar).
+Download [here](https://github.com/Rendaw/merman/releases/download/v0.0.8/merman-0.0.8.jar).
 
 Run with:
 ```
-java -jar merman-0.0.7.jar FILENAME
+java -jar merman-0.0.8.jar FILENAME
 ```
 
 ## Build from source
@@ -112,7 +112,7 @@ Create a new directory named `aggregate-merman` next to all of them and add this
 Then run:
 ```
 mvn package
-java -jar standalone/target/merman-0.0.7.jar FILENAME
+java -jar standalone/target/merman-0.0.8.jar FILENAME
 ```
 
 # Documentation

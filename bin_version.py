@@ -3,11 +3,12 @@ import argparse
 import subprocess
 import re
 
-if subprocess.call(['git', 'diff-index', '--quiet', 'HEAD']) != 0:
-    raise RuntimeError('Working directory must be clean.')
 parser = argparse.ArgumentParser()
 parser.add_argument('version')
+parser.add_argument('-f', '--force', action='store_true')
 args = parser.parse_args()
+if not args.force and subprocess.call(['git', 'diff-index', '--quiet', 'HEAD']) != 0:  # noqa
+    raise RuntimeError('Working directory must be clean.')
 if not re.match('\\d+\\.\\d+\\.\\d+', args.version):
     args.error('version must be in the format N.N.N')
 subprocess.check_call([
@@ -18,7 +19,7 @@ subprocess.check_call([
 ])
 subprocess.check_call([
     'sed',
-    '-e', '"s/\\(Version \\|merman-\\|v\\)[[:digit:]]\\+\\.[[:digit:]]\\+\\.[[:digit:]]\\+/\\1{}/g"'.format(  # noqa
+    '-e', 's/\\(Version \\|merman-\\|v\\)[[:digit:]]\\+\\.[[:digit:]]\\+\\.[[:digit:]]\\+/\\1{}/g'.format(  # noqa
         args.version
     ),
     '-i',
